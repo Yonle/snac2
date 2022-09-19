@@ -72,7 +72,7 @@ void snac_free(snac *snac)
 }
 
 
-int snac_open(snac *snac, char *uid)
+int user_open(snac *snac, char *uid)
 /* opens a user */
 {
     int ret = 0;

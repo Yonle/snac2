@@ -13,11 +13,8 @@ int main(int argc, char *argv[])
 
     srv_open("/home/angel/lib/snac/comam.es");
 
-    snac_open(&snac, "mike");
+    user_open(&snac, "mike");
     snac_log(&snac, xs_str_new("ok"));
-
-    char *passwd = xs_dict_get(snac.config, "passwd");
-    printf("%d\n", check_password("mike", "1234", passwd));
 
     return 0;
 }

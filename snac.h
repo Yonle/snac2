@@ -26,8 +26,8 @@ typedef struct _snac {
     d_char *actor;      /* actor url */
 } snac;
 
-int snac_open(snac *snac, char *uid);
-void snac_free(snac *snac);
+int user_open(snac *snac, char *uid);
+void user_free(snac *snac);
 
 void snac_debug(snac *snac, int level, d_char *str);
 #define snac_log(snac, str) snac_debug(snac, 0, str)
