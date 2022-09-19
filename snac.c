@@ -199,3 +199,15 @@ void snac_free(snac *snac)
     free(snac->key);
     free(snac->actor);
 }
+
+
+void snac_debug(snac *snac, int level, d_char *str)
+/* prints a user debugging information */
+{
+    xs *msg = str;
+
+    if (dbglevel >= level) {
+        xs *tm = xs_local_time("%H:%M:%S");
+        fprintf(stderr, "%s [%s] %s\n", tm, snac->uid, msg);
+    }
+}

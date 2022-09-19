@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
     srv_open("/home/angel/lib/snac/comam.es");
 
     snac_open(&snac, "mike");
+    snac_log(&snac, xs_str_new("ok"));
 
     return 0;
 }
