@@ -103,11 +103,3 @@ int srv_open(char *basedir)
 
     return ret;
 }
-
-
-int main(int argc, char *argv[])
-{
-    srv_open("/home/angel/lib/snac/comam.es");
-
-    return 0;
-}

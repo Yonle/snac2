@@ -2,7 +2,7 @@ CFLAGS=-g -Wall
 
 all: snac
 
-snac: snac.o
+snac: snac.o main.o
 	$(CC) -L/usr/local/lib *.o -lcurl -lcrypto -o $@
 
 .c.o:
@@ -10,6 +10,8 @@ snac: snac.o
 
 snac.o: snac.c snac.h \
     xs.h xs_io.h xs_encdec.h xs_json.h xs_curl.h xs_openssl.h xs_socket.h xs_httpd.h
+
+main.o: main.c snac.h xs.h
 
 clean:
 	rm -rf *.o *.core snac
