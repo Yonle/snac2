@@ -31,3 +31,5 @@ void snac_free(snac *snac);
 
 void snac_debug(snac *snac, int level, d_char *str);
 #define snac_log(snac, str) snac_debug(snac, 0, str)
+
+int validate_uid(char *uid);

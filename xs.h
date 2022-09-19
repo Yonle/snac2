@@ -37,6 +37,7 @@ typedef char d_char;
 #define _XS_BLK_SIZE 16
 #define _xs_blk_size(sz) ((((sz) + _XS_BLK_SIZE) / _XS_BLK_SIZE) * _XS_BLK_SIZE)
 
+void _xs_destroy(char **var);
 #define xs_debug() kill(getpid(), 5)
 xstype xs_type(const char *data);
 int xs_size(const char *data);
