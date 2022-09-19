@@ -39,13 +39,15 @@ d_char *xs_time(char *fmt, int local)
 }
 
 
-void srv_log(d_char *str)
-/* logs a message */
+void srv_debug(int level, d_char *str)
+/* logs a debug message */
 {
-    xs *tm  = xs_local_time("%H:%M:%S");
     xs *msg = str;
 
-    fprintf(stderr, "%s %s\n", tm, msg);
+    if (dbglevel >= level) {
+        xs *tm = xs_local_time("%H:%M:%S");
+        fprintf(stderr, "%s %s\n", tm, msg);
+    }
 }
 
 
