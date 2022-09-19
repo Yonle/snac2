@@ -113,7 +113,7 @@ int check_password(char *uid, char *passwd, char *hash)
 /* checks a password */
 {
     int ret = 0;
-    xs *spl = xs_splitn(hash, ":", 1);
+    xs *spl = xs_split_n(hash, ":", 1);
 
     if (xs_list_len(spl) == 2) {
         xs *n_hash = hash_password(uid, passwd, xs_list_get(spl, 0));

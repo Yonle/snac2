@@ -65,8 +65,8 @@ int xs_list_len(char *list);
 char *xs_list_get(char *list, int num);
 int xs_list_in(char *list, char *val);
 d_char *xs_join(char *list, const char *sep);
-d_char *xs_splitn(const char *str, const char *sep, int times);
-#define xs_split(str, sep) xs_splitn(str, sep, 0xfffffff)
+d_char *xs_split_n(const char *str, const char *sep, int times);
+#define xs_split(str, sep) xs_split_n(str, sep, 0xfffffff)
 d_char *xs_dict_new(void);
 d_char *xs_dict_append_m(d_char *dict, const char *key, const char *mem, int dsz);
 #define xs_dict_append(dict, key, data) xs_dict_append_m(dict, key, data, xs_size(data))
@@ -527,7 +527,7 @@ d_char *xs_join(char *list, const char *sep)
 }
 
 
-d_char *xs_splitn(const char *str, const char *sep, int times)
+d_char *xs_split_n(const char *str, const char *sep, int times)
 /* splits a string into a list upto n times */
 {
     int sz = strlen(sep);

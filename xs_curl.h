@@ -25,7 +25,7 @@ static size_t _header_callback(char *buffer, size_t size,
 
     /* only the HTTP/x 200 line and the last one doesn't have ': ' */
     if (xs_str_in(l, ": ") != -1) {
-        xs *knv = xs_splitn(l, ": ", 1);
+        xs *knv = xs_split_n(l, ": ", 1);
 
         headers = xs_dict_append(headers, xs_list_get(knv, 0), xs_list_get(knv, 1));
     }

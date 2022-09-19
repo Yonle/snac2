@@ -57,7 +57,7 @@ d_char *xs_url_vars(char *str)
 
         l = args;
         while (xs_list_iter(&l, &v)) {
-            xs *kv = xs_splitn(v, "=", 2);
+            xs *kv = xs_split_n(v, "=", 2);
 
             if (xs_list_len(kv) == 2)
                 vars = xs_dict_append(vars,
@@ -98,7 +98,7 @@ d_char *xs_httpd_request(FILE *f)
     {
         /* split the path with its optional variables */
         xs *udp = xs_url_dec(xs_list_get(l2, 1));
-        xs *pnv = xs_splitn(udp, "?", 1);
+        xs *pnv = xs_split_n(udp, "?", 1);
 
         /* store the path */
         headers = xs_dict_append(headers, "path", xs_list_get(pnv, 0));
@@ -118,7 +118,7 @@ d_char *xs_httpd_request(FILE *f)
             break;
 
         /* split header and content */
-        p = xs_splitn(l, ": ", 1);
+        p = xs_split_n(l, ": ", 1);
 
         if (xs_list_len(p) == 2)
             headers = xs_dict_append(headers,
