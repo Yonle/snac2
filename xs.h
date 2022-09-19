@@ -75,7 +75,7 @@ d_char *xs_dict_del(d_char *dict, const char *key);
 d_char *xs_dict_set(d_char *dict, const char *key, const char *data);
 d_char *xs_val_new(xstype t);
 d_char *xs_number_new(float f);
-float xs_get_number(char *v);
+float xs_number_get(char *v);
 
 extern int _xs_debug;
 
@@ -697,7 +697,7 @@ d_char *xs_number_new(float f)
 }
 
 
-float xs_get_number(char *v)
+float xs_number_get(char *v)
 /* gets the number as a float */
 {
     float f = 0.0;

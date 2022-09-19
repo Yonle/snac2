@@ -93,7 +93,7 @@ d_char *_xs_json_dumps(d_char *s, char *data, int level, int indent)
     case XSTYPE_NUMBER:
         {
             char tmp[32];
-            snprintf(tmp, sizeof(tmp), "%g", xs_get_number(data));
+            snprintf(tmp, sizeof(tmp), "%g", xs_number_get(data));
             s = xs_str_cat(s, tmp);
         }
         break;
