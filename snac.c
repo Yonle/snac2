@@ -14,6 +14,9 @@
 
 #include "snac.h"
 
+#include <sys/time.h>
+
+
 d_char *srv_basedir = NULL;
 d_char *srv_config  = NULL;
 d_char *srv_baseurl = NULL;
@@ -36,6 +39,18 @@ d_char *xs_time(char *fmt, int local)
     strftime(tmp, sizeof(tmp), fmt, &tm);
 
     return xs_str_new(tmp);
+}
+
+
+d_char *tid(void)
+/* returns a time-based Id */
+{
+    struct timeval tv;
+    struct timezone tz;
+
+    gettimeofday(&tv, &tz);
+
+    return xs_fmt("%10d.%06d", tv.tv_sec, tv.tv_usec);
 }
 
 
@@ -102,4 +117,85 @@ int srv_open(char *basedir)
     }
 
     return ret;
+}
+
+
+int validate_uid(char *uid)
+/* returns if uid is a valid identifier */
+{
+    while (*uid) {
+        if (!(isalnum(*uid) || *uid == '_'))
+            return 0;
+
+        uid++;
+    }
+
+    return 1;
+}
+
+
+int snac_open(snac *snac, char *uid)
+/* opens a user */
+{
+    int ret = 0;
+
+    memset(snac, '\0', sizeof(struct _snac));
+
+    if (validate_uid(uid)) {
+        xs *cfg_file;
+        FILE *f;
+
+        snac->uid = xs_str_new(uid);
+
+        snac->basedir = xs_fmt("%s/user/%s", srv_basedir, uid);
+
+        cfg_file = xs_fmt("%s/user.json", snac->basedir);
+
+        if ((f = fopen(cfg_file, "r")) != NULL) {
+            xs *cfg_data;
+
+            /* read full config file */
+            cfg_data = xs_readall(f);
+            fclose(f);
+
+            if ((snac->config = xs_json_loads(cfg_data)) != NULL) {
+                xs *key_file = xs_fmt("%s/key.json", snac->basedir);
+
+                if ((f = fopen(key_file, "r")) != NULL) {
+                    xs *key_data;
+
+                    key_data = xs_readall(f);
+                    fclose(f);
+
+                    if ((snac->key = xs_json_loads(key_data)) != NULL) {
+                        snac->actor = xs_fmt("%s/%s", srv_baseurl, uid);
+                        ret = 1;
+                    }
+                    else
+                        srv_log(xs_fmt("cannot parse %s", key_file));
+                }
+                else
+                    srv_log(xs_fmt("error opening '%s'", key_file));
+            }
+            else
+                srv_log(xs_fmt("cannot parse %s", cfg_file));
+        }
+        else
+            srv_log(xs_fmt("error opening '%s'", cfg_file));
+    }
+    else
+        srv_log(xs_fmt("invalid user '%s'", uid));
+
+    return ret;
+}
+
+
+void snac_free(snac *snac)
+/* frees a user snac */
+{
+    free(snac->uid);
+    free(snac->basedir);
+    free(snac->config);
+    free(snac->key);
+    free(snac->actor);
 }
