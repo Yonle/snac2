@@ -7,6 +7,9 @@
 
 #include "snac.h"
 
+#include <glob.h>
+
+
 int srv_open(char *basedir)
 /* opens a server */
 {
@@ -61,7 +64,7 @@ int srv_open(char *basedir)
 }
 
 
-void snac_free(snac *snac)
+void user_free(snac *snac)
 /* frees a user snac */
 {
     free(snac->uid);
@@ -125,9 +128,36 @@ int user_open(snac *snac, char *uid)
         srv_log(xs_fmt("invalid user '%s'", uid));
 
     if (!ret)
-        snac_free(snac);
+        user_free(snac);
 
     return ret;
 }
 
+
+d_char *user_list(void)
+/* returns the list of user ids */
+{
+    d_char *list;
+    xs *spec;
+    glob_t globbuf;
+
+    globbuf.gl_offs = 1;
+
+    list = xs_list_new();
+    spec = xs_fmt("%s/user/*", srv_basedir); /**/
+
+    if (glob(spec, 0, NULL, &globbuf) == 0) {
+        int n;
+        char *p;
+
+        for (n = 0; (p = globbuf.gl_pathv[n]) != NULL; n++) {
+            if ((p = strrchr(p, '/')) != NULL)
+                list = xs_list_append(list, p + 1);
+        }
+    }
+
+    globfree(&globbuf);
+
+    return list;
+}
 
