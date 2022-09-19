@@ -78,7 +78,7 @@ int srv_open(char *basedir)
     cfg_file = xs_fmt("%s/server.json", basedir);
 
     if ((f = fopen(cfg_file, "r")) == NULL)
-        srv_log(xs_fmt("cannot open %s", cfg_file));
+        srv_log(xs_fmt("error opening '%s'", cfg_file));
     else {
         xs *cfg_data;
 
@@ -89,7 +89,7 @@ int srv_open(char *basedir)
         srv_config = xs_json_loads(cfg_data);
 
         if (srv_config == NULL)
-            srv_log(xs_fmt("cannot parse %s", cfg_file));
+            srv_log(xs_fmt("cannot parse '%s'", cfg_file));
         else {
             char *host;
             char *prefix;
@@ -134,6 +134,17 @@ int validate_uid(char *uid)
 }
 
 
+void snac_free(snac *snac)
+/* frees a user snac */
+{
+    free(snac->uid);
+    free(snac->basedir);
+    free(snac->config);
+    free(snac->key);
+    free(snac->actor);
+}
+
+
 int snac_open(snac *snac, char *uid)
 /* opens a user */
 {
@@ -172,13 +183,13 @@ int snac_open(snac *snac, char *uid)
                         ret = 1;
                     }
                     else
-                        srv_log(xs_fmt("cannot parse %s", key_file));
+                        srv_log(xs_fmt("cannot parse '%s'", key_file));
                 }
                 else
                     srv_log(xs_fmt("error opening '%s'", key_file));
             }
             else
-                srv_log(xs_fmt("cannot parse %s", cfg_file));
+                srv_log(xs_fmt("cannot parse '%s'", cfg_file));
         }
         else
             srv_log(xs_fmt("error opening '%s'", cfg_file));
@@ -186,18 +197,10 @@ int snac_open(snac *snac, char *uid)
     else
         srv_log(xs_fmt("invalid user '%s'", uid));
 
+    if (!ret)
+        snac_free(snac);
+
     return ret;
-}
-
-
-void snac_free(snac *snac)
-/* frees a user snac */
-{
-    free(snac->uid);
-    free(snac->basedir);
-    free(snac->config);
-    free(snac->key);
-    free(snac->actor);
 }
 
 
