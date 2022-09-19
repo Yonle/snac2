@@ -90,3 +90,36 @@ void snac_debug(snac *snac, int level, d_char *str)
         fprintf(stderr, "%s [%s] %s\n", tm, snac->uid, msg);
     }
 }
+
+
+d_char *hash_password(char *uid, char *passwd, char *nonce)
+/* hashes a password */
+{
+    xs *d_nonce = NULL;
+    xs *combi;
+    xs *hash;
+
+    if (nonce == NULL)
+        nonce = d_nonce = xs_fmt("%08x", random());
+
+    combi = xs_fmt("%s:%s:%s", nonce, uid, passwd);
+    hash  = xs_sha1_hex(combi, strlen(combi));
+
+    return xs_fmt("%s:%s", nonce, hash);
+}
+
+
+int check_password(char *uid, char *passwd, char *hash)
+/* checks a password */
+{
+    int ret = 0;
+    xs *spl = xs_splitn(hash, ":", 1);
+
+    if (xs_list_len(spl) == 2) {
+        xs *n_hash = hash_password(uid, passwd, xs_list_get(spl, 0));
+
+        ret = (strcmp(hash, n_hash) == 0);
+    }
+
+    return ret;
+}

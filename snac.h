@@ -33,3 +33,6 @@ void snac_debug(snac *snac, int level, d_char *str);
 #define snac_log(snac, str) snac_debug(snac, 0, str)
 
 int validate_uid(char *uid);
+
+d_char *hash_password(char *uid, char *passwd, char *nonce);
+int check_password(char *uid, char *passwd, char *hash);

@@ -16,5 +16,8 @@ int main(int argc, char *argv[])
     snac_open(&snac, "mike");
     snac_log(&snac, xs_str_new("ok"));
 
+    char *passwd = xs_dict_get(snac.config, "passwd");
+    printf("%d\n", check_password("mike", "1234", passwd));
+
     return 0;
 }
