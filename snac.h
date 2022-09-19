@@ -7,6 +7,10 @@ extern d_char *srv_baseurl;
 
 extern int dbglevel;
 
+d_char *xs_time(char *fmt, int local);
+#define xs_local_time(fmt) xs_time(fmt, 1)
+#define xs_utc_time(fmt)   xs_time(fmt, 0)
+
 void srv_log(d_char *str);
 int srv_open(char *basedir);
 
