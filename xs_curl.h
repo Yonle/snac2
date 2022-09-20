@@ -27,6 +27,8 @@ static size_t _header_callback(char *buffer, size_t size,
     if (xs_str_in(l, ": ") != -1) {
         xs *knv = xs_split_n(l, ": ", 1);
 
+        xs_tolower(xs_list_get(knv, 0));
+
         headers = xs_dict_append(headers, xs_list_get(knv, 0), xs_list_get(knv, 1));
     }
     else
