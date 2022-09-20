@@ -4,6 +4,7 @@
 #include "xs.h"
 #include "xs_io.h"
 #include "xs_json.h"
+#include "xs_openssl.h"
 
 #include "snac.h"
 
@@ -16,13 +17,17 @@ int srv_open(char *basedir)
     int ret = 0;
     xs *cfg_file = NULL;
     FILE *f;
+    d_char *error = NULL;
 
     srv_basedir = xs_str_new(basedir);
+
+    if (xs_endswith(srv_basedir, "/"))
+        srv_basedir = xs_crop(srv_basedir, 0, -1);
 
     cfg_file = xs_fmt("%s/server.json", basedir);
 
     if ((f = fopen(cfg_file, "r")) == NULL)
-        srv_log(xs_fmt("error opening '%s'", cfg_file));
+        error = xs_fmt("error opening '%s'", cfg_file);
     else {
         xs *cfg_data;
 
@@ -33,7 +38,7 @@ int srv_open(char *basedir)
         srv_config = xs_json_loads(cfg_data);
 
         if (srv_config == NULL)
-            srv_log(xs_fmt("cannot parse '%s'", cfg_file));
+            error = xs_fmt("cannot parse '%s'", cfg_file);
         else {
             char *host;
             char *prefix;
@@ -44,7 +49,7 @@ int srv_open(char *basedir)
             dbglvl = xs_dict_get(srv_config, "dbglevel");
 
             if (host == NULL || prefix == NULL)
-                srv_log(xs_str_new("cannot get server data"));
+                error = xs_str_new("cannot get server data");
             else {
                 srv_baseurl = xs_fmt("https://%s%s", host, prefix);
 
@@ -52,13 +57,16 @@ int srv_open(char *basedir)
 
                 if ((dbglvl = getenv("DEBUG")) != NULL) {
                     dbglevel = atoi(dbglvl);
-                    srv_log(xs_fmt("DEBUG level set to %d from environment", dbglevel));
+                    error = xs_fmt("DEBUG level set to %d from environment", dbglevel);
                 }
 
                 ret = 1;
             }
         }
     }
+
+    if (ret == 0 && error != NULL)
+        srv_log(error);
 
     return ret;
 }
@@ -144,7 +152,7 @@ d_char *user_list(void)
     globbuf.gl_offs = 1;
 
     list = xs_list_new();
-    spec = xs_fmt("%s/user/*", srv_basedir); /**/
+    spec = xs_fmt("%s/user/" "*", srv_basedir);
 
     if (glob(spec, 0, NULL, &globbuf) == 0) {
         int n;
@@ -161,3 +169,94 @@ d_char *user_list(void)
     return list;
 }
 
+
+float mtime(char *fn)
+/* returns the mtime of a file or directory, or 0.0 */
+{
+    struct stat st;
+    float r = 0.0;
+
+    if (stat(fn, &st) != -1)
+        r = (float)st.st_mtim.tv_sec;
+
+    return r;
+}
+
+
+d_char *_follower_fn(snac *snac, char *actor)
+{
+    xs *md5 = xs_md5_hex(actor, strlen(actor));
+    return xs_fmt("%s/followers/%s.json", snac->basedir, md5);
+}
+
+
+int follower_add(snac *snac, char *actor, char *msg)
+/* adds a follower */
+{
+    int ret = 201; /* created */
+    xs *fn = _follower_fn(snac, actor);
+    FILE *f;
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        xs *j = xs_json_dumps_pp(msg, 4);
+
+        fwrite(j, 1, strlen(j), f);
+        fclose(f);
+    }
+    else
+        ret = 500;
+
+    snac_debug(snac, 2, xs_fmt("follower_add %s %s", actor, fn));
+
+    return ret;
+}
+
+
+int follower_del(snac *snac, char *actor)
+/* deletes a follower */
+{
+    xs *fn = _follower_fn(snac, actor);
+
+    unlink(fn);
+
+    snac_debug(snac, 2, xs_fmt("follower_del %s %s", actor, fn));
+
+    return 200;
+}
+
+
+int follower_check(snac *snac, char *actor)
+/* checks if someone is a follower */
+{
+    xs *fn = _follower_fn(snac, actor);
+
+    return !!(mtime(fn) != 0.0);
+}
+
+
+d_char *follower_list(snac *snac)
+/* returns the list of followers */
+{
+    d_char *list;
+    xs *spec;
+    glob_t globbuf;
+
+    list = xs_list_new();
+    spec = xs_fmt("%s/followers/" "*.json", snac->basedir);
+
+    if (glob(spec, 0, NULL, &globbuf) == 0) {
+        int n;
+        char *p;
+
+        for (n = 0; (p = globbuf.gl_pathv[n]) != NULL; n++) {
+            FILE *f;
+
+            if ((f = fopen(p, "r")) != NULL) {
+            }
+        }
+    }
+
+    globfree(&globbuf);
+
+    return list;
+}

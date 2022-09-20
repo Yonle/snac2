@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 
     printf("%s\n", tid());
 
-    srv_open("/home/angel/lib/snac/comam.es");
+    srv_open("/home/angel/lib/snac/comam.es/");
 
     user_open(&snac, "mike");
     snac_log(&snac, xs_str_new("ok"));
@@ -22,11 +22,10 @@ int main(int argc, char *argv[])
 
         p = list;
         while (xs_list_iter(&p, &uid)) {
-            user_open(&snac, uid);
-
-            printf("%s (%s)\n", uid, xs_dict_get(snac.config, "name"));
-
-            user_free(&snac);
+            if (user_open(&snac, uid)) {
+                printf("%s (%s)\n", uid, xs_dict_get(snac.config, "name"));
+                user_free(&snac);
+            }
         }
     }
 
