@@ -171,6 +171,13 @@ d_char *xs_utf8_enc(d_char *str, unsigned int cpoint)
         tmp[n++] = 0x80 | ((cpoint >> 6) & 0x3f);
         tmp[n++] = 0x80 | (cpoint & 0x3f);
     }
+    else
+    if (cpoint < 0x200000) {
+        tmp[n++] = 0xf0 | (cpoint >> 18);
+        tmp[n++] = 0x80 | ((cpoint >> 12) & 0x3f);
+        tmp[n++] = 0x80 | ((cpoint >> 6) & 0x3f);
+        tmp[n++] = 0x80 | (cpoint & 0x3f);
+    }
 
     return xs_append_m(str, (char *)tmp, n);
 }

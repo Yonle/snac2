@@ -244,7 +244,6 @@ d_char *_xs_json_loads_lexer(const char **json, js_type *t)
                     s += 3;
                     tmp[4] = '\0';
 
-                    xs_debug();
                     sscanf(tmp, "%04x", &i);
 
                     if (i >= 0xd800 && i <= 0xdfff) {
