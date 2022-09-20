@@ -426,3 +426,54 @@ void timeline_add(snac *snac, char *id, char *msg, char *parent)
         snac_debug(snac, 1, xs_fmt("timeline_add (local) %s %s", id, lfn));
     }
 }
+
+
+d_char *_following_fn(snac *snac, char *actor)
+{
+    xs *md5 = xs_md5_hex(actor, strlen(actor));
+    return xs_fmt("%s/following/%s.json", snac->basedir, md5);
+}
+
+
+int following_add(snac *snac, char *actor, char *msg)
+/* adds to the following list */
+{
+    int ret = 201; /* created */
+    xs *fn = _following_fn(snac, actor);
+    FILE *f;
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        xs *j = xs_json_dumps_pp(msg, 4);
+
+        fwrite(j, 1, strlen(j), f);
+        fclose(f);
+    }
+    else
+        ret = 500;
+
+    snac_debug(snac, 2, xs_fmt("following_add %s %s", actor, fn));
+
+    return ret;
+}
+
+
+int following_del(snac *snac, char *actor)
+/* someone is no longer following us */
+{
+    xs *fn = _following_fn(snac, actor);
+
+    unlink(fn);
+
+    snac_debug(snac, 2, xs_fmt("following_del %s %s", actor, fn));
+
+    return 200;
+}
+
+
+int following_check(snac *snac, char *actor)
+/* checks if someone is following us */
+{
+    xs *fn = _following_fn(snac, actor);
+
+    return !!(mtime(fn) != 0.0);
+}
