@@ -37,3 +37,10 @@ int validate_uid(char *uid);
 
 d_char *hash_password(char *uid, char *passwd, char *nonce);
 int check_password(char *uid, char *passwd, char *hash);
+
+float mtime(char *fn);
+
+int follower_add(snac *snac, char *actor, char *msg);
+int follower_del(snac *snac, char *actor);
+int follower_check(snac *snac, char *actor);
+d_char *follower_list(snac *snac);

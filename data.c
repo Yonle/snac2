@@ -252,6 +252,13 @@ d_char *follower_list(snac *snac)
             FILE *f;
 
             if ((f = fopen(p, "r")) != NULL) {
+                xs *j = xs_readall(f);
+                xs *o = xs_json_loads(j);
+
+                if (o != NULL)
+                    list = xs_list_append(list, o);
+
+                fclose(f);
             }
         }
     }

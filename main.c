@@ -14,7 +14,17 @@ int main(int argc, char *argv[])
     srv_open("/home/angel/lib/snac/comam.es/");
 
     user_open(&snac, "mike");
-    snac_log(&snac, xs_str_new("ok"));
+
+    {
+        xs *list = follower_list(&snac);
+        char *p, *obj;
+
+        p = list;
+        while (xs_list_iter(&p, &obj)) {
+            char *actor = xs_dict_get(obj, "actor");
+            printf("%s\n", actor);
+        }
+    }
 
     {
         xs *list = user_list();
