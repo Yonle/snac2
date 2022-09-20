@@ -44,3 +44,6 @@ int follower_add(snac *snac, char *actor, char *msg);
 int follower_del(snac *snac, char *actor);
 int follower_check(snac *snac, char *actor);
 d_char *follower_list(snac *snac);
+
+d_char *timeline_get(snac *snac, char *id);
+void timeline_del(snac *snac, char *id);

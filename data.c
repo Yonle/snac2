@@ -267,3 +267,63 @@ d_char *follower_list(snac *snac)
 
     return list;
 }
+
+
+d_char *_timeline_fn(snac *snac, char *id)
+/* returns the file name of a timeline entry by its id */
+{
+    xs *md5  = xs_md5_hex(id, strlen(id));
+    xs *spec = xs_fmt("%s/timeline/" "*-%s.json", snac->basedir, md5);
+    glob_t globbuf;
+    d_char *fn = NULL;
+
+    if (glob(spec, 0, NULL, &globbuf) == 0 && globbuf.gl_matchc) {
+        /* get just the first file */
+        fn = xs_str_new(globbuf.gl_pathv[0]);
+    }
+
+    globfree(&globbuf);
+
+    return fn;
+}
+
+
+d_char *timeline_get(snac *snac, char *id)
+/* gets a message from the timeline */
+{
+    xs *fn  = _timeline_fn(snac, id);
+    xs *msg = NULL;
+
+    if (fn != NULL) {
+        FILE *f;
+
+        if ((f = fopen(fn, "r")) != NULL) {
+            xs *j = xs_readall(f);
+
+            msg = xs_json_loads(j);
+            fclose(f);
+        }
+    }
+
+    return msg;
+}
+
+
+void timeline_del(snac *snac, char *id)
+/* deletes a message from the timeline */
+{
+    xs *fn = _timeline_fn(snac, id);
+
+    if (fn != NULL) {
+        xs *lfn = NULL;
+
+        unlink(fn);
+        snac_debug(snac, 1, xs_fmt("timeline_del %s", id));
+
+        /* try to delete also from the local timeline */
+        lfn = xs_replace(fn, "/timeline/", "/local/");
+
+        if (unlink(lfn) != -1)
+            snac_debug(snac, 1, xs_fmt("timeline_del (local) %s", id));
+    }
+}
