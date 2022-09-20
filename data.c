@@ -391,7 +391,7 @@ void timeline_add(snac *snac, char *id, char *msg, char *parent)
     }
 
     /* build the new filename */
-    xs *ntid = tid();
+    xs *ntid = tid(0);
     xs *md5  = xs_md5_hex(id, strlen(id));
     xs *fn   = xs_fmt("%s/timeline/%s-%s.json", snac->basedir, ntid, md5);
     xs *md;
@@ -518,4 +518,39 @@ int is_muted(snac *snac, char *actor)
     xs *fn = _muted_fn(snac, actor);
 
     return !!(mtime(fn) != 0.0);
+}
+
+
+void enqueue(snac *snac, char *actor, char *msg, int retries)
+/* enqueues a message for an actor */
+{
+    if (strcmp(actor, snac->actor) == 0) {
+        snac_debug(snac, 1, xs_str_new("enqueue refused to myself"));
+        return;
+    }
+
+    int qrt  = xs_number_get(xs_dict_get(srv_config, "query_retry_minutes"));
+    xs *ntid = tid(retries * 60 * qrt);
+    xs *fn   = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
+    xs *tfn  = xs_str_cat(fn, ".tmp");
+    FILE *f;
+
+    if ((f = fopen(tfn, "w")) != NULL) {
+        xs *qmsg = xs_dict_new();
+        xs *rn   = xs_number_new(retries);
+        xs *j;
+
+        qmsg = xs_dict_append(qmsg, "actor",   actor);
+        qmsg = xs_dict_append(qmsg, "object",  msg);
+        qmsg = xs_dict_append(qmsg, "retries", rn);
+
+        j = xs_json_dumps_pp(qmsg, 4);
+
+        fwrite(j, strlen(j), 1, f);
+        fclose(f);
+
+        rename(tfn, fn);
+
+        snac_debug(snac, 2, xs_fmt("enqueue %s %s %d", actor, fn, retries));
+    }
 }

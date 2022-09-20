@@ -11,7 +11,7 @@ d_char *xs_time(char *fmt, int local);
 #define xs_local_time(fmt) xs_time(fmt, 1)
 #define xs_utc_time(fmt)   xs_time(fmt, 0)
 
-d_char *tid(void);
+d_char *tid(int offset);
 
 void srv_debug(int level, d_char *str);
 #define srv_log(str) srv_debug(0, str)

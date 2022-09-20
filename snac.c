@@ -42,7 +42,7 @@ d_char *xs_time(char *fmt, int local)
 }
 
 
-d_char *tid(void)
+d_char *tid(int offset)
 /* returns a time-based Id */
 {
     struct timeval tv;
@@ -50,7 +50,7 @@ d_char *tid(void)
 
     gettimeofday(&tv, &tz);
 
-    return xs_fmt("%10d.%06d", tv.tv_sec, tv.tv_usec);
+    return xs_fmt("%10d.%06d", tv.tv_sec + offset, tv.tv_usec);
 }
 
 

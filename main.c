@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     snac snac;
 
-    printf("%s\n", tid());
+    printf("%s\n", tid(0));
 
     srv_open("/home/angel/lib/snac/comam.es/");
 
