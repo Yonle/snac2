@@ -27,6 +27,18 @@ int main(int argc, char *argv[])
     }
 
     {
+        xs *list = timeline_list(&snac);
+        char *p, *fn;
+
+        p = list;
+        while (xs_list_iter(&p, &fn)) {
+            xs *tle = timeline_get(&snac, fn);
+
+            printf("%s\n", xs_dict_get(tle, "id"));
+        }
+    }
+
+    {
         xs *list = user_list();
         char *p, *uid;
 

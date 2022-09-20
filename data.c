@@ -246,12 +246,12 @@ d_char *follower_list(snac *snac)
 
     if (glob(spec, 0, NULL, &globbuf) == 0) {
         int n;
-        char *p;
+        char *fn;
 
-        for (n = 0; (p = globbuf.gl_pathv[n]) != NULL; n++) {
+        for (n = 0; (fn = globbuf.gl_pathv[n]) != NULL; n++) {
             FILE *f;
 
-            if ((f = fopen(p, "r")) != NULL) {
+            if ((f = fopen(fn, "r")) != NULL) {
                 xs *j = xs_readall(f);
                 xs *o = xs_json_loads(j);
 
@@ -269,7 +269,7 @@ d_char *follower_list(snac *snac)
 }
 
 
-d_char *_timeline_fn(snac *snac, char *id)
+d_char *_timeline_find_fn(snac *snac, char *id)
 /* returns the file name of a timeline entry by its id */
 {
     xs *md5  = xs_md5_hex(id, strlen(id));
@@ -288,10 +288,10 @@ d_char *_timeline_fn(snac *snac, char *id)
 }
 
 
-d_char *timeline_get(snac *snac, char *id)
-/* gets a message from the timeline */
+d_char *timeline_find(snac *snac, char *id)
+/* gets a message from the timeline by id */
 {
-    xs *fn  = _timeline_fn(snac, id);
+    xs *fn  = _timeline_find_fn(snac, id);
     xs *msg = NULL;
 
     if (fn != NULL) {
@@ -312,7 +312,7 @@ d_char *timeline_get(snac *snac, char *id)
 void timeline_del(snac *snac, char *id)
 /* deletes a message from the timeline */
 {
-    xs *fn = _timeline_fn(snac, id);
+    xs *fn = _timeline_find_fn(snac, id);
 
     if (fn != NULL) {
         xs *lfn = NULL;
@@ -326,4 +326,54 @@ void timeline_del(snac *snac, char *id)
         if (unlink(lfn) != -1)
             snac_debug(snac, 1, xs_fmt("timeline_del (local) %s", id));
     }
+}
+
+
+d_char *timeline_get(snac *snac, char *fn)
+/* gets a timeline entry by file name */
+{
+    d_char *d = NULL;
+    FILE *f;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        xs *j = xs_readall(f);
+
+        d = xs_json_loads(j);
+        fclose(f);
+    }
+
+    return d;
+}
+
+
+d_char *timeline_list(snac *snac)
+/* returns a list of the timeline filenames */
+{
+    d_char *list;
+    xs *spec = xs_fmt("%s/timeline/" "*.json", snac->basedir);
+    glob_t globbuf;
+    int max;
+
+    /* maximum number of items in the timeline */
+    max = xs_number_get(xs_dict_get(srv_config, "max_timeline_entries"));
+
+    list = xs_list_new();
+
+    /* get the list in reverse order */
+    if (glob(spec, 0, NULL, &globbuf) == 0) {
+        int n;
+
+        if (max > globbuf.gl_matchc)
+            max = globbuf.gl_matchc;
+
+        for (n = 0; n < max; n++) {
+            char *fn = globbuf.gl_pathv[globbuf.gl_matchc - n - 1];
+
+            list = xs_list_append(list, fn);
+        }
+    }
+
+    globfree(&globbuf);
+
+    return list;
 }
