@@ -16,6 +16,6 @@ snac.o: snac.c snac.h \
 
 main.o: main.c snac.h xs.h
 
-data.o: data.c snac.h xs.h xs_json.h
+data.o: data.c snac.h xs.h xs_json.h xs_openssl.h
 
 http.o: http.c snac.h xs.h xs_io.h xs_encdec.h xs_openssl.h xs_curl.h
