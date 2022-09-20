@@ -587,3 +587,23 @@ d_char *queue(snac *snac)
 
     return list;
 }
+
+
+d_char *dequeue(snac *snac, char *fn)
+/* dequeues a message */
+{
+    FILE *f;
+    d_char *obj = NULL;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        /* delete right now */
+        unlink(fn);
+
+        xs *j = xs_readall(f);
+        obj = xs_json_loads(j);
+
+        fclose(f);
+    }
+
+    return obj;
+}

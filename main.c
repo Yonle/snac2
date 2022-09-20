@@ -21,7 +21,10 @@ int main(int argc, char *argv[])
 
         p = list;
         while (xs_list_iter(&p, &fn)) {
-            printf("%s\n", fn);
+            xs *obj;
+
+            obj = dequeue(&snac, fn);
+            printf("%s\n", xs_dict_get(obj, "actor"));
         }
     }
 
