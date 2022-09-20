@@ -229,7 +229,7 @@ d_char *_xs_json_loads_lexer(const char **json, js_type *t)
 
         while ((c = *s) != '"' && c != '\0') {
             char tmp[5];
-            int i;
+            int cp, i;
 
             if (c == '\\') {
                 s++;
@@ -240,15 +240,30 @@ d_char *_xs_json_loads_lexer(const char **json, js_type *t)
                 case 't': c = '\t'; break;
                 case 'u': /* Unicode codepoint as an hex char */
                     s++;
-                    tmp[0] = (char)*s; s++;
-                    tmp[1] = (char)*s; s++;
-                    tmp[2] = (char)*s; s++;
-                    tmp[3] = (char)*s;
+                    memcpy(tmp, s, 4);
+                    s += 3;
                     tmp[4] = '\0';
 
+                    xs_debug();
                     sscanf(tmp, "%04x", &i);
 
-                    v = xs_utf8_enc(v, i);
+                    if (i >= 0xd800 && i <= 0xdfff) {
+                        /* it's a surrogate pair */
+                        cp = (i & 0x3ff) << 10;
+
+                        /* skip to the next value */
+                        s += 3;
+                        memcpy(tmp, s, 4);
+                        s += 3;
+
+                        sscanf(tmp, "%04x", &i);
+                        cp |= (i & 0x3ff);
+                        cp += 0x10000;
+                    }
+                    else
+                        cp = i;
+
+                    v = xs_utf8_enc(v, cp);
                     c = '\0';
 
                     break;
