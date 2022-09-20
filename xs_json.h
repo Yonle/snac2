@@ -372,7 +372,7 @@ d_char *_xs_json_loads_array(const char **json, js_type *t)
             l = xs_list_append(l, v);
 
             while (*t == JS_INCOMPLETE) {
-                _xs_json_loads_lexer(&s, &tt);
+                xs *v1 = _xs_json_loads_lexer(&s, &tt);
 
                 if (tt == JS_CBRACK)
                     *t = JS_ARRAY;
@@ -425,7 +425,7 @@ d_char *_xs_json_loads_object(const char **json, js_type *t)
         *t = JS_OBJECT;
     else
     if (tt == JS_STRING) {
-        _xs_json_loads_lexer(&s, &tt);
+        xs *t1 = _xs_json_loads_lexer(&s, &tt);
 
         if (tt == JS_COLON) {
             xs *v1;
@@ -437,18 +437,16 @@ d_char *_xs_json_loads_object(const char **json, js_type *t)
                 d = xs_dict_append(d, k1, v1);
 
                 while (*t == JS_INCOMPLETE) {
-                    _xs_json_loads_lexer(&s, &tt);
+                    xs *t2 = _xs_json_loads_lexer(&s, &tt);
 
                     if (tt == JS_CCURLY)
                         *t = JS_OBJECT;
                     else
                     if (tt == JS_COMMA) {
-                        xs *k;
-
-                        k = _xs_json_loads_lexer(&s, &tt);
+                        xs *k = _xs_json_loads_lexer(&s, &tt);
 
                         if (tt == JS_STRING) {
-                            _xs_json_loads_lexer(&s, &tt);
+                            xs *t3 = _xs_json_loads_lexer(&s, &tt);
 
                             if (tt == JS_COLON) {
                                 xs *v;
