@@ -16,6 +16,17 @@ int main(int argc, char *argv[])
     user_open(&snac, "mike");
 
     {
+        xs *list = queue(&snac);
+        char *p, *fn;
+
+        p = list;
+        while (xs_list_iter(&p, &fn)) {
+            printf("%s\n", fn);
+        }
+    }
+
+#if 0
+    {
         xs *list = follower_list(&snac);
         char *p, *obj;
 
@@ -50,6 +61,7 @@ int main(int argc, char *argv[])
             }
         }
     }
+#endif
 
     return 0;
 }

@@ -554,3 +554,36 @@ void enqueue(snac *snac, char *actor, char *msg, int retries)
         snac_debug(snac, 2, xs_fmt("enqueue %s %s %d", actor, fn, retries));
     }
 }
+
+
+d_char *queue(snac *snac)
+/* returns a list with filenames that can be dequeued */
+{
+    xs *spec = xs_fmt("%s/queue/" "*.json", snac->basedir);
+    d_char *list = xs_list_new();
+    glob_t globbuf;
+    time_t t = time(NULL);
+
+    /* get the list in reverse order */
+    if (glob(spec, 0, NULL, &globbuf) == 0) {
+        int n;
+        char *p;
+
+        for (n = 0; (p = globbuf.gl_pathv[n]) != NULL; n++) {
+            /* get the retry time from the basename */
+            char *bn = strrchr(p, '/');
+            time_t t2 = atol(bn + 1);
+
+            if (t2 > t)
+                snac_debug(snac, 2, xs_fmt("queue not yet time for %s", p));
+            else {
+                list = xs_list_append(list, p);
+                snac_debug(snac, 2, xs_fmt("queue ready for %s", p));
+            }
+        }
+    }
+
+    globfree(&globbuf);
+
+    return list;
+}
