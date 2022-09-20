@@ -61,3 +61,8 @@ int is_muted(snac *snac, char *actor);
 void enqueue(snac *snac, char *actor, char *msg, int retries);
 d_char *queue(snac *snac);
 d_char *dequeue(snac *snac, char *fn);
+
+d_char *http_signed_request(snac *snac, char *method, char *url,
+                        d_char *headers,
+                        d_char *body, int b_size,
+                        int *status, d_char **payload, int *p_size);

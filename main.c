@@ -15,6 +15,13 @@ int main(int argc, char *argv[])
 
     user_open(&snac, "mike");
 
+    d_char *headers = xs_dict_new();
+    int status;
+    d_char *payload;
+    int p_size;
+    http_signed_request(&snac, "GET", "https://comam.es/snac/jessie",
+        headers, NULL, 0, &status, &payload, &p_size);
+
     {
         xs *list = queue(&snac);
         char *p, *fn;
