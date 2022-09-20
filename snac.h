@@ -54,3 +54,6 @@ int following_add(snac *snac, char *actor, char *msg);
 int following_del(snac *snac, char *actor);
 int following_check(snac *snac, char *actor);
 
+void mute(snac *snac, char *actor);
+void unmute(snac *snac, char *actor);
+int is_muted(snac *snac, char *actor);

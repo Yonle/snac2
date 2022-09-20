@@ -477,3 +477,45 @@ int following_check(snac *snac, char *actor)
 
     return !!(mtime(fn) != 0.0);
 }
+
+
+d_char *_muted_fn(snac *snac, char *actor)
+{
+    xs *md5 = xs_md5_hex(actor, strlen(actor));
+    return xs_fmt("%s/muted/%s.json", snac->basedir, md5);
+}
+
+
+void mute(snac *snac, char *actor)
+/* mutes a moron */
+{
+    xs *fn = _muted_fn(snac, actor);
+    FILE *f;
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        fprintf(f, "%s\n", actor);
+        fclose(f);
+
+        snac_debug(snac, 2, xs_fmt("muted %s %s", actor, fn));
+    }
+}
+
+
+void unmute(snac *snac, char *actor)
+/* actor is no longer a moron */
+{
+    xs *fn = _muted_fn(snac, actor);
+
+    unlink(fn);
+
+    snac_debug(snac, 2, xs_fmt("unmuted %s %s", actor, fn));
+}
+
+
+int is_muted(snac *snac, char *actor)
+/* check if someone is muted */
+{
+    xs *fn = _muted_fn(snac, actor);
+
+    return !!(mtime(fn) != 0.0);
+}
