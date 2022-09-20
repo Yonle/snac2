@@ -8,7 +8,9 @@
 
 #include "snac.h"
 
+#include <time.h>
 #include <glob.h>
+#include <sys/stat.h>
 
 
 int srv_open(char *basedir)
@@ -277,7 +279,7 @@ d_char *_timeline_find_fn(snac *snac, char *id)
     glob_t globbuf;
     d_char *fn = NULL;
 
-    if (glob(spec, 0, NULL, &globbuf) == 0 && globbuf.gl_matchc) {
+    if (glob(spec, 0, NULL, &globbuf) == 0 && globbuf.gl_pathc) {
         /* get just the first file */
         fn = xs_str_new(globbuf.gl_pathv[0]);
     }
@@ -363,11 +365,11 @@ d_char *timeline_list(snac *snac)
     if (glob(spec, 0, NULL, &globbuf) == 0) {
         int n;
 
-        if (max > globbuf.gl_matchc)
-            max = globbuf.gl_matchc;
+        if (max > globbuf.gl_pathc)
+            max = globbuf.gl_pathc;
 
         for (n = 0; n < max; n++) {
-            char *fn = globbuf.gl_pathv[globbuf.gl_matchc - n - 1];
+            char *fn = globbuf.gl_pathv[globbuf.gl_pathc - n - 1];
 
             list = xs_list_append(list, fn);
         }
