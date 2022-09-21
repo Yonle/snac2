@@ -11,25 +11,20 @@
 #include "snac.h"
 
 
-void server_get_handler(d_char *req, int *status, char **body, int *b_size, char **ctype)
+void server_get_handler(d_char *req, char *q_path, int *status,
+                        char **body, int *b_size, char **ctype)
 /* basic server services */
 {
     char *req_hdrs = xs_dict_get(req, "headers");
     char *acpt     = xs_dict_get(req_hdrs, "accept");
-    char *q_path   = xs_dict_get(req_hdrs, "path");
 
     if (acpt == NULL) {
         *status = 400;
         return;
     }
 
-    /* get the server prefix */
-    char *prefix = xs_dict_get(srv_config, "prefix");
-    if (*prefix == '\0')
-        prefix = "/";
-
     /* is it the server root? */
-    if (strcmp(q_path, prefix) == 0) {
+    if (*q_path == '\0') {
         /* try to open greeting.html */
         xs *fn = xs_fmt("%s/greeting.html", srv_basedir);
         FILE *f;
@@ -85,6 +80,8 @@ void httpd_connection(int rs)
     int b_size  = 0;
     char *ctype = NULL;
     xs *headers = NULL;
+    xs *q_path  = NULL;
+    char *p;
 
     f = xs_socket_accept(rs);
 
@@ -98,11 +95,20 @@ void httpd_connection(int rs)
     req_hdrs = xs_dict_get(req, "headers");
 
     method = xs_dict_get(req_hdrs, "method");
+    q_path = xs_dup(xs_dict_get(req_hdrs, "path"));
+
+    /* crop the q_path from leading / and the prefix */
+    if (xs_endswith(q_path, "/"))
+        q_path = xs_crop(q_path, 0, -1);
+
+    p = xs_dict_get(srv_config, "prefix");
+    if (xs_startswith(q_path, p))
+        q_path = xs_crop(q_path, strlen(p), 0);
 
     if (strcmp(method, "GET") == 0) {
         /* cascade through */
         if (status == 0)
-            server_get_handler(req, &status, &body, &b_size, &ctype);
+            server_get_handler(req, q_path, &status, &body, &b_size, &ctype);
     }
     else
     if (strcmp(method, "POST") == 0) {
@@ -116,10 +122,10 @@ void httpd_connection(int rs)
         status = 404;
 
     if (status == 404)
-        body = "<h1>404 Not Found</h1>";
+        body = xs_str_new("<h1>404 Not Found</h1>");
 
     if (status == 400)
-        body = "<h1>400 Bad Request</h1>";
+        body = xs_str_new("<h1>400 Bad Request</h1>");
 
     if (status == 303)
         headers = xs_dict_append(headers, "location", body);
