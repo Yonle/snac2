@@ -20,4 +20,4 @@ data.o: data.c snac.h xs.h xs_json.h xs_openssl.h
 
 http.o: http.c snac.h xs.h xs_io.h xs_encdec.h xs_openssl.h xs_curl.h
 
-httpd.o: http.c snac.h xs.h xs_encdec.h xs_socket.h xs_httpd.h
+httpd.o: http.c snac.h xs.h xs_io.h xs_encdec.h xs_socket.h xs_httpd.h
