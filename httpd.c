@@ -42,6 +42,8 @@ void httpd(void)
         return;
     }
 
+    srv_running = 1;
+
     srv_log(xs_fmt("httpd start %s:%d", address, port));
 
     for (;;) {

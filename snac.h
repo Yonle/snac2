@@ -4,6 +4,7 @@
 extern d_char *srv_basedir;
 extern d_char *srv_config;
 extern d_char *srv_baseurl;
+extern int     srv_running;
 
 extern int dbglevel;
 
