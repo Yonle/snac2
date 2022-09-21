@@ -69,3 +69,6 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
                         int *status, d_char **payload, int *p_size);
 
 void httpd(void);
+
+void webfinger_get_handler(d_char *req, char *q_path, int *status,
+                        char **body, int *b_size, char **ctype);
