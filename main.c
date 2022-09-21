@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 
     user_open(&snac, "mike");
 
-    d_char *headers = xs_dict_new();
+    xs *headers = xs_dict_new();
     int status;
     d_char *payload;
     int p_size;

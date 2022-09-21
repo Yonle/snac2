@@ -20,9 +20,11 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
     xs *digest;
     xs *s64;
     xs *signature;
+    xs *hdrs;
     char *host;
     char *target;
     char *seckey;
+    char *k, *v;
 
     date = xs_utc_time("%a, %d %b %Y %H:%M:%S GMT");
 
@@ -66,14 +68,19 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
                        "signature=\"%s\"",
                         snac->actor, s64);
 
-    /* now add all these things to the headers */
-    headers = xs_dict_append(headers, "content-type", "application/activity+json");
-    headers = xs_dict_append(headers, "date",         date);
-    headers = xs_dict_append(headers, "signature",    signature);
-    headers = xs_dict_append(headers, "digest",       digest);
-    headers = xs_dict_append(headers, "user-agent",   "snac/2.x");
+    /* transfer the original headers */
+    hdrs = xs_dict_new();
+    while (xs_dict_iter(&headers, &k, &v))
+        hdrs = xs_dict_append(hdrs, k, v);
 
-//    return xs_http_request(method, url, headers,
+    /* add the new headers */
+    hdrs = xs_dict_append(hdrs, "content-type", "application/activity+json");
+    hdrs = xs_dict_append(hdrs, "date",         date);
+    hdrs = xs_dict_append(hdrs, "signature",    signature);
+    hdrs = xs_dict_append(hdrs, "digest",       digest);
+    hdrs = xs_dict_append(hdrs, "user-agent",   "snac/2.x");
+
+//    return xs_http_request(method, url, hdrs,
 //                           body, b_size, status, payload, p_size);
     return NULL;
 }
