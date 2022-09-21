@@ -67,3 +67,5 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
                         d_char *headers,
                         d_char *body, int b_size,
                         int *status, d_char **payload, int *p_size);
+
+void httpd(void);

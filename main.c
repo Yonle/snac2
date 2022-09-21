@@ -7,7 +7,49 @@
 
 #include "snac.h"
 
+int usage(void)
+{
+    printf("usage:\n");
+    return 1;
+}
+
+
 int main(int argc, char *argv[])
+{
+    char *cmd;
+    char *basedir;
+    int argi = 1;
+
+    argc--;
+    if (argc < argi)
+        return usage();
+
+    cmd = argv[argi++];
+
+    if (strcmp(cmd, "init") == 0) {
+        return 0;
+    }
+
+    if (argc < argi)
+        return usage();
+
+    basedir = argv[argi++];
+
+    if (!srv_open(basedir)) {
+        srv_log(xs_fmt("error opening database at %s", basedir));
+        return 1;
+    }
+
+    if (strcmp(cmd, "httpd") == 0) {
+        httpd();
+        return 0;
+    }
+
+    return 0;
+}
+
+
+#if 0
 {
     snac snac;
 
@@ -85,3 +127,4 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+#endif

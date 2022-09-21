@@ -2,7 +2,7 @@ CFLAGS=-g -Wall
 
 all: snac
 
-snac: snac.o main.o data.o http.o
+snac: snac.o main.o data.o http.o httpd.o
 	$(CC) -L/usr/local/lib *.o -lcurl -lcrypto -o $@
 
 .c.o:
@@ -19,3 +19,5 @@ main.o: main.c snac.h xs.h
 data.o: data.c snac.h xs.h xs_json.h xs_openssl.h
 
 http.o: http.c snac.h xs.h xs_io.h xs_encdec.h xs_openssl.h xs_curl.h
+
+httpd.o: http.c snac.h xs.h xs_encdec.h xs_socket.h xs_httpd.h
