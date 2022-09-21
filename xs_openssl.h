@@ -7,6 +7,7 @@
 d_char *xs_md5_hex(const void *input, int size);
 d_char *xs_sha1_hex(const void *input, int size);
 d_char *xs_sha256_hex(const void *input, int size);
+d_char *xs_sha256_base64(const void *input, int size);
 d_char *xs_rsa_genkey(int bits);
 d_char *xs_rsa_sign(char *secret, char *mem, int size);
 int xs_rsa_verify(char *pubkey, char *mem, int size, char *b64sig);
@@ -45,16 +46,35 @@ d_char *xs_sha1_hex(const void *input, int size)
 }
 
 
-d_char *xs_sha256_hex(const void *input, int size)
+unsigned char *_xs_sha256(const void *input, int size, unsigned char *sha256)
 {
-    unsigned char sha256[32];
     SHA256_CTX ctx;
 
     SHA256_Init(&ctx);
     SHA256_Update(&ctx, input, size);
     SHA256_Final(sha256, &ctx);
 
+    return sha256;
+}
+
+
+d_char *xs_sha256_hex(const void *input, int size)
+{
+    unsigned char sha256[32];
+
+    _xs_sha256(input, size, sha256);
+
     return xs_hex_enc((char *)sha256, sizeof(sha256));
+}
+
+
+d_char *xs_sha256_base64(const void *input, int size)
+{
+    unsigned char sha256[32];
+
+    _xs_sha256(input, size, sha256);
+
+    return xs_base64_enc((char *)sha256, sizeof(sha256));
 }
 
 

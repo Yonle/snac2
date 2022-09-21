@@ -43,9 +43,9 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
 
     /* digest */
     if (body != NULL)
-        digest = xs_sha256_hex(body, b_size);
+        digest = xs_sha256_base64(body, b_size);
     else
-        digest = xs_sha256_hex("", 0);
+        digest = xs_sha256_base64("", 0);
 
     seckey = xs_dict_get(snac->key, "secret");
 
