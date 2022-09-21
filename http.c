@@ -75,12 +75,12 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
 
     /* add the new headers */
     hdrs = xs_dict_append(hdrs, "content-type", "application/activity+json");
+    hdrs = xs_dict_append(hdrs, "accept",       "application/activity+json");
     hdrs = xs_dict_append(hdrs, "date",         date);
     hdrs = xs_dict_append(hdrs, "signature",    signature);
     hdrs = xs_dict_append(hdrs, "digest",       digest);
     hdrs = xs_dict_append(hdrs, "user-agent",   "snac/2.x");
 
-//    return xs_http_request(method, url, hdrs,
-//                           body, b_size, status, payload, p_size);
-    return NULL;
+    return xs_http_request(method, url, hdrs,
+                           body, b_size, status, payload, p_size);
 }

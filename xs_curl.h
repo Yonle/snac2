@@ -138,10 +138,7 @@ d_char *xs_http_request(char *method, char *url, d_char *headers,
     /* fill the request headers */
     p = headers;
     while (xs_dict_iter(&p, &k, &v)) {
-        xs *h;
-
-        const char *args[] = { k, v, NULL };
-        h = xs_fmt("%s: %s", args);
+        xs *h = xs_fmt("%s: %s", k, v);
 
         list = curl_slist_append(list, h);
     }

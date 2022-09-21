@@ -2,6 +2,8 @@
 /* copyright (c) 2022 grunfink - MIT license */
 
 #include "xs.h"
+#include "xs_encdec.h"
+#include "xs_json.h"
 
 #include "snac.h"
 
@@ -19,8 +21,16 @@ int main(int argc, char *argv[])
     int status;
     d_char *payload;
     int p_size;
-    http_signed_request(&snac, "GET", "https://comam.es/snac/jessie",
+    xs *response;
+
+    response = http_signed_request(&snac, "GET", "https://mastodon.social/users/VictorMoral",
         headers, NULL, 0, &status, &payload, &p_size);
+
+    {
+        xs *j1 = xs_json_dumps_pp(response, 4);
+        printf("response:\n%s\n", j1);
+        printf("payload:\n%s\n", payload);
+    }
 
     {
         xs *list = queue(&snac);
