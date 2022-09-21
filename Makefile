@@ -9,15 +9,15 @@ snac: snac.o main.o data.o http.o httpd.o
 	$(CC) $(CFLAGS) -I/usr/local/include -c $<
 
 clean:
-	rm -rf *.o *.core snac
+	rm -rf *.o *.core snac makefile.depend
 
-snac.o: snac.c snac.h \
-    xs.h xs_io.h xs_encdec.h xs_json.h xs_curl.h xs_openssl.h xs_socket.h xs_httpd.h
+dep:
+	$(CC) -I/usr/local/include -MM *.c > makefile.depend
 
-main.o: main.c snac.h xs.h
-
-data.o: data.c snac.h xs.h xs_json.h xs_openssl.h
-
-http.o: http.c snac.h xs.h xs_io.h xs_encdec.h xs_openssl.h xs_curl.h
-
-httpd.o: http.c snac.h xs.h xs_io.h xs_encdec.h xs_socket.h xs_httpd.h
+data.o: data.c xs.h xs_io.h xs_json.h xs_openssl.h snac.h
+http.o: http.c xs.h xs_io.h xs_encdec.h xs_openssl.h xs_curl.h snac.h
+httpd.o: httpd.c xs.h xs_io.h xs_encdec.h xs_json.h xs_socket.h \
+  xs_httpd.h snac.h
+main.o: main.c xs.h xs_encdec.h xs_json.h snac.h
+snac.o: snac.c xs.h xs_io.h xs_encdec.h xs_json.h xs_curl.h \
+  xs_openssl.h xs_socket.h xs_httpd.h snac.h
