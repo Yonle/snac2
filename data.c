@@ -636,6 +636,83 @@ void enqueue_output(snac *snac, char *actor, char *msg, int retries)
 }
 
 
+d_char *_actor_fn(snac *snac, char *actor)
+/* returns the file name for an actor */
+{
+    xs *md5 = xs_md5_hex(actor, strlen(actor));
+    return xs_fmt("%s/actors/%s.json", snac->basedir, md5);
+}
+
+
+int actor_add(snac *snac, char *actor, char *msg)
+/* adds a follower */
+{
+    int ret = 201; /* created */
+    xs *fn = _actor_fn(snac, actor);
+    FILE *f;
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        xs *j = xs_json_dumps_pp(msg, 4);
+
+        fwrite(j, 1, strlen(j), f);
+        fclose(f);
+    }
+    else
+        ret = 500;
+
+    snac_debug(snac, 2, xs_fmt("actor_add %s %s", actor, fn));
+
+    return ret;
+}
+
+
+int actor_get(snac *snac, char *actor, char **data)
+/* returns an already downloaded actor */
+{
+    xs *fn = _actor_fn(snac, actor);
+    float t;
+    float max_time;
+    int status;
+    FILE *f;
+
+    t = mtime(fn);
+
+    /* no mtime? there is nothing here */
+    if (t == 0.0)
+        return 404;
+
+    /* maximum time for the actor data to be considered stale */
+    max_time = 3600.0 * 36.0;
+
+    if (t + max_time < (float) time(NULL)) {
+        /* actor data exists but also stinks */
+        status = 202;
+
+        if ((f = fopen(fn, "a")) != NULL) {
+            /* write a blank at the end to 'touch' the file */
+            fwrite(" ", 1, 1, f);
+            fclose(f);
+        }
+    }
+    else {
+        /* it's still valid */
+        status = 200;
+    }
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        xs *j = xs_readall(f);
+
+        fclose(f);
+
+        *data = xs_json_loads(j);
+    }
+    else
+        status = 500;
+
+    return status;
+}
+
+
 d_char *queue(snac *snac)
 /* returns a list with filenames that can be dequeued */
 {
