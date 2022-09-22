@@ -73,7 +73,10 @@ void webfinger_request(char *qs, int *status, char **actor, char **user)
         xs *obj = xs_json_loads(payload);
 
         if (user != NULL) {
-            *user = xs_replace(xs_dict_get(obj, "subject"), "acct:", "");
+            char *subject = xs_dict_get(obj, "subject");
+
+            if (subject)
+                *user = xs_replace(subject, "acct:", "");
         }
 
         if (actor != NULL) {
