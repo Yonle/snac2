@@ -384,6 +384,8 @@ d_char *timeline_list(snac *snac)
 void _timeline_parent(snac *snac, char *parent, char *child)
 /* add child to parent's children list */
 {
+    /* FIXME: this must be recursive, but *ONLY* for file renaming */
+
     if (parent != NULL) {
         xs *pfn = _timeline_find_fn(snac, parent);
 
