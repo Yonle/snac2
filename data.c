@@ -666,7 +666,7 @@ int actor_add(snac *snac, char *actor, char *msg)
 }
 
 
-int actor_get(snac *snac, char *actor, char **data)
+int actor_get(snac *snac, char *actor, d_char **data)
 /* returns an already downloaded actor */
 {
     xs *fn = _actor_fn(snac, actor);
