@@ -686,13 +686,14 @@ int actor_get(snac *snac, char *actor, d_char **data)
 
     if (t + max_time < (float) time(NULL)) {
         /* actor data exists but also stinks */
-        status = 202;
 
         if ((f = fopen(fn, "a")) != NULL) {
             /* write a blank at the end to 'touch' the file */
             fwrite(" ", 1, 1, f);
             fclose(f);
         }
+
+        status = 110; /* "Response Is Stale" */
     }
     else {
         /* it's still valid */
