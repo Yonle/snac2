@@ -10,6 +10,14 @@
 
 #include "snac.h"
 
+/* susie.png */
+const char *susie =
+    "iVBORw0KGgoAAAANSUhEUgAAAEAAAABAAQAAAAC"
+    "CEkxzAAAAUUlEQVQoz43R0QkAMQwCUDdw/y3dwE"
+    "vsvzlL4X1IoQkAisKmwfAFT3RgJHbQezpSRoXEq"
+    "eqCL9BJBf7h3QbOCCxV5EVWMEMwG7K1/WODtlvx"
+    "AYTtEsDU9F34AAAAAElFTkSuQmCC";
+
 
 void server_get_handler(d_char *req, char *q_path, int *status,
                         char **body, int *b_size, char **ctype)
@@ -66,6 +74,12 @@ void server_get_handler(d_char *req, char *q_path, int *status,
 
             *body = s;
         }
+    }
+    else
+    if (strcmp(q_path, "/susie.png") == 0) {
+        *status = 200;
+        *body   = xs_base64_dec(susie, b_size);
+        *ctype  = "image/png";
     }
 }
 
