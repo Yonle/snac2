@@ -600,8 +600,8 @@ int is_muted(snac *snac, char *actor)
 }
 
 
-void enqueue(snac *snac, char *actor, char *msg, int retries)
-/* enqueues a message for an actor */
+void enqueue_output(snac *snac, char *actor, char *msg, int retries)
+/* enqueues an output message for an actor */
 {
     if (strcmp(actor, snac->actor) == 0) {
         snac_debug(snac, 1, xs_str_new("enqueue refused to myself"));
@@ -619,6 +619,7 @@ void enqueue(snac *snac, char *actor, char *msg, int retries)
         xs *rn   = xs_number_new(retries);
         xs *j;
 
+        qmsg = xs_dict_append(qmsg, "type",    "output");
         qmsg = xs_dict_append(qmsg, "actor",   actor);
         qmsg = xs_dict_append(qmsg, "object",  msg);
         qmsg = xs_dict_append(qmsg, "retries", rn);
@@ -643,7 +644,6 @@ d_char *queue(snac *snac)
     glob_t globbuf;
     time_t t = time(NULL);
 
-    /* get the list in reverse order */
     if (glob(spec, 0, NULL, &globbuf) == 0) {
         int n;
         char *p;

@@ -61,7 +61,8 @@ void mute(snac *snac, char *actor);
 void unmute(snac *snac, char *actor);
 int is_muted(snac *snac, char *actor);
 
-void enqueue(snac *snac, char *actor, char *msg, int retries);
+void enqueue_output(snac *snac, char *actor, char *msg, int retries);
+
 d_char *queue(snac *snac);
 d_char *dequeue(snac *snac, char *fn);
 
