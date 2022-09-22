@@ -41,6 +41,7 @@ void server_get_handler(d_char *req, char *q_path, int *status,
                 xs *list = user_list();
                 char *p, *uid;
                 xs *ul = xs_str_new("<ul class=\"snac-user-list\">\n");
+                xs *os = s;
 
                 p = list;
                 while (xs_list_iter(&p, &uid)) {
@@ -60,7 +61,7 @@ void server_get_handler(d_char *req, char *q_path, int *status,
 
                 ul = xs_str_cat(ul, "</ul>\n");
 
-                s = xs_replace(s, "%userlist%", ul);
+                s = xs_replace(os, "%userlist%", ul);
             }
 
             *body = s;
