@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
 {
     char *cmd;
     char *basedir;
+    char *user;
     int argi = 1;
 
     argc--;
@@ -42,6 +43,27 @@ int main(int argc, char *argv[])
 
     if (strcmp(cmd, "httpd") == 0) {
         httpd();
+        return 0;
+    }
+
+    if (argc < argi)
+        return usage();
+
+    user = argv[argi++];
+
+    if (strcmp(cmd, "webfinger") == 0) {
+        xs *actor = NULL;
+        xs *uid = NULL;
+        int status;
+
+        webfinger_request(user, &status, &actor, &uid);
+
+        printf("status: %d\n", status);
+        if (actor != NULL)
+            printf("actor: %s\n", actor);
+        if (uid != NULL)
+            printf("uid: %s\n", uid);
+
         return 0;
     }
 

@@ -13,21 +13,23 @@ void webfinger_request(char *qs, int *status, char **actor, char **user)
 {
     xs *payload = NULL;
     int p_size = 0;
-    xs *url = NULL;
     xs *headers = xs_dict_new();
+    xs *l = NULL;
+    d_char *host = NULL;
+    xs *resource = NULL;
 
     if (xs_startswith(qs, "https:/" "/")) {
         /* actor query: pick the host */
         xs *s = xs_replace(qs, "https:/" "/", "");
-        xs *l = xs_split_n(s, "/", 1);
 
-        url = xs_fmt("https:/" "/%s/.well-known/webfinger?resource=%s",
-                xs_list_get(l, 0), qs);
+        l = xs_split_n(s, "/", 1);
+
+        host     = xs_list_get(l, 0);
+        resource = xs_dup(qs);
     }
     else {
         /* it's a user */
         xs *s = xs_dup(qs);
-        xs *l;
 
         if (xs_startswith(s, "@"))
             s = xs_crop(s, 1, 0);
@@ -35,19 +37,61 @@ void webfinger_request(char *qs, int *status, char **actor, char **user)
         l = xs_split_n(s, "@", 1);
 
         if (xs_list_len(l) == 2) {
-            url = xs_fmt("https:/" "/%s/.well-known/webfinger?resource:acct:%s",
-                xs_list_get(l, 1), qs);
+            host     = xs_list_get(l, 1);
+            resource = xs_fmt("acct:%s", qs);
         }
     }
 
-    if (url == NULL) {
+    if (host == NULL || resource == NULL) {
         *status = 400;
         return;
     }
 
     headers = xs_dict_append(headers, "accept", "application/json");
 
-    xs_http_request("GET", url, headers, NULL, 0, status, &payload, &p_size);
+    /* is it a query about one of us? */
+    if (strcmp(host, xs_dict_get(srv_config, "host")) == 0) {
+        /* route internally */
+        xs *req    = xs_dict_new();
+        xs *q_vars = xs_dict_new();
+        char *ctype;
+
+        q_vars = xs_dict_append(q_vars, "resource", resource);
+        req    = xs_dict_append(req, "q_vars", q_vars);
+
+        webfinger_get_handler(req, "/.well-known/webfinger",
+                              status, &payload, &p_size, &ctype);
+    }
+    else {
+        xs *url = xs_fmt("https:/" "/%s/.well-known/webfinger?resource=%s", host, resource);
+
+        printf("url: %s\n", url);
+        xs_http_request("GET", url, headers, NULL, 0, status, &payload, &p_size);
+    }
+
+    if (*status >= 200 && *status <= 299) {
+        xs *obj = xs_json_loads(payload);
+
+        if (user != NULL) {
+            *user = xs_replace(xs_dict_get(obj, "subject"), "acct:", "");
+        }
+
+        if (actor != NULL) {
+            char *list = xs_dict_get(obj, "links");
+            char *v;
+
+            while (xs_list_iter(&list, &v)) {
+                if (xs_type(v) == XSTYPE_SOD) {
+                    char *type = xs_dict_get(v, "type");
+
+                    if (type && strcmp(type, "application/activity+json") == 0) {
+                        *actor = xs_dup(xs_dict_get(v, "href"));
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 
@@ -135,4 +179,6 @@ void webfinger_get_handler(d_char *req, char *q_path, int *status,
         *body   = j;
         *ctype  = "application/json";
     }
+    else
+        *status = 404;
 }
