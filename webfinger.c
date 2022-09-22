@@ -68,7 +68,7 @@ void webfinger_request(char *qs, int *status, char **actor, char **user)
         xs_http_request("GET", url, headers, NULL, 0, status, &payload, &p_size);
     }
 
-    if (*status >= 200 && *status <= 299) {
+    if (valid_status(*status)) {
         xs *obj = xs_json_loads(payload);
 
         if (user != NULL) {

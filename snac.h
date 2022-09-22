@@ -8,6 +8,8 @@ extern int     srv_running;
 
 extern int dbglevel;
 
+#define valid_status(status) ((status) >= 200 && (status) <= 299)
+
 d_char *xs_time(char *fmt, int local);
 #define xs_local_time(fmt) xs_time(fmt, 1)
 #define xs_utc_time(fmt)   xs_time(fmt, 0)
