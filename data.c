@@ -403,8 +403,8 @@ void _timeline_parent(snac *snac, char *parent, char *child)
                     xs *children;
 
                     /* get the children list */
-                    meta     = xs_dict_get(msg, "_snac");
-                    children = xs_dict_get(meta, "children");
+                    meta     = xs_dup(xs_dict_get(msg, "_snac"));
+                    children = xs_dup(xs_dict_get(meta, "children"));
 
                     /* add */
                     children = xs_list_append(children, child);
@@ -438,9 +438,6 @@ void _timeline_parent(snac *snac, char *parent, char *child)
                             snac_debug(snac, 1,
                                 xs_fmt("_timeline_parent (local) updated %s %s", parent, lfn));
                         }
-
-                        /* retry with grampa */
-                        _timeline_parent(snac, xs_dict_get(meta, "parent"), parent);
                     }
                     else
                         snac_log(snac, xs_fmt("_timeline_parent error writing %s %s", parent, nfn));
