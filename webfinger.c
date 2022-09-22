@@ -4,11 +4,55 @@
 #include "xs.h"
 #include "xs_encdec.h"
 #include "xs_json.h"
+#include "xs_curl.h"
 
 #include "snac.h"
 
+void webfinger_request(char *qs, int *status, char **actor, char **user)
+/* queries the webfinger for qs and fills the required fields */
+{
+    xs *payload = NULL;
+    int p_size = 0;
+    xs *url = NULL;
+    xs *headers = xs_dict_new();
+
+    if (xs_startswith(qs, "https:/" "/")) {
+        /* actor query: pick the host */
+        xs *s = xs_replace(qs, "https:/" "/", "");
+        xs *l = xs_split_n(s, "/", 1);
+
+        url = xs_fmt("https:/" "/%s/.well-known/webfinger?resource=%s",
+                xs_list_get(l, 0), qs);
+    }
+    else {
+        /* it's a user */
+        xs *s = xs_dup(qs);
+        xs *l;
+
+        if (xs_startswith(s, "@"))
+            s = xs_crop(s, 1, 0);
+
+        l = xs_split_n(s, "@", 1);
+
+        if (xs_list_len(l) == 2) {
+            url = xs_fmt("https:/" "/%s/.well-known/webfinger?resource:acct:%s",
+                xs_list_get(l, 1), qs);
+        }
+    }
+
+    if (url == NULL) {
+        *status = 400;
+        return;
+    }
+
+    headers = xs_dict_append(headers, "accept", "application/json");
+
+    xs_http_request("GET", url, headers, NULL, 0, status, &payload, &p_size);
+}
+
+
 void webfinger_get_handler(d_char *req, char *q_path, int *status,
-                        char **body, int *b_size, char **ctype)
+                           char **body, int *b_size, char **ctype)
 /* serves webfinger queries */
 {
     if (strcmp(q_path, "/.well-known/webfinger") != 0)

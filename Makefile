@@ -21,4 +21,4 @@ httpd.o: httpd.c xs.h xs_io.h xs_encdec.h xs_json.h xs_socket.h \
 main.o: main.c xs.h xs_encdec.h xs_json.h snac.h
 snac.o: snac.c xs.h xs_io.h xs_encdec.h xs_json.h xs_curl.h \
   xs_openssl.h xs_socket.h xs_httpd.h snac.h
-webfinger.o: webfinger.c xs.h xs_encdec.h xs_json.h snac.h
+webfinger.o: webfinger.c xs.h xs_encdec.h xs_json.h xs_curl.h snac.h
