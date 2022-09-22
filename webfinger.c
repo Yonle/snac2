@@ -65,7 +65,6 @@ void webfinger_request(char *qs, int *status, char **actor, char **user)
     else {
         xs *url = xs_fmt("https:/" "/%s/.well-known/webfinger?resource=%s", host, resource);
 
-        printf("url: %s\n", url);
         xs_http_request("GET", url, headers, NULL, 0, status, &payload, &p_size);
     }
 
