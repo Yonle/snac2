@@ -724,7 +724,7 @@ int actor_get(snac *snac, char *actor, d_char **data)
             fclose(f);
         }
 
-        status = 110; /* "Response Is Stale" */
+        status = 205; /* "205: Reset Content" "110: Response Is Stale" */
     }
     else {
         /* it's still valid */

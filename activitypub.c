@@ -73,3 +73,40 @@ int actor_request(snac *snac, char *actor, d_char **data)
 
     return status;
 }
+
+
+int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_size)
+/* sends a message to an Inbox */
+{
+    int status;
+    d_char *response;
+
+    response = http_signed_request(snac, "POST", inbox,
+        NULL, msg, strlen(msg), &status, payload, p_size);
+
+    free(response);
+
+    return status;
+}
+
+
+int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size)
+/* sends a message to an actor */
+{
+    int status;
+    xs *data = NULL;
+
+    /* resolve the actor first */
+    status = actor_request(snac, actor, &data);
+
+    if (valid_status(status)) {
+        char *inbox = xs_dict_get(data, "inbox");
+
+        if (inbox != NULL)
+            status = send_to_inbox(snac, inbox, msg, payload, p_size);
+        else
+            status = 400;
+    }
+
+    return status;
+}
