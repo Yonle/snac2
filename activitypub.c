@@ -80,9 +80,10 @@ int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_s
 {
     int status;
     d_char *response;
+    xs *j_msg = xs_json_dumps_pp(msg, 4);
 
     response = http_signed_request(snac, "POST", inbox,
-        NULL, msg, strlen(msg), &status, payload, p_size);
+        NULL, j_msg, strlen(j_msg), &status, payload, p_size);
 
     free(response);
 
@@ -108,5 +109,48 @@ int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_s
             status = 400;
     }
 
+    snac_log(snac, xs_fmt("send_to_actor %s %d", actor, status));
+
     return status;
+}
+
+
+void process_queue(snac *snac)
+/* processes the queue */
+{
+    xs *list;
+    char *p, *fn;
+    int queue_retry_max = xs_number_get(xs_dict_get(srv_config, "queue_retry_max"));
+
+    list = queue(snac);
+
+    p = list;
+    while (xs_list_iter(&p, &fn)) {
+        xs *q_item = dequeue(snac, fn);
+        char *type;
+
+        if ((type = xs_dict_get(q_item, "type")) == NULL)
+            type = "output";
+
+        if (strcmp(type, "output") == 0) {
+            int status;
+            char *actor = xs_dict_get(q_item, "actor");
+            char *msg   = xs_dict_get(q_item, "object");
+            int retries = xs_number_get(xs_dict_get(q_item, "retries"));
+
+            /* deliver */
+            status = send_to_actor(snac, actor, msg, NULL, 0);
+
+            if (!valid_status(status)) {
+                /* error sending; reenqueue? */
+                if (retries > queue_retry_max)
+                    snac_log(snac, xs_fmt("process_queue giving up %s %d", actor, status));
+                else {
+                    /* reenqueue */
+                    enqueue_output(snac, actor, msg, retries + 1);
+                    snac_log(snac, xs_fmt("process_queue requeue %s %d", actor, retries + 1));
+                }
+            }
+        }
+    }
 }

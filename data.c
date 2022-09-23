@@ -631,42 +631,6 @@ int is_muted(snac *snac, char *actor)
 }
 
 
-void enqueue_output(snac *snac, char *actor, char *msg, int retries)
-/* enqueues an output message for an actor */
-{
-    if (strcmp(actor, snac->actor) == 0) {
-        snac_debug(snac, 1, xs_str_new("enqueue refused to myself"));
-        return;
-    }
-
-    int qrt  = xs_number_get(xs_dict_get(srv_config, "query_retry_minutes"));
-    xs *ntid = tid(retries * 60 * qrt);
-    xs *fn   = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
-    xs *tfn  = xs_str_cat(fn, ".tmp");
-    FILE *f;
-
-    if ((f = fopen(tfn, "w")) != NULL) {
-        xs *qmsg = xs_dict_new();
-        xs *rn   = xs_number_new(retries);
-        xs *j;
-
-        qmsg = xs_dict_append(qmsg, "type",    "output");
-        qmsg = xs_dict_append(qmsg, "actor",   actor);
-        qmsg = xs_dict_append(qmsg, "object",  msg);
-        qmsg = xs_dict_append(qmsg, "retries", rn);
-
-        j = xs_json_dumps_pp(qmsg, 4);
-
-        fwrite(j, strlen(j), 1, f);
-        fclose(f);
-
-        rename(tfn, fn);
-
-        snac_debug(snac, 2, xs_fmt("enqueue %s %s %d", actor, fn, retries));
-    }
-}
-
-
 d_char *_actor_fn(snac *snac, char *actor)
 /* returns the file name for an actor */
 {
@@ -742,6 +706,42 @@ int actor_get(snac *snac, char *actor, d_char **data)
         status = 500;
 
     return status;
+}
+
+
+void enqueue_output(snac *snac, char *actor, char *msg, int retries)
+/* enqueues an output message for an actor */
+{
+    if (strcmp(actor, snac->actor) == 0) {
+        snac_debug(snac, 1, xs_str_new("enqueue refused to myself"));
+        return;
+    }
+
+    int qrt  = xs_number_get(xs_dict_get(srv_config, "query_retry_minutes"));
+    xs *ntid = tid(retries * 60 * qrt);
+    xs *fn   = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
+    xs *tfn  = xs_str_cat(fn, ".tmp");
+    FILE *f;
+
+    if ((f = fopen(tfn, "w")) != NULL) {
+        xs *qmsg = xs_dict_new();
+        xs *rn   = xs_number_new(retries);
+        xs *j;
+
+        qmsg = xs_dict_append(qmsg, "type",    "output");
+        qmsg = xs_dict_append(qmsg, "actor",   actor);
+        qmsg = xs_dict_append(qmsg, "object",  msg);
+        qmsg = xs_dict_append(qmsg, "retries", rn);
+
+        j = xs_json_dumps_pp(qmsg, 4);
+
+        fwrite(j, strlen(j), 1, f);
+        fclose(f);
+
+        rename(tfn, fn);
+
+        snac_debug(snac, 2, xs_fmt("enqueue %s %s %d", actor, fn, retries));
+    }
 }
 
 
