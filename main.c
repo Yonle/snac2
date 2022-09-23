@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
     char *user;
     char *url;
     int argi = 1;
+    snac snac;
 
     argc--;
     if (argc < argi)
@@ -73,7 +74,23 @@ int main(int argc, char *argv[])
 
     url = argv[argi++];
 
+    if (!user_open(&snac, user)) {
+        printf("error in user '%s'\n", user);
+        return 1;
+    }
+
     if (strcmp(cmd, "request") == 0) {
+        int status;
+        xs *data = NULL;
+
+        status = activitypub_request(&snac, url, &data);
+
+        printf("status: %d\n", status);
+        if (valid_status(status)) {
+
+            xs *j = xs_json_dumps_pp(data, 4);
+            printf("%s\n", j);
+        }
     }
 
     return 0;
