@@ -58,8 +58,8 @@ int webfinger_request(char *qs, char **actor, char **user)
         q_vars = xs_dict_append(q_vars, "resource", resource);
         req    = xs_dict_append(req, "q_vars", q_vars);
 
-        webfinger_get_handler(req, "/.well-known/webfinger",
-                              &status, &payload, &p_size, &ctype);
+        status = webfinger_get_handler(req, "/.well-known/webfinger",
+                                       &payload, &p_size, &ctype);
     }
     else {
         xs *url = xs_fmt("https:/" "/%s/.well-known/webfinger?resource=%s", host, resource);
@@ -98,20 +98,20 @@ int webfinger_request(char *qs, char **actor, char **user)
 }
 
 
-void webfinger_get_handler(d_char *req, char *q_path, int *status,
+int webfinger_get_handler(d_char *req, char *q_path,
                            char **body, int *b_size, char **ctype)
 /* serves webfinger queries */
 {
+    int status;
+
     if (strcmp(q_path, "/.well-known/webfinger") != 0)
-        return;
+        return 0;
 
     char *q_vars   = xs_dict_get(req, "q_vars");
     char *resource = xs_dict_get(q_vars, "resource");
 
-    if (resource == NULL) {
-        *status = 400;
-        return;
-    }
+    if (resource == NULL)
+        return 400;
 
     snac snac;
     int found = 0;
@@ -178,10 +178,12 @@ void webfinger_get_handler(d_char *req, char *q_path, int *status,
 
         user_free(&snac);
 
-        *status = 200;
-        *body   = j;
-        *ctype  = "application/json";
+        status = 200;
+        *body  = j;
+        *ctype = "application/json";
     }
     else
-        *status = 404;
+        status = 404;
+
+    return status;
 }

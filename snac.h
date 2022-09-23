@@ -77,7 +77,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
 void httpd(void);
 
 int webfinger_request(char *qs, char **actor, char **user);
-void webfinger_get_handler(d_char *req, char *q_path, int *status,
-                        char **body, int *b_size, char **ctype);
+int webfinger_get_handler(d_char *req, char *q_path,
+                           char **body, int *b_size, char **ctype);
 
 int activitypub_request(snac *snac, char *url, d_char **data);

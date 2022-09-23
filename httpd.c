@@ -126,7 +126,7 @@ void httpd_connection(int rs)
             server_get_handler(req, q_path, &status, &body, &b_size, &ctype);
 
         if (status == 0)
-            webfinger_get_handler(req, q_path, &status, &body, &b_size, &ctype);
+            status = webfinger_get_handler(req, q_path, &body, &b_size, &ctype);
     }
     else
     if (strcmp(method, "POST") == 0) {
