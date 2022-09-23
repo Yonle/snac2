@@ -19,17 +19,16 @@ const char *susie =
     "AYTtEsDU9F34AAAAAElFTkSuQmCC";
 
 
-void server_get_handler(d_char *req, char *q_path, int *status,
-                        char **body, int *b_size, char **ctype)
+int server_get_handler(d_char *req, char *q_path,
+                       char **body, int *b_size, char **ctype)
 /* basic server services */
 {
+    int status = 0;
     char *req_hdrs = xs_dict_get(req, "headers");
     char *acpt     = xs_dict_get(req_hdrs, "accept");
 
-    if (acpt == NULL) {
-        *status = 400;
-        return;
-    }
+    if (acpt == NULL)
+        return 400;
 
     /* is it the server root? */
     if (*q_path == '\0') {
@@ -41,7 +40,7 @@ void server_get_handler(d_char *req, char *q_path, int *status,
             d_char *s = xs_readall(f);
             fclose(f);
 
-            *status = 200;
+            status = 200;
 
             /* does it have a %userlist% mark? */
             if (xs_str_in(s, "%userlist%") != -1) {
@@ -77,11 +76,14 @@ void server_get_handler(d_char *req, char *q_path, int *status,
     }
     else
     if (strcmp(q_path, "/susie.png") == 0) {
-        *status = 200;
-        *body   = xs_base64_dec(susie, b_size);
-        *ctype  = "image/png";
+        status = 200;
+        *body  = xs_base64_dec(susie, b_size);
+        *ctype = "image/png";
     }
+
+    return status;
 }
+
 
 void httpd_connection(int rs)
 /* the connection loop */
@@ -123,7 +125,7 @@ void httpd_connection(int rs)
     if (strcmp(method, "GET") == 0) {
         /* cascade through */
         if (status == 0)
-            server_get_handler(req, q_path, &status, &body, &b_size, &ctype);
+            status = server_get_handler(req, q_path, &body, &b_size, &ctype);
 
         if (status == 0)
             status = webfinger_get_handler(req, q_path, &body, &b_size, &ctype);
