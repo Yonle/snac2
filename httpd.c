@@ -98,11 +98,13 @@ void httpd_connection(int rs)
     char *ctype = NULL;
     xs *headers = NULL;
     xs *q_path  = NULL;
+    xs *payload = NULL;
+    int p_size;
     char *p;
 
     f = xs_socket_accept(rs);
 
-    req = xs_httpd_request(f);
+    req = xs_httpd_request(f, &payload, &p_size);
 
     {
         xs *j = xs_json_dumps_pp(req, 4);
@@ -132,6 +134,9 @@ void httpd_connection(int rs)
     }
     else
     if (strcmp(method, "POST") == 0) {
+        if (status == 0)
+            status = activitypub_post_handler(req, q_path,
+                        payload, p_size, &body, &b_size, &ctype);
     }
 
     /* let's go */

@@ -85,3 +85,6 @@ int actor_request(snac *snac, char *actor, d_char **data);
 int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_size);
 int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size);
 void process_queue(snac *snac);
+int activitypub_post_handler(d_char *req, char *q_path,
+                             char *payload, int p_size,
+                             char **body, int *b_size, char **ctype);

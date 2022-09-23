@@ -6,7 +6,7 @@
 
 d_char *xs_url_dec(char *str);
 d_char *xs_url_vars(char *str);
-d_char *xs_httpd_request(FILE *f);
+d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size);
 void xs_httpd_response(FILE *f, int status, d_char *headers, char *body, int b_size);
 
 
@@ -69,7 +69,7 @@ d_char *xs_url_vars(char *str)
 }
 
 
-d_char *xs_httpd_request(FILE *f)
+d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
 /* processes an httpd connection */
 {
     xs *headers = NULL;
@@ -127,19 +127,18 @@ d_char *xs_httpd_request(FILE *f)
 
     xs_socket_timeout(fileno(f), 5.0, 0.0);
 
+    if ((v = xs_dict_get(headers, "content-length")) != NULL) {
+        /* if it has a payload, load it */
+        *p_size  = atoi(v);
+        *payload = xs_read(f, *p_size);
+    }
+
     /* does it have a payload with form urlencoded variables? */
     v = xs_dict_get(headers, "content-type");
 
     if (v && strcmp(v, "application/x-www-form-urlencoded") == 0) {
-        if ((v = xs_dict_get(headers, "content-length")) != NULL) {
-            int cl = atoi(v);
-            xs *payload;
-
-            if ((payload = xs_read(f, cl)) != NULL) {
-                xs *upl = xs_url_dec(payload);
-                p_vars = xs_url_vars(upl);
-            }
-        }
+        xs *upl = xs_url_dec(*payload);
+        p_vars  = xs_url_vars(upl);
     }
     else
         p_vars = xs_dict_new();
