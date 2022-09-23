@@ -156,13 +156,73 @@ void process_queue(snac *snac)
 }
 
 
+int activitypub_get_handler(d_char *req, char *q_path,
+                            char **body, int *b_size, char **ctype)
+{
+    int status = 200;
+    char *headers = xs_dict_get(req, "headers");
+    char *accept  = xs_dict_get(headers, "accept");
+    snac snac;
+    xs *msg = xs_dict_new();
+
+    if (xs_str_in(accept, "application/activity+json") == -1 &&
+        xs_str_in(accept, "application/ld+json") == -1)
+        return 0;
+
+    xs *l = xs_split_n(q_path, "/", 2);
+    char *uid, *p_path;
+
+    uid = xs_list_get(l, 1);
+    if (!user_open(&snac, uid)) {
+        /* invalid user */
+        srv_log(xs_fmt("activitypub_get_handler bad user %s", uid));
+        return 404;
+    }
+
+    p_path = xs_list_get(l, 2);
+
+    if (p_path == NULL) {
+        /* if there was no component after the user, it's an actor request */
+    }
+    else
+    if (strcmp(p_path, "outbox") == 0) {
+    }
+    else
+    if (strcmp(p_path, "followers") == 0 || strcmp(p_path, "following") == 0) {
+        xs *id = xs_fmt("%s/%s", snac.actor, p_path);
+
+        msg = xs_dict_append(msg, "@context",     "https:/" "/www.w3.org/ns/activitystreams");
+        msg = xs_dict_append(msg, "attributedTo", snac.actor);
+        msg = xs_dict_append(msg, "id",           id);
+        msg = xs_dict_append(msg, "orderedItems", xs_list_new());
+        msg = xs_dict_append(msg, "totalItems",   xs_number_new(0));
+        msg = xs_dict_append(msg, "type",         "OrderedCollection");
+    }
+    else
+    if (xs_startswith(p_path, "p/")) {
+    }
+    else
+        status = 404;
+
+    if (status == 200) {
+        *body   = xs_json_dumps_pp(msg, 4);
+        *b_size = strlen(*body);
+    }
+
+    user_free(&snac);
+
+    return status;
+}
+
+
 int activitypub_post_handler(d_char *req, char *q_path,
                              d_char *payload, int p_size,
                              char **body, int *b_size, char **ctype)
 /* processes an input message */
 {
     int status = 200;
-    char *i_ctype = xs_dict_get(req, "content-type");
+    char *headers = xs_dict_get(req, "headers");
+    char *i_ctype = xs_dict_get(headers, "content-type");
     snac snac;
 
     if (xs_str_in(i_ctype, "application/activity+json") == -1 &&

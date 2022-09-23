@@ -131,6 +131,9 @@ void httpd_connection(int rs)
 
         if (status == 0)
             status = webfinger_get_handler(req, q_path, &body, &b_size, &ctype);
+
+        if (status == 0)
+            status = activitypub_get_handler(req, q_path, &body, &b_size, &ctype);
     }
     else
     if (strcmp(method, "POST") == 0) {
