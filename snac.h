@@ -64,6 +64,7 @@ int is_muted(snac *snac, char *actor);
 int actor_add(snac *snac, char *actor, char *msg);
 int actor_get(snac *snac, char *actor, d_char **data);
 
+void enqueue_input(snac *snac, char *msg);
 void enqueue_output(snac *snac, char *actor, char *msg, int retries);
 
 d_char *queue(snac *snac);

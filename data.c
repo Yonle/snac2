@@ -709,6 +709,33 @@ int actor_get(snac *snac, char *actor, d_char **data)
 }
 
 
+void enqueue_input(snac *snac, char *msg)
+/* enqueues an input message */
+{
+    xs *ntid = tid(0);
+    xs *fn   = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
+    xs *tfn  = xs_str_cat(fn, ".tmp");
+    FILE *f;
+
+    if ((f = fopen(tfn, "w")) != NULL) {
+        xs *qmsg = xs_dict_new();
+        xs *j;
+
+        qmsg = xs_dict_append(qmsg, "type",   "input");
+        qmsg = xs_dict_append(qmsg, "object", msg);
+
+        j = xs_json_dumps_pp(qmsg, 4);
+
+        fwrite(j, strlen(j), 1, f);
+        fclose(f);
+
+        rename(tfn, fn);
+
+        snac_debug(snac, 2, xs_fmt("enqueue_input %s", fn));
+    }
+}
+
+
 void enqueue_output(snac *snac, char *actor, char *msg, int retries)
 /* enqueues an output message for an actor */
 {
@@ -740,7 +767,7 @@ void enqueue_output(snac *snac, char *actor, char *msg, int retries)
 
         rename(tfn, fn);
 
-        snac_debug(snac, 2, xs_fmt("enqueue %s %s %d", actor, fn, retries));
+        snac_debug(snac, 2, xs_fmt("enqueue_output %s %s %d", actor, fn, retries));
     }
 }
 

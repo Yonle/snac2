@@ -165,6 +165,9 @@ int activitypub_get_handler(d_char *req, char *q_path,
     snac snac;
     xs *msg = xs_dict_new();
 
+    if (accept == NULL)
+        return 400;
+
     if (xs_str_in(accept, "application/activity+json") == -1 &&
         xs_str_in(accept, "application/ld+json") == -1)
         return 0;
@@ -222,10 +225,13 @@ int activitypub_post_handler(d_char *req, char *q_path,
                              char **body, int *b_size, char **ctype)
 /* processes an input message */
 {
-    int status = 200;
+    int status = 202; /* accepted */
     char *headers = xs_dict_get(req, "headers");
     char *i_ctype = xs_dict_get(headers, "content-type");
     snac snac;
+
+    if (i_ctype == NULL)
+        return 400;
 
     if (xs_str_in(i_ctype, "application/activity+json") == -1 &&
         xs_str_in(i_ctype, "application/ld+json") == -1)
@@ -245,6 +251,16 @@ int activitypub_post_handler(d_char *req, char *q_path,
         /* invalid user */
         srv_log(xs_fmt("activitypub_post_handler bad user %s", uid));
         return 404;
+    }
+
+    /* decode */
+    xs *msg = xs_json_loads(payload);
+
+    if (msg && xs_dict_get(msg, "actor") && xs_dict_get(msg, "type"))
+        enqueue_input(&snac, msg);
+    else {
+        srv_log(xs_fmt("activitypub_post_handler JSON error %s", q_path));
+        status = 400;
     }
 
     user_free(&snac);
