@@ -190,12 +190,14 @@ int activitypub_get_handler(d_char *req, char *q_path,
     else
     if (strcmp(p_path, "followers") == 0 || strcmp(p_path, "following") == 0) {
         xs *id = xs_fmt("%s/%s", snac.actor, p_path);
+        xs *ol = xs_list_new();
+        xs *nz = xs_number_new(0);
 
         msg = xs_dict_append(msg, "@context",     "https:/" "/www.w3.org/ns/activitystreams");
         msg = xs_dict_append(msg, "attributedTo", snac.actor);
         msg = xs_dict_append(msg, "id",           id);
-        msg = xs_dict_append(msg, "orderedItems", xs_list_new());
-        msg = xs_dict_append(msg, "totalItems",   xs_number_new(0));
+        msg = xs_dict_append(msg, "orderedItems", ol);
+        msg = xs_dict_append(msg, "totalItems",   nz);
         msg = xs_dict_append(msg, "type",         "OrderedCollection");
     }
     else
