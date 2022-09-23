@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
     char *cmd;
     char *basedir;
     char *user;
+    char *url;
     int argi = 1;
 
     argc--;
@@ -65,6 +66,14 @@ int main(int argc, char *argv[])
             printf("uid: %s\n", uid);
 
         return 0;
+    }
+
+    if (argc < argi)
+        return usage();
+
+    url = argv[argi++];
+
+    if (strcmp(cmd, "request") == 0) {
     }
 
     return 0;
