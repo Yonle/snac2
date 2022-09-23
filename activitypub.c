@@ -115,6 +115,38 @@ int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_s
 }
 
 
+void process_message(snac *snac, char *msg)
+/* processes an ActivityPub message */
+{
+    /* they exist, were checked previously */
+    char *actor = xs_dict_get(msg, "actor");
+    char *type  = xs_dict_get(msg, "type");
+
+    if (strcmp(type, "Follow") == 0) {
+    }
+    else
+    if (strcmp(type, "Undo") == 0) {
+    }
+    else
+    if (strcmp(type, "Create") == 0) {
+    }
+    else
+    if (strcmp(type, "Accept") == 0) {
+    }
+    else
+    if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
+    }
+    else
+    if (strcmp(type, "Update") == 0) {
+    }
+    else
+    if (strcmp(type, "Delete") == 0) {
+    }
+    else
+        snac_debug(snac, 1, xs_fmt("process_message type '%s' ignored", type));
+}
+
+
 void process_queue(snac *snac)
 /* processes the queue */
 {
@@ -151,6 +183,13 @@ void process_queue(snac *snac)
                     snac_log(snac, xs_fmt("process_queue requeue %s %d", actor, retries + 1));
                 }
             }
+        }
+        else
+        if (strcmp(type, "input") == 0) {
+            /* process the message */
+            char *msg = xs_dict_get(q_item, "object");
+
+            process_message(snac, msg);
         }
     }
 }
@@ -253,6 +292,9 @@ int activitypub_post_handler(d_char *req, char *q_path,
         return 404;
     }
 
+    /* signature checking should happen here */
+    /* ... */
+
     /* decode */
     xs *msg = xs_json_loads(payload);
 
@@ -264,6 +306,9 @@ int activitypub_post_handler(d_char *req, char *q_path,
     }
 
     user_free(&snac);
+
+    if (valid_status(status))
+        *ctype = "application/activity+json";
 
     return status;
 }
