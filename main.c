@@ -91,6 +91,19 @@ int main(int argc, char *argv[])
             xs *j = xs_json_dumps_pp(data, 4);
             printf("%s\n", j);
         }
+
+        return 0;
+    }
+
+    if (strcmp(cmd, "actor") == 0) {
+        int status;
+        xs *data = NULL;
+
+        status = actor_request(&snac, url, &data);
+
+        printf("status: %d\n", status);
+
+        return 0;
     }
 
     return 0;

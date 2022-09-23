@@ -65,8 +65,7 @@ int actor_request(snac *snac, char *actor, d_char **data)
 
     if (valid_status(status2)) {
         /* renew data */
-        xs *j = xs_json_dumps_pp(payload, 4);
-        status = actor_add(snac, actor, j);
+        status = actor_add(snac, actor, payload);
 
         *data   = payload;
         payload = NULL;

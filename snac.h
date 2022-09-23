@@ -81,3 +81,4 @@ int webfinger_get_handler(d_char *req, char *q_path,
                            char **body, int *b_size, char **ctype);
 
 int activitypub_request(snac *snac, char *url, d_char **data);
+int actor_request(snac *snac, char *actor, d_char **data);
