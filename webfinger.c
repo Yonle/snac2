@@ -8,9 +8,10 @@
 
 #include "snac.h"
 
-void webfinger_request(char *qs, int *status, char **actor, char **user)
+int webfinger_request(char *qs, char **actor, char **user)
 /* queries the webfinger for qs and fills the required fields */
 {
+    int status;
     xs *payload = NULL;
     int p_size = 0;
     xs *headers = xs_dict_new();
@@ -42,10 +43,8 @@ void webfinger_request(char *qs, int *status, char **actor, char **user)
         }
     }
 
-    if (host == NULL || resource == NULL) {
-        *status = 400;
-        return;
-    }
+    if (host == NULL || resource == NULL)
+        return 400;
 
     headers = xs_dict_append(headers, "accept", "application/json");
 
@@ -60,15 +59,15 @@ void webfinger_request(char *qs, int *status, char **actor, char **user)
         req    = xs_dict_append(req, "q_vars", q_vars);
 
         webfinger_get_handler(req, "/.well-known/webfinger",
-                              status, &payload, &p_size, &ctype);
+                              &status, &payload, &p_size, &ctype);
     }
     else {
         xs *url = xs_fmt("https:/" "/%s/.well-known/webfinger?resource=%s", host, resource);
 
-        xs_http_request("GET", url, headers, NULL, 0, status, &payload, &p_size);
+        xs_http_request("GET", url, headers, NULL, 0, &status, &payload, &p_size);
     }
 
-    if (valid_status(*status)) {
+    if (valid_status(status)) {
         xs *obj = xs_json_loads(payload);
 
         if (user != NULL) {
@@ -94,6 +93,8 @@ void webfinger_request(char *qs, int *status, char **actor, char **user)
             }
         }
     }
+
+    return status;
 }
 
 

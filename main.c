@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
         xs *uid = NULL;
         int status;
 
-        webfinger_request(user, &status, &actor, &uid);
+        status = webfinger_request(user, &actor, &uid);
 
         printf("status: %d\n", status);
         if (actor != NULL)
