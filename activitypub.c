@@ -122,6 +122,9 @@ void process_message(snac *snac, char *msg)
     char *actor = xs_dict_get(msg, "actor");
     char *type  = xs_dict_get(msg, "type");
 
+    /* check the signature */
+    /* ... */
+
     if (strcmp(type, "Follow") == 0) {
     }
     else
@@ -179,7 +182,7 @@ void process_queue(snac *snac)
                     snac_log(snac, xs_fmt("process_queue giving up %s %d", actor, status));
                 else {
                     /* reenqueue */
-                    enqueue_output(snac, actor, msg, retries + 1);
+                    enqueue_output(snac, msg, actor, retries + 1);
                     snac_log(snac, xs_fmt("process_queue requeue %s %d", actor, retries + 1));
                 }
             }
@@ -292,14 +295,11 @@ int activitypub_post_handler(d_char *req, char *q_path,
         return 404;
     }
 
-    /* signature checking should happen here */
-    /* ... */
-
     /* decode */
     xs *msg = xs_json_loads(payload);
 
     if (msg && xs_dict_get(msg, "actor") && xs_dict_get(msg, "type"))
-        enqueue_input(&snac, msg);
+        enqueue_input(&snac, msg, req);
     else {
         srv_log(xs_fmt("activitypub_post_handler JSON error %s", q_path));
         status = 400;
