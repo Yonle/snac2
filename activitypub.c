@@ -115,8 +115,50 @@ int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_s
 }
 
 
-void process_message(snac *snac, char *msg)
-/* processes an ActivityPub message */
+/** messages **/
+
+d_char *msg_base(snac *snac, char *type, char *id, char *actor)
+/* creates a base ActivityPub message */
+{
+    d_char *msg = xs_dict_new();
+
+    msg = xs_dict_append(msg, "@context", "https:/" "/www.w3.org/ns/activitystreams");
+    msg = xs_dict_append(msg, "type",     type);
+
+    if (id != NULL)
+        msg = xs_dict_append(msg, "id", id);
+
+    if (actor != NULL) {
+        /* if actor is "", replace it with this actor */
+        if (actor[0] == '\0')
+            actor = snac->actor;
+
+        msg = xs_dict_append(msg, "actor", actor);
+    }
+
+    return msg;
+}
+
+
+d_char *msg_collection(snac *snac, char *id)
+/* creates an empty OrderedCollection message */
+{
+    d_char *msg = msg_base(snac, "OrderedCollection", id, NULL);
+    xs *ol = xs_list_new();
+    xs *nz = xs_number_new(0);
+
+    msg = xs_dict_append(msg, "attributedTo", snac->actor);
+    msg = xs_dict_append(msg, "orderedItems", ol);
+    msg = xs_dict_append(msg, "totalItems",   nz);
+
+    return msg;
+}
+
+
+/** queues **/
+
+void process_message(snac *snac, char *msg, char *req)
+/* processes an ActivityPub message from the input queue */
 {
     /* they exist, were checked previously */
     char *actor = xs_dict_get(msg, "actor");
@@ -191,8 +233,9 @@ void process_queue(snac *snac)
         if (strcmp(type, "input") == 0) {
             /* process the message */
             char *msg = xs_dict_get(q_item, "object");
+            char *req = xs_dict_get(q_item, "req");
 
-            process_message(snac, msg);
+            process_message(snac, msg, req);
         }
     }
 }
@@ -231,19 +274,13 @@ int activitypub_get_handler(d_char *req, char *q_path,
     }
     else
     if (strcmp(p_path, "outbox") == 0) {
+        xs *id = xs_fmt("%s/outbox", snac.actor);
+        msg = msg_collection(&snac, id);
     }
     else
     if (strcmp(p_path, "followers") == 0 || strcmp(p_path, "following") == 0) {
         xs *id = xs_fmt("%s/%s", snac.actor, p_path);
-        xs *ol = xs_list_new();
-        xs *nz = xs_number_new(0);
-
-        msg = xs_dict_append(msg, "@context",     "https:/" "/www.w3.org/ns/activitystreams");
-        msg = xs_dict_append(msg, "attributedTo", snac.actor);
-        msg = xs_dict_append(msg, "id",           id);
-        msg = xs_dict_append(msg, "orderedItems", ol);
-        msg = xs_dict_append(msg, "totalItems",   nz);
-        msg = xs_dict_append(msg, "type",         "OrderedCollection");
+        msg = msg_collection(&snac, id);
     }
     else
     if (xs_startswith(p_path, "p/")) {
