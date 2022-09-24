@@ -84,12 +84,10 @@ int validate_uid(char *uid)
 void snac_debug(snac *snac, int level, d_char *str)
 /* prints a user debugging information */
 {
-    xs *msg = str;
+    xs *o_str = str;
+    d_char *n_str = xs_fmt("[%s] %s", snac->uid, o_str);
 
-    if (dbglevel >= level) {
-        xs *tm = xs_local_time("%H:%M:%S");
-        fprintf(stderr, "%s [%s] %s\n", tm, snac->uid, msg);
-    }
+    srv_debug(level, n_str);
 }
 
 
