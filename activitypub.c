@@ -156,6 +156,7 @@ d_char *msg_collection(snac *snac, char *id)
 
 
 d_char *msg_update(snac *snac, char *object)
+/* creates an Update message */
 {
     xs *id = xs_fmt("%s/Update", xs_dict_get(object, "id"));
     d_char *msg = msg_base(snac, "Update", id, snac->actor, "");
@@ -331,31 +332,32 @@ int activitypub_post_handler(d_char *req, char *q_path,
         xs_str_in(i_ctype, "application/ld+json") == -1)
         return 0;
 
+    /* decode the message */
+    xs *msg = xs_json_loads(payload);
+
+    if (msg == NULL) {
+        srv_log(xs_fmt("activitypub_post_handler JSON error %s", q_path));
+        status = 400;
+    }
+
+    /* get the user and path */
     xs *l = xs_split_n(q_path, "/", 2);
     char *uid;
 
     if (xs_list_len(l) != 3 || strcmp(xs_list_get(l, 2), "inbox") != 0) {
         /* strange q_path */
-        srv_log(xs_fmt("activitypub_post_handler unsupported path %s", q_path));
+        srv_debug(1, xs_fmt("activitypub_post_handler unsupported path %s", q_path));
         return 404;
     }
 
     uid = xs_list_get(l, 1);
     if (!user_open(&snac, uid)) {
         /* invalid user */
-        srv_log(xs_fmt("activitypub_post_handler bad user %s", uid));
+        srv_debug(1, xs_fmt("activitypub_post_handler bad user %s", uid));
         return 404;
     }
 
-    /* decode */
-    xs *msg = xs_json_loads(payload);
-
-    if (msg && xs_dict_get(msg, "actor") && xs_dict_get(msg, "type"))
-        enqueue_input(&snac, msg, req);
-    else {
-        srv_log(xs_fmt("activitypub_post_handler JSON error %s", q_path));
-        status = 400;
-    }
+    enqueue_input(&snac, msg, req);
 
     user_free(&snac);
 

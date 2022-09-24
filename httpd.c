@@ -106,11 +106,6 @@ void httpd_connection(int rs)
 
     req = xs_httpd_request(f, &payload, &p_size);
 
-    {
-        xs *j = xs_json_dumps_pp(req, 4);
-        printf("%s\n", j);
-    }
-
     req_hdrs = xs_dict_get(req, "headers");
 
     method = xs_dict_get(req_hdrs, "method");
