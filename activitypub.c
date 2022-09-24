@@ -117,7 +117,7 @@ int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_s
 
 /** messages **/
 
-d_char *msg_base(snac *snac, char *type, char *id, char *actor)
+d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date)
 /* creates a base ActivityPub message */
 {
     d_char *msg = xs_dict_new();
@@ -128,12 +128,12 @@ d_char *msg_base(snac *snac, char *type, char *id, char *actor)
     if (id != NULL)
         msg = xs_dict_append(msg, "id", id);
 
-    if (actor != NULL) {
-        /* if actor is "", replace it with this actor */
-        if (actor[0] == '\0')
-            actor = snac->actor;
-
+    if (actor != NULL)
         msg = xs_dict_append(msg, "actor", actor);
+
+    if (date != NULL) {
+        xs *published = xs_utc_time("%Y-%m-%dT%H:%M:%SZ");
+        msg = xs_dict_append(msg, "published", published);
     }
 
     return msg;
@@ -143,13 +143,25 @@ d_char *msg_base(snac *snac, char *type, char *id, char *actor)
 d_char *msg_collection(snac *snac, char *id)
 /* creates an empty OrderedCollection message */
 {
-    d_char *msg = msg_base(snac, "OrderedCollection", id, NULL);
+    d_char *msg = msg_base(snac, "OrderedCollection", id, NULL, NULL);
     xs *ol = xs_list_new();
     xs *nz = xs_number_new(0);
 
     msg = xs_dict_append(msg, "attributedTo", snac->actor);
     msg = xs_dict_append(msg, "orderedItems", ol);
     msg = xs_dict_append(msg, "totalItems",   nz);
+
+    return msg;
+}
+
+
+d_char *msg_update(snac *snac, char *object)
+{
+    xs *id = xs_fmt("%s/Update", xs_dict_get(object, "id"));
+    d_char *msg = msg_base(snac, "Update", id, snac->actor, "");
+
+    msg = xs_dict_append(msg, "to",     public_address);
+    msg = xs_dict_append(msg, "object", object);
 
     return msg;
 }
@@ -248,7 +260,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
     char *headers = xs_dict_get(req, "headers");
     char *accept  = xs_dict_get(headers, "accept");
     snac snac;
-    xs *msg = xs_dict_new();
+    xs *msg = NULL;
 
     if (accept == NULL)
         return 400;
@@ -276,6 +288,9 @@ int activitypub_get_handler(d_char *req, char *q_path,
     if (strcmp(p_path, "outbox") == 0) {
         xs *id = xs_fmt("%s/outbox", snac.actor);
         msg = msg_collection(&snac, id);
+
+        /* replace the 'orderedItems' with the latest posts */
+        /* ... */
     }
     else
     if (strcmp(p_path, "followers") == 0 || strcmp(p_path, "following") == 0) {
@@ -288,7 +303,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
     else
         status = 404;
 
-    if (status == 200) {
+    if (status == 200 && msg != NULL) {
         *body   = xs_json_dumps_pp(msg, 4);
         *b_size = strlen(*body);
     }
