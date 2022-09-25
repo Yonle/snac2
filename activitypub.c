@@ -434,6 +434,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
     if (status == 200 && msg != NULL) {
         *body   = xs_json_dumps_pp(msg, 4);
         *b_size = strlen(*body);
+        *ctype  = "application/activity+json";
     }
 
     user_free(&snac);
