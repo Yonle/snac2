@@ -41,6 +41,9 @@ int validate_uid(char *uid);
 d_char *hash_password(char *uid, char *passwd, char *nonce);
 int check_password(char *uid, char *passwd, char *hash);
 
+void srv_archive(char *direction, char *req, char *payload, int p_size,
+                 int status, char *headers, char *body, int b_size);
+
 float mtime(char *fn);
 
 int follower_add(snac *snac, char *actor, char *msg);

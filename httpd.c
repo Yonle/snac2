@@ -169,39 +169,7 @@ void httpd_connection(int rs)
 
     fclose(f);
 
-    /* obsessive archiving */
-    {
-        xs *date = xs_local_time("%Y%m%d%H%M%S");
-        xs *dir  = xs_fmt("%s/archive/%s", srv_basedir, date);
-
-        if (mkdir(dir, 0755) != -1) {
-            xs *meta_fn    = xs_fmt("%s/meta", dir);
-            xs *payload_fn = xs_fmt("%s/payload", dir);
-            xs *body_fn    = xs_fmt("%s/body", dir);
-
-            if ((f = fopen(meta_fn, "w")) != NULL) {
-                xs *j1 = xs_json_dumps_pp(req, 4);
-                xs *j2 = xs_json_dumps_pp(headers, 4);
-
-                fprintf(f, "req: %s\n", j1);
-                fprintf(f, "p_size: %d\n", p_size);
-                fprintf(f, "status: %d\n", status);
-                fprintf(f, "response: %s\n", j2);
-                fprintf(f, "b_size: %d\n", b_size);
-                fclose(f);
-            }
-
-            if (p_size && payload && (f = fopen(payload_fn, "w")) != NULL) {
-                fwrite(payload, p_size, 1, f);
-                fclose(f);
-            }
-
-            if (b_size && body && (f = fopen(body_fn, "w")) != NULL) {
-                fwrite(body, p_size, 1, f);
-                fclose(f);
-            }
-        }
-    }
+    srv_archive("RECV", req, payload, p_size, status, headers, body, b_size);
 
     free(body);
 }

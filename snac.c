@@ -15,7 +15,7 @@
 #include "snac.h"
 
 #include <sys/time.h>
-
+#include <sys/stat.h>
 
 d_char *srv_basedir = NULL;
 d_char *srv_config  = NULL;
@@ -55,6 +55,20 @@ d_char *tid(int offset)
 }
 
 
+int validate_uid(char *uid)
+/* returns if uid is a valid identifier */
+{
+    while (*uid) {
+        if (!(isalnum(*uid) || *uid == '_'))
+            return 0;
+
+        uid++;
+    }
+
+    return 1;
+}
+
+
 void srv_debug(int level, d_char *str)
 /* logs a debug message */
 {
@@ -70,20 +84,6 @@ void srv_debug(int level, d_char *str)
         xs *tm = xs_local_time("%H:%M:%S");
         fprintf(stderr, "%s %s\n", tm, msg);
     }
-}
-
-
-int validate_uid(char *uid)
-/* returns if uid is a valid identifier */
-{
-    while (*uid) {
-        if (!(isalnum(*uid) || *uid == '_'))
-            return 0;
-
-        uid++;
-    }
-
-    return 1;
 }
 
 
@@ -133,4 +133,91 @@ int check_password(char *uid, char *passwd, char *hash)
     }
 
     return ret;
+}
+
+
+void srv_archive(char *direction, char *req, char *payload, int p_size,
+                 int status, char *headers, char *body, int b_size)
+/* archives a connection */
+{
+    /* obsessive archiving */
+    xs *date = xs_local_time("%Y%m%d%H%M%S");
+    xs *dir  = xs_fmt("%s/archive/%s", srv_basedir, date);
+    FILE *f;
+
+    if (mkdir(dir, 0755) != -1) {
+        xs *meta_fn = xs_fmt("%s/_META", dir);
+
+        if ((f = fopen(meta_fn, "w")) != NULL) {
+            xs *j1 = xs_json_dumps_pp(req, 4);
+            xs *j2 = xs_json_dumps_pp(headers, 4);
+
+            fprintf(f, "dir: %s\n", direction);
+            fprintf(f, "req: %s\n", j1);
+            fprintf(f, "p_size: %d\n", p_size);
+            fprintf(f, "status: %d\n", status);
+            fprintf(f, "response: %s\n", j2);
+            fprintf(f, "b_size: %d\n", b_size);
+            fclose(f);
+        }
+
+        if (p_size && payload) {
+            xs *payload_fn;
+            char *h = xs_dict_get(req, "headers");
+            char *v = xs_dict_get(h, "content-type");
+
+            if (v && xs_str_in(v, "json") != -1) {
+                payload_fn = xs_fmt("%s/payload.json", dir);
+
+                if ((f = fopen(payload_fn, "w")) != NULL) {
+                    xs *v1 = xs_json_loads(payload);
+                    xs *j1 = xs_json_dumps_pp(v1, 4);
+
+                    if (j1 != NULL)
+                        fwrite(j1, strlen(j1), 1, f);
+                    else
+                        fwrite(payload, p_size, 1, f);
+
+                    fclose(f);
+                }
+            }
+            else {
+                payload_fn = xs_fmt("%s/payload", dir);
+
+                if ((f = fopen(payload_fn, "w")) != NULL) {
+                    fwrite(payload, p_size, 1, f);
+                    fclose(f);
+                }
+            }
+        }
+
+        if (b_size && body) {
+            xs *body_fn;
+            char *v = xs_dict_get(headers, "content-type");
+
+            if (v && xs_str_in(v, "json") != -1) {
+                body_fn = xs_fmt("%s/body.json", dir);
+
+                if ((f = fopen(body_fn, "w")) != NULL) {
+                    xs *v1 = xs_json_loads(payload);
+                    xs *j1 = xs_json_dumps_pp(v1, 4);
+
+                    if (j1 != NULL)
+                        fwrite(j1, strlen(j1), 1, f);
+                    else
+                        fwrite(body, b_size, 1, f);
+
+                    fclose(f);
+                }
+            }
+            else {
+                body_fn = xs_fmt("%s/body", dir);
+
+                if ((f = fopen(body_fn, "w")) != NULL) {
+                    fwrite(body, b_size, 1, f);
+                    fclose(f);
+                }
+            }
+        }
+    }
 }
