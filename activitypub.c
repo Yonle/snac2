@@ -75,6 +75,33 @@ int actor_request(snac *snac, char *actor, d_char **data)
 }
 
 
+void timeline_request(snac *snac, char *id)
+/* ensures that an entry and its ancestors are in the timeline */
+{
+    if (!xs_is_null(id)) {
+        /* is the admired object already there? */
+        if (!timeline_here(snac, id)) {
+            int status;
+            xs *object = NULL;
+
+            /* no; download it */
+            status = activitypub_request(snac, id, &object);
+
+            if (valid_status(status)) {
+                /* does it have an ancestor? */
+                char *in_reply_to = xs_dict_get(object, "inReplyTo");
+
+                /* recurse! */
+                timeline_request(snac, in_reply_to);
+
+                /* finally store */
+                timeline_add(snac, id, object, in_reply_to);
+            }
+        }
+    }
+}
+
+
 int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_size)
 /* sends a message to an Inbox */
 {
@@ -204,10 +231,7 @@ void process_message(snac *snac, char *msg, char *req)
                 char *id          = xs_dict_get(object, "id");
                 char *in_reply_to = xs_dict_get(object, "inReplyTo");
 
-                if (xs_is_null(in_reply_to)) {
-                    /* recursively download ancestors */
-                    /* ... */
-                }
+                timeline_request(snac, in_reply_to);
 
                 snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
                 timeline_add(snac, id, msg, in_reply_to);
@@ -229,17 +253,24 @@ void process_message(snac *snac, char *msg, char *req)
             snac_debug(snac, 2, xs_fmt("xs_type for 'Like' object not string"));
     }
     else
-/*
- || strcmp(type, "Announce") == 0) {
+    if (strcmp(type, "Announce") == 0) {
+        if (xs_type(object) == XSTYPE_STRING) {
+            timeline_request(snac, object);
+
+            timeline_admire(snac, object, actor, 0);
+        }
+        else
+            snac_debug(snac, 2, xs_fmt("xs_type for 'Announce' object not string"));
     }
+/*
     else
     if (strcmp(type, "Update") == 0) {
     }
     else
     if (strcmp(type, "Delete") == 0) {
     }
-    else
 */
+    else
         snac_debug(snac, 1, xs_fmt("process_message type '%s' ignored", type));
 }
 

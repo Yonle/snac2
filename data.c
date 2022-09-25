@@ -290,6 +290,15 @@ d_char *_timeline_find_fn(snac *snac, char *id)
 }
 
 
+int timeline_here(snac *snac, char *id)
+/* checks if an object is already downloaded */
+{
+    xs *fn = _timeline_find_fn(snac, id);
+
+    return fn != NULL;
+}
+
+
 d_char *timeline_find(snac *snac, char *id)
 /* gets a message from the timeline by id */
 {
@@ -549,6 +558,8 @@ void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
     msg = xs_dict_set(msg, "_snac", md);
 
     _timeline_write(snac, id, msg, parent);
+
+    snac_log(snac, xs_fmt("timeline_add %s", id));
 }
 
 
@@ -593,6 +604,9 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
             unlink(ofn);
 
             _timeline_write(snac, id, msg, xs_dict_get(meta, "parent"));
+
+            snac_log(snac, xs_fmt("timeline_admire (%s) %s %s",
+                like ? "Like" : "Announce", id, admirer));
         }
     }
 }
