@@ -28,11 +28,6 @@ int activitypub_request(snac *snac, char *url, d_char **data)
         NULL, NULL, 0, &status, &payload, &p_size);
 
     if (valid_status(status)) {
-        if (dbglevel >= 3) {
-            xs *j = xs_json_dumps_pp(response, 4);
-            fprintf(stderr, "%s\n", j);
-        }
-
         /* ensure it's ActivityPub data */
         ctype = xs_dict_get(response, "content-type");
 

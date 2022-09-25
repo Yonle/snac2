@@ -806,7 +806,7 @@ void enqueue_input(snac *snac, char *msg, char *req)
 
         rename(tfn, fn);
 
-        snac_debug(snac, 2, xs_fmt("enqueue_input %s", fn));
+        snac_debug(snac, 1, xs_fmt("enqueue_input %s", fn));
     }
 }
 
@@ -842,7 +842,7 @@ void enqueue_output(snac *snac, char *msg, char *actor, int retries)
 
         rename(tfn, fn);
 
-        snac_debug(snac, 2, xs_fmt("enqueue_output %s %s %d", actor, fn, retries));
+        snac_debug(snac, 1, xs_fmt("enqueue_output %s %s %d", actor, fn, retries));
     }
 }
 
