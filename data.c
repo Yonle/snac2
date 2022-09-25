@@ -412,6 +412,7 @@ void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
         "\"children\":     [],"
         "\"liked_by\":     [],"
         "\"announced_by\": [],"
+        "\"version\":      \"snac/2.x\","
         "\"parent\":       null"
     "}");
 

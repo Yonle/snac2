@@ -198,7 +198,7 @@ void srv_archive(char *direction, char *req, char *payload, int p_size,
                 body_fn = xs_fmt("%s/body.json", dir);
 
                 if ((f = fopen(body_fn, "w")) != NULL) {
-                    xs *v1 = xs_json_loads(payload);
+                    xs *v1 = xs_json_loads(body);
                     xs *j1 = xs_json_dumps_pp(v1, 4);
 
                     if (j1 != NULL)
