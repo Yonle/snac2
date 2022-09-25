@@ -17,7 +17,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
 {
     xs *l1;
     xs *date;
-    xs *digest;
+    xs *digest_b64, *digest;
     xs *s64;
     xs *signature;
     xs *hdrs;
@@ -25,6 +25,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
     char *target;
     char *seckey;
     char *k, *v;
+    d_char *response;
 
     date = xs_utc_time("%a, %d %b %Y %H:%M:%S GMT");
 
@@ -43,9 +44,11 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
 
     /* digest */
     if (body != NULL)
-        digest = xs_sha256_base64(body, b_size);
+        digest_b64 = xs_sha256_base64(body, b_size);
     else
-        digest = xs_sha256_base64("", 0);
+        digest_b64 = xs_sha256_base64("", 0);
+
+    digest = xs_fmt("SHA-256=%s", digest_b64);
 
     seckey = xs_dict_get(snac->key, "secret");
 
@@ -53,7 +56,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
         /* build the string to be signed */
         xs *s = xs_fmt("(request-target): %s /%s\n"
                        "host: %s\n"
-                       "digest: SHA-256=%s\n"
+                       "digest: %s\n"
                        "date: %s",
                     strcmp(method, "POST") == 0 ? "post" : "get",
                     target, host, digest, date);
@@ -81,6 +84,10 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
     hdrs = xs_dict_append(hdrs, "digest",       digest);
     hdrs = xs_dict_append(hdrs, "user-agent",   "snac/2.x");
 
-    return xs_http_request(method, url, hdrs,
+    response = xs_http_request(method, url, hdrs,
                            body, b_size, status, payload, p_size);
+
+    srv_archive("SEND", hdrs, body, b_size, *status, response, *payload, *p_size);
+
+    return response;
 }

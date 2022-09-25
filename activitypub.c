@@ -233,8 +233,8 @@ void process_message(snac *snac, char *msg, char *req)
 
                 timeline_request(snac, in_reply_to);
 
-                snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
-                timeline_add(snac, id, msg, in_reply_to);
+                if (timeline_add(snac, id, msg, in_reply_to))
+                    snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
             }
         }
         else
@@ -247,8 +247,10 @@ void process_message(snac *snac, char *msg, char *req)
     else
 */
     if (strcmp(type, "Like") == 0) {
-        if (xs_type(object) == XSTYPE_STRING)
+        if (xs_type(object) == XSTYPE_STRING) {
             timeline_admire(snac, object, actor, 1);
+            snac_log(snac, xs_fmt("new 'Like' %s %s", actor, object));
+        }
         else
             snac_debug(snac, 2, xs_fmt("xs_type for 'Like' object not string"));
     }
@@ -258,6 +260,7 @@ void process_message(snac *snac, char *msg, char *req)
             timeline_request(snac, object);
 
             timeline_admire(snac, object, actor, 0);
+            snac_log(snac, xs_fmt("new 'Announce' %s %s", actor, object));
         }
         else
             snac_debug(snac, 2, xs_fmt("xs_type for 'Announce' object not string"));

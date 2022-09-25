@@ -530,14 +530,14 @@ void _timeline_write(snac *snac, char *id, char *msg, char *parent)
 }
 
 
-void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
+int timeline_add(snac *snac, char *id, char *o_msg, char *parent)
 /* adds a message to the timeline */
 {
     xs *pfn = _timeline_find_fn(snac, id);
 
     if (pfn != NULL) {
         snac_log(snac, xs_fmt("timeline_add refusing rewrite %s %s", id, pfn));
-        return;
+        return 0;
     }
 
     xs *msg = xs_dup(o_msg);
@@ -560,6 +560,8 @@ void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
     _timeline_write(snac, id, msg, parent);
 
     snac_log(snac, xs_fmt("timeline_add %s", id));
+
+    return 1;
 }
 
 
