@@ -221,7 +221,16 @@ void process_message(snac *snac, char *msg, char *req)
     if (strcmp(type, "Accept") == 0) {
     }
     else
-    if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
+*/
+    if (strcmp(type, "Like") == 0) {
+        if (xs_type(object) == XSTYPE_STRING)
+            timeline_admire(snac, object, actor, 1);
+        else
+            snac_debug(snac, 2, xs_fmt("xs_type for 'Like' object not string"));
+    }
+    else
+/*
+ || strcmp(type, "Announce") == 0) {
     }
     else
     if (strcmp(type, "Update") == 0) {

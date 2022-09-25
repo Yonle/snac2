@@ -391,35 +391,11 @@ d_char *_timeline_new_fn(snac *snac, char *id)
 }
 
 
-void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
-/* adds a message to the timeline */
+void _timeline_write(snac *snac, char *id, char *msg, char *parent)
+/* writes a timeline entry and refreshes the ancestors */
 {
-    xs *pfn = _timeline_find_fn(snac, id);
-    FILE *f;
-
-    if (pfn != NULL) {
-        snac_log(snac, xs_fmt("timeline_add refusing rewrite %s %s", id, pfn));
-        return;
-    }
-
-    /* build the new filename */
     xs *fn = _timeline_new_fn(snac, id);
-    xs *msg = xs_dup(o_msg);
-    xs *md;
-
-    /* add metadata */
-    md = xs_json_loads("{"
-        "\"children\":     [],"
-        "\"liked_by\":     [],"
-        "\"announced_by\": [],"
-        "\"version\":      \"snac/2.x\","
-        "\"parent\":       null"
-    "}");
-
-    if (!xs_is_null(parent))
-        md = xs_dict_set(md, "parent", parent);
-
-    msg = xs_dict_set(msg, "_snac", md);
+    FILE *f;
 
     if ((f = fopen(fn, "w")) != NULL) {
         xs *j = xs_json_dumps_pp(msg, 4);
@@ -427,7 +403,7 @@ void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
         fwrite(j, strlen(j), 1, f);
         fclose(f);
 
-        snac_debug(snac, 1, xs_fmt("timeline_add %s %s", id, fn));
+        snac_debug(snac, 1, xs_fmt("_timeline_write %s %s", id, fn));
     }
 
     /* related to this user? link to local timeline */
@@ -436,7 +412,7 @@ void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
         xs *lfn = xs_replace(fn, "/timeline/", "/local/");
         link(fn, lfn);
 
-        snac_debug(snac, 1, xs_fmt("timeline_add (local) %s %s", id, lfn));
+        snac_debug(snac, 1, xs_fmt("_timeline_write (local) %s %s", id, lfn));
     }
 
     if (!xs_is_null(parent)) {
@@ -459,8 +435,9 @@ void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
         xs *meta     = xs_dup(xs_dict_get(p_msg, "_snac"));
         xs *children = xs_dup(xs_dict_get(meta,  "children"));
 
-        /* add the child */
-        children = xs_list_append(children, id);
+        /* add the child if it's not already there */
+        if (xs_list_in(children, id) == -1)
+            children = xs_list_append(children, id);
 
         /* re-store */
         meta  = xs_dict_set(meta,  "children", children);
@@ -476,7 +453,8 @@ void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
 
             unlink(pfn);
 
-            snac_debug(snac, 2, xs_fmt("updated parent %s %s", parent, nfn));
+            snac_debug(snac, 1,
+                xs_fmt("_timeline_write updated parent %s %s", parent, nfn));
 
             /* try to do the same with the local */
             xs *olfn = xs_replace(pfn, "/timeline/", "/local/");
@@ -486,7 +464,8 @@ void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
 
                 link(nfn, nlfn);
 
-                snac_debug(snac, 2, xs_fmt("updated parent (local) %s %s", parent, nlfn));
+                snac_debug(snac, 1,
+                    xs_fmt("_timeline_write updated parent (local) %s %s", parent, nlfn));
             }
         }
         else
@@ -506,7 +485,8 @@ void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
 
             rename(gofn, gnfn);
 
-            snac_debug(snac, 2, xs_fmt("updated grampa %s %s", grampa, gnfn));
+            snac_debug(snac, 2,
+                xs_fmt("_timeline_write updated grampa %s %s", grampa, gnfn));
 
             /* try to do the same with the local */
             xs *golfn = xs_replace(gofn, "/timeline/", "/local/");
@@ -516,7 +496,8 @@ void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
 
                 link(gnfn, gnlfn);
 
-                snac_debug(snac, 2, xs_fmt("updated grampa (local) %s %s", parent, gnlfn));
+                snac_debug(snac, 2,
+                    xs_fmt("_timeline_write updated grampa (local) %s %s", parent, gnlfn));
             }
 
             /* now open it and get its own parent */
@@ -535,6 +516,83 @@ void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
 
                 grampa = p;
             }
+        }
+    }
+}
+
+
+void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
+/* adds a message to the timeline */
+{
+    xs *pfn = _timeline_find_fn(snac, id);
+
+    if (pfn != NULL) {
+        snac_log(snac, xs_fmt("timeline_add refusing rewrite %s %s", id, pfn));
+        return;
+    }
+
+    xs *msg = xs_dup(o_msg);
+    xs *md;
+
+    /* add new metadata */
+    md = xs_json_loads("{"
+        "\"children\":     [],"
+        "\"liked_by\":     [],"
+        "\"announced_by\": [],"
+        "\"version\":      \"snac/2.x\","
+        "\"parent\":       null"
+    "}");
+
+    if (!xs_is_null(parent))
+        md = xs_dict_set(md, "parent", parent);
+
+    msg = xs_dict_set(msg, "_snac", md);
+
+    _timeline_write(snac, id, msg, parent);
+}
+
+
+
+void timeline_admire(snac *snac, char *id, char *admirer, int like)
+/* updates a timeline entry with a new admiration */
+{
+    xs *ofn = _timeline_find_fn(snac, id);
+    FILE *f;
+
+    if (ofn != NULL && (f = fopen(ofn, "r")) != NULL) {
+        int changed = 0;
+        xs *j1 = xs_readall(f);
+        fclose(f);
+
+        xs *msg  = xs_json_loads(j1);
+        xs *meta = xs_dup(xs_dict_get(msg, "_snac"));
+        xs *list;
+
+        if (like)
+            list = xs_dup(xs_dict_get(meta, "liked_by"));
+        else
+            list = xs_dup(xs_dict_get(meta, "announced_by"));
+
+        /* add the admirer if it's not already there */
+        if (xs_list_in(list, admirer) == -1) {
+            list = xs_list_append(list, admirer);
+            changed = 1;
+        }
+
+        if (changed) {
+            /* re-store */
+            if (like)
+                meta = xs_dict_set(meta, "liked_by", list);
+            else
+                meta = xs_dict_set(meta, "announced_by", list);
+
+            msg = xs_dict_set(msg, "_snac", meta);
+
+            xs *j1 = xs_json_dumps_pp(msg, 4);
+
+            unlink(ofn);
+
+            _timeline_write(snac, id, msg, xs_dict_get(meta, "parent"));
         }
     }
 }
