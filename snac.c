@@ -163,8 +163,7 @@ void srv_archive(char *direction, char *req, char *payload, int p_size,
 
         if (p_size && payload) {
             xs *payload_fn;
-            char *h = xs_dict_get(req, "headers");
-            char *v = xs_dict_get(h, "content-type");
+            char *v = xs_dict_get(req, "content-type");
 
             if (v && xs_str_in(v, "json") != -1) {
                 payload_fn = xs_fmt("%s/payload.json", dir);

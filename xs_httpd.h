@@ -72,10 +72,9 @@ d_char *xs_url_vars(char *str)
 d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
 /* processes an httpd connection */
 {
-    xs *headers = NULL;
+    d_char *req = NULL;
     xs *q_vars  = NULL;
     xs *p_vars  = NULL;
-    d_char *req = NULL;
     xs *l1, *l2;
     char *v;
 
@@ -90,10 +89,10 @@ d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
         return NULL;
     }
 
-    headers = xs_dict_new();
+    req = xs_dict_new();
 
-    headers = xs_dict_append(headers, "method", xs_list_get(l2, 0));
-    headers = xs_dict_append(headers, "proto",  xs_list_get(l2, 2));
+    req = xs_dict_append(req, "method", xs_list_get(l2, 0));
+    req = xs_dict_append(req, "proto",  xs_list_get(l2, 2));
 
     {
         /* split the path with its optional variables */
@@ -101,7 +100,7 @@ d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
         xs *pnv = xs_split_n(udp, "?", 1);
 
         /* store the path */
-        headers = xs_dict_append(headers, "path", xs_list_get(pnv, 0));
+        req = xs_dict_append(req, "path", xs_list_get(pnv, 0));
 
         /* get the variables */
         q_vars = xs_url_vars(xs_list_get(pnv, 1));
@@ -121,20 +120,19 @@ d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
         p = xs_split_n(l, ": ", 1);
 
         if (xs_list_len(p) == 2)
-            headers = xs_dict_append(headers,
-                xs_tolower(xs_list_get(p, 0)), xs_list_get(p, 1));
+            req = xs_dict_append(req, xs_tolower(xs_list_get(p, 0)), xs_list_get(p, 1));
     }
 
     xs_socket_timeout(fileno(f), 5.0, 0.0);
 
-    if ((v = xs_dict_get(headers, "content-length")) != NULL) {
+    if ((v = xs_dict_get(req, "content-length")) != NULL) {
         /* if it has a payload, load it */
         *p_size  = atoi(v);
         *payload = xs_read(f, *p_size);
     }
 
-    /* does it have a payload with form urlencoded variables? */
-    v = xs_dict_get(headers, "content-type");
+    /* is the payload form urlencoded variables? */
+    v = xs_dict_get(req, "content-type");
 
     if (v && strcmp(v, "application/x-www-form-urlencoded") == 0) {
         xs *upl = xs_url_dec(*payload);
@@ -143,11 +141,12 @@ d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
     else
         p_vars = xs_dict_new();
 
-    if (errno == 0) {
-        req = xs_dict_new();
-        req = xs_dict_append(req, "headers", headers);
-        req = xs_dict_append(req, "q_vars",  q_vars);
-        req = xs_dict_append(req, "p_vars",  p_vars);
+    req = xs_dict_append(req, "q_vars",  q_vars);
+    req = xs_dict_append(req, "p_vars",  p_vars);
+
+    if (errno) {
+        free(req);
+        req = NULL;
     }
 
     return req;

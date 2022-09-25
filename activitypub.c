@@ -258,8 +258,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
                             char **body, int *b_size, char **ctype)
 {
     int status = 200;
-    char *headers = xs_dict_get(req, "headers");
-    char *accept  = xs_dict_get(headers, "accept");
+    char *accept = xs_dict_get(req, "accept");
     snac snac;
     xs *msg = NULL;
 
@@ -321,8 +320,7 @@ int activitypub_post_handler(d_char *req, char *q_path,
 /* processes an input message */
 {
     int status = 202; /* accepted */
-    char *headers = xs_dict_get(req, "headers");
-    char *i_ctype = xs_dict_get(headers, "content-type");
+    char *i_ctype = xs_dict_get(req, "content-type");
     snac snac;
 
     if (i_ctype == NULL)

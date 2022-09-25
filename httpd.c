@@ -24,8 +24,7 @@ int server_get_handler(d_char *req, char *q_path,
 /* basic server services */
 {
     int status = 0;
-    char *req_hdrs = xs_dict_get(req, "headers");
-    char *acpt     = xs_dict_get(req_hdrs, "accept");
+    char *acpt = xs_dict_get(req, "accept");
 
     if (acpt == NULL)
         return 400;
@@ -90,7 +89,6 @@ void httpd_connection(int rs)
 {
     FILE *f;
     xs *req;
-    char *req_hdrs;
     char *method;
     int status  = 0;
     char *body  = NULL;
@@ -106,10 +104,8 @@ void httpd_connection(int rs)
 
     req = xs_httpd_request(f, &payload, &p_size);
 
-    req_hdrs = xs_dict_get(req, "headers");
-
-    method = xs_dict_get(req_hdrs, "method");
-    q_path = xs_dup(xs_dict_get(req_hdrs, "path"));
+    method = xs_dict_get(req, "method");
+    q_path = xs_dup(xs_dict_get(req, "path"));
 
     /* crop the q_path from leading / and the prefix */
     if (xs_endswith(q_path, "/"))
