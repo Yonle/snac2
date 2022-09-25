@@ -341,6 +341,11 @@ void process_queue(snac *snac)
         xs *q_item = dequeue(snac, fn);
         char *type;
 
+        if (q_item == NULL) {
+            snac_log(snac, xs_fmt("process_queue q_item error"));
+            continue;
+        }
+
         if ((type = xs_dict_get(q_item, "type")) == NULL)
             type = "output";
 
