@@ -132,7 +132,7 @@ int user_open(snac *snac, char *uid)
                 srv_log(xs_fmt("cannot parse '%s'", cfg_file));
         }
         else
-            srv_log(xs_fmt("error opening '%s'", cfg_file));
+            srv_debug(2, xs_fmt("error opening '%s'", cfg_file));
     }
     else
         srv_log(xs_fmt("invalid user '%s'", uid));
