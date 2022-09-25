@@ -11,6 +11,7 @@
 #include "xs_openssl.h"
 #include "xs_socket.h"
 #include "xs_httpd.h"
+#include "xs_mime.h"
 
 #include "snac.h"
 

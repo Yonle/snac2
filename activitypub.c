@@ -5,6 +5,7 @@
 #include "xs_encdec.h"
 #include "xs_json.h"
 #include "xs_curl.h"
+#include "xs_mime.h"
 
 #include "snac.h"
 
@@ -195,6 +196,59 @@ d_char *msg_update(snac *snac, char *object)
 }
 
 
+d_char *msg_actor(snac *snac)
+/* create a Person message for this actor */
+{
+    xs *ctxt = xs_list_new();
+    xs *icon = xs_dict_new();
+    xs *keys = xs_dict_new();
+    xs *avtr = NULL;
+    xs *kid  = NULL;
+    d_char *msg = msg_base(snac, "Person", snac->actor, NULL, NULL);
+    char *p;
+    int n;
+
+    /* change the @context (is this really necessary?) */
+    ctxt = xs_list_append(ctxt, "https:/" "/www.w3.org/ns/activitystreams");
+    ctxt = xs_list_append(ctxt, "https:/" "/w3id.org/security/v1");
+    msg = xs_dict_set(msg, "@context",          ctxt);
+
+    msg = xs_dict_set(msg, "url",               snac->actor);
+    msg = xs_dict_set(msg, "name",              xs_dict_get(snac->config, "name"));
+    msg = xs_dict_set(msg, "preferredUsername", snac->uid);
+    msg = xs_dict_set(msg, "published",         xs_dict_get(snac->config, "published"));
+    msg = xs_dict_set(msg, "summary",           xs_dict_get(snac->config, "bio"));
+
+    char *folders[] = { "inbox", "outbox", "followers", "following", NULL };
+
+    for (n = 0; folders[n]; n++) {
+        xs *f = xs_fmt("%s/%s", snac->actor, folders[n]);
+        msg = xs_dict_set(msg, folders[n], f);
+    }
+
+    p = xs_dict_get(snac->config, "avatar");
+
+    if (*p == '\0')
+        avtr = xs_fmt("%s/susie.png", srv_baseurl);
+    else
+        avtr = xs_dup(p);
+
+    icon = xs_dict_append(icon, "type",         "Image");
+    icon = xs_dict_append(icon, "mediaType",    xs_mime_by_ext(avtr));
+    icon = xs_dict_append(icon, "url",          avtr);
+    msg = xs_dict_set(msg, "icon", icon);
+
+    kid = xs_fmt("%s#main-key", snac->actor);
+
+    keys = xs_dict_append(keys, "id",           kid);
+    keys = xs_dict_append(keys, "owner",        snac->actor);
+    keys = xs_dict_append(keys, "publicKeyPem", xs_dict_get(snac->key, "public"));
+    msg = xs_dict_set(msg, "publicKey", keys);
+
+    return msg;
+}
+
+
 /** queues **/
 
 void process_message(snac *snac, char *msg, char *req)
@@ -356,6 +410,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
 
     if (p_path == NULL) {
         /* if there was no component after the user, it's an actor request */
+        msg = msg_actor(&snac);
     }
     else
     if (strcmp(p_path, "outbox") == 0) {

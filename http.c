@@ -86,6 +86,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
     hdrs = xs_dict_append(hdrs, "date",         date);
     hdrs = xs_dict_append(hdrs, "signature",    signature);
     hdrs = xs_dict_append(hdrs, "digest",       digest);
+    hdrs = xs_dict_append(hdrs, "host",         xs_dict_get(srv_config, "host"));
     hdrs = xs_dict_append(hdrs, "user-agent",   "snac/2.x");
 
     response = xs_http_request(method, url, hdrs,

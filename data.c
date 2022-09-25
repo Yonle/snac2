@@ -601,8 +601,6 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
 
             msg = xs_dict_set(msg, "_snac", meta);
 
-            xs *j1 = xs_json_dumps_pp(msg, 4);
-
             unlink(ofn);
 
             _timeline_write(snac, id, msg, xs_dict_get(meta, "parent"));
