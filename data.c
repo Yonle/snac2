@@ -494,7 +494,7 @@ void _timeline_write(snac *snac, char *id, char *msg, char *parent)
 
             rename(gofn, gnfn);
 
-            snac_debug(snac, 2,
+            snac_debug(snac, 1,
                 xs_fmt("_timeline_write updated grampa %s %s", grampa, gnfn));
 
             /* try to do the same with the local */
@@ -505,7 +505,7 @@ void _timeline_write(snac *snac, char *id, char *msg, char *parent)
 
                 link(gnfn, gnlfn);
 
-                snac_debug(snac, 2,
+                snac_debug(snac, 1,
                     xs_fmt("_timeline_write updated grampa (local) %s %s", parent, gnlfn));
             }
 
@@ -514,16 +514,12 @@ void _timeline_write(snac *snac, char *id, char *msg, char *parent)
                 xs *j = xs_readall(f);
                 fclose(f);
 
-                xs *g_msg = xs_json_loads(j);
-                xs *meta  = xs_dict_get(g_msg, "_snac");
-                d_char *p = xs_dict_get(meta,  "parent");
+                xs *g_msg    = xs_json_loads(j);
+                d_char *meta = xs_dict_get(g_msg, "_snac");
+                d_char *p    = xs_dict_get(meta,  "parent");
 
                 free(grampa);
-
-                if (!xs_is_null(p))
-                    p = xs_dup(p);
-
-                grampa = p;
+                grampa = xs_dup(p);
             }
         }
     }
