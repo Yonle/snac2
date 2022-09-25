@@ -17,7 +17,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
 {
     xs *l1;
     xs *date;
-    xs *digest_b64, *digest;
+    xs *digest;
     xs *s64;
     xs *signature;
     xs *hdrs;
@@ -43,12 +43,16 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
         target = "";
 
     /* digest */
-    if (body != NULL)
-        digest_b64 = xs_sha256_base64(body, b_size);
-    else
-        digest_b64 = xs_sha256_base64("", 0);
+    {
+        xs *s;
 
-    digest = xs_fmt("SHA-256=%s", digest_b64);
+        if (body != NULL)
+            s = xs_sha256_base64(body, b_size);
+        else
+            s = xs_sha256_base64("", 0);
+
+        digest = xs_fmt("SHA-256=%s", s);
+    }
 
     seckey = xs_dict_get(snac->key, "secret");
 
