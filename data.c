@@ -391,7 +391,7 @@ d_char *_timeline_new_fn(snac *snac, char *id)
 }
 
 
-void timeline_add(snac *snac, char *id, char *msg, char *parent)
+void timeline_add(snac *snac, char *id, char *o_msg, char *parent)
 /* adds a message to the timeline */
 {
     xs *pfn = _timeline_find_fn(snac, id);
@@ -404,6 +404,7 @@ void timeline_add(snac *snac, char *id, char *msg, char *parent)
 
     /* build the new filename */
     xs *fn = _timeline_new_fn(snac, id);
+    xs *msg = xs_dup(o_msg);
     xs *md;
 
     /* add metadata */
@@ -414,7 +415,7 @@ void timeline_add(snac *snac, char *id, char *msg, char *parent)
         "\"parent\":       null"
     "}");
 
-    if (parent != NULL)
+    if (!xs_is_null(parent))
         md = xs_dict_set(md, "parent", parent);
 
     msg = xs_dict_set(msg, "_snac", md);
@@ -430,14 +431,14 @@ void timeline_add(snac *snac, char *id, char *msg, char *parent)
 
     /* related to this user? link to local timeline */
     if (xs_startswith(id, snac->actor) ||
-        (parent != NULL && xs_startswith(parent, snac->actor))) {
+        (!xs_is_null(parent) && xs_startswith(parent, snac->actor))) {
         xs *lfn = xs_replace(fn, "/timeline/", "/local/");
         link(fn, lfn);
 
         snac_debug(snac, 1, xs_fmt("timeline_add (local) %s %s", id, lfn));
     }
 
-    if (parent != NULL) {
+    if (!xs_is_null(parent)) {
         /* update the parent, adding this id to its children list */
         xs *pfn   = _timeline_find_fn(snac, parent);
         xs *p_msg = NULL;
@@ -493,7 +494,7 @@ void timeline_add(snac *snac, char *id, char *msg, char *parent)
         /* now iterate all parents up, just renaming the files */
         xs *grampa = xs_dup(xs_dict_get(meta, "parent"));
 
-        while (grampa != NULL) {
+        while (!xs_is_null(grampa)) {
             xs *gofn = _timeline_find_fn(snac, grampa);
 
             if (gofn == NULL)
@@ -528,7 +529,7 @@ void timeline_add(snac *snac, char *id, char *msg, char *parent)
 
                 free(grampa);
 
-                if (p != NULL)
+                if (!xs_is_null(p))
                     p = xs_dup(p);
 
                 grampa = p;

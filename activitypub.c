@@ -204,7 +204,7 @@ void process_message(snac *snac, char *msg, char *req)
                 char *id          = xs_dict_get(object, "id");
                 char *in_reply_to = xs_dict_get(object, "inReplyTo");
 
-                if (in_reply_to != NULL) {
+                if (xs_is_null(in_reply_to)) {
                     /* recursively download ancestors */
                     /* ... */
                 }

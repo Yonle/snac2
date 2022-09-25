@@ -41,6 +41,7 @@ void _xs_destroy(char **var);
 #define xs_debug() kill(getpid(), 5)
 xstype xs_type(const char *data);
 int xs_size(const char *data);
+int xs_is_null(char *data);
 d_char *xs_dup(const char *data);
 d_char *xs_expand(d_char *data, int offset, int size);
 d_char *xs_collapse(d_char *data, int offset, int size);
@@ -182,6 +183,13 @@ int xs_size(const char *data)
     }
 
     return len;
+}
+
+
+int xs_is_null(char *data)
+/* checks for null */
+{
+    return !!(data == NULL || xs_type(data) == XSTYPE_NULL);
 }
 
 

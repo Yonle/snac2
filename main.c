@@ -9,10 +9,46 @@
 
 int usage(void)
 {
-    printf("usage:\n");
+    printf("snac - A simple, minimalistic ActivityPub instance\n");
+    printf("Copyright (c) 2022 grunfink - MIT license\n");
+    printf("\n");
+    printf("Commands:\n");
+    printf("\n");
+    printf("init [{basedir}]                 Initializes the database\n");
+    printf("httpd {basedir}                  Starts the HTTPD daemon\n");
+    printf("webfinger {basedir} {user}       Queries about a @user@host or actor\n");
+    printf("queue {basedir} {uid}            Processes a user queue\n");
+//    printf("check {basedir} [{uid}]          Checks the database\n");
+//    printf("purge {basedir} [{uid}]          Purges old data\n");
+//    printf("adduser {basedir} [{uid}]        Adds a new user\n");
+
+//    printf("update {basedir} {uid}           Sends a user update to followers\n");
+//    printf("passwd {basedir} {uid}           Sets the password for {uid}\n");
+//    printf("follow {basedir} {uid} {actor}   Follows an actor\n");
+//    printf("unfollow {basedir} {uid} {actor} Unfollows an actor\n");
+//    printf("mute {basedir} {uid} {actor}     Mutes an actor\n");
+//    printf("unmute {basedir} {uid} {actor}   Unmutes an actor\n");
+//    printf("like {basedir} {uid} {url}       Likes an url\n");
+//    printf("announce {basedir} {uid} {url}   Announces (boosts) an url\n");
+//    printf("note {basedir} {uid} {'text'}    Sends a note to followers\n");
+
+    printf("request {basedir} {uid} {url}    Requests an object\n");
+    printf("actor {basedir} {uid} {url}      Requests an actor\n");
+
     return 1;
 }
 
+
+char *get_argv(int *argi, int argc, char *argv[])
+{
+    if (*argi < argc)
+        return argv[(*argi)++];
+    else
+        return NULL;
+}
+
+
+#define GET_ARGV() get_argv(&argi, argc, argv)
 
 int main(int argc, char *argv[])
 {
@@ -23,20 +59,19 @@ int main(int argc, char *argv[])
     int argi = 1;
     snac snac;
 
-    argc--;
-    if (argc < argi)
+    if ((cmd = GET_ARGV()) == NULL)
         return usage();
 
-    cmd = argv[argi++];
-
     if (strcmp(cmd, "init") == 0) {
+        /* initialize the database */
+        /* ... */
+        basedir = GET_ARGV();
+
         return 0;
     }
 
-    if (argc < argi)
+    if ((basedir = GET_ARGV()) == NULL)
         return usage();
-
-    basedir = argv[argi++];
 
     if (!srv_open(basedir)) {
         srv_log(xs_fmt("error opening database at %s", basedir));
@@ -48,10 +83,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (argc < argi)
+    if ((user = GET_ARGV()) == NULL)
         return usage();
-
-    user = argv[argi++];
 
     if (strcmp(cmd, "webfinger") == 0) {
         xs *actor = NULL;
@@ -69,15 +102,18 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (argc < argi)
-        return usage();
-
-    url = argv[argi++];
-
     if (!user_open(&snac, user)) {
         printf("error in user '%s'\n", user);
         return 1;
     }
+
+    if (strcmp(cmd, "queue") == 0) {
+        process_queue(&snac);
+        return 0;
+    }
+
+    if ((url = GET_ARGV()) == NULL)
+        return usage();
 
     if (strcmp(cmd, "request") == 0) {
         int status;
