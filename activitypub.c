@@ -173,22 +173,51 @@ d_char *msg_update(snac *snac, char *object)
 void process_message(snac *snac, char *msg, char *req)
 /* processes an ActivityPub message from the input queue */
 {
-    /* they exist, were checked previously */
-    char *actor = xs_dict_get(msg, "actor");
-    char *type  = xs_dict_get(msg, "type");
+    /* actor and type exist, were checked previously */
+    char *actor  = xs_dict_get(msg, "actor");
+    char *type   = xs_dict_get(msg, "type");
+
+    char *object, *utype;
+
+    object = xs_dict_get(msg, "object");
+    if (object != NULL && xs_type(object) == XSTYPE_SOD)
+        utype = xs_dict_get(object, "type");
+    else
+        utype = "(null)";
 
     /* check the signature */
     /* ... */
 
+/*
     if (strcmp(type, "Follow") == 0) {
     }
     else
     if (strcmp(type, "Undo") == 0) {
     }
     else
+*/
     if (strcmp(type, "Create") == 0) {
+        if (strcmp(utype, "Note") == 0) {
+            if (is_muted(snac, actor))
+                snac_log(snac, xs_fmt("ignored 'Note' from muted actor %s", actor));
+            else {
+                char *id          = xs_dict_get(object, "id");
+                char *in_reply_to = xs_dict_get(object, "inReplyTo");
+
+                if (in_reply_to != NULL) {
+                    /* recursively download ancestors */
+                    /* ... */
+                }
+
+                snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
+                timeline_add(snac, id, msg, in_reply_to);
+            }
+        }
+        else
+            snac_debug(snac, 1, xs_fmt("ignored 'Create' for object type '%s'", utype));
     }
     else
+/*
     if (strcmp(type, "Accept") == 0) {
     }
     else
@@ -201,6 +230,7 @@ void process_message(snac *snac, char *msg, char *req)
     if (strcmp(type, "Delete") == 0) {
     }
     else
+*/
         snac_debug(snac, 1, xs_fmt("process_message type '%s' ignored", type));
 }
 
