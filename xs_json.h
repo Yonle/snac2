@@ -111,7 +111,7 @@ d_char *_xs_json_dumps(d_char *s, char *data, int level, int indent)
         }
         break;
 
-    case XSTYPE_SOL:
+    case XSTYPE_LIST:
         s = xs_str_cat(s, "[");
 
         while (xs_list_iter(&data, &v)) {
@@ -129,7 +129,7 @@ d_char *_xs_json_dumps(d_char *s, char *data, int level, int indent)
 
         break;
 
-    case XSTYPE_SOD:
+    case XSTYPE_DICT:
         s = xs_str_cat(s, "{");
 
         while (xs_dict_iter(&data, &k, &v)) {
@@ -171,7 +171,7 @@ d_char *xs_json_dumps_pp(char *data, int indent)
     xstype t = xs_type(data);
     d_char *s = NULL;
 
-    if (t == XSTYPE_SOL || t == XSTYPE_SOD) {
+    if (t == XSTYPE_LIST || t == XSTYPE_DICT) {
         s = xs_str_new(NULL);
         s = _xs_json_dumps(s, data, 0, indent);
     }

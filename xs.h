@@ -17,10 +17,10 @@ typedef enum {
     XSTYPE_NULL   = 0x18,
     XSTYPE_TRUE   = 0x06,
     XSTYPE_FALSE  = 0x15,
-    XSTYPE_SOL    = 0x11,
+    XSTYPE_LIST   = 0x11,
     XSTYPE_LITEM  = 0x1f,
     XSTYPE_EOL    = 0x12,
-    XSTYPE_SOD    = 0x13,
+    XSTYPE_DICT   = 0x13,
     XSTYPE_DITEM  = 0x1e,
     XSTYPE_EOD    = 0x14,
     XSTYPE_NUMBER = 0x17,
@@ -103,9 +103,9 @@ xstype xs_type(const char *data)
     case XSTYPE_NULL:
     case XSTYPE_TRUE:
     case XSTYPE_FALSE:
-    case XSTYPE_SOL:
+    case XSTYPE_LIST:
     case XSTYPE_EOL:
-    case XSTYPE_SOD:
+    case XSTYPE_DICT:
     case XSTYPE_EOD:
     case XSTYPE_LITEM:
     case XSTYPE_DITEM:
@@ -136,19 +136,19 @@ int xs_size(const char *data)
         len = strlen(data) + 1;
         break;
 
-    case XSTYPE_SOL:
+    case XSTYPE_LIST:
         /* look for a balanced EOL */
         do {
-            c += data[len] == XSTYPE_SOL ? 1 : data[len] == XSTYPE_EOL ? -1 : 0;
+            c += data[len] == XSTYPE_LIST ? 1 : data[len] == XSTYPE_EOL ? -1 : 0;
             len++;
         } while (c);
 
         break;
 
-    case XSTYPE_SOD:
+    case XSTYPE_DICT:
         /* look for a balanced EOD */
         do {
-            c += data[len] == XSTYPE_SOD ? 1 : data[len] == XSTYPE_EOD ? -1 : 0;
+            c += data[len] == XSTYPE_DICT ? 1 : data[len] == XSTYPE_EOD ? -1 : 0;
             len++;
         } while (c);
 
@@ -397,7 +397,7 @@ d_char *xs_list_new(void)
     d_char *list;
 
     list = malloc(_xs_blk_size(2));
-    list[0] = XSTYPE_SOL;
+    list[0] = XSTYPE_LIST;
     list[1] = XSTYPE_EOL;
 
     return list;
@@ -429,7 +429,7 @@ int xs_list_iter(char **list, char **value)
     p = *list;
 
     /* skip a possible start of the list */
-    if (*p == XSTYPE_SOL)
+    if (*p == XSTYPE_LIST)
         p++;
 
     /* an element? */
@@ -572,7 +572,7 @@ d_char *xs_dict_new(void)
     d_char *dict;
 
     dict = malloc(_xs_blk_size(2));
-    dict[0] = XSTYPE_SOD;
+    dict[0] = XSTYPE_DICT;
     dict[1] = XSTYPE_EOD;
 
     return dict;
@@ -606,7 +606,7 @@ int xs_dict_iter(char **dict, char **key, char **value)
     p = *dict;
 
     /* skip a possible start of the list */
-    if (*p == XSTYPE_SOD)
+    if (*p == XSTYPE_DICT)
         p++;
 
     /* an element? */

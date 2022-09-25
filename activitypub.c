@@ -256,7 +256,7 @@ void process_message(snac *snac, char *msg, char *req)
     char *object, *utype;
 
     object = xs_dict_get(msg, "object");
-    if (object != NULL && xs_type(object) == XSTYPE_SOD)
+    if (object != NULL && xs_type(object) == XSTYPE_DICT)
         utype = xs_dict_get(object, "type");
     else
         utype = "(null)";

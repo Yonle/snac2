@@ -82,7 +82,7 @@ int webfinger_request(char *qs, char **actor, char **user)
             char *v;
 
             while (xs_list_iter(&list, &v)) {
-                if (xs_type(v) == XSTYPE_SOD) {
+                if (xs_type(v) == XSTYPE_DICT) {
                     char *type = xs_dict_get(v, "type");
 
                     if (type && strcmp(type, "application/activity+json") == 0) {
