@@ -379,7 +379,7 @@ void process_queue(snac *snac)
 }
 
 
-d_char *recipents(snac *snac, char *msg, int expand_public)
+d_char *recipent_list(snac *snac, char *msg, int expand_public)
 /* returns the list of recipients for a message */
 {
     d_char *list = xs_list_new();
