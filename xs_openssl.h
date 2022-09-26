@@ -185,13 +185,16 @@ d_char *xs_evp_sign(char *secret, char *mem, int size)
     unsigned char *sig;
     unsigned int sig_len;
     EVP_PKEY *pkey;
-
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
 
     /* un-PEM the key */
     b = BIO_new_mem_buf(secret, strlen(secret));
     pkey = PEM_read_bio_PrivateKey(b, NULL, NULL, NULL);
+
+    /* I've learnt all these magical incantations by watching
+       the Python module code and the OpenSSL manual pages */
+    /* Well, "learnt" may be an exaggeration */
 
     md = EVP_get_digestbyname("sha256");
 
@@ -207,7 +210,6 @@ d_char *xs_evp_sign(char *secret, char *mem, int size)
         signature = xs_base64_enc((char *)sig, sig_len);
 
     EVP_MD_CTX_free(mdctx);
-
     BIO_free(b);
     free(sig);
 
