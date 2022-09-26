@@ -379,7 +379,7 @@ void process_queue(snac *snac)
 }
 
 
-d_char *recipent_list(snac *snac, char *msg, int expand_public)
+d_char *recipient_list(snac *snac, char *msg, int expand_public)
 /* returns the list of recipients for a message */
 {
     d_char *list = xs_list_new();
@@ -411,6 +411,23 @@ d_char *recipent_list(snac *snac, char *msg, int expand_public)
     }
 
     return list;
+}
+
+
+int is_msg_public(snac *snac, char *msg)
+/* checks if a message is public */
+{
+    int ret = 0;
+    xs *rcpts = recipient_list(snac, msg, 0);
+    char *p, *v;
+
+    p = rcpts;
+    while (!ret && xs_list_iter(&p, &v)) {
+        if (strcmp(v, public_address) == 0)
+            ret = 1;
+    }
+
+    return ret;
 }
 
 
