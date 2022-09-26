@@ -379,6 +379,43 @@ void process_queue(snac *snac)
 }
 
 
+d_char *recipents(snac *snac, char *msg, int expand_public)
+/* returns the list of recipients for a message */
+{
+    d_char *list = xs_list_new();
+    char *to = xs_dict_get(msg, "to");
+    char *cc = xs_dict_get(msg, "cc");
+    int n;
+
+    char *lists[] = { to, cc, NULL };
+    for (n = 0; lists[n]; n++) {
+        char *l = lists[n];
+        char *v;
+
+        while (xs_list_iter(&l, &v)) {
+            if (expand_public && strcmp(v, public_address) == 0) {
+                /* iterate the followers and add them */
+                xs *fwers = follower_list(snac);
+                char *fw;
+
+                char *p = fwers;
+                while (xs_list_iter(&p, &fw)) {
+                    if (!xs_list_in(list, fw))
+                        list = xs_list_append(list, fw);
+                }
+            }
+            else
+            if (!xs_list_in(list, v))
+                list = xs_list_append(list, v);
+        }
+    }
+
+    return list;
+}
+
+
+/** HTTP handlers */
+
 int activitypub_get_handler(d_char *req, char *q_path,
                             char **body, int *b_size, char **ctype)
 {
