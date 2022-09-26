@@ -10,9 +10,9 @@
 #include "snac.h"
 
 d_char *http_signed_request(snac *snac, char *method, char *url,
-                        d_char *headers,
-                        d_char *body, int b_size,
-                        int *status, d_char **payload, int *p_size)
+                            d_char *headers,
+                            d_char *body, int b_size,
+                            int *status, d_char **payload, int *p_size)
 /* does a signed HTTP request */
 {
     xs *l1;
@@ -65,7 +65,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
                     strcmp(method, "POST") == 0 ? "post" : "get",
                     target, host, digest, date);
 
-        s64 = xs_rsa_sign(seckey, s, strlen(s));
+        s64 = xs_evp_sign(seckey, s, strlen(s));
     }
 
     /* build now the signature header */
