@@ -163,8 +163,8 @@ void srv_archive(char *direction, char *req, char *payload, int p_size,
         }
 
         if (p_size && payload) {
-            xs *payload_fn;
-            xs *payload_fn_raw;
+            xs *payload_fn = NULL;
+            xs *payload_fn_raw = NULL;
             char *v = xs_dict_get(req, "content-type");
 
             if (v && xs_str_in(v, "json") != -1) {
@@ -195,7 +195,7 @@ void srv_archive(char *direction, char *req, char *payload, int p_size,
         }
 
         if (b_size && body) {
-            xs *body_fn;
+            xs *body_fn = NULL;
             char *v = xs_dict_get(headers, "content-type");
 
             if (v && xs_str_in(v, "json") != -1) {
