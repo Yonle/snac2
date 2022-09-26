@@ -400,7 +400,7 @@ d_char *_timeline_new_fn(snac *snac, char *id)
 }
 
 
-void _timeline_write(snac *snac, char *id, char *msg, char *parent)
+void _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referrer)
 /* writes a timeline entry and refreshes the ancestors */
 {
     xs *fn = _timeline_new_fn(snac, id);
@@ -417,7 +417,8 @@ void _timeline_write(snac *snac, char *id, char *msg, char *parent)
 
     /* related to this user? link to local timeline */
     if (xs_startswith(id, snac->actor) ||
-        (!xs_is_null(parent) && xs_startswith(parent, snac->actor))) {
+        (!xs_is_null(parent) && xs_startswith(parent, snac->actor)) ||
+        (!xs_is_null(referrer) && xs_startswith(referrer, snac->actor))) {
         xs *lfn = xs_replace(fn, "/timeline/", "/local/");
         link(fn, lfn);
 
@@ -557,7 +558,7 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
 
     msg = xs_dict_set(msg, "_snac", md);
 
-    _timeline_write(snac, id, msg, parent);
+    _timeline_write(snac, id, msg, parent, referrer);
 
     snac_log(snac, xs_fmt("timeline_add %s", id));
 
@@ -602,11 +603,13 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
 
         unlink(ofn);
 
-        _timeline_write(snac, id, msg, xs_dict_get(meta, "parent"));
+        _timeline_write(snac, id, msg, xs_dict_get(meta, "parent"), admirer);
 
         snac_log(snac, xs_fmt("timeline_admire (%s) %s %s",
             like ? "Like" : "Announce", id, admirer));
     }
+    else
+        snac_log(snac, xs_fmt("timeline_admire ignored for unknown object %s", id));
 }
 
 
