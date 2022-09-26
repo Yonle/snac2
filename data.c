@@ -302,8 +302,8 @@ int timeline_here(snac *snac, char *id)
 d_char *timeline_find(snac *snac, char *id)
 /* gets a message from the timeline by id */
 {
-    xs *fn  = _timeline_find_fn(snac, id);
-    xs *msg = NULL;
+    xs *fn      = _timeline_find_fn(snac, id);
+    d_char *msg = NULL;
 
     if (fn != NULL) {
         FILE *f;
@@ -820,7 +820,7 @@ void enqueue_output(snac *snac, char *msg, char *actor, int retries)
         return;
     }
 
-    int qrt  = xs_number_get(xs_dict_get(srv_config, "query_retry_minutes"));
+    int qrt  = xs_number_get(xs_dict_get(srv_config, "queue_retry_minutes"));
     xs *ntid = tid(retries * 60 * qrt);
     xs *fn   = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
     xs *tfn  = xs_fmt("%s.tmp", fn);

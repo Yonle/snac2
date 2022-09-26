@@ -194,18 +194,27 @@ d_char *msg_update(snac *snac, char *object)
 d_char *msg_admiration(snac *snac, char *object, char *type)
 /* creates a Like or Announce message */
 {
-    xs *ntid = tid(0);
-    xs *id   = xs_fmt("%s/d/%d/%s", snac->actor, ntid, type);
-    d_char *msg = msg_base(snac, type, id, snac->actor, "");
-    xs *rcpts = xs_list_new();
+    xs *a_msg   = NULL;
+    d_char *msg = NULL;
 
     /* call the object */
     timeline_request(snac, object, snac->actor);
 
-    rcpts = xs_list_append(rcpts, public_address);
+    if ((a_msg = timeline_find(snac, object)) != NULL) {
+        xs *ntid  = tid(0);
+        xs *id    = xs_fmt("%s/d/%d/%s", snac->actor, ntid, type);
+        xs *rcpts = xs_list_new();
 
-    msg = xs_dict_append(msg, "to",     rcpts);
-    msg = xs_dict_append(msg, "object", object);
+        msg = msg_base(snac, type, id, snac->actor, "");
+
+        rcpts = xs_list_append(rcpts, public_address);
+        rcpts = xs_list_append(rcpts, xs_dict_get(a_msg, "attributedTo"));
+
+        msg = xs_dict_append(msg, "to",     rcpts);
+        msg = xs_dict_append(msg, "object", object);
+    }
+    else
+        snac_log(snac, xs_fmt("msg_admiration cannot retrieve object %s", object));
 
     return msg;
 }
@@ -372,9 +381,11 @@ void process_queue(snac *snac)
             char *actor = xs_dict_get(q_item, "actor");
             char *msg   = xs_dict_get(q_item, "object");
             int retries = xs_number_get(xs_dict_get(q_item, "retries"));
+            xs *payload = NULL;
+            int p_size = 0;
 
             /* deliver */
-            status = send_to_actor(snac, actor, msg, NULL, 0);
+            status = send_to_actor(snac, actor, msg, &payload, &p_size);
 
             if (!valid_status(status)) {
                 /* error sending; reenqueue? */
@@ -420,12 +431,14 @@ d_char *recipient_list(snac *snac, char *msg, int expand_public)
 
                 char *p = fwers;
                 while (xs_list_iter(&p, &fw)) {
-                    if (!xs_list_in(list, fw))
-                        list = xs_list_append(list, fw);
+                    char *actor = xs_dict_get(fw, "actor");
+
+                    if (xs_list_in(list, actor) == -1)
+                        list = xs_list_append(list, actor);
                 }
             }
             else
-            if (!xs_list_in(list, v))
+            if (xs_list_in(list, v) == -1)
                 list = xs_list_append(list, v);
         }
     }

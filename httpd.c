@@ -97,7 +97,7 @@ void httpd_connection(int rs)
     xs *headers = NULL;
     xs *q_path  = NULL;
     xs *payload = NULL;
-    int p_size;
+    int p_size = 0;
     char *p;
 
     f = xs_socket_accept(rs);

@@ -142,7 +142,7 @@ void srv_archive(char *direction, char *req, char *payload, int p_size,
 /* archives a connection */
 {
     /* obsessive archiving */
-    xs *date = xs_local_time("%Y%m%d%H%M%S");
+    xs *date = tid(0);
     xs *dir  = xs_fmt("%s/archive/%s", srv_basedir, date);
     FILE *f;
 
@@ -172,7 +172,10 @@ void srv_archive(char *direction, char *req, char *payload, int p_size,
 
                 if ((f = fopen(payload_fn, "w")) != NULL) {
                     xs *v1 = xs_json_loads(payload);
-                    xs *j1 = xs_json_dumps_pp(v1, 4);
+                    xs *j1 = NULL;
+
+                    if (v1 != NULL)
+                        j1 = xs_json_dumps_pp(v1, 4);
 
                     if (j1 != NULL)
                         fwrite(j1, strlen(j1), 1, f);
@@ -200,7 +203,10 @@ void srv_archive(char *direction, char *req, char *payload, int p_size,
 
                 if ((f = fopen(body_fn, "w")) != NULL) {
                     xs *v1 = xs_json_loads(body);
-                    xs *j1 = xs_json_dumps_pp(v1, 4);
+                    xs *j1 = NULL;
+
+                    if (v1 != NULL)
+                        j1 = xs_json_dumps_pp(v1, 4);
 
                     if (j1 != NULL)
                         fwrite(j1, strlen(j1), 1, f);

@@ -119,7 +119,9 @@ int main(int argc, char *argv[])
     if (strcmp(cmd, "announce") == 0) {
         xs *msg = msg_admiration(&snac, url, "Announce");
 
-        {
+        if (msg != NULL) {
+            post(&snac, msg);
+
             xs *j = xs_json_dumps_pp(msg, 4);
             printf("%s\n", j);
         }
