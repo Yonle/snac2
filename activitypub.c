@@ -91,7 +91,7 @@ void timeline_request(snac *snac, char *id)
                 timeline_request(snac, in_reply_to);
 
                 /* finally store */
-                timeline_add(snac, id, object, in_reply_to);
+                timeline_add(snac, id, object, in_reply_to, NULL);
             }
         }
     }
@@ -282,7 +282,7 @@ void process_message(snac *snac, char *msg, char *req)
 
                 timeline_request(snac, in_reply_to);
 
-                if (timeline_add(snac, id, msg, in_reply_to))
+                if (timeline_add(snac, id, msg, in_reply_to, NULL))
                     snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
             }
         }

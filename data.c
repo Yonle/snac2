@@ -526,7 +526,7 @@ void _timeline_write(snac *snac, char *id, char *msg, char *parent)
 }
 
 
-int timeline_add(snac *snac, char *id, char *o_msg, char *parent)
+int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer)
 /* adds a message to the timeline */
 {
     xs *pfn = _timeline_find_fn(snac, id);
@@ -545,11 +545,15 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent)
         "\"liked_by\":     [],"
         "\"announced_by\": [],"
         "\"version\":      \"snac/2.x\","
+        "\"referrer\":     null,"
         "\"parent\":       null"
     "}");
 
     if (!xs_is_null(parent))
         md = xs_dict_set(md, "parent", parent);
+
+    if (!xs_is_null(referrer))
+        md = xs_dict_set(md, "parent", referrer);
 
     msg = xs_dict_set(msg, "_snac", md);
 
@@ -569,7 +573,6 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
     FILE *f;
 
     if (ofn != NULL && (f = fopen(ofn, "r")) != NULL) {
-        int changed = 0;
         xs *j1 = xs_readall(f);
         fclose(f);
 
@@ -583,27 +586,26 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
             list = xs_dup(xs_dict_get(meta, "announced_by"));
 
         /* add the admirer if it's not already there */
-        if (xs_list_in(list, admirer) == -1) {
+        if (xs_list_in(list, admirer) == -1)
             list = xs_list_append(list, admirer);
-            changed = 1;
-        }
 
-        if (changed) {
-            /* re-store */
-            if (like)
-                meta = xs_dict_set(meta, "liked_by", list);
-            else
-                meta = xs_dict_set(meta, "announced_by", list);
+        /* set the admirer as the referrer */
+        meta = xs_dict_set(meta, "referrer", admirer);
 
-            msg = xs_dict_set(msg, "_snac", meta);
+        /* re-store */
+        if (like)
+            meta = xs_dict_set(meta, "liked_by", list);
+        else
+            meta = xs_dict_set(meta, "announced_by", list);
 
-            unlink(ofn);
+        msg = xs_dict_set(msg, "_snac", meta);
 
-            _timeline_write(snac, id, msg, xs_dict_get(meta, "parent"));
+        unlink(ofn);
 
-            snac_log(snac, xs_fmt("timeline_admire (%s) %s %s",
-                like ? "Like" : "Announce", id, admirer));
-        }
+        _timeline_write(snac, id, msg, xs_dict_get(meta, "parent"));
+
+        snac_log(snac, xs_fmt("timeline_admire (%s) %s %s",
+            like ? "Like" : "Announce", id, admirer));
     }
 }
 
