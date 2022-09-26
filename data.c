@@ -469,7 +469,7 @@ void _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referr
             /* try to do the same with the local */
             xs *olfn = xs_replace(pfn, "/timeline/", "/local/");
 
-            if (unlink(olfn) != -1) {
+            if (unlink(olfn) != -1 || xs_startswith(id, snac->actor)) {
                 xs *nlfn = xs_replace(nfn, "/timeline/", "/local/");
 
                 link(nfn, nlfn);

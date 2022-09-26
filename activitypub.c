@@ -71,7 +71,7 @@ int actor_request(snac *snac, char *actor, d_char **data)
 }
 
 
-void timeline_request(snac *snac, char *id)
+void timeline_request(snac *snac, char *id, char *referrer)
 /* ensures that an entry and its ancestors are in the timeline */
 {
     if (!xs_is_null(id)) {
@@ -88,10 +88,10 @@ void timeline_request(snac *snac, char *id)
                 char *in_reply_to = xs_dict_get(object, "inReplyTo");
 
                 /* recurse! */
-                timeline_request(snac, in_reply_to);
+                timeline_request(snac, in_reply_to, referrer);
 
                 /* finally store */
-                timeline_add(snac, id, object, in_reply_to, NULL);
+                timeline_add(snac, id, object, in_reply_to, referrer);
             }
         }
     }
@@ -280,7 +280,7 @@ void process_message(snac *snac, char *msg, char *req)
                 char *id          = xs_dict_get(object, "id");
                 char *in_reply_to = xs_dict_get(object, "inReplyTo");
 
-                timeline_request(snac, in_reply_to);
+                timeline_request(snac, in_reply_to, NULL);
 
                 if (timeline_add(snac, id, msg, in_reply_to, NULL))
                     snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
@@ -307,7 +307,7 @@ void process_message(snac *snac, char *msg, char *req)
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
 
-        timeline_request(snac, object);
+        timeline_request(snac, object, actor);
 
         timeline_admire(snac, object, actor, 0);
         snac_log(snac, xs_fmt("new 'Announce' %s %s", actor, object));
