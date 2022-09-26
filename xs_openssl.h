@@ -11,6 +11,7 @@ d_char *xs_sha256_base64(const void *input, int size);
 d_char *xs_rsa_genkey(int bits);
 d_char *xs_rsa_sign(char *secret, char *mem, int size);
 int xs_rsa_verify(char *pubkey, char *mem, int size, char *b64sig);
+d_char *xs_evp_sign(char *secret, char *mem, int size);
 
 
 #ifdef XS_IMPLEMENTATION
@@ -19,6 +20,7 @@ int xs_rsa_verify(char *pubkey, char *mem, int size, char *b64sig);
 #include "openssl/sha.h"
 #include "openssl/rsa.h"
 #include "openssl/pem.h"
+#include "openssl/evp.h"
 
 d_char *xs_md5_hex(const void *input, int size)
 {
@@ -173,6 +175,45 @@ int xs_rsa_verify(char *pubkey, char *mem, int size, char *b64sig)
 
     return r;
 }
+
+
+d_char *xs_evp_sign(char *secret, char *mem, int size)
+/* signs a memory block (secret is in PEM format) */
+{
+    d_char *signature = NULL;
+    BIO *b;
+    unsigned char *sig;
+    unsigned int sig_len;
+    EVP_PKEY *pkey;
+
+    EVP_MD_CTX *mdctx;
+    const EVP_MD *md;
+
+    /* un-PEM the key */
+    b = BIO_new_mem_buf(secret, strlen(secret));
+    pkey = PEM_read_bio_PrivateKey(b, NULL, NULL, NULL);
+
+    md = EVP_get_digestbyname("sha256");
+
+    mdctx = EVP_MD_CTX_new();
+
+    sig_len = EVP_PKEY_size(pkey);
+    sig = malloc(sig_len);
+
+    EVP_SignInit(mdctx, md);
+    EVP_SignUpdate(mdctx, mem, size);
+
+    if (EVP_SignFinal(mdctx, sig, &sig_len, pkey) == 1)
+        signature = xs_base64_enc((char *)sig, sig_len);
+
+    EVP_MD_CTX_free(mdctx);
+
+    BIO_free(b);
+    free(sig);
+
+    return signature;
+}
+
 
 #endif /* XS_IMPLEMENTATION */
 
