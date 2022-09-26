@@ -81,8 +81,11 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
         hdrs = xs_dict_append(hdrs, k, v);
 
     /* add the new headers */
-    hdrs = xs_dict_append(hdrs, "content-type", "application/activity+json");
-    hdrs = xs_dict_append(hdrs, "accept",       "application/activity+json");
+    if (strcmp(method, "POST") == 0)
+        hdrs = xs_dict_append(hdrs, "content-type", "application/activity+json");
+    else
+        hdrs = xs_dict_append(hdrs, "accept",       "application/activity+json");
+
     hdrs = xs_dict_append(hdrs, "date",         date);
     hdrs = xs_dict_append(hdrs, "signature",    signature);
     hdrs = xs_dict_append(hdrs, "digest",       digest);

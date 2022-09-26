@@ -506,9 +506,12 @@ int activitypub_get_handler(d_char *req, char *q_path,
 
     p_path = xs_list_get(l, 2);
 
+    *ctype  = "application/activity+json";
+
     if (p_path == NULL) {
         /* if there was no component after the user, it's an actor request */
         msg = msg_actor(&snac);
+        *ctype = "application/ld+json";
     }
     else
     if (strcmp(p_path, "outbox") == 0) {
@@ -532,7 +535,6 @@ int activitypub_get_handler(d_char *req, char *q_path,
     if (status == 200 && msg != NULL) {
         *body   = xs_json_dumps_pp(msg, 4);
         *b_size = strlen(*body);
-        *ctype  = "application/activity+json";
     }
 
     user_free(&snac);
