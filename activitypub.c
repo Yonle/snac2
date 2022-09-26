@@ -191,6 +191,26 @@ d_char *msg_update(snac *snac, char *object)
 }
 
 
+d_char *msg_admiration(snac *snac, char *object, char *type)
+/* creates a Like or Announce message */
+{
+    xs *ntid = tid(0);
+    xs *id   = xs_fmt("%s/d/%d/%s", snac->actor, ntid, type);
+    d_char *msg = msg_base(snac, type, id, snac->actor, "");
+    xs *rcpts = xs_list_new();
+
+    /* call the object */
+    timeline_request(snac, object, snac->actor);
+
+    rcpts = xs_list_append(rcpts, public_address);
+
+    msg = xs_dict_append(msg, "to",     rcpts);
+    msg = xs_dict_append(msg, "object", object);
+
+    return msg;
+}
+
+
 d_char *msg_actor(snac *snac)
 /* create a Person message for this actor */
 {

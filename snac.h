@@ -87,6 +87,8 @@ int webfinger_request(char *qs, char **actor, char **user);
 int webfinger_get_handler(d_char *req, char *q_path,
                           char **body, int *b_size, char **ctype);
 
+d_char *msg_admiration(snac *snac, char *object, char *type);
+
 int activitypub_request(snac *snac, char *url, d_char **data);
 int actor_request(snac *snac, char *actor, d_char **data);
 int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_size);

@@ -116,6 +116,17 @@ int main(int argc, char *argv[])
     if ((url = GET_ARGV()) == NULL)
         return usage();
 
+    if (strcmp(cmd, "announce") == 0) {
+        xs *msg = msg_admiration(&snac, url, "Announce");
+
+        {
+            xs *j = xs_json_dumps_pp(msg, 4);
+            printf("%s\n", j);
+        }
+
+        return 0;
+    }
+
     if (strcmp(cmd, "request") == 0) {
         int status;
         xs *data = NULL;

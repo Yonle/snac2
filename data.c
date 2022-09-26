@@ -554,7 +554,7 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
         md = xs_dict_set(md, "parent", parent);
 
     if (!xs_is_null(referrer))
-        md = xs_dict_set(md, "parent", referrer);
+        md = xs_dict_set(md, "referrer", referrer);
 
     msg = xs_dict_set(msg, "_snac", md);
 
