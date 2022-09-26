@@ -143,7 +143,7 @@ void srv_archive(char *direction, char *req, char *payload, int p_size,
 {
     /* obsessive archiving */
     xs *date = tid(0);
-    xs *dir  = xs_fmt("%s/archive/%s", srv_basedir, date);
+    xs *dir  = xs_fmt("%s/archive/%s_%s", srv_basedir, date, direction);
     FILE *f;
 
     if (mkdir(dir, 0755) != -1) {
