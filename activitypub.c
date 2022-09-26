@@ -431,6 +431,19 @@ int is_msg_public(snac *snac, char *msg)
 }
 
 
+void post(snac *snac, char *msg)
+/* enqueues a message to all its recipients */
+{
+    xs *rcpts = recipient_list(snac, msg, 1);
+    char *p, *v;
+
+    p = rcpts;
+    while (xs_list_iter(&p, &v)) {
+        enqueue_output(snac, msg, v, 0);
+    }
+}
+
+
 /** HTTP handlers */
 
 int activitypub_get_handler(d_char *req, char *q_path,
