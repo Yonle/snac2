@@ -141,9 +141,30 @@ int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_s
 
 /** messages **/
 
-d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date)
+d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date, char *object)
 /* creates a base ActivityPub message */
 {
+    xs *did       = NULL;
+    xs *published = NULL;
+
+    /* generated values */
+    if (date && strcmp(date, "@now") == 0)
+        date = published = xs_utc_time("%Y-%m-%dT%H:%M:%SZ");
+
+    if (id != NULL) {
+        if (strcmp(id, "@dummy") == 0) {
+            xs *ntid = tid(0);
+            id = did = xs_fmt("%s/d/%s/%s", snac->actor, ntid, type);
+        }
+        else
+        if (strcmp(id, "@object") == 0) {
+            if (object != NULL)
+                id = did = xs_fmt("%s/%s", xs_dict_get(object, "id"), type);
+            else
+                id = NULL;
+        }
+    }
+
     d_char *msg = xs_dict_new();
 
     msg = xs_dict_append(msg, "@context", "https:/" "/www.w3.org/ns/activitystreams");
@@ -155,10 +176,11 @@ d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date)
     if (actor != NULL)
         msg = xs_dict_append(msg, "actor", actor);
 
-    if (date != NULL) {
-        xs *published = xs_utc_time("%Y-%m-%dT%H:%M:%SZ");
-        msg = xs_dict_append(msg, "published", published);
-    }
+    if (date != NULL)
+        msg = xs_dict_append(msg, "published", date);
+
+    if (object != NULL)
+        msg = xs_dict_append(msg, "object", object);
 
     return msg;
 }
@@ -167,7 +189,7 @@ d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date)
 d_char *msg_collection(snac *snac, char *id)
 /* creates an empty OrderedCollection message */
 {
-    d_char *msg = msg_base(snac, "OrderedCollection", id, NULL, NULL);
+    d_char *msg = msg_base(snac, "OrderedCollection", id, NULL, NULL, NULL);
     xs *ol = xs_list_new();
     xs *nz = xs_number_new(0);
 
@@ -179,14 +201,23 @@ d_char *msg_collection(snac *snac, char *id)
 }
 
 
+d_char *msg_accept(snac *snac, char *object, char *to)
+/* creates an Accept message (as a response to a Follow) */
+{
+    d_char *msg = msg_base(snac, "Accept", "@dummy", snac->actor, NULL, object);
+
+    msg = xs_dict_append(msg, "to", to);
+
+    return msg;
+}
+
+
 d_char *msg_update(snac *snac, char *object)
 /* creates an Update message */
 {
-    xs *id = xs_fmt("%s/Update", xs_dict_get(object, "id"));
-    d_char *msg = msg_base(snac, "Update", id, snac->actor, "");
+    d_char *msg = msg_base(snac, "Update", "@object", snac->actor, "@now", object);
 
-    msg = xs_dict_append(msg, "to",     public_address);
-    msg = xs_dict_append(msg, "object", object);
+    msg = xs_dict_append(msg, "to", public_address);
 
     return msg;
 }
@@ -202,17 +233,14 @@ d_char *msg_admiration(snac *snac, char *object, char *type)
     timeline_request(snac, object, snac->actor);
 
     if ((a_msg = timeline_find(snac, object)) != NULL) {
-        xs *ntid  = tid(0);
-        xs *id    = xs_fmt("%s/d/%d/%s", snac->actor, ntid, type);
         xs *rcpts = xs_list_new();
 
-        msg = msg_base(snac, type, id, snac->actor, "");
+        msg = msg_base(snac, type, "@dummy", snac->actor, "@now", object);
 
         rcpts = xs_list_append(rcpts, public_address);
         rcpts = xs_list_append(rcpts, xs_dict_get(a_msg, "attributedTo"));
 
         msg = xs_dict_append(msg, "to",     rcpts);
-        msg = xs_dict_append(msg, "object", object);
     }
     else
         snac_log(snac, xs_fmt("msg_admiration cannot retrieve object %s", object));
@@ -229,7 +257,7 @@ d_char *msg_actor(snac *snac)
     xs *keys = xs_dict_new();
     xs *avtr = NULL;
     xs *kid  = NULL;
-    d_char *msg = msg_base(snac, "Person", snac->actor, NULL, NULL);
+    d_char *msg = msg_base(snac, "Person", snac->actor, NULL, NULL, NULL);
     char *p;
     int n;
 
@@ -294,10 +322,19 @@ void process_message(snac *snac, char *msg, char *req)
     /* check the signature */
     /* ... */
 
-/*
     if (strcmp(type, "Follow") == 0) {
+        xs *reply = msg_accept(snac, msg, actor);
+
+        post(snac, reply);
+
+        timeline_add(snac, xs_dict_get(msg, "id"), msg, NULL, NULL);
+
+        follower_add(snac, actor, msg);
+
+        snac_log(snac, xs_fmt("New follower %s", actor));
     }
     else
+/*
     if (strcmp(type, "Undo") == 0) {
     }
     else
@@ -424,6 +461,11 @@ d_char *recipient_list(snac *snac, char *msg, int expand_public)
         char *l = lists[n];
         char *v;
 
+        if (xs_type(l) == XSTYPE_STRING) {
+            if (xs_list_in(list, l) == -1)
+                list = xs_list_append(list, l);
+        }
+        else
         while (xs_list_iter(&l, &v)) {
             if (expand_public && strcmp(v, public_address) == 0) {
                 /* iterate the followers and add them */
