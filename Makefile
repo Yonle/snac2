@@ -2,7 +2,7 @@ CFLAGS=-g -Wall
 
 all: snac
 
-snac: snac.o main.o data.o http.o httpd.o webfinger.o activitypub.o
+snac: snac.o main.o data.o http.o httpd.o webfinger.o activitypub.o html.o
 	$(CC) -L/usr/local/lib *.o -lcurl -lcrypto -o $@
 
 .c.o:
