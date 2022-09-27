@@ -153,6 +153,11 @@ int main(int argc, char *argv[])
 
         printf("status: %d\n", status);
 
+        if (valid_status(status)) {
+            xs *j = xs_json_dumps_pp(data, 4);
+            printf("%s\n", j);
+        }
+
         return 0;
     }
 
