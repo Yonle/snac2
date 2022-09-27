@@ -50,7 +50,8 @@ d_char *xs_insert_m(d_char *data, int offset, const char *mem, int size);
 #define xs_append_m(data, mem, size) xs_insert_m(data, xs_size(data) - 1, mem, size)
 d_char *xs_str_new(const char *str);
 #define xs_str_cat(str1, str2) xs_insert(str1, xs_size(str1) - 1, str2)
-d_char *xs_replace(const char *str, const char *sfrom, const char *sto);
+d_char *xs_replace_i(d_char *str, const char *sfrom, const char *sto);
+#define xs_replace(str, sfrom, sto) xs_replace_i(xs_dup(str), sfrom, sto)
 d_char *xs_fmt(const char *fmt, ...);
 int xs_str_in(char *haystack, char *needle);
 int xs_startswith(char *str, char *prefix);
@@ -262,34 +263,25 @@ d_char *xs_str_new(const char *str)
 }
 
 
-d_char *xs_replace(const char *str, const char *sfrom, const char *sto)
-/* replaces all occurrences of sfrom with sto in str */
+d_char *xs_replace_i(d_char *str, const char *sfrom, const char *sto)
+/* replaces inline all sfrom with sto */
 {
-    d_char *s;
+    int sfsz = strlen(sfrom);
+    int stsz = strlen(sto);
     char *ss;
-    int sfsz;
+    int offset = 0;
 
-    /* cache the sizes */
-    sfsz = strlen(sfrom);
+    while ((ss = strstr(str + offset, sfrom)) != NULL) {
+        int n_offset = ss - str;
 
-    /* create the new string */
-    s = xs_str_new(NULL);
+        str = xs_collapse(str, n_offset, sfsz);
+        str = xs_expand(str, n_offset, stsz);
+        memcpy(str + n_offset, sto, stsz);
 
-    while ((ss = strstr(str, sfrom)) != NULL) {
-        /* copy the first part */
-        s = xs_append_m(s, str, ss - str);
-
-        /* copy sto */
-        s = xs_str_cat(s, sto);
-
-        /* move forward */
-        str = ss + sfsz;
+        offset = n_offset;
     }
 
-    /* copy the rest */
-    s = xs_str_cat(s, str);
-
-    return s;
+    return str;
 }
 
 
