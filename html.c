@@ -21,7 +21,7 @@ d_char *not_really_markdown(char *content, d_char **f_content)
     /* global changes */
     {
         /* backticks */
-        xs *ml = xs_regex_matchall(wrk, "`[^`]+`");
+        xs *ml = xs_regex_match(wrk, "`[^`]+`");
         p = ml;
 
         while (xs_list_iter(&p, &v)) {
@@ -34,7 +34,7 @@ d_char *not_really_markdown(char *content, d_char **f_content)
 
     {
         /* double asterisks */
-        xs *ml = xs_regex_matchall(wrk, "\\*\\*[^\\*]+\\*\\*");
+        xs *ml = xs_regex_match(wrk, "\\*\\*[^\\*]+\\*\\*");
         p = ml;
 
         while (xs_list_iter(&p, &v)) {
@@ -47,7 +47,7 @@ d_char *not_really_markdown(char *content, d_char **f_content)
 
     {
         /* single asterisks */
-        xs *ml = xs_regex_matchall(wrk, "\\*[^\\*]+\\*");
+        xs *ml = xs_regex_match(wrk, "\\*[^\\*]+\\*");
         p = ml;
 
         while (xs_list_iter(&p, &v)) {
