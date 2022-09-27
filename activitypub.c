@@ -212,7 +212,7 @@ void process_tags(const char *content, d_char **n_content, d_char **tag)
     char *p, *v;
     int n = 0;
 
-    p = split = xs_regex_split(content, "(@[A-Za-z0-9_]+@[A-Za-z0-9-\\.]+|#[^ ]+)");
+    p = split = xs_regex_split(content, "(@[A-Za-z0-9_]+@[A-Za-z0-9\\.-]+|#[^ ,\\.:;]+)");
     while (xs_list_iter(&p, &v)) {
         if ((n & 0x1)) {
             if (*v == '@') {
@@ -221,16 +221,21 @@ void process_tags(const char *content, d_char **n_content, d_char **tag)
                 xs *uid   = NULL;
                 int status;
 
-                status = webfinger_request(v, &actor, &uid);
+                status = webfinger_request(v + 1, &actor, &uid);
 
                 if (valid_status(status)) {
                     xs *d = xs_dict_new();
+                    xs *n = xs_fmt("@%s", uid);
+                    xs *l = xs_fmt("<a href=\"%s\">%s</a>", actor, n);
 
                     d = xs_dict_append(d, "type",   "Mention");
                     d = xs_dict_append(d, "href",   actor);
-                    d = xs_dict_append(d, "name",   uid);
+                    d = xs_dict_append(d, "name",   n);
 
                     tl = xs_list_append(tl, d);
+
+                    /* add the code */
+                    nc = xs_str_cat(nc, l);
                 }
                 else
                     /* store as is */
@@ -466,6 +471,7 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to)
     xs *ntid = tid(0);
     xs *id   = xs_fmt("%s/p/%s", snac->actor, ntid);
     xs *ctxt = NULL;
+    xs *fc2  = NULL;
     xs *fc1  = NULL;
     xs *to   = NULL;
     xs *cc   = xs_list_new();
@@ -480,7 +486,10 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to)
         to = xs_dup(rcpts);
 
     /* format the content */
-    not_really_markdown(content, &fc1);
+    not_really_markdown(content, &fc2);
+
+    /* extract the tags */
+    process_tags(fc2, &fc1, &tag);
 
     if (in_reply_to != NULL) {
         xs *p_msg = NULL;
