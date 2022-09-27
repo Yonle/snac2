@@ -278,7 +278,7 @@ d_char *xs_replace_i(d_char *str, const char *sfrom, const char *sto)
         str = xs_expand(str, n_offset, stsz);
         memcpy(str + n_offset, sto, stsz);
 
-        offset = n_offset;
+        offset = n_offset + stsz;
     }
 
     return str;
