@@ -6,6 +6,7 @@
 #include "xs_json.h"
 #include "xs_curl.h"
 #include "xs_mime.h"
+#include "xs_openssl.h"
 
 #include "snac.h"
 
@@ -311,7 +312,7 @@ void process_message(snac *snac, char *msg, char *req)
 
                 timeline_request(snac, in_reply_to, NULL);
 
-                if (timeline_add(snac, id, msg, in_reply_to, NULL))
+                if (timeline_add(snac, id, object, in_reply_to, NULL))
                     snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
             }
         }
@@ -551,6 +552,7 @@ int activitypub_post_handler(d_char *req, char *q_path,
     int status = 202; /* accepted */
     char *i_ctype = xs_dict_get(req, "content-type");
     snac snac;
+    char *v;
 
     if (i_ctype == NULL)
         return 400;
@@ -582,6 +584,18 @@ int activitypub_post_handler(d_char *req, char *q_path,
         /* invalid user */
         srv_debug(1, xs_fmt("activitypub_post_handler bad user %s", uid));
         return 404;
+    }
+
+    /* if it has a digest, check it now, because
+       later the payload won't be exactly the same */
+    if ((v = xs_dict_get(req, "digest")) != NULL) {
+        xs *s1 = xs_sha256_base64(payload, p_size);
+        xs *s2 = xs_fmt("SHA-256=%s", s1);
+
+        if (strcmp(s2, v) == 0)
+            srv_log(xs_fmt("digest check OK"));
+        else
+            srv_log(xs_fmt("digest check FAILED"));
     }
 
     enqueue_input(&snac, msg, req);
