@@ -549,11 +549,19 @@ void process_message(snac *snac, char *msg, char *req)
             snac_debug(snac, 1, xs_fmt("ignored 'Create' for object type '%s'", utype));
     }
     else
-/*
     if (strcmp(type, "Accept") == 0) {
+        if (strcmp(utype, "Follow") == 0) {
+            if (following_check(snac, actor)) {
+                following_add(snac, actor, msg);
+                snac_log(snac, xs_fmt("confirmed follow from %s", actor));
+            }
+            else
+                snac_log(snac, xs_fmt("spurious follow accept from %s", actor));
+        }
+        else
+            snac_debug(snac, 1, xs_fmt("ignored 'Accept' for object type '%s'", utype));
     }
     else
-*/
     if (strcmp(type, "Like") == 0) {
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
