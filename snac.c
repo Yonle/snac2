@@ -12,6 +12,7 @@
 #include "xs_socket.h"
 #include "xs_httpd.h"
 #include "xs_mime.h"
+#include "xs_regex.h"
 
 #include "snac.h"
 

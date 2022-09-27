@@ -4,6 +4,7 @@
 #include "xs.h"
 #include "xs_io.h"
 #include "xs_json.h"
+#include "xs_regex.h"
 
 #include "snac.h"
 
@@ -15,10 +16,65 @@ d_char *not_really_markdown(char *content, d_char **f_content)
     int in_blq = 0;
     xs *list;
     char *p, *v;
+    xs *wrk = xs_dup(content);
+
+    /* global changes */
+    {
+        /* backticks */
+        xs *ml = xs_regex_matchall(wrk, "`[^`]+`");
+        p = ml;
+
+        while (xs_list_iter(&p, &v)) {
+            xs *s1 = xs_crop(xs_dup(v), 1, -1);
+            xs *s2 = xs_fmt("<code>%s</code>", s1);
+
+            wrk = xs_replace_i(wrk, v, s2);
+        }
+    }
+
+    {
+        /* double asterisks */
+        xs *ml = xs_regex_matchall(wrk, "\\*\\*[^\\*]+\\*\\*");
+        p = ml;
+
+        while (xs_list_iter(&p, &v)) {
+            xs *s1 = xs_crop(xs_dup(v), 2, -2);
+            xs *s2 = xs_fmt("<b>%s</b>", s1);
+
+            wrk = xs_replace_i(wrk, v, s2);
+        }
+    }
+
+    {
+        /* single asterisks */
+        xs *ml = xs_regex_matchall(wrk, "\\*[^\\*]+\\*");
+        p = ml;
+
+        while (xs_list_iter(&p, &v)) {
+            xs *s1 = xs_crop(xs_dup(v), 1, -1);
+            xs *s2 = xs_fmt("<i>%s</i>", s1);
+
+            wrk = xs_replace_i(wrk, v, s2);
+        }
+    }
+
+    {
+        /* urls */
+        xs *ml = xs_regex_matchall(wrk, "https?:/" "/[^ ]+");
+        p = ml;
+
+        while (xs_list_iter(&p, &v)) {
+            xs *s2 = xs_fmt("<a href=\"%s\">%s</a>", v, v);
+
+            wrk = xs_replace_i(wrk, v, s2);
+        }
+    }
+
+    /* now work on lines */
+
+    p = list = xs_split(wrk, "\n");
 
     s = xs_str_new(NULL);
-
-    p = list = xs_split(content, "\n");
 
     while (xs_list_iter(&p, &v)) {
         xs *ss = xs_strip(xs_dup(v));

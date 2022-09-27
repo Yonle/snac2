@@ -79,6 +79,9 @@ int server_get_handler(d_char *req, char *q_path,
         *ctype = "image/png";
     }
 
+    if (status != 0)
+        srv_debug(1, xs_fmt("server_get_handler '%s' %d", q_path, status));
+
     return status;
 }
 
