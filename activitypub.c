@@ -253,11 +253,12 @@ d_char *msg_admiration(snac *snac, char *object, char *type)
 d_char *msg_actor(snac *snac)
 /* create a Person message for this actor */
 {
-    xs *ctxt = xs_list_new();
-    xs *icon = xs_dict_new();
-    xs *keys = xs_dict_new();
-    xs *avtr = NULL;
-    xs *kid  = NULL;
+    xs *ctxt    = xs_list_new();
+    xs *icon    = xs_dict_new();
+    xs *keys    = xs_dict_new();
+    xs *avtr    = NULL;
+    xs *kid     = NULL;
+    xs *f_bio   = NULL;
     d_char *msg = msg_base(snac, "Person", snac->actor, NULL, NULL, NULL);
     char *p;
     int n;
@@ -271,10 +272,11 @@ d_char *msg_actor(snac *snac)
     msg = xs_dict_set(msg, "name",              xs_dict_get(snac->config, "name"));
     msg = xs_dict_set(msg, "preferredUsername", snac->uid);
     msg = xs_dict_set(msg, "published",         xs_dict_get(snac->config, "published"));
-    msg = xs_dict_set(msg, "summary",           xs_dict_get(snac->config, "bio"));
+
+    not_really_markdown(xs_dict_get(snac->config, "bio"), &f_bio);
+    msg = xs_dict_set(msg, "summary", f_bio);
 
     char *folders[] = { "inbox", "outbox", "followers", "following", NULL };
-
     for (n = 0; folders[n]; n++) {
         xs *f = xs_fmt("%s/%s", snac->actor, folders[n]);
         msg = xs_dict_set(msg, folders[n], f);
@@ -298,6 +300,81 @@ d_char *msg_actor(snac *snac)
     keys = xs_dict_append(keys, "owner",        snac->actor);
     keys = xs_dict_append(keys, "publicKeyPem", xs_dict_get(snac->key, "public"));
     msg = xs_dict_set(msg, "publicKey", keys);
+
+    return msg;
+}
+
+
+d_char *msg_create(snac *snac, char *object)
+/* creates a 'Create' message */
+{
+    d_char *msg = msg_base(snac, "Create", "@object", snac->actor, "@now", object);
+
+    msg = xs_dict_append(msg, "attributedTo", xs_dict_get(object, "attributedTo"));
+    msg = xs_dict_append(msg, "to",           xs_dict_get(object, "to"));
+    msg = xs_dict_append(msg, "cc",           xs_dict_get(object, "cc"));
+
+    return msg;
+}
+
+
+d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to)
+/* creates a 'Note' message */
+{
+    xs *ntid = tid(0);
+    xs *id   = xs_fmt("%s/p/%s", snac->actor, ntid);
+    xs *ctxt = xs_fmt("%s#ctxt", id);
+    xs *fc1  = NULL;
+    xs *to   = NULL;
+    xs *cc   = xs_list_new();
+    xs *irt  = NULL;
+    xs *tag  = NULL;
+    d_char *msg = msg_base(snac, "Note", id, NULL, "@now", NULL);
+    char *p, *v;
+
+    if (rcpts == NULL)
+        to = xs_list_new();
+    else
+        to = xs_dup(rcpts);
+
+    /* format the content */
+    not_really_markdown(content, &fc1);
+
+    if (in_reply_to != NULL) {
+        irt = xs_dup(in_reply_to);
+    }
+    else
+        irt = xs_val_new(XSTYPE_NULL);
+
+    if (tag == NULL)
+        tag = xs_list_new();
+
+    /* add all mentions to the cc */
+    p = tag;
+    while (xs_list_iter(&p, &v)) {
+        if (xs_type(v) == XSTYPE_DICT) {
+            char *t;
+
+            if ((t = xs_dict_get(v, "type")) != NULL && strcmp(t, "Mention") == 0) {
+                if ((t = xs_dict_get(v, "href")) != NULL)
+                    cc = xs_list_append(cc, t);
+            }
+        }
+    }
+
+    /* no recipients? must be for everybody */
+    if (xs_list_len(to) == 0)
+        to = xs_list_append(to, public_address);
+
+    msg = xs_dict_append(msg, "attributedTo", snac->actor);
+    msg = xs_dict_append(msg, "summary",      "");
+    msg = xs_dict_append(msg, "content",      fc1);
+    msg = xs_dict_append(msg, "context",      ctxt);
+    msg = xs_dict_append(msg, "url",          id);
+    msg = xs_dict_append(msg, "to",           to);
+    msg = xs_dict_append(msg, "cc",           cc);
+    msg = xs_dict_append(msg, "inReplyTo",    irt);
+    msg = xs_dict_append(msg, "tag",          tag);
 
     return msg;
 }

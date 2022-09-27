@@ -165,9 +165,9 @@ int main(int argc, char *argv[])
 
     if (strcmp(cmd, "note") == 0) {
         int status;
-        xs *data = NULL;
         xs *content = NULL;
-        xs *f_content = NULL;
+        xs *msg = NULL;
+        xs *c_msg = NULL;
 
         if (strcmp(url, "-") == 0) {
             /* get the content from an editor */
@@ -189,9 +189,16 @@ int main(int argc, char *argv[])
         else
             content = xs_dup(url);
 
-        not_really_markdown(content, &f_content);
+        msg = msg_note(&snac, content, NULL, NULL);
 
-        printf("%s\n", f_content);
+        c_msg = msg_create(&snac, msg);
+
+        {
+            xs *j = xs_json_dumps_pp(c_msg, 4);
+            printf("%s\n", j);
+        }
+
+        post(&snac, c_msg);
 
         return 0;
     }
