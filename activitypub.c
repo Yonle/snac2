@@ -773,6 +773,12 @@ int activitypub_get_handler(d_char *req, char *q_path,
     }
     else
     if (xs_startswith(p_path, "p/")) {
+        xs *id = xs_fmt("%s/%s", snac.actor, p_path);
+
+        if ((msg = timeline_find(&snac, id)) != NULL)
+            msg = xs_dict_del(msg, "_snac");
+        else
+            status = 404;
     }
     else
         status = 404;
@@ -781,6 +787,8 @@ int activitypub_get_handler(d_char *req, char *q_path,
         *body   = xs_json_dumps_pp(msg, 4);
         *b_size = strlen(*body);
     }
+
+    snac_debug(&snac, 1, xs_fmt("activitypub_get_handler serving %s %d", q_path, status));
 
     user_free(&snac);
 
@@ -836,18 +844,18 @@ int activitypub_post_handler(d_char *req, char *q_path,
         xs *s1 = xs_sha256_base64(payload, p_size);
         xs *s2 = xs_fmt("SHA-256=%s", s1);
 
-        if (strcmp(s2, v) == 0)
-            srv_log(xs_fmt("digest check OK"));
-        else
+        if (strcmp(s2, v) != 0) {
             srv_log(xs_fmt("digest check FAILED"));
+            status = 400;
+        }
     }
 
-    enqueue_input(&snac, msg, req);
+    if (valid_status(status)) {
+        enqueue_input(&snac, msg, req);
+        *ctype = "application/activity+json";
+    }
 
     user_free(&snac);
-
-    if (valid_status(status))
-        *ctype = "application/activity+json";
 
     return status;
 }
