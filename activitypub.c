@@ -7,6 +7,7 @@
 #include "xs_curl.h"
 #include "xs_mime.h"
 #include "xs_openssl.h"
+#include "xs_regex.h"
 
 #include "snac.h"
 
@@ -199,6 +200,57 @@ int is_msg_public(snac *snac, char *msg)
     }
 
     return ret;
+}
+
+
+void process_tags(const char *content, d_char **n_content, d_char **tag)
+/* parses mentions and tags from content */
+{
+    d_char *nc = xs_str_new(NULL);
+    d_char *tl = xs_list_new();
+    xs *split;
+    char *p, *v;
+    int n = 0;
+
+    p = split = xs_regex_split(content, "(@[A-Za-z0-9_]+@[A-Za-z0-9-\\.]+|#[^ ]+)");
+    while (xs_list_iter(&p, &v)) {
+        if ((n & 0x1)) {
+            if (*v == '@') {
+                /* query the webfinger about this fellow */
+                xs *actor = NULL;
+                xs *uid   = NULL;
+                int status;
+
+                status = webfinger_request(v, &actor, &uid);
+
+                if (valid_status(status)) {
+                    xs *d = xs_dict_new();
+
+                    d = xs_dict_append(d, "type",   "Mention");
+                    d = xs_dict_append(d, "href",   actor);
+                    d = xs_dict_append(d, "name",   uid);
+
+                    tl = xs_list_append(tl, d);
+                }
+                else
+                    /* store as is */
+                    nc = xs_str_cat(nc, v);
+            }
+            else
+            if (*v == '#') {
+                /* hashtag */
+                /* store as is by now */
+                nc = xs_str_cat(nc, v);
+            }
+        }
+        else
+            nc = xs_str_cat(nc, v);
+
+        n++;
+    }
+
+    *n_content = nc;
+    *tag       = tl;
 }
 
 
