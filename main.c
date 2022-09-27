@@ -19,13 +19,14 @@ int usage(void)
     printf("httpd {basedir}                  Starts the HTTPD daemon\n");
     printf("webfinger {basedir} {user}       Queries about a @user@host or actor\n");
     printf("queue {basedir} {uid}            Processes a user queue\n");
+    printf("follow {basedir} {uid} {actor}   Follows an actor\n");
+
 //    printf("check {basedir} [{uid}]          Checks the database\n");
 //    printf("purge {basedir} [{uid}]          Purges old data\n");
 //    printf("adduser {basedir} [{uid}]        Adds a new user\n");
 
 //    printf("update {basedir} {uid}           Sends a user update to followers\n");
 //    printf("passwd {basedir} {uid}           Sets the password for {uid}\n");
-//    printf("follow {basedir} {uid} {actor}   Follows an actor\n");
 //    printf("unfollow {basedir} {uid} {actor} Unfollows an actor\n");
 //    printf("mute {basedir} {uid} {actor}     Mutes an actor\n");
 //    printf("unmute {basedir} {uid} {actor}   Unmutes an actor\n");
@@ -124,8 +125,29 @@ int main(int argc, char *argv[])
         if (msg != NULL) {
             post(&snac, msg);
 
-            xs *j = xs_json_dumps_pp(msg, 4);
-            printf("%s\n", j);
+            if (dbglevel) {
+                xs *j = xs_json_dumps_pp(msg, 4);
+                printf("%s\n", j);
+            }
+        }
+
+        return 0;
+    }
+
+    if (strcmp(cmd, "follow") == 0) {
+        xs *msg = msg_follow(&snac, url);
+
+        if (msg != NULL) {
+            char *actor = xs_dict_get(msg, "object");
+
+            following_add(&snac, actor, msg);
+
+            enqueue_output(&snac, msg, actor, 0);
+
+            if (dbglevel) {
+                xs *j = xs_json_dumps_pp(msg, 4);
+                printf("%s\n", j);
+            }
         }
 
         return 0;
@@ -164,7 +186,6 @@ int main(int argc, char *argv[])
     }
 
     if (strcmp(cmd, "note") == 0) {
-        int status;
         xs *content = NULL;
         xs *msg = NULL;
         xs *c_msg = NULL;
@@ -194,7 +215,7 @@ int main(int argc, char *argv[])
 
         c_msg = msg_create(&snac, msg);
 
-        {
+        if (dbglevel) {
             xs *j = xs_json_dumps_pp(c_msg, 4);
             printf("%s\n", j);
         }

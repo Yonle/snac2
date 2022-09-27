@@ -380,6 +380,34 @@ d_char *msg_create(snac *snac, char *object)
 }
 
 
+d_char *msg_follow(snac *snac, char *actor)
+/* creates a 'Follow' message */
+{
+    d_char *actor_o = NULL;
+    d_char *msg = NULL;
+    int status;
+
+    /* request the actor */
+    status = actor_request(snac, actor, &actor_o);
+
+    if (valid_status(status)) {
+        /* check if the actor is an alias */
+        char *r_actor = xs_dict_get(actor_o, "id");
+
+        if (r_actor && strcmp(actor, r_actor) != 0) {
+            snac_log(snac, xs_fmt("actor to follow is an alias %s -> %s", actor, r_actor));
+            actor = r_actor;
+        }
+
+        msg = msg_base(snac, "Follow", "@dummy", snac->actor, NULL, actor);
+    }
+    else
+        snac_log(snac, xs_fmt("cannot get actor to follow %s %d", actor, status));
+
+    return msg;
+}
+
+
 d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to)
 /* creates a 'Note' message */
 {
