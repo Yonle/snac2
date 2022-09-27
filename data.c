@@ -545,7 +545,7 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
         "\"children\":     [],"
         "\"liked_by\":     [],"
         "\"announced_by\": [],"
-        "\"version\":      \"snac/2.x\","
+        "\"version\":      \"" USER_AGENT "\","
         "\"referrer\":     null,"
         "\"parent\":       null"
     "}");

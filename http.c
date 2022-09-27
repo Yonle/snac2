@@ -90,7 +90,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
     hdrs = xs_dict_append(hdrs, "signature",    signature);
     hdrs = xs_dict_append(hdrs, "digest",       digest);
     hdrs = xs_dict_append(hdrs, "host",         host);
-    hdrs = xs_dict_append(hdrs, "user-agent",   "snac/2.x");
+    hdrs = xs_dict_append(hdrs, "user-agent",   USER_AGENT);
 
     response = xs_http_request(method, url, hdrs,
                            body, b_size, status, payload, p_size);

@@ -158,7 +158,7 @@ void httpd_connection(int rs)
         ctype = "text/html; charset=utf-8";
 
     headers = xs_dict_append(headers, "content-type", ctype);
-    headers = xs_dict_append(headers, "x-creator",    "snac/2.x");
+    headers = xs_dict_append(headers, "x-creator",    USER_AGENT);
 
     if (b_size == 0 && body != NULL)
         b_size = strlen(body);

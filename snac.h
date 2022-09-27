@@ -1,6 +1,10 @@
 /* snac - A simple, minimalistic ActivityPub instance */
 /* copyright (c) 2022 grunfink - MIT license */
 
+#define VERSION "2.0001"
+
+#define USER_AGENT "snac/" VERSION
+
 extern d_char *srv_basedir;
 extern d_char *srv_config;
 extern d_char *srv_baseurl;
