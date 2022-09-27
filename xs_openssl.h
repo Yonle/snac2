@@ -194,7 +194,7 @@ d_char *xs_evp_sign(char *secret, char *mem, int size)
 
     /* I've learnt all these magical incantations by watching
        the Python module code and the OpenSSL manual pages */
-    /* Well, "learnt" may be an exaggeration */
+    /* Well, "learnt" may be an overstatement */
 
     md = EVP_get_digestbyname("sha256");
 
