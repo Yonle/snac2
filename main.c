@@ -2,6 +2,7 @@
 /* copyright (c) 2022 grunfink - MIT license */
 
 #include "xs.h"
+#include "xs_io.h"
 #include "xs_encdec.h"
 #include "xs_json.h"
 
@@ -34,6 +35,7 @@ int usage(void)
 
     printf("request {basedir} {uid} {url}    Requests an object\n");
     printf("actor {basedir} {uid} {url}      Requests an actor\n");
+    printf("note {basedir} {uid} {'text'}    Sends a note to followers\n");
 
     return 1;
 }
@@ -157,6 +159,39 @@ int main(int argc, char *argv[])
             xs *j = xs_json_dumps_pp(data, 4);
             printf("%s\n", j);
         }
+
+        return 0;
+    }
+
+    if (strcmp(cmd, "note") == 0) {
+        int status;
+        xs *data = NULL;
+        xs *content = NULL;
+        xs *f_content = NULL;
+
+        if (strcmp(url, "-") == 0) {
+            /* get the content from an editor */
+            FILE *f;
+
+            system("$EDITOR /tmp/snac-edit.txt");
+
+            if ((f = fopen("/tmp/snac-edit.txt", "r")) != NULL) {
+                content = xs_readall(f);
+                fclose(f);
+
+                unlink("/tmp/snac-edit.txt");
+            }
+            else {
+                printf("Nothing to send\n");
+                return 1;
+            }
+        }
+        else
+            content = xs_dup(url);
+
+        not_really_markdown(content, &f_content);
+
+        printf("%s\n", f_content);
 
         return 0;
     }
