@@ -77,8 +77,7 @@ void srv_debug(int level, d_char *str)
 
     if (xs_str_in(msg, srv_basedir) != -1) {
         /* replace basedir with ~ */
-        xs *o_str = msg;
-        msg = xs_replace(o_str, srv_basedir, "~");
+        msg = xs_replace_i(msg, srv_basedir, "~");
     }
 
     if (dbglevel >= level) {
@@ -96,8 +95,7 @@ void snac_debug(snac *snac, int level, d_char *str)
 
     if (xs_str_in(msg, snac->basedir) != -1) {
         /* replace long basedir references with ~ */
-        xs *o_str = msg;
-        msg = xs_replace(o_str, snac->basedir, "~");
+        msg = xs_replace_i(msg, snac->basedir, "~");
     }
 
     srv_debug(level, msg);

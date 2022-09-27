@@ -63,10 +63,7 @@ d_char *not_really_markdown(char *content, d_char **f_content)
         s = xs_str_cat(s, "</pre>");
 
     /* some beauty fixes */
-    if (xs_str_in(s, "</blockquote><br>") != -1) {
-        xs *os = s;
-        s = xs_replace(os, "</blockquote><br>", "</blockquote>");
-    }
+    s = xs_replace_i(s, "</blockquote><br>", "</blockquote>");
 
     *f_content = s;
 
