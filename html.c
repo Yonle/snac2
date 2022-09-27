@@ -58,17 +58,24 @@ d_char *not_really_markdown(char *content, d_char **f_content)
         }
     }
 
+#if 0
     {
         /* urls */
+        xs *done = xs_list_new();
         xs *ml = xs_regex_matchall(wrk, "https?:/" "/[^ ]+");
         p = ml;
 
         while (xs_list_iter(&p, &v)) {
-            xs *s2 = xs_fmt("<a href=\"%s\">%s</a>", v, v);
+            if (xs_list_in(done, v) == -1) {
+                xs *s2 = xs_fmt("<a href=\"%s\">%s</a>", v, v);
+                wrk = xs_replace_i(wrk, v, s2);
 
-            wrk = xs_replace_i(wrk, v, s2);
+                /* keep track of already done replaces */
+                done = xs_list_append(done, v);
+            }
         }
     }
+#endif
 
     /* now work on lines */
 
