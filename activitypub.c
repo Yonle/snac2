@@ -73,13 +73,14 @@ int actor_request(snac *snac, char *actor, d_char **data)
 }
 
 
-void timeline_request(snac *snac, char *id, char *referrer)
+int timeline_request(snac *snac, char *id, char *referrer)
 /* ensures that an entry and its ancestors are in the timeline */
 {
+    int status = 0;
+
     if (!xs_is_null(id)) {
         /* is the admired object already there? */
         if (!timeline_here(snac, id)) {
-            int status;
             xs *object = NULL;
 
             /* no; download it */
@@ -97,6 +98,8 @@ void timeline_request(snac *snac, char *id, char *referrer)
             }
         }
     }
+
+    return status;
 }
 
 
@@ -137,6 +140,65 @@ int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_s
     snac_log(snac, xs_fmt("send_to_actor %s %d", actor, status));
 
     return status;
+}
+
+
+d_char *recipient_list(snac *snac, char *msg, int expand_public)
+/* returns the list of recipients for a message */
+{
+    d_char *list = xs_list_new();
+    char *to = xs_dict_get(msg, "to");
+    char *cc = xs_dict_get(msg, "cc");
+    int n;
+
+    char *lists[] = { to, cc, NULL };
+    for (n = 0; lists[n]; n++) {
+        char *l = lists[n];
+        char *v;
+
+        if (xs_type(l) == XSTYPE_STRING) {
+            if (xs_list_in(list, l) == -1)
+                list = xs_list_append(list, l);
+        }
+        else
+        while (xs_list_iter(&l, &v)) {
+            if (expand_public && strcmp(v, public_address) == 0) {
+                /* iterate the followers and add them */
+                xs *fwers = follower_list(snac);
+                char *fw;
+
+                char *p = fwers;
+                while (xs_list_iter(&p, &fw)) {
+                    char *actor = xs_dict_get(fw, "actor");
+
+                    if (xs_list_in(list, actor) == -1)
+                        list = xs_list_append(list, actor);
+                }
+            }
+            else
+            if (xs_list_in(list, v) == -1)
+                list = xs_list_append(list, v);
+        }
+    }
+
+    return list;
+}
+
+
+int is_msg_public(snac *snac, char *msg)
+/* checks if a message is public */
+{
+    int ret = 0;
+    xs *rcpts = recipient_list(snac, msg, 0);
+    char *p, *v;
+
+    p = rcpts;
+    while (!ret && xs_list_iter(&p, &v)) {
+        if (strcmp(v, public_address) == 0)
+            ret = 1;
+    }
+
+    return ret;
 }
 
 
@@ -323,7 +385,7 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to)
 {
     xs *ntid = tid(0);
     xs *id   = xs_fmt("%s/p/%s", snac->actor, ntid);
-    xs *ctxt = xs_fmt("%s#ctxt", id);
+    xs *ctxt = NULL;
     xs *fc1  = NULL;
     xs *to   = NULL;
     xs *cc   = xs_list_new();
@@ -341,6 +403,27 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to)
     not_really_markdown(content, &fc1);
 
     if (in_reply_to != NULL) {
+        xs *p_msg = NULL;
+
+        /* demand this thing */
+        timeline_request(snac, in_reply_to, NULL);
+
+        if ((p_msg = timeline_find(snac, in_reply_to)) != NULL) {
+            /* add this author as recipient */
+            char *v;
+
+            if ((v = xs_dict_get(p_msg, "attributedTo")) && xs_list_in(to, v) == -1)
+                to = xs_list_append(to, v);
+
+            if ((v = xs_dict_get(p_msg, "context")))
+                ctxt = xs_dup(v);
+
+            /* if this message is public, ours will also be */
+            if (is_msg_public(snac, p_msg) &&
+                xs_list_in(to, (char *)public_address) == -1)
+                to = xs_list_append(to, public_address);
+        }
+
         irt = xs_dup(in_reply_to);
     }
     else
@@ -348,6 +431,9 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to)
 
     if (tag == NULL)
         tag = xs_list_new();
+
+    if (ctxt == NULL)
+        ctxt = xs_fmt("%s#ctxt", id);
 
     /* add all mentions to the cc */
     p = tag;
@@ -523,65 +609,6 @@ void process_queue(snac *snac)
             process_message(snac, msg, req);
         }
     }
-}
-
-
-d_char *recipient_list(snac *snac, char *msg, int expand_public)
-/* returns the list of recipients for a message */
-{
-    d_char *list = xs_list_new();
-    char *to = xs_dict_get(msg, "to");
-    char *cc = xs_dict_get(msg, "cc");
-    int n;
-
-    char *lists[] = { to, cc, NULL };
-    for (n = 0; lists[n]; n++) {
-        char *l = lists[n];
-        char *v;
-
-        if (xs_type(l) == XSTYPE_STRING) {
-            if (xs_list_in(list, l) == -1)
-                list = xs_list_append(list, l);
-        }
-        else
-        while (xs_list_iter(&l, &v)) {
-            if (expand_public && strcmp(v, public_address) == 0) {
-                /* iterate the followers and add them */
-                xs *fwers = follower_list(snac);
-                char *fw;
-
-                char *p = fwers;
-                while (xs_list_iter(&p, &fw)) {
-                    char *actor = xs_dict_get(fw, "actor");
-
-                    if (xs_list_in(list, actor) == -1)
-                        list = xs_list_append(list, actor);
-                }
-            }
-            else
-            if (xs_list_in(list, v) == -1)
-                list = xs_list_append(list, v);
-        }
-    }
-
-    return list;
-}
-
-
-int is_msg_public(snac *snac, char *msg)
-/* checks if a message is public */
-{
-    int ret = 0;
-    xs *rcpts = recipient_list(snac, msg, 0);
-    char *p, *v;
-
-    p = rcpts;
-    while (!ret && xs_list_iter(&p, &v)) {
-        if (strcmp(v, public_address) == 0)
-            ret = 1;
-    }
-
-    return ret;
 }
 
 

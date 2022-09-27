@@ -168,6 +168,7 @@ int main(int argc, char *argv[])
         xs *content = NULL;
         xs *msg = NULL;
         xs *c_msg = NULL;
+        char *in_reply_to = GET_ARGV();
 
         if (strcmp(url, "-") == 0) {
             /* get the content from an editor */
@@ -189,7 +190,7 @@ int main(int argc, char *argv[])
         else
             content = xs_dup(url);
 
-        msg = msg_note(&snac, content, NULL, NULL);
+        msg = msg_note(&snac, content, NULL, in_reply_to);
 
         c_msg = msg_create(&snac, msg);
 
@@ -199,6 +200,8 @@ int main(int argc, char *argv[])
         }
 
         post(&snac, c_msg);
+
+        timeline_add(&snac, xs_dict_get(msg, "id"), msg, in_reply_to, NULL);
 
         return 0;
     }
