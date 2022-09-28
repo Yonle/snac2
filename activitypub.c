@@ -564,6 +564,7 @@ int process_message(snac *snac, char *msg, char *req)
     char *actor  = xs_dict_get(msg, "actor");
     char *type   = xs_dict_get(msg, "type");
     xs *actor_o = NULL;
+    int a_status;
 
     char *object, *utype;
 
@@ -574,8 +575,17 @@ int process_message(snac *snac, char *msg, char *req)
         utype = "(null)";
 
     /* bring the actor */
-    if (!valid_status(actor_request(snac, actor, &actor_o))) {
-        snac_log(snac, xs_fmt("error requesting actor %s -- retry later", actor));
+    a_status = actor_request(snac, actor, &actor_o);
+
+    /* if it's a 410 Gone, it's a Delete crap that can be ignored */
+    if (a_status == 410) {
+        return 1;
+    }
+
+    if (!valid_status(a_status)) {
+        snac_log(snac,
+            xs_fmt("error requesting actor %s %d -- retry later", actor, a_status));
+
         return 0;
     }
 
