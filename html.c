@@ -251,9 +251,9 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
         xs *s1;
 
         if (local)
-            s1 = xs_fmt("<a href=\"%s/admin\">%s</a></nav>", snac->actor, L("admin"));
+            s1 = xs_fmt("<a href=\"%s/admin\">%s</a></nav>\n", snac->actor, L("admin"));
         else
-            s1 = xs_fmt("<a href=\"%s\">%s</a></nav>", snac->actor, L("public"));
+            s1 = xs_fmt("<a href=\"%s\">%s</a></nav>\n", snac->actor, L("public"));
 
         s = xs_str_cat(s, s1);
     }
@@ -408,8 +408,8 @@ d_char *html_entry(snac *snac, d_char *s, char *msg, xs_set *seen, int level)
                     name = xs_dict_get(actor_r, "preferredUsername");
 
                 xs *s1 = xs_fmt(
-                    "<div class=\"snac-origin\">\n"
-                    "<a href=\"%s\">%s</a> %s</div>",
+                    "<div class=\"snac-origin\">"
+                    "<a href=\"%s\">%s</a> %s</div>\n",
                     xs_dict_get(actor_r, "id"),
                     name,
                     "boosted"
@@ -441,16 +441,51 @@ d_char *html_entry(snac *snac, d_char *s, char *msg, xs_set *seen, int level)
             c = xs_fmt("<p>%s</p>", s1);
         }
 
-        xs *s1 = xs_fmt("<div class=\"e-content snac-content\">\n%s", c);
-
+        xs *s1 = xs_fmt("<div class=\"e-content snac-content\">\n%s\n", c);
         s = xs_str_cat(s, s1);
 
-        s = xs_str_cat(s, "</div>\n");
+        /* now add the attachments */
+        char *attach;
+
+        if ((attach = xs_dict_get(msg, "attachment")) != NULL) {
+            char *v;
+            while (xs_list_iter(&attach, &v)) {
+                char *t = xs_dict_get(v, "mediaType");
+
+                if (t && xs_startswith(t, "image/")) {
+                    char *url  = xs_dict_get(v, "url");
+                    char *name = xs_dict_get(v, "name");
+
+                    if (url != NULL) {
+                        xs *s1 = xs_fmt("<p><img src=\"%s\" alt=\"%s\"/></p>\n",
+                            url, name == NULL ? "" : name);
+
+                        s = xs_str_cat(s, s1);
+                    }
+                }
+            }
+        }
+
+        s = xs_str_cat(s, "</div> <!-- e-content -->\n");
     }
 
-    s = xs_str_cat(s, "</div>\n");
+    s = xs_str_cat(s, "</div> <!-- post or child -->\n");
 
     return s;
+}
+
+
+d_char *html_user_footer(snac *snac, d_char *s)
+{
+    xs *s1 = xs_fmt(
+        "<div class=\"snac-footer\">\n"
+        "<a href=\"%s\">%s</a> - "
+        "powered by <abbr title=\"Social Networks Are Crap\">snac</abbr></div>\n",
+        srv_baseurl,
+        L("about this site")
+    );
+
+    return xs_str_cat(s, s1);
 }
 
 
@@ -474,35 +509,9 @@ d_char *html_timeline(snac *snac, char *list, int local)
         s = html_entry(snac, s, msg, seen, 0);
     }
 
-    s = xs_str_cat(s, "</div>\n");
+    s = xs_str_cat(s, "</div> <!-- snac-posts -->\n");
 
-#if 0
-    s = xs_str_cat(s, "<h1>HI</h1>\n");
-
-    s = xs_str_cat(s, xs_fmt("len() == %d\n", xs_list_len(list)));
-
-    {
-        char *i = xs_list_get(list, 0);
-        xs *msg = timeline_get(snac, i);
-
-        s = html_msg_icon(snac, s, msg);
-    }
-
-    s = xs_str_cat(s, "</html>\n");
-#endif
-
-    {
-        /* footer */
-        xs *s1 = xs_fmt(
-            "<div class=\"snac-footer\">\n"
-            "<a href=\"%s\">%s</a> - "
-            "powered by <abbr title=\"Social Networks Are Crap\">snac</abbr></div>\n",
-            srv_baseurl,
-            L("about this site")
-        );
-
-        s = xs_str_cat(s, s1);
-    }
+    s = html_user_footer(snac, s);
 
     s = xs_str_cat(s, "</body>\n</html>\n");
 
