@@ -3,6 +3,7 @@
 
 #include "xs.h"
 #include "xs_io.h"
+#include "xs_encdec.h"
 #include "xs_json.h"
 #include "xs_regex.h"
 
@@ -115,6 +116,29 @@ d_char *not_really_markdown(char *content, d_char **f_content)
     *f_content = s;
 
     return *f_content;
+}
+
+
+int login(snac *snac, char *headers)
+/* tries a login */
+{
+    int logged_in = 0;
+    char *auth = xs_dict_get(headers, "authorization");
+
+    if (auth && xs_startswith(auth, "Basic ")) {
+        int sz;
+        xs *s1 = xs_crop(xs_dup(auth), 6, 0);
+        xs *s2 = xs_base64_dec(s1, &sz);
+        xs *l1 = xs_split_n(s2, ":", 1);
+
+        if (xs_list_len(l1) == 2) {
+            logged_in = check_password(
+                xs_list_get(l1, 0), xs_list_get(l1, 1),
+                xs_dict_get(snac->config, "passwd"));
+        }
+    }
+
+    return logged_in;
 }
 
 
