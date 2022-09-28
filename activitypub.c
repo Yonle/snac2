@@ -563,6 +563,7 @@ void process_message(snac *snac, char *msg, char *req)
     /* actor and type exist, were checked previously */
     char *actor  = xs_dict_get(msg, "actor");
     char *type   = xs_dict_get(msg, "type");
+    xs *actor_o = NULL;
 
     char *object, *utype;
 
@@ -571,6 +572,9 @@ void process_message(snac *snac, char *msg, char *req)
         utype = xs_dict_get(object, "type");
     else
         utype = "(null)";
+
+    /* bring the actor */
+    actor_request(snac, actor, &actor_o);
 
     /* check the signature */
     /* ... */
@@ -632,13 +636,25 @@ void process_message(snac *snac, char *msg, char *req)
     }
     else
     if (strcmp(type, "Announce") == 0) {
+        xs *a_msg = NULL;
+
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
 
         timeline_request(snac, object, actor);
 
-        timeline_admire(snac, object, actor, 0);
-        snac_log(snac, xs_fmt("new 'Announce' %s %s", actor, object));
+        if ((a_msg = timeline_find(snac, object)) != NULL) {
+            char *who = xs_dict_get(a_msg, "attributedTo");
+
+            if (who && !is_muted(snac, who)) {
+                timeline_admire(snac, object, actor, 0);
+                snac_log(snac, xs_fmt("new 'Announce' %s %s", actor, object));
+            }
+            else
+                snac_log(snac, xs_fmt("ignored 'Announce' about muted actor %s", who));
+        }
+        else
+            snac_log(snac, xs_fmt("error requesting 'Announce' object %s", object));
     }
 /*
     else
