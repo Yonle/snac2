@@ -617,6 +617,8 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
         msg = xs_dict_set(msg, "_snac", meta);
 
         unlink(ofn);
+        ofn = xs_replace_i(ofn, "/timeline/", "/local/");
+        unlink(ofn);
 
         _timeline_write(snac, id, msg, xs_dict_get(meta, "parent"), admirer);
 
