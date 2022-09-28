@@ -127,11 +127,18 @@ void httpd_connection(int rs)
 
         if (status == 0)
             status = activitypub_get_handler(req, q_path, &body, &b_size, &ctype);
+
+        if (status == 0)
+            status = html_get_handler(req, q_path, &body, &b_size, &ctype);
     }
     else
     if (strcmp(method, "POST") == 0) {
         if (status == 0)
             status = activitypub_post_handler(req, q_path,
+                        payload, p_size, &body, &b_size, &ctype);
+
+        if (status == 0)
+            status = html_post_handler(req, q_path,
                         payload, p_size, &body, &b_size, &ctype);
     }
 
@@ -139,8 +146,10 @@ void httpd_connection(int rs)
     headers = xs_dict_new();
 
     /* unattended? it's an error */
-    if (status == 0)
+    if (status == 0) {
+        srv_debug(1, xs_fmt("httpd_connection unattended %s %s", method, q_path));
         status = 404;
+    }
 
     if (status == 404)
         body = xs_str_new("<h1>404 Not Found</h1>");
