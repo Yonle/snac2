@@ -831,21 +831,24 @@ int static_get(snac *snac, char *id, d_char **data, int *size)
 }
 
 
-void enqueue_input(snac *snac, char *msg, char *req)
+void enqueue_input(snac *snac, char *msg, char *req, int retries)
 /* enqueues an input message */
 {
-    xs *ntid = tid(0);
+    int qrt  = xs_number_get(xs_dict_get(srv_config, "queue_retry_minutes"));
+    xs *ntid = tid(retries * 60 * qrt);
     xs *fn   = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
     xs *tfn  = xs_fmt("%s.tmp", fn);
     FILE *f;
 
     if ((f = fopen(tfn, "w")) != NULL) {
         xs *qmsg = xs_dict_new();
+        xs *rn   = xs_number_new(retries);
         xs *j;
 
-        qmsg = xs_dict_append(qmsg, "type",   "input");
-        qmsg = xs_dict_append(qmsg, "object", msg);
-        qmsg = xs_dict_append(qmsg, "req",    req);
+        qmsg = xs_dict_append(qmsg, "type",    "input");
+        qmsg = xs_dict_append(qmsg, "object",  msg);
+        qmsg = xs_dict_append(qmsg, "req",     req);
+        qmsg = xs_dict_append(qmsg, "retries", rn);
 
         j = xs_json_dumps_pp(qmsg, 4);
 

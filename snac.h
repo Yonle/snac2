@@ -83,7 +83,7 @@ int actor_get(snac *snac, char *actor, d_char **data);
 
 int static_get(snac *snac, char *id, d_char **data, int *size);
 
-void enqueue_input(snac *snac, char *msg, char *req);
+void enqueue_input(snac *snac, char *msg, char *req, int retries);
 void enqueue_output(snac *snac, char *msg, char *actor, int retries);
 
 d_char *queue(snac *snac);

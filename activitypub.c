@@ -557,7 +557,7 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to)
 
 /** queues **/
 
-void process_message(snac *snac, char *msg, char *req)
+int process_message(snac *snac, char *msg, char *req)
 /* processes an ActivityPub message from the input queue */
 {
     /* actor and type exist, were checked previously */
@@ -575,10 +575,8 @@ void process_message(snac *snac, char *msg, char *req)
 
     /* bring the actor */
     if (!valid_status(actor_request(snac, actor, &actor_o))) {
-        /* error: re-enqueue to try later */
-        enqueue_input(snac, msg, req);
         snac_log(snac, xs_fmt("error requesting actor %s -- retry later", actor));
-        return;
+        return 0;
     }
 
     /* check the signature */
@@ -690,6 +688,8 @@ void process_message(snac *snac, char *msg, char *req)
 */
     else
         snac_debug(snac, 1, xs_fmt("process_message type '%s' ignored", type));
+
+    return 1;
 }
 
 
@@ -742,8 +742,17 @@ void process_queue(snac *snac)
             /* process the message */
             char *msg = xs_dict_get(q_item, "object");
             char *req = xs_dict_get(q_item, "req");
+            int retries = xs_number_get(xs_dict_get(q_item, "retries"));
 
-            process_message(snac, msg, req);
+            if (!process_message(snac, msg, req)) {
+                if (retries > queue_retry_max)
+                    snac_log(snac, xs_fmt("process_queue input giving up"));
+                else {
+                    /* reenqueue */
+                    enqueue_input(snac, msg, req, retries + 1);
+                    snac_log(snac, xs_fmt("process_queue input requeue %d", retries + 1));
+                }
+            }
         }
     }
 }
@@ -907,7 +916,7 @@ int activitypub_post_handler(d_char *req, char *q_path,
     }
 
     if (valid_status(status)) {
-        enqueue_input(&snac, msg, req);
+        enqueue_input(&snac, msg, req, 0);
         *ctype = "application/activity+json";
     }
 
