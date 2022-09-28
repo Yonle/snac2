@@ -669,10 +669,16 @@ void process_message(snac *snac, char *msg, char *req)
         else
             snac_log(snac, xs_fmt("error requesting 'Announce' object %s", object));
     }
-/*
     else
     if (strcmp(type, "Update") == 0) {
+        if (strcmp(utype, "Person") == 0) {
+            actor_add(snac, actor, xs_dict_get(msg, "object"));
+            snac_log(snac, xs_fmt("updated actor %s", actor));
+        }
+        else
+            snac_log(snac, xs_fmt("ignored 'Update' for object type '%s'", utype));
     }
+/*
     else
     if (strcmp(type, "Delete") == 0) {
     }

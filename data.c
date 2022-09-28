@@ -737,7 +737,7 @@ d_char *_actor_fn(snac *snac, char *actor)
 
 
 int actor_add(snac *snac, char *actor, char *msg)
-/* adds a follower */
+/* adds an actor */
 {
     int ret = 201; /* created */
     xs *fn = _actor_fn(snac, actor);
