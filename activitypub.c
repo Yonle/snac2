@@ -761,7 +761,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
     else
     if (strcmp(p_path, "outbox") == 0) {
         xs *id = xs_fmt("%s/outbox", snac.actor);
-        xs *elems = local_list(&snac, 40);
+        xs *elems = local_list(&snac, 20);
         xs *list = xs_list_new();
         msg = msg_collection(&snac, id);
         char *p, *v;
@@ -772,8 +772,10 @@ int activitypub_get_handler(d_char *req, char *q_path,
             char *type = xs_dict_get(i, "type");
             char *id   = xs_dict_get(i, "id");
 
-            if (type && id && strcmp(type, "Note") == 0 && xs_startswith(id, snac.actor))
+            if (type && id && strcmp(type, "Note") == 0 && xs_startswith(id, snac.actor)) {
+                i = xs_dict_del(i, "_snac");
                 list = xs_list_append(list, i);
+            }
         }
 
         /* replace the 'orderedItems' with the latest posts */
