@@ -458,7 +458,7 @@ d_char *html_entry(snac *snac, d_char *s, char *msg, xs_set *seen, int level)
 
                     if (url != NULL) {
                         xs *s1 = xs_fmt("<p><img src=\"%s\" alt=\"%s\"/></p>\n",
-                            url, name == NULL ? "" : name);
+                            url, xs_is_null(name) ? "" : name);
 
                         s = xs_str_cat(s, s1);
                     }

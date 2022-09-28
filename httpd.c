@@ -106,6 +106,12 @@ void httpd_connection(int rs)
 
     req = xs_httpd_request(f, &payload, &p_size);
 
+    if (req == NULL) {
+        /* probably because a timeout */
+        fclose(f);
+        return;
+    }
+
     method = xs_dict_get(req, "method");
     q_path = xs_dup(xs_dict_get(req, "path"));
 
