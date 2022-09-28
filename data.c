@@ -357,16 +357,19 @@ d_char *timeline_get(snac *snac, char *fn)
 }
 
 
-d_char *timeline_list(snac *snac)
+d_char *_timeline_list(snac *snac, char *directory, int max)
 /* returns a list of the timeline filenames */
 {
     d_char *list;
-    xs *spec = xs_fmt("%s/timeline/" "*.json", snac->basedir);
+    xs *spec = xs_fmt("%s/%s/" "*.json", snac->basedir, directory);
     glob_t globbuf;
-    int max;
+    int c_max;
 
     /* maximum number of items in the timeline */
-    max = xs_number_get(xs_dict_get(srv_config, "max_timeline_entries"));
+    c_max = xs_number_get(xs_dict_get(srv_config, "max_timeline_entries"));
+
+    if (max > c_max)
+        max = c_max;
 
     list = xs_list_new();
 
@@ -387,6 +390,18 @@ d_char *timeline_list(snac *snac)
     globfree(&globbuf);
 
     return list;
+}
+
+
+d_char *timeline_list(snac *snac, int max)
+{
+    return _timeline_list(snac, "timeline", max);
+}
+
+
+d_char *local_list(snac *snac, int max)
+{
+    return _timeline_list(snac, "local", max);
 }
 
 

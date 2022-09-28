@@ -59,9 +59,11 @@ int timeline_here(snac *snac, char *id);
 d_char *timeline_find(snac *snac, char *id);
 void timeline_del(snac *snac, char *id);
 d_char *timeline_get(snac *snac, char *fn);
-d_char *timeline_list(snac *snac);
+d_char *timeline_list(snac *snac, int max);
 int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer);
 void timeline_admire(snac *snac, char *id, char *admirer, int like);
+
+d_char *local_list(snac *snac, int max);
 
 int following_add(snac *snac, char *actor, char *msg);
 int following_del(snac *snac, char *actor);

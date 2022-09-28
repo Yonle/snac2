@@ -761,10 +761,24 @@ int activitypub_get_handler(d_char *req, char *q_path,
     else
     if (strcmp(p_path, "outbox") == 0) {
         xs *id = xs_fmt("%s/outbox", snac.actor);
+        xs *elems = local_list(&snac, 40);
+        xs *list = xs_list_new();
         msg = msg_collection(&snac, id);
+        char *p, *v;
+
+        p = elems;
+        while (xs_list_iter(&p, &v)) {
+            xs *i = timeline_get(&snac, v);
+            char *type = xs_dict_get(i, "type");
+            char *id   = xs_dict_get(i, "id");
+
+            if (type && id && strcmp(type, "Note") == 0 && xs_startswith(id, snac.actor))
+                list = xs_list_append(list, i);
+        }
 
         /* replace the 'orderedItems' with the latest posts */
-        /* ... */
+        msg = xs_dict_set(msg, "orderedItems", list);
+        msg = xs_dict_set(msg, "totalItems",   xs_number_new(xs_list_len(list)));
     }
     else
     if (strcmp(p_path, "followers") == 0 || strcmp(p_path, "following") == 0) {
