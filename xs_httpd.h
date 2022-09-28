@@ -128,7 +128,7 @@ d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
     if ((v = xs_dict_get(req, "content-length")) != NULL) {
         /* if it has a payload, load it */
         *p_size  = atoi(v);
-        *payload = xs_read(f, *p_size);
+        *payload = xs_read(f, p_size);
     }
 
     /* is the payload form urlencoded variables? */

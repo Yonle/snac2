@@ -6,7 +6,7 @@
 
 d_char *xs_readall(FILE *f);
 d_char *xs_readline(FILE *f);
-d_char *xs_read(FILE *f, int size);
+d_char *xs_read(FILE *f, int *size);
 
 
 #ifdef XS_IMPLEMENTATION
@@ -56,16 +56,18 @@ d_char *xs_readline(FILE *f)
 }
 
 
-d_char *xs_read(FILE *f, int size)
+d_char *xs_read(FILE *f, int *sz)
 /* reads up to size bytes from f */
 {
     d_char *s;
+    int size = *sz;
+    int rdsz = 0;
 
     errno = 0;
 
     s = xs_str_new(NULL);
 
-    while (size != 0 && !feof(f)) {
+    while (size > 0 && !feof(f)) {
         char tmp[2048];
         int n, r;
 
@@ -76,7 +78,10 @@ d_char *xs_read(FILE *f, int size)
         s = xs_append_m(s, tmp, r);
 
         size -= r;
+        rdsz += r;
     }
+
+    *sz = rdsz;
 
     return s;
 }

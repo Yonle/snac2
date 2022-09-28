@@ -801,6 +801,31 @@ int actor_get(snac *snac, char *actor, d_char **data)
 }
 
 
+d_char *_static_fn(snac *snac, char *id)
+/* gets the filename for a static file */
+{
+    return xs_fmt("%s/static/%s", snac->basedir, id);
+}
+
+
+int static_get(snac *snac, char *id, d_char **data, int *size)
+/* returns static content */
+{
+    xs *fn = _static_fn(snac, id);
+    FILE *f;
+    int status = 404;
+
+    *size = 0xfffffff;
+
+    if ((f = fopen(fn, "rb")) != NULL) {
+        *data = xs_read(f, size);
+        status = 200;
+    }
+
+    return status;
+}
+
+
 void enqueue_input(snac *snac, char *msg, char *req)
 /* enqueues an input message */
 {

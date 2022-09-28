@@ -207,12 +207,52 @@ d_char *html_msg_icon(snac *snac, d_char *s, char *msg)
 }
 
 
+d_char *html_user_header(snac *snac, d_char *s)
+/* creates the HTML header */
+{
+    char *p, *v;
+
+    s = xs_str_cat(s, "<!DOCTYPE html>\n<html>\n<head>\n");
+    s = xs_str_cat(s, "<meta name=\"viewport\" "
+                      "content=\"width=device-width, initial-scale=1\"/>\n");
+    s = xs_str_cat(s, "<meta name=\"generator\" "
+                      "content=\"" USER_AGENT "\"/>\n");
+
+    /* add server CSS */
+    p = xs_dict_get(srv_config, "cssurls");
+    while (xs_list_iter(&p, &v)) {
+        xs *s1 = xs_fmt("<link rel=\"stylesheet\" type=\"text/css\" href=\"%s\"/>\n", v);
+        s = xs_str_cat(s, s1);
+    }
+
+    /* add the user CSS */
+    {
+        xs *css = NULL;
+        int size;
+
+        if (valid_status(static_get(snac, "style.css", &css, &size))) {
+            xs *s1 = xs_fmt("<style>%s</style>\n", css);
+            s = xs_str_cat(s, s1);
+        }
+    }
+
+    {
+        xs *s1 = xs_fmt("<title>%s</title>\n", xs_dict_get(snac->config, "name"));
+        s = xs_str_cat(s, s1);
+    }
+
+    s = xs_str_cat(s, "</head>\n<body>\n");
+
+    return s;
+}
+
+
 d_char *html_timeline(snac *snac, char *list, int local)
 /* returns the HTML for the timeline */
 {
     d_char *s = xs_str_new(NULL);
 
-    s = xs_str_cat(s, "<!DOCTYPE html>\n<html>\n");
+    s = html_user_header(snac, s);
 
     s = xs_str_cat(s, "<h1>HI</h1>\n");
 
