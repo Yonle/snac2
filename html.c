@@ -180,7 +180,7 @@ d_char *html_msg_icon(snac *snac, d_char *s, char *msg)
 
         {
             xs *s1 = xs_fmt("<a href=\"%s\" class=\"p-author h-card snac-author\">%s</a>",
-                actor, name);
+                actor_id, name);
             s = xs_str_cat(s, s1);
         }
 
@@ -207,7 +207,7 @@ d_char *html_msg_icon(snac *snac, d_char *s, char *msg)
 }
 
 
-d_char *html_user_header(snac *snac, d_char *s)
+d_char *html_user_header(snac *snac, d_char *s, int local)
 /* creates the HTML header */
 {
     char *p, *v;
@@ -243,6 +243,40 @@ d_char *html_user_header(snac *snac, d_char *s)
 
     s = xs_str_cat(s, "</head>\n<body>\n");
 
+    /* top nav */
+    s = xs_str_cat(s, "<nav style=\"snac-top-nav\">");
+
+    {
+        xs *s1;
+
+        if (local)
+            s1 = xs_fmt("<a href=\"%s/admin\">%s</a></nav>", snac->actor, L("admin"));
+        else
+            s1 = xs_fmt("<a href=\"%s\">%s</a></nav>", snac->actor, L("public"));
+
+        s = xs_str_cat(s, s1);
+    }
+
+    /* user info */
+    {
+        s = xs_str_cat(s, "<div class=\"h-card snac-top-user\">\n");
+
+        xs *s1 = xs_fmt("<p class=\"p-name snac-top-user-name\">%s</p>\n",
+            xs_dict_get(snac->config, "name"));
+        s = xs_str_cat(s, s1);
+
+        xs *s2 = xs_fmt("<p class=\"snac-top-user-id\">@%s@%s</p>\n",
+            xs_dict_get(snac->config, "uid"), xs_dict_get(srv_config, "host"));
+        s = xs_str_cat(s, s2);
+
+        xs *bio = NULL;
+        not_really_markdown(xs_dict_get(snac->config, "bio"), &bio);
+        xs *s3 = xs_fmt("<div class=\"p-note snac-top-user-bio\">%s</div>\n", bio);
+        s = xs_str_cat(s, s3);
+
+        s = xs_str_cat(s, "</div>\n");
+    }
+
     return s;
 }
 
@@ -252,7 +286,7 @@ d_char *html_timeline(snac *snac, char *list, int local)
 {
     d_char *s = xs_str_new(NULL);
 
-    s = html_user_header(snac, s);
+    s = html_user_header(snac, s, local);
 
     s = xs_str_cat(s, "<h1>HI</h1>\n");
 
