@@ -142,9 +142,154 @@ int login(snac *snac, char *headers)
 }
 
 
+d_char *html_msg_icon(snac *snac, d_char *s, char *msg)
+{
+    char *actor_id;
+    xs *actor = NULL;
+
+    if ((actor_id = xs_dict_get(msg, "attributedTo")) == NULL)
+        actor_id = xs_dict_get(msg, "actor");
+
+    if (actor_id && valid_status(actor_get(snac, actor_id, &actor))) {
+        xs *name   = NULL;
+        xs *avatar = NULL;
+        char *v;
+
+        /* get the name */
+        if ((v = xs_dict_get(actor, "name")) == NULL) {
+            if ((v = xs_dict_get(actor, "preferredUsername")) == NULL) {
+                v = "user";
+            }
+        }
+
+        name = xs_dup(v);
+
+        /* get the avatar */
+        if ((v = xs_dict_get(actor, "icon")) != NULL &&
+            (v = xs_dict_get(v, "url")) != NULL) {
+            avatar = xs_dup(v);
+        }
+
+        if (avatar == NULL)
+            avatar = xs_fmt("data:image/png;base64, %s", susie);
+
+        {
+            xs *s1 = xs_fmt("<p><img class=\"snac-avatar\" src=\"%s\"/>\n", avatar);
+            s = xs_str_cat(s, s1);
+        }
+
+        {
+            xs *s1 = xs_fmt("<a href=\"%s\" class=\"p-author h-card snac-author\">%s</a>",
+                actor, name);
+            s = xs_str_cat(s, s1);
+        }
+
+        if (strcmp(xs_dict_get(msg, "type"), "Note") == 0) {
+            xs *s1 = xs_fmt(" <a href=\"%s\">»</a>", xs_dict_get(msg, "id"));
+            s = xs_str_cat(s, s1);
+        }
+
+        if (!is_msg_public(snac, msg))
+            s = xs_str_cat(s, " <span title=\"private\">&#128274;</span>");
+
+        if ((v = xs_dict_get(msg, "published")) == NULL)
+            v = "&nbsp;";
+
+        {
+            xs *s1 = xs_fmt("<br>\n<time class=\"dt-published snac-pubdate\">%s</time>\n", v);
+            s = xs_str_cat(s, s1);
+        }
+
+        s = xs_str_cat(s, "</div>\n");
+    }
+
+    return s;
+}
+
+
+d_char *html_timeline(snac *snac, char *list, int local)
+/* returns the HTML for the timeline */
+{
+    d_char *s = xs_str_new(NULL);
+
+    s = xs_str_cat(s, "<!DOCTYPE html>\n<html>\n");
+
+    s = xs_str_cat(s, "<h1>HI</h1>\n");
+
+    s = xs_str_cat(s, xs_fmt("len() == %d\n", xs_list_len(list)));
+
+    {
+        char *i = xs_list_get(list, 0);
+        xs *msg = timeline_get(snac, i);
+
+        s = html_msg_icon(snac, s, msg);
+    }
+
+    s = xs_str_cat(s, "</html>\n");
+
+    return s;
+}
+
+
 int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char **ctype)
 {
-    int status = 0;
+    int status = 404;
+    snac snac;
+    char *uid, *p_path;
+
+    xs *l = xs_split_n(q_path, "/", 2);
+
+    uid = xs_list_get(l, 1);
+    if (!uid || !user_open(&snac, uid)) {
+        /* invalid user */
+        srv_log(xs_fmt("html_get_handler bad user %s", uid));
+        return 404;
+    }
+
+    p_path = xs_list_get(l, 2);
+
+    if (p_path == NULL) {
+        /* public timeline */
+        xs *list = local_list(&snac, 0xfffffff);
+
+        *body   = html_timeline(&snac, list, 1);
+        *b_size = strlen(*body);
+        status  = 200;
+    }
+    else
+    if (strcmp(p_path, "admin") == 0) {
+        /* private timeline */
+
+        if (!login(&snac, req))
+            status = 401;
+        else {
+            xs *list = timeline_list(&snac, 0xfffffff);
+
+            *body   = html_timeline(&snac, list, 0);
+            *b_size = strlen(*body);
+            status  = 200;
+        }
+    }
+    else
+    if (xs_startswith(p_path, "p/") == 0) {
+        /* a timeline with just one entry */
+    }
+    else
+    if (xs_startswith(p_path, "s/") == 0) {
+        /* a static file */
+    }
+    else
+    if (xs_startswith(p_path, "h/") == 0) {
+        /* an entry from the history */
+    }
+    else
+        status = 404;
+
+    user_free(&snac);
+
+    if (valid_status(status)) {
+        *ctype = "text/html; charset=utf-8";
+    }
 
     return status;
 }

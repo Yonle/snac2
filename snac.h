@@ -12,6 +12,8 @@ extern int     srv_running;
 
 extern int dbglevel;
 
+extern const char *susie;
+
 #define valid_status(status) ((status) >= 200 && (status) <= 299)
 
 d_char *xs_time(char *fmt, int local);
@@ -102,6 +104,7 @@ int activitypub_request(snac *snac, char *url, d_char **data);
 int actor_request(snac *snac, char *actor, d_char **data);
 int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_size);
 int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size);
+int is_msg_public(snac *snac, char *msg);
 void process_queue(snac *snac);
 void post(snac *snac, char *msg);
 int activitypub_get_handler(d_char *req, char *q_path,
