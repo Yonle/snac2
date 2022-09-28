@@ -175,7 +175,7 @@ d_char *html_msg_icon(snac *snac, d_char *s, char *msg)
             avatar = xs_fmt("data:image/png;base64, %s", susie);
 
         {
-            xs *s1 = xs_fmt("<p><img class=\"snac-avatar\" src=\"%s\"/>\n", avatar);
+            xs *s1 = xs_fmt("<p><img class=\"snac-avatar\" src=\"%s\" alt=\"\"/>\n", avatar);
             s = xs_str_cat(s, s1);
         }
 
@@ -200,8 +200,6 @@ d_char *html_msg_icon(snac *snac, d_char *s, char *msg)
             xs *s1 = xs_fmt("<br>\n<time class=\"dt-published snac-pubdate\">%s</time>\n", v);
             s = xs_str_cat(s, s1);
         }
-
-        s = xs_str_cat(s, "</div>\n");
     }
 
     return s;
@@ -425,6 +423,8 @@ d_char *html_entry(snac *snac, d_char *s, char *msg, xs_set *seen, int level)
     s = html_msg_icon(snac, s, msg);
 
     /* add the content */
+    s = xs_str_cat(s, "<div class=\"e-content snac-content\">\n");
+
     {
         xs *c = xs_dup(xs_dict_get(msg, "content"));
 
@@ -441,32 +441,59 @@ d_char *html_entry(snac *snac, d_char *s, char *msg, xs_set *seen, int level)
             c = xs_fmt("<p>%s</p>", s1);
         }
 
-        xs *s1 = xs_fmt("<div class=\"e-content snac-content\">\n%s\n", c);
-        s = xs_str_cat(s, s1);
+        s = xs_str_cat(s, c);
+    }
 
-        /* now add the attachments */
-        char *attach;
+    /* add the attachments */
+    char *attach;
 
-        if ((attach = xs_dict_get(msg, "attachment")) != NULL) {
-            char *v;
-            while (xs_list_iter(&attach, &v)) {
-                char *t = xs_dict_get(v, "mediaType");
+    if ((attach = xs_dict_get(msg, "attachment")) != NULL) {
+        char *v;
+        while (xs_list_iter(&attach, &v)) {
+            char *t = xs_dict_get(v, "mediaType");
 
-                if (t && xs_startswith(t, "image/")) {
-                    char *url  = xs_dict_get(v, "url");
-                    char *name = xs_dict_get(v, "name");
+            if (t && xs_startswith(t, "image/")) {
+                char *url  = xs_dict_get(v, "url");
+                char *name = xs_dict_get(v, "name");
 
-                    if (url != NULL) {
-                        xs *s1 = xs_fmt("<p><img src=\"%s\" alt=\"%s\"/></p>\n",
-                            url, xs_is_null(name) ? "" : name);
+                if (url != NULL) {
+                    xs *s1 = xs_fmt("<p><img src=\"%s\" alt=\"%s\"/></p>\n",
+                        url, xs_is_null(name) ? "" : name);
 
-                        s = xs_str_cat(s, s1);
-                    }
+                    s = xs_str_cat(s, s1);
                 }
             }
         }
+    }
 
-        s = xs_str_cat(s, "</div> <!-- e-content -->\n");
+    s = xs_str_cat(s, "</div> <!-- e-content -->\n");
+
+    char *children = xs_dict_get(meta, "children");
+
+    if (xs_list_len(children)) {
+        int left = xs_list_len(children);
+        char *id;
+
+        s = xs_str_cat(s, "<div class=\"snac-children\">\n");
+
+        if (left > 3)
+            s = xs_str_cat(s, "<details><summary>...</summary>\n");
+
+        while (xs_list_iter(&children, &id)) {
+            xs *chd = timeline_find(snac, id);
+
+            if (left == 0)
+                s = xs_str_cat(s, "</details>\n");
+
+            if (chd != NULL)
+                s = html_entry(snac, s, chd, seen, level + 1);
+            else
+                snac_debug(snac, 1, xs_fmt("cannot read from timeline child %s", id));
+
+            left--;
+        }
+
+        s = xs_str_cat(s, "</div> <!-- snac-children -->\n");
     }
 
     s = xs_str_cat(s, "</div> <!-- post or child -->\n");
