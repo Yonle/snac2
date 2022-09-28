@@ -259,23 +259,111 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
 
     /* user info */
     {
-        s = xs_str_cat(s, "<div class=\"h-card snac-top-user\">\n");
-
-        xs *s1 = xs_fmt("<p class=\"p-name snac-top-user-name\">%s</p>\n",
-            xs_dict_get(snac->config, "name"));
-        s = xs_str_cat(s, s1);
-
-        xs *s2 = xs_fmt("<p class=\"snac-top-user-id\">@%s@%s</p>\n",
-            xs_dict_get(snac->config, "uid"), xs_dict_get(srv_config, "host"));
-        s = xs_str_cat(s, s2);
-
         xs *bio = NULL;
-        not_really_markdown(xs_dict_get(snac->config, "bio"), &bio);
-        xs *s3 = xs_fmt("<div class=\"p-note snac-top-user-bio\">%s</div>\n", bio);
-        s = xs_str_cat(s, s3);
+        char *_tmpl =
+            "<div class=\"h-card snac-top-user\">\n"
+            "<p class=\"p-name snac-top-user-name\">%s</p>\n"
+            "<p class=\"snac-top-user-id\">@%s@%s</p>\n"
+            "<div class=\"p-note snac-top-user-bio\">%s</div>\n"
+            "</div>\n";
 
-        s = xs_str_cat(s, "</div>\n");
+        not_really_markdown(xs_dict_get(snac->config, "bio"), &bio);
+
+        xs *s1 = xs_fmt(_tmpl,
+            xs_dict_get(snac->config, "name"),
+            xs_dict_get(snac->config, "uid"), xs_dict_get(srv_config, "host"),
+            bio
+        );
+
+        s = xs_str_cat(s, s1);
     }
+
+    return s;
+}
+
+
+d_char *html_top_controls(snac *snac, d_char *s)
+/* generates the top controls */
+{
+    char *_tmpl =
+        "<div class=\"snac-top-controls\">\n"
+
+        "<div class=\"snac-note\">\n"
+        "<form method=\"post\" action=\"%s/admin/note\">\n"
+        "<textarea class=\"snac-textarea\" name=\"content\" "
+        "rows=\"8\" wrap=\"virtual\" required=\"required\"></textarea>\n"
+        "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
+        "<input type=\"submit\" class=\"button\" value=\"%s\">\n"
+        "</form><p>\n"
+        "</div>\n"
+
+        "<div class=\"snac-top-controls-more\">\n"
+        "<details><summary>%s</summary>\n"
+
+        "<form method=\"post\" action=\"%s/admin/action\">\n"
+        "<input type=\"text\" name=\"actor\" required=\"required\">\n"
+        "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
+        "</form></p>\n"
+
+        "<form method=\"post\" action=\"%s\">\n"
+        "<input type=\"text\" name=\"id\" required=\"required\">\n"
+        "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
+        "</form></p>\n"
+
+        "<details><summary>%s</summary>\n"
+
+        "<div class=\"snac-user-setup\">\n"
+        "<form method=\"post\" action=\"%s/admin/user-setup\">\n"
+        "<p>%s:<br>\n"
+        "<input type=\"text\" name=\"name\" value=\"%s\"></p>\n"
+
+        "<p>%s:<br>\n"
+        "<input type=\"text\" name=\"avatar\" value=\"%s\"></p>\n"
+
+        "<p>%s:<br>\n"
+        "<textarea name=\"bio\" cols=60 rows=4>%s</textarea></p>\n"
+
+        "<p>%s:<br>\n"
+        "<input type=\"password\" name=\"passwd1\" value=\"\"></p>\n"
+
+        "<p>%s:<br>\n"
+        "<input type=\"password\" name=\"passwd2\" value=\"\"></p>\n"
+
+        "<input type=\"submit\" class=\"button\" value=\"%s\">\n"
+        "</form>\n"
+
+        "</div>\n"
+        "</details>\n"
+        "</details>\n"
+        "</div>\n"
+        "</div>\n";
+
+    xs *s1 = xs_fmt(_tmpl,
+        snac->actor,
+        L("Post"),
+
+        L("More options..."),
+
+        snac->actor,
+        L("Follow"), L("(by URL or user@host)"),
+
+        snac->actor,
+        L("Boost"), L("(by URL)"),
+
+        L("User setup..."),
+        snac->actor,
+        L("User name"),
+        xs_dict_get(snac->config, "name"),
+        L("Avatar URL"),
+        xs_dict_get(snac->config, "avatar"),
+        L("Bio"),
+        xs_dict_get(snac->config, "bio"),
+        L("Password (only to change it)"),
+        L("Repeat Password"),
+        L("Update user info")
+    );
+
+    s = xs_str_cat(s, s1);
 
     return s;
 }
@@ -287,6 +375,9 @@ d_char *html_timeline(snac *snac, char *list, int local)
     d_char *s = xs_str_new(NULL);
 
     s = html_user_header(snac, s, local);
+
+    if (!local)
+        s = html_top_controls(snac, s);
 
     s = xs_str_cat(s, "<h1>HI</h1>\n");
 
