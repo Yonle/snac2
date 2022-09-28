@@ -6,6 +6,7 @@
 #include "xs_encdec.h"
 #include "xs_json.h"
 #include "xs_regex.h"
+#include "xs_set.h"
 
 #include "snac.h"
 
