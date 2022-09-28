@@ -606,7 +606,8 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
             list = xs_list_append(list, admirer);
 
         /* set the admirer as the referrer */
-        meta = xs_dict_set(meta, "referrer", admirer);
+        if (!like)
+            meta = xs_dict_set(meta, "referrer", admirer);
 
         /* re-store */
         if (like)

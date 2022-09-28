@@ -372,11 +372,83 @@ d_char *html_top_controls(snac *snac, d_char *s)
 
 d_char *html_entry(snac *snac, d_char *s, char *msg, xs_set *seen, int level)
 {
-    char *id = xs_dict_get(msg, "id");
+    char *id    = xs_dict_get(msg, "id");
+    char *type  = xs_dict_get(msg, "type");
+    char *meta  = xs_dict_get(msg, "_snac");
+    xs *actor_o = NULL;
+    char *actor;
 
     /* return if already seen */
     if (xs_set_add(seen, id) == 0)
         return s;
+
+    if (strcmp(type, "Follow") == 0)
+        return s;
+
+    /* bring the main actor */
+    if ((actor = xs_dict_get(msg, "attributedTo")) == NULL)
+        return s;
+
+    if (!valid_status(actor_get(snac, actor, &actor_o)))
+        return s;
+
+    if (level == 0) {
+        char *referrer;
+
+        s = xs_str_cat(s, "<div class=\"snac-post\">\n");
+
+        /* print the origin of the post, if any */
+        if ((referrer = xs_dict_get(meta, "referrer")) != NULL) {
+            xs *actor_r = NULL;
+
+            if (valid_status(actor_get(snac, referrer, &actor_r))) {
+                char *name;
+
+                if ((name = xs_dict_get(actor_r, "name")) == NULL)
+                    name = xs_dict_get(actor_r, "preferredUsername");
+
+                xs *s1 = xs_fmt(
+                    "<div class=\"snac-origin\">\n"
+                    "<a href=\"%s\">%s</a> %s</div>",
+                    xs_dict_get(actor_r, "id"),
+                    name,
+                    "boosted"
+                );
+
+                s = xs_str_cat(s, s1);
+            }
+        }
+    }
+    else
+        s = xs_str_cat(s, "<div class=\"snac-child\">\n");
+
+    s = html_msg_icon(snac, s, msg);
+
+    /* add the content */
+    {
+        xs *c = xs_dup(xs_dict_get(msg, "content"));
+
+        /* do some tweaks to the content */
+        c = xs_replace_i(c, "\r", "");
+
+        while (xs_endswith(c, "<br><br>"))
+            c = xs_crop(c, 0, -4);
+
+        c = xs_replace_i(c, "<br><br>", "<p>");
+
+        if (!xs_startswith(c, "<p>")) {
+            xs *s1 = c;
+            c = xs_fmt("<p>%s</p>", s1);
+        }
+
+        xs *s1 = xs_fmt("<div class=\"e-content snac-content\">\n%s", c);
+
+        s = xs_str_cat(s, s1);
+
+        s = xs_str_cat(s, "</div>\n");
+    }
+
+    s = xs_str_cat(s, "</div>\n");
 
     return s;
 }
@@ -394,11 +466,15 @@ d_char *html_timeline(snac *snac, char *list, int local)
     if (!local)
         s = html_top_controls(snac, s);
 
+    s = xs_str_cat(s, "<div class=\"snac-posts\">\n");
+
     while (xs_list_iter(&list, &v)) {
         xs *msg = timeline_get(snac, v);
 
         s = html_entry(snac, s, msg, seen, 0);
     }
+
+    s = xs_str_cat(s, "</div>\n");
 
 #if 0
     s = xs_str_cat(s, "<h1>HI</h1>\n");
@@ -414,6 +490,21 @@ d_char *html_timeline(snac *snac, char *list, int local)
 
     s = xs_str_cat(s, "</html>\n");
 #endif
+
+    {
+        /* footer */
+        xs *s1 = xs_fmt(
+            "<div class=\"snac-footer\">\n"
+            "<a href=\"%s\">%s</a> - "
+            "powered by <abbr title=\"Social Networks Are Crap\">snac</abbr></div>\n",
+            srv_baseurl,
+            L("about this site")
+        );
+
+        s = xs_str_cat(s, s1);
+    }
+
+    s = xs_str_cat(s, "</body>\n</html>\n");
 
     xs_set_free(seen);
 
