@@ -243,7 +243,7 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
     s = xs_str_cat(s, "</head>\n<body>\n");
 
     /* top nav */
-    s = xs_str_cat(s, "<nav style=\"snac-top-nav\">");
+    s = xs_str_cat(s, "<nav class=\"snac-top-nav\">");
 
     {
         xs *s1;
@@ -389,6 +389,18 @@ d_char *html_entry(snac *snac, d_char *s, char *msg, xs_set *seen, int level)
 
     if (!valid_status(actor_get(snac, actor, &actor_o)))
         return s;
+
+    /* if this is our post, add the score */
+    if (xs_startswith(id, snac->actor)) {
+        int likes  = xs_list_len(xs_dict_get(meta, "liked_by"));
+        int boosts = xs_list_len(xs_dict_get(meta, "announced_by"));
+
+        xs *s1 = xs_fmt(
+            "<div class=\"snac-score\">%d &#9733; %d &#8634;</div>\n",
+            likes, boosts);
+
+        s = xs_str_cat(s, s1);
+    }
 
     if (level == 0) {
         char *referrer;

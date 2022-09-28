@@ -1,0 +1,20 @@
+body { max-width: 48em; margin: auto; line-height: 1.5; padding: 0.8em }
+img { max-width: 100% }
+.snac-origin { font-size: 85% }
+.snac-score { float: right; font-size: 85% }
+.snac-top-user { text-align: center; padding-bottom: 2em }
+.snac-top-user-name { font-size: 200% }
+.snac-top-user-id { font-size: 150% }
+.snac-avatar { float: left; height: 2.5em; padding: 0.25em }
+.snac-author { font-size: 90% }
+.snac-pubdate { color: #a0a0a0; font-size: 90% }
+.snac-top-controls { padding-bottom: 1.5em }
+.snac-post { border-top: 1px solid #a0a0a0; }
+.snac-children { padding-left: 2em; border-left: 1px solid #a0a0a0; }
+.snac-textarea { font-family: inherit; width: 95% }
+.snac-history { border: 1px solid #606060; border-radius: 3px; margin: 2.5em 0; padding: 0 2em }
+.snac-btn-mute { float: right; margin-left: 0.5em }
+.snac-btn-follow { float: right; margin-left: 0.5em }
+.snac-btn-unfollow { float: right; margin-left: 0.5em }
+.snac-btn-delete { float: right; margin-left: 0.5em }
+.snac-footer { margin-top: 2em; font-size: 75% }
