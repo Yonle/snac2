@@ -217,13 +217,17 @@ int follower_add(snac *snac, char *actor, char *msg)
 int follower_del(snac *snac, char *actor)
 /* deletes a follower */
 {
+    int status = 200;
     xs *fn = _follower_fn(snac, actor);
 
-    unlink(fn);
+    if (fn != NULL)
+        unlink(fn);
+    else
+        status = 404;
 
     snac_debug(snac, 2, xs_fmt("follower_del %s %s", actor, fn));
 
-    return 200;
+    return status;
 }
 
 

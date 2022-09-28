@@ -591,11 +591,17 @@ void process_message(snac *snac, char *msg, char *req)
         snac_log(snac, xs_fmt("New follower %s", actor));
     }
     else
-/*
     if (strcmp(type, "Undo") == 0) {
+        if (strcmp(utype, "Follow") == 0) {
+            if (valid_status(follower_del(snac, actor)))
+                snac_log(snac, xs_fmt("no longer following us %s", actor));
+            else
+                snac_log(snac, xs_fmt("error deleting follower %s", actor));
+        }
+        else
+            snac_debug(snac, 1, xs_fmt("ignored 'Undo' for object type '%s'", utype));
     }
     else
-*/
     if (strcmp(type, "Create") == 0) {
         if (strcmp(utype, "Note") == 0) {
             if (is_muted(snac, actor))
