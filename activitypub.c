@@ -574,7 +574,12 @@ void process_message(snac *snac, char *msg, char *req)
         utype = "(null)";
 
     /* bring the actor */
-    actor_request(snac, actor, &actor_o);
+    if (!valid_status(actor_request(snac, actor, &actor_o))) {
+        /* error: re-enqueue to try later */
+        enqueue_input(snac, msg, req);
+        snac_log(snac, xs_fmt("error requesting actor %s -- retry later", actor));
+        return;
+    }
 
     /* check the signature */
     /* ... */
