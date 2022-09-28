@@ -647,8 +647,15 @@ void process_message(snac *snac, char *msg, char *req)
             char *who = xs_dict_get(a_msg, "attributedTo");
 
             if (who && !is_muted(snac, who)) {
-                timeline_admire(snac, object, actor, 0);
-                snac_log(snac, xs_fmt("new 'Announce' %s %s", actor, object));
+                /* bring the actor */
+                xs *who_o = NULL;
+
+                if (valid_status(actor_request(snac, who, &who_o))) {
+                    timeline_admire(snac, object, actor, 0);
+                    snac_log(snac, xs_fmt("new 'Announce' %s %s", actor, object));
+                }
+                else
+                    snac_log(snac, xs_fmt("dropped 'Announce' on actor request error %s", who));
             }
             else
                 snac_log(snac, xs_fmt("ignored 'Announce' about muted actor %s", who));
