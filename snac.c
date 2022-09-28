@@ -58,6 +58,15 @@ d_char *tid(int offset)
 }
 
 
+double ftime(void)
+/* returns the UNIX time as a float */
+{
+    xs *ntid = tid(0);
+
+    return atof(ntid);
+}
+
+
 int validate_uid(char *uid)
 /* returns if uid is a valid identifier */
 {

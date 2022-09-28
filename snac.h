@@ -23,6 +23,7 @@ d_char *xs_time(char *fmt, int local);
 #define xs_utc_time(fmt)   xs_time(fmt, 0)
 
 d_char *tid(int offset);
+double ftime(void);
 
 void srv_debug(int level, d_char *str);
 #define srv_log(str) srv_debug(0, str)

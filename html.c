@@ -522,6 +522,7 @@ d_char *html_timeline(snac *snac, char *list, int local)
     d_char *s = xs_str_new(NULL);
     xs_set *seen = xs_set_new(4096);
     char *v;
+    double t = ftime();
 
     s = html_user_header(snac, s, local);
 
@@ -539,6 +540,11 @@ d_char *html_timeline(snac *snac, char *list, int local)
     s = xs_str_cat(s, "</div> <!-- snac-posts -->\n");
 
     s = html_user_footer(snac, s);
+
+    {
+        xs *s1 = xs_fmt("<!-- %lf seconds -->\n", ftime() - t);
+        s = xs_str_cat(s, s1);
+    }
 
     s = xs_str_cat(s, "</body>\n</html>\n");
 
