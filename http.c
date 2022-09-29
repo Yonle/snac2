@@ -99,3 +99,57 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
 
     return response;
 }
+
+
+int check_signature(snac *snac, char *req)
+/* check the signature */
+{
+    char *sig_hdr = xs_dict_get(req, "signature");
+    xs *keyId = NULL;
+    xs *headers = NULL;
+    xs *signature = NULL;
+    char *pubkey;
+    char *p;
+
+    {
+        /* extract the values */
+        xs *l = xs_split(sig_hdr, ",");
+        char *v;
+
+        p = l;
+        while (xs_list_iter(&p, &v)) {
+            if (xs_startswith(v, "keyId"))
+                keyId = xs_crop(xs_dup(v), 7, -1);
+            else
+            if (xs_startswith(v, "headers"))
+                headers = xs_crop(xs_dup(v), 9, -1);
+            else
+            if (xs_startswith(v, "signature"))
+                signature = xs_crop(xs_dup(v), 12, -1);
+        }
+    }
+
+    if (keyId == NULL || headers == NULL || signature == NULL) {
+        snac_debug(snac, 1, xs_fmt("bad signature header"));
+        return 0;
+    }
+
+    /* strip the # from the keyId */
+    if ((p = strchr(keyId, '#')) != NULL)
+        *p = '\0';
+
+    /* the actor must already be here */
+    xs *actor = NULL;
+    if (!valid_status(actor_get(snac, keyId, &actor))) {
+        snac_debug(snac, 1, xs_fmt("check_signature unknown actor %s", keyId));
+        return 0;
+    }
+
+    if ((p = xs_dict_get(actor, "publicKey")) == NULL ||
+        ((pubkey = xs_dict_get(p, "publicKeyPem")) == NULL)) {
+        snac_debug(snac, 1, xs_fmt("cannot get pubkey from actor %s", keyId));
+        return 0;
+    }
+
+    return 1;
+}

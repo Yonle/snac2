@@ -594,7 +594,10 @@ int process_message(snac *snac, char *msg, char *req)
     }
 
     /* check the signature */
-    /* ... */
+    if (!check_signature(snac, req)) {
+        snac_log(snac, xs_fmt("bad signature"));
+        return 1;
+    }
 
     if (strcmp(type, "Follow") == 0) {
         xs *reply = msg_accept(snac, msg, actor);
