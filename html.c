@@ -7,6 +7,7 @@
 #include "xs_json.h"
 #include "xs_regex.h"
 #include "xs_set.h"
+#include "xs_openssl.h"
 
 #include "snac.h"
 
@@ -370,7 +371,70 @@ d_char *html_top_controls(snac *snac, d_char *s)
 }
 
 
-d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int level)
+d_char *html_entry_controls(snac *snac, d_char *os, char *msg)
+{
+    char *id    = xs_dict_get(msg, "id");
+    char *actor = xs_dict_get(msg, "attributedTo");
+
+    xs *s   = xs_str_new(NULL);
+    xs *md5 = xs_md5_hex(id, strlen(id));
+
+    s = xs_str_cat(s, "<div class=\"snac-controls\">\n");
+
+    {
+        xs *s1 = xs_fmt(
+            "<form method=\"post\" action=\"%s/admin/action\">\n"
+            "<input type=\"hidden\" name=\"id\" value=\"%s\">\n"
+            "<input type=\"hidden\" name=\"actor\" value=\"%s\">\n"
+            "<input type=\"button\" name=\"action\" "
+            "value=\"%s\" onclick=\""
+                "x = document.getElementById('%s_reply'); "
+                "if (x.style.display == 'block') "
+                "   x.style.display = 'none'; else "
+                "   x.style.display = 'block';"
+            "\">\n",
+
+            snac->actor, id, actor,
+            L("Reply"),
+            md5
+        );
+
+        s = xs_str_cat(s, s1);
+    }
+
+    if (strcmp(actor, snac->actor) != 0) {
+        /* controls for other actors than this one */
+    }
+
+    s = xs_str_cat(s, "</form>\n");
+
+    {
+        xs *ct = xs_str_new("");
+
+        xs *s1 = xs_fmt(
+            "<p><div class=\"snac-note\" style=\"display: none\" id=\"%s_reply\">\n"
+            "<form method=\"post\" action=\"%s/admin/note\" id=\"%s_reply_form\">\n"
+            "<textarea class=\"snac-textarea\" name=\"content\" "
+            "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
+            "<input type=\"hidden\" name=\"in_reply_to\" value=\"%s\">\n"
+            "<input type=\"submit\" class=\"button\" value=\"%s\">\n"
+            "</form><p></div>\n",
+
+            md5,
+            snac->actor, md5,
+            ct,
+            id,
+            L("Post")
+        );
+
+        s = xs_str_cat(s, s1);
+    }
+
+    return xs_str_cat(os, s);
+}
+
+
+d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, int level)
 {
     char *id    = xs_dict_get(msg, "id");
     char *type  = xs_dict_get(msg, "type");
@@ -460,6 +524,8 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int level)
         s = xs_str_cat(s, c);
     }
 
+    s = xs_str_cat(s, "\n");
+
     /* add the attachments */
     char *attach;
 
@@ -484,6 +550,13 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int level)
 
     s = xs_str_cat(s, "</div>\n");
 
+    /** controls **/
+
+    if (!local)
+        s = html_entry_controls(snac, s, msg);
+
+    /** children **/
+
     char *children = xs_dict_get(meta, "children");
 
     if (xs_list_len(children)) {
@@ -502,7 +575,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int level)
                 s = xs_str_cat(s, "</details>\n");
 
             if (chd != NULL)
-                s = html_entry(snac, s, chd, seen, level + 1);
+                s = html_entry(snac, s, chd, seen, local, level + 1);
             else
                 snac_debug(snac, 1, xs_fmt("cannot read from timeline child %s", id));
 
@@ -550,7 +623,7 @@ d_char *html_timeline(snac *snac, char *list, int local)
     while (xs_list_iter(&list, &v)) {
         xs *msg = timeline_get(snac, v);
 
-        s = html_entry(snac, s, msg, seen, 0);
+        s = html_entry(snac, s, msg, seen, local, 0);
     }
 
     s = xs_str_cat(s, "</div>\n");
