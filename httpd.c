@@ -10,6 +10,8 @@
 
 #include "snac.h"
 
+#include <setjmp.h>
+
 /* susie.png */
 const char *susie =
     "iVBORw0KGgoAAAANSUhEUgAAAEAAAABAAQAAAAC"
@@ -188,6 +190,15 @@ void httpd_connection(int rs)
 }
 
 
+static jmp_buf on_break;
+
+
+void term_handler(int s)
+{
+    longjmp(on_break, 1);
+}
+
+
 void httpd(void)
 /* starts the server */
 {
@@ -205,11 +216,22 @@ void httpd(void)
 
     srv_running = 1;
 
+    signal(SIGPIPE, SIG_IGN);
+    signal(SIGTERM, term_handler);
+    signal(SIGINT, term_handler);
+
     srv_log(xs_fmt("httpd start %s:%d", address, port));
 
-    for (;;) {
-        httpd_connection(rs);
+    if (setjmp(on_break) == 0) {
+        for (;;) {
+            httpd_connection(rs);
+        }
     }
+
+    srv_running = 0;
+
+    /* wait for the helper thread to end */
+    /* ... */
 
     srv_log(xs_fmt("httpd stop %s:%d", address, port));
 }
