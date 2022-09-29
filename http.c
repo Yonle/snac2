@@ -108,6 +108,8 @@ int check_signature(snac *snac, char *req)
     xs *keyId = NULL;
     xs *headers = NULL;
     xs *signature = NULL;
+    xs *sig_bin = NULL;
+    int s_size;
     char *pubkey;
     char *p;
 
@@ -149,6 +151,47 @@ int check_signature(snac *snac, char *req)
         ((pubkey = xs_dict_get(p, "publicKeyPem")) == NULL)) {
         snac_debug(snac, 1, xs_fmt("cannot get pubkey from actor %s", keyId));
         return 0;
+    }
+
+    /* now build the string to be signed */
+    xs *sig_str = xs_str_new(NULL);
+
+    {
+        xs *l = xs_split(headers, " ");
+        char *v;
+
+        p = l;
+        while (xs_list_iter(&p, &v)) {
+            char *hc;
+            xs *ss = NULL;
+
+            if (*sig_str != '\0')
+                sig_str = xs_str_cat(sig_str, "\n");
+
+            if (strcmp(v, "(request-target)") == 0) {
+                ss = xs_fmt("%s: post %s", v, xs_dict_get(req, "path"));
+            }
+            else {
+                /* add the header */
+                if ((hc = xs_dict_get(req, v)) == NULL) {
+                    snac_debug(snac, 1,
+                        xs_fmt("check_signature cannot find header %s", v));
+
+                    return 0;
+                }
+
+                ss = xs_fmt("%s: %s", v, hc);
+            }
+
+            sig_str = xs_str_cat(sig_str, ss);
+        }
+    }
+
+    /* convert the signature to binary */
+    sig_bin = xs_base64_dec(signature, &s_size);
+
+    if (xs_evp_verify(pubkey, sig_str, strlen(sig_str), sig_bin) != 1) {
+        snac_debug(snac, 1, xs_fmt("rsa verify error %s", keyId));
     }
 
     return 1;
