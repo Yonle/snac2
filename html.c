@@ -368,7 +368,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
 }
 
 
-d_char *html_entry(snac *snac, d_char *s, char *msg, xs_set *seen, int level)
+d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int level)
 {
     char *id    = xs_dict_get(msg, "id");
     char *type  = xs_dict_get(msg, "type");
@@ -378,17 +378,19 @@ d_char *html_entry(snac *snac, d_char *s, char *msg, xs_set *seen, int level)
 
     /* return if already seen */
     if (xs_set_add(seen, id) == 0)
-        return s;
+        return os;
 
     if (strcmp(type, "Follow") == 0)
-        return s;
+        return os;
 
     /* bring the main actor */
     if ((actor = xs_dict_get(msg, "attributedTo")) == NULL)
-        return s;
+        return os;
 
     if (!valid_status(actor_get(snac, actor, &actor_o)))
-        return s;
+        return os;
+
+    xs *s = xs_str_new(NULL);
 
     /* if this is our post, add the score */
     if (xs_startswith(id, snac->actor)) {
@@ -422,7 +424,7 @@ d_char *html_entry(snac *snac, d_char *s, char *msg, xs_set *seen, int level)
                     "<a href=\"%s\">%s</a> %s</div>\n",
                     xs_dict_get(actor_r, "id"),
                     name,
-                    "boosted"
+                    L("boosted")
                 );
 
                 s = xs_str_cat(s, s1);
@@ -510,7 +512,7 @@ d_char *html_entry(snac *snac, d_char *s, char *msg, xs_set *seen, int level)
 
     s = xs_str_cat(s, "</div> <!-- post or child -->\n");
 
-    return s;
+    return xs_str_cat(os, s);
 }
 
 

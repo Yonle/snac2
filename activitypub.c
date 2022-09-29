@@ -577,13 +577,17 @@ int process_message(snac *snac, char *msg, char *req)
     /* bring the actor */
     a_status = actor_request(snac, actor, &actor_o);
 
-    /* if it's a 410 Gone, it's a Delete crap that can be ignored */
-    if (a_status == 410) {
+    /* if the actor does not explicitly exist, discard */
+    if (a_status == 404 || a_status == 410) {
+        snac_debug(snac, 1,
+            xs_fmt("dropping message due to actor error %s %d", actor, a_status));
+
         return 1;
     }
 
     if (!valid_status(a_status)) {
-        snac_log(snac,
+        /* other actor download errors may need a retry */
+        snac_debug(snac, 1,
             xs_fmt("error requesting actor %s %d -- retry later", actor, a_status));
 
         return 0;
