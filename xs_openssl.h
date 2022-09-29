@@ -12,6 +12,7 @@ d_char *xs_rsa_genkey(int bits);
 d_char *xs_rsa_sign(char *secret, char *mem, int size);
 int xs_rsa_verify(char *pubkey, char *mem, int size, char *b64sig);
 d_char *xs_evp_sign(char *secret, char *mem, int size);
+int xs_evp_verify(char *pubkey, char *mem, int size, char *b64sig);
 
 
 #ifdef XS_IMPLEMENTATION
@@ -157,7 +158,7 @@ int xs_rsa_verify(char *pubkey, char *mem, int size, char *b64sig)
     rsa = PEM_read_bio_RSA_PUBKEY(b, NULL, NULL, NULL);
 
     if (rsa != NULL) {
-        d_char *sig = NULL;
+        xs *sig = NULL;
         int s_size;
 
         /* de-base64 */
@@ -166,8 +167,6 @@ int xs_rsa_verify(char *pubkey, char *mem, int size, char *b64sig)
         if (sig != NULL)
             r = RSA_verify(NID_sha256, (unsigned char *)mem, size,
                            (unsigned char *)sig, s_size, rsa);
-
-        free(sig);
     }
 
     BIO_free(b);
@@ -210,10 +209,50 @@ d_char *xs_evp_sign(char *secret, char *mem, int size)
         signature = xs_base64_enc((char *)sig, sig_len);
 
     EVP_MD_CTX_free(mdctx);
+    EVP_PKEY_free(pkey);
     BIO_free(b);
     free(sig);
 
     return signature;
+}
+
+
+int xs_evp_verify(char *pubkey, char *mem, int size, char *b64sig)
+/* verifies a base64 block, returns non-zero on ok */
+{
+    int r = 0;
+    BIO *b;
+    EVP_PKEY *pkey;
+    EVP_MD_CTX *mdctx;
+    const EVP_MD *md;
+
+    /* un-PEM the key */
+    b = BIO_new_mem_buf(pubkey, strlen(pubkey));
+    pkey = PEM_read_bio_PUBKEY(b, NULL, NULL, NULL);
+
+    md = EVP_get_digestbyname("sha256");
+    mdctx = EVP_MD_CTX_new();
+
+    if (pkey != NULL) {
+        xs *sig = NULL;
+        int s_size;
+
+        /* de-base64 */
+        sig = xs_base64_dec(b64sig,  &s_size);
+
+        if (sig != NULL) {
+            EVP_VerifyInit(mdctx, md);
+            EVP_VerifyUpdate(mdctx, mem, size);
+
+            r = EVP_VerifyFinal(mdctx, (unsigned char *)sig, s_size, pkey);
+        }
+    }
+
+    EVP_MD_CTX_free(mdctx);
+    EVP_PKEY_free(pkey);
+    BIO_free(b);
+
+    return r;
 }
 
 
