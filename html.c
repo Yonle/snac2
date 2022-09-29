@@ -143,10 +143,12 @@ int login(snac *snac, char *headers)
 }
 
 
-d_char *html_msg_icon(snac *snac, d_char *s, char *msg)
+d_char *html_msg_icon(snac *snac, d_char *os, char *msg)
 {
     char *actor_id;
     xs *actor = NULL;
+
+    xs *s = xs_str_new(NULL);
 
     if ((actor_id = xs_dict_get(msg, "attributedTo")) == NULL)
         actor_id = xs_dict_get(msg, "actor");
@@ -202,7 +204,7 @@ d_char *html_msg_icon(snac *snac, d_char *s, char *msg)
         }
     }
 
-    return s;
+    return xs_str_cat(os, s);
 }
 
 
@@ -480,7 +482,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int level)
         }
     }
 
-    s = xs_str_cat(s, "</div> <!-- e-content -->\n");
+    s = xs_str_cat(s, "</div>\n");
 
     char *children = xs_dict_get(meta, "children");
 
@@ -507,10 +509,10 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int level)
             left--;
         }
 
-        s = xs_str_cat(s, "</div> <!-- snac-children -->\n");
+        s = xs_str_cat(s, "</div>\n");
     }
 
-    s = xs_str_cat(s, "</div> <!-- post or child -->\n");
+    s = xs_str_cat(s, "</div>\n");
 
     return xs_str_cat(os, s);
 }
@@ -551,7 +553,7 @@ d_char *html_timeline(snac *snac, char *list, int local)
         s = html_entry(snac, s, msg, seen, 0);
     }
 
-    s = xs_str_cat(s, "</div> <!-- snac-posts -->\n");
+    s = xs_str_cat(s, "</div>\n");
 
     s = html_user_footer(snac, s);
 
