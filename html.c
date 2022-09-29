@@ -721,15 +721,26 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         }
     }
     else
-    if (xs_startswith(p_path, "p/") == 0) {
+    if (xs_startswith(p_path, "p/")) {
         /* a timeline with just one entry */
+        xs *id = xs_fmt("%s/%s", snac.actor, p_path);
+        xs *fn = _timeline_find_fn(&snac, id);
+
+        if (fn != NULL) {
+            xs *list = xs_list_new();
+            list = xs_list_append(list, fn);
+
+            *body   = html_timeline(&snac, list, 1);
+            *b_size = strlen(*body);
+            status  = 200;
+        }
     }
     else
-    if (xs_startswith(p_path, "s/") == 0) {
+    if (xs_startswith(p_path, "s/")) {
         /* a static file */
     }
     else
-    if (xs_startswith(p_path, "h/") == 0) {
+    if (xs_startswith(p_path, "h/")) {
         /* an entry from the history */
     }
     else
