@@ -371,6 +371,17 @@ d_char *html_top_controls(snac *snac, d_char *s)
 }
 
 
+d_char *html_button(d_char *s, char *clss, char *label)
+{
+    xs *s1 = xs_fmt(
+               "<input type=\"submit\" name=\"action\" "
+               "class=\"snac-btn-%s\" value=\"%s\">\n",
+                clss, label);
+
+    return xs_str_cat(s, s1);
+}
+
+
 d_char *html_entry_controls(snac *snac, d_char *os, char *msg)
 {
     char *id    = xs_dict_get(msg, "id");
@@ -410,63 +421,30 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg)
         l = xs_dict_get(meta, "liked_by");
         if (xs_list_in(l, snac->actor) == -1) {
             /* not already liked; add button */
-            xs *s1 = xs_fmt(
-                        "<input type=\"submit\" name=\"action\" "
-                        "class=\"snac-btn-like\" value=\"%s\">\n",
-                        L("Like")
-                    );
-
-            s = xs_str_cat(s, s1);
+            s = html_button(s, "like", L("Like"));
         }
 
         l = xs_dict_get(meta, "announced_by");
         if (xs_list_in(l, snac->actor) == -1) {
             /* not already boosted; add button */
-            xs *s1 = xs_fmt(
-                        "<input type=\"submit\" name=\"action\" "
-                        "class=\"snac-btn-boost\" value=\"%s\">\n",
-                        L("Boost")
-                    );
-
-            s = xs_str_cat(s, s1);
+            s = html_button(s, "boost", L("Boost"));
         }
 
         if (following_check(snac, actor)) {
-            xs *s1 = xs_fmt(
-                        "<input type=\"submit\" name=\"action\" "
-                        "class=\"snac-btn-unfollow\" value=\"%s\">\n",
-                        L("Unfollow")
-                    );
-
-            s = xs_str_cat(s, s1);
+            s = html_button(s, "unfollow", L("Unfollow"));
         }
         else {
-            xs *s1 = xs_fmt(
-                        "<input type=\"submit\" name=\"action\" "
-                        "class=\"snac-btn-follow\" value=\"%s\">\n"
-                        "<input type=\"submit\" name=\"action\" "
-                        "class=\"snac-btn-mute\" value=\"%s\">\n",
-                        L("Follow"),
-                        L("MUTE")
-                    );
-
-            s = xs_str_cat(s, s1);
+            s = html_button(s, "follow", L("Follow"));
+            s = html_button(s, "mute", L("MUTE"));
         }
     }
 
-    {
-        xs *s1 = xs_fmt(
-                    "<input type=\"submit\" name=\"action\" "
-                    "class=\"snac-btn-delete\" value=\"%s\">\n",
-                    L("Delete")
-                );
-
-        s = xs_str_cat(s, s1);
-    }
+    s = html_button(s, "delete", L("Delete"));
 
     s = xs_str_cat(s, "</form>\n");
 
     {
+        /* the post textarea */
         xs *ct = xs_str_new("");
 
         xs *s1 = xs_fmt(
