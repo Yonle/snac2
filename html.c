@@ -484,8 +484,22 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     if (xs_set_add(seen, id) == 0)
         return os;
 
-    if (strcmp(type, "Follow") == 0)
-        return os;
+    xs *s = xs_str_new(NULL);
+
+    if (strcmp(type, "Follow") == 0) {
+        actor = xs_dict_get(msg, "actor");
+
+        s = xs_str_cat(s, "<div class=\"snac-post\">\n");
+
+        xs *s1 = xs_fmt("<div class=\"snac-origin\">%s</div>\n", L("follows you"));
+        s = xs_str_cat(s, s1);
+
+        s = html_msg_icon(snac, s, msg);
+
+        s = xs_str_cat(s, "</div>\n");
+
+        return xs_str_cat(os, s);
+    }
 
     /* bring the main actor */
     if ((actor = xs_dict_get(msg, "attributedTo")) == NULL)
@@ -493,8 +507,6 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
 
     if (!valid_status(actor_get(snac, actor, &actor_o)))
         return os;
-
-    xs *s = xs_str_new(NULL);
 
     /* if this is our post, add the score */
     if (xs_startswith(id, snac->actor)) {
