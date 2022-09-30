@@ -108,8 +108,6 @@ int check_signature(snac *snac, char *req)
     xs *keyId = NULL;
     xs *headers = NULL;
     xs *signature = NULL;
-    xs *sig_bin = NULL;
-    int s_size;
     char *pubkey;
     char *p;
 
@@ -127,7 +125,7 @@ int check_signature(snac *snac, char *req)
                 headers = xs_crop(xs_dup(v), 9, -1);
             else
             if (xs_startswith(v, "signature"))
-                signature = xs_crop(xs_dup(v), 12, -1);
+                signature = xs_crop(xs_dup(v), 11, -1);
         }
     }
 
@@ -187,10 +185,7 @@ int check_signature(snac *snac, char *req)
         }
     }
 
-    /* convert the signature to binary */
-    sig_bin = xs_base64_dec(signature, &s_size);
-
-    if (xs_evp_verify(pubkey, sig_str, strlen(sig_str), sig_bin) != 1) {
+    if (xs_evp_verify(pubkey, sig_str, strlen(sig_str), signature) != 1) {
         snac_debug(snac, 1, xs_fmt("rsa verify error %s", keyId));
     }
 
