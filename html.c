@@ -160,7 +160,7 @@ d_char *html_msg_icon(snac *snac, d_char *os, char *msg)
         char *v;
 
         /* get the name */
-        if ((v = xs_dict_get(actor, "name")) == NULL) {
+        if ((v = xs_dict_get(actor, "name")) == NULL || *v == '\0') {
             if ((v = xs_dict_get(actor, "preferredUsername")) == NULL) {
                 v = "user";
             }
