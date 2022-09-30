@@ -760,6 +760,66 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
                       char **body, int *b_size, char **ctype)
 {
     int status = 0;
+    snac snac;
+    char *uid, *p_path;
+    char *p_vars;
+
+    xs *l = xs_split_n(q_path, "/", 2);
+
+    uid = xs_list_get(l, 1);
+    if (!uid || !user_open(&snac, uid)) {
+        /* invalid user */
+        srv_log(xs_fmt("html_get_handler bad user %s", uid));
+        return 404;
+    }
+
+    p_path = xs_list_get(l, 2);
+
+    /* all posts must be authenticated */
+    if (!login(&snac, req))
+        return 401;
+
+    p_vars = xs_dict_get(req, "p_vars");
+
+    {
+        xs *j1 = xs_json_dumps_pp(req, 4);
+        printf("%s\n", j1);
+        printf("[%s]\n", p_path);
+    }
+
+    if (p_path && strcmp(p_path, "admin/note") == 0) {
+        /* post note */
+        char *content     = xs_dict_get(p_vars, "content");
+        char *in_reply_to = xs_dict_get(p_vars, "in_reply_to");
+
+        if (content != NULL) {
+            xs *msg   = NULL;
+            xs *c_msg = NULL;
+
+            msg = msg_note(&snac, content, NULL, in_reply_to);
+
+            c_msg = msg_create(&snac, msg);
+
+            post(&snac, c_msg);
+
+            timeline_add(&snac, xs_dict_get(msg, "id"), msg, in_reply_to, NULL);
+        }
+
+        status = 303;
+    }
+    else
+    if (p_path && strcmp(p_path, "admin/action") == 0) {
+        /* action on an entry */
+    }
+    else
+    if (p_path && strcmp(p_path, "admin/user-setup") == 0) {
+        /* change of user data */
+    }
+
+    if (status == 303) {
+        *body   = xs_fmt("%s/admin", snac.actor);
+        *b_size = strlen(*body);
+    }
 
     return status;
 }
