@@ -53,14 +53,14 @@ int check_password(char *uid, char *passwd, char *hash);
 void srv_archive(char *direction, char *req, char *payload, int p_size,
                  int status, char *headers, char *body, int b_size);
 
-float mtime(char *fn);
+double mtime(char *fn);
 
 int follower_add(snac *snac, char *actor, char *msg);
 int follower_del(snac *snac, char *actor);
 int follower_check(snac *snac, char *actor);
 d_char *follower_list(snac *snac);
 
-float timeline_mtime(snac *snac);
+double timeline_mtime(snac *snac);
 int timeline_here(snac *snac, char *id);
 d_char *_timeline_find_fn(snac *snac, char *id);
 d_char *timeline_find(snac *snac, char *id);
@@ -85,7 +85,7 @@ int actor_get(snac *snac, char *actor, d_char **data);
 
 int static_get(snac *snac, char *id, d_char **data, int *size);
 
-float history_mtime(snac *snac, char *id);
+double history_mtime(snac *snac, char *id);
 void history_add(snac *snac, char *id, char *content, int size);
 d_char *history_get(snac *snac, char *id);
 

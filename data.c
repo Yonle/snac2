@@ -172,14 +172,14 @@ d_char *user_list(void)
 }
 
 
-float mtime(char *fn)
+double mtime(char *fn)
 /* returns the mtime of a file or directory, or 0.0 */
 {
     struct stat st;
-    float r = 0.0;
+    double r = 0.0;
 
     if (fn && stat(fn, &st) != -1)
-        r = (float)st.st_mtim.tv_sec;
+        r = (double)st.st_mtim.tv_sec;
 
     return r;
 }
@@ -275,7 +275,7 @@ d_char *follower_list(snac *snac)
 }
 
 
-float timeline_mtime(snac *snac)
+double timeline_mtime(snac *snac)
 {
     xs *fn = xs_fmt("%s/timeline", snac->basedir);
     return mtime(fn);
@@ -769,8 +769,8 @@ int actor_get(snac *snac, char *actor, d_char **data)
 /* returns an already downloaded actor */
 {
     xs *fn = _actor_fn(snac, actor);
-    float t;
-    float max_time;
+    double t;
+    double max_time;
     int status;
     FILE *f;
 
@@ -783,7 +783,7 @@ int actor_get(snac *snac, char *actor, d_char **data)
     /* maximum time for the actor data to be considered stale */
     max_time = 3600.0 * 36.0;
 
-    if (t + max_time < (float) time(NULL)) {
+    if (t + max_time < (double) time(NULL)) {
         /* actor data exists but also stinks */
 
         if ((f = fopen(fn, "a")) != NULL) {
@@ -845,9 +845,9 @@ d_char *_history_fn(snac *snac, char *id)
 }
 
 
-float history_mtime(snac *snac, char * id)
+double history_mtime(snac *snac, char * id)
 {
-    float t = 0.0;
+    double t = 0.0;
     xs *fn = _history_fn(snac, id);
 
     if (fn != NULL)
