@@ -60,6 +60,7 @@ int follower_del(snac *snac, char *actor);
 int follower_check(snac *snac, char *actor);
 d_char *follower_list(snac *snac);
 
+float timeline_mtime(snac *snac);
 int timeline_here(snac *snac, char *id);
 d_char *_timeline_find_fn(snac *snac, char *id);
 d_char *timeline_find(snac *snac, char *id);
@@ -83,6 +84,10 @@ int actor_add(snac *snac, char *actor, char *msg);
 int actor_get(snac *snac, char *actor, d_char **data);
 
 int static_get(snac *snac, char *id, d_char **data, int *size);
+
+float history_mtime(snac *snac, char *id);
+void history_add(snac *snac, char *id, char *content, int size);
+d_char *history_get(snac *snac, char *id);
 
 void enqueue_input(snac *snac, char *msg, char *req, int retries);
 void enqueue_output(snac *snac, char *msg, char *actor, int retries);

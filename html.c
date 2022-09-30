@@ -713,11 +713,24 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         if (!login(&snac, req))
             status = 401;
         else {
-            xs *list = timeline_list(&snac, 0xfffffff);
+            if (history_mtime(&snac, "_timeline.html") > timeline_mtime(&snac)) {
+                snac_debug(&snac, 1, xs_fmt("serving cached timeline"));
 
-            *body   = html_timeline(&snac, list, 0);
-            *b_size = strlen(*body);
-            status  = 200;
+                *body   = history_get(&snac, "_timeline.html");
+                *b_size = strlen(*body);
+                status  = 200;
+            }
+            else {
+                snac_debug(&snac, 1, xs_fmt("building timeline"));
+
+                xs *list = timeline_list(&snac, 0xfffffff);
+
+                *body   = html_timeline(&snac, list, 0);
+                *b_size = strlen(*body);
+                status  = 200;
+
+                history_add(&snac, "_timeline.html", *body, *b_size);
+            }
         }
     }
     else

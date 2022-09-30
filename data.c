@@ -178,7 +178,7 @@ float mtime(char *fn)
     struct stat st;
     float r = 0.0;
 
-    if (stat(fn, &st) != -1)
+    if (fn && stat(fn, &st) != -1)
         r = (float)st.st_mtim.tv_sec;
 
     return r;
@@ -272,6 +272,13 @@ d_char *follower_list(snac *snac)
     globfree(&globbuf);
 
     return list;
+}
+
+
+float timeline_mtime(snac *snac)
+{
+    xs *fn = xs_fmt("%s/timeline", snac->basedir);
+    return mtime(fn);
 }
 
 
@@ -828,6 +835,53 @@ int static_get(snac *snac, char *id, d_char **data, int *size)
     }
 
     return status;
+}
+
+
+d_char *_history_fn(snac *snac, char *id)
+/* gets the filename for the history */
+{
+    return xs_fmt("%s/history/%s", snac->basedir, id);
+}
+
+
+float history_mtime(snac *snac, char * id)
+{
+    float t = 0.0;
+    xs *fn = _history_fn(snac, id);
+
+    if (fn != NULL)
+        t = mtime(fn);
+
+    return t;
+}
+
+
+void history_add(snac *snac, char *id, char *content, int size)
+/* adds something to the history */
+{
+    xs *fn = _history_fn(snac, id);
+    FILE *f;
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        fwrite(content, size, 1, f);
+        fclose(f);
+    }
+}
+
+
+d_char *history_get(snac *snac, char *id)
+{
+    d_char *content = NULL;
+    xs *fn = _history_fn(snac, id);
+    FILE *f;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        content = xs_readall(f);
+        fclose(f);
+    }
+
+    return content;
 }
 
 
