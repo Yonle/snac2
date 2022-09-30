@@ -810,6 +810,30 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
     else
     if (p_path && strcmp(p_path, "admin/action") == 0) {
         /* action on an entry */
+        char *id     = xs_dict_get(p_vars, "id");
+        char *actor  = xs_dict_get(p_vars, "actor");
+        char *action = xs_dict_get(p_vars, "action");
+
+        if (action == NULL)
+            return 404;
+
+        if (strcmp(action, "Like") == 0) {
+            xs *msg = msg_admiration(&snac, id, "Like");
+            post(&snac, msg);
+            timeline_admire(&snac, id, snac.actor, 1);
+
+            status = 303;
+        }
+        else
+        if (strcmp(action, "Boost") == 0) {
+            xs *msg = msg_admiration(&snac, id, "Announce");
+            post(&snac, msg);
+            timeline_admire(&snac, id, snac.actor, 0);
+
+            status = 303;
+        }
+        else
+            status = 404;
     }
     else
     if (p_path && strcmp(p_path, "admin/user-setup") == 0) {
