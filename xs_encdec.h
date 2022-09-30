@@ -35,9 +35,12 @@ d_char *xs_hex_dec(const char *hex)
 /* decodes an hexdump into data */
 {
     int sz = strlen(hex);
-    d_char *s;
+    d_char *s = NULL;
     char *p;
     int n;
+
+    if (sz % 2)
+        return s;
 
     p = s = calloc(sz / 2, 1);
 
@@ -63,34 +66,37 @@ d_char *xs_base64_enc(const char *data, int sz)
 {
     d_char *s;
     unsigned char *p;
-    int n;
+    char *i;
+    int bsz, n;
     static char *b64_tbl = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                            "abcdefghijklmnopqrstuvwxyz"
                            "0123456789+/";
 
-    s = xs_str_new(NULL);
+    bsz = ((sz + 3 - 1) / 3) * 4;
+    i = s = calloc(bsz + 1, 1);
     p = (unsigned char *)data;
 
     for (n = 0; n < sz; n += 3) {
         int l = sz - n;
 
         if (l == 1) {
-            s = xs_append_m(s, &b64_tbl[(p[n] >> 2) & 0x3f], 1);
-            s = xs_append_m(s, &b64_tbl[(p[n] << 4) & 0x3f], 1);
-            s = xs_append_m(s, "==", 2);
+            *i++ = b64_tbl[(p[n] >> 2) & 0x3f];
+            *i++ = b64_tbl[(p[n] << 4) & 0x3f];
+            *i++ = '=';
+            *i++ = '=';
         }
         else
         if (l == 2) {
-            s = xs_append_m(s, &b64_tbl[(p[n] >> 2) & 0x3f], 1);
-            s = xs_append_m(s, &b64_tbl[(p[n] << 4 | p[n + 1] >> 4) & 0x3f], 1);
-            s = xs_append_m(s, &b64_tbl[(p[n + 1] << 2) & 0x3f], 1);
-            s = xs_append_m(s, "=", 1);
+            *i++ = b64_tbl[(p[n] >> 2) & 0x3f];
+            *i++ = b64_tbl[(p[n] << 4 | p[n + 1] >> 4) & 0x3f];
+            *i++ = b64_tbl[(p[n + 1] << 2) & 0x3f];
+            *i++ = '=';
         }
         else {
-            s = xs_append_m(s, &b64_tbl[(p[n] >> 2) & 0x3f], 1);
-            s = xs_append_m(s, &b64_tbl[(p[n] << 4 | p[n + 1] >> 4) & 0x3f], 1);
-            s = xs_append_m(s, &b64_tbl[(p[n + 1] << 2 | p[n + 2] >> 6) & 0x3f], 1);
-            s = xs_append_m(s, &b64_tbl[(p[n + 2]) & 0x3f], 1);
+            *i++ = b64_tbl[(p[n] >> 2) & 0x3f];
+            *i++ = b64_tbl[(p[n] << 4 | p[n + 1] >> 4) & 0x3f];
+            *i++ = b64_tbl[(p[n + 1] << 2 | p[n + 2] >> 6) & 0x3f];
+            *i++ = b64_tbl[(p[n + 2]) & 0x3f];
         }
     }
 
@@ -109,6 +115,10 @@ d_char *xs_base64_dec(const char *data, int *size)
                            "0123456789+/=";
 
     p = (char *)data;
+
+    /* size of data must be a multiple of 4 */
+    if (strlen(p) % 4)
+        return s;
 
     for (p = (char *)data; *p; p += 4) {
         int cs[4];
