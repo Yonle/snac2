@@ -600,13 +600,20 @@ int process_message(snac *snac, char *msg, char *req)
     }
 
     if (strcmp(type, "Follow") == 0) {
-        xs *reply = msg_accept(snac, msg, actor);
+        xs *f_msg = xs_dup(msg);
+        xs *reply = msg_accept(snac, f_msg, actor);
 
         post(snac, reply);
 
-        timeline_add(snac, xs_dict_get(msg, "id"), msg, NULL, NULL);
+        if (xs_is_null(xs_dict_get(f_msg, "published"))) {
+            /* add a date if it doesn't include one (Mastodon) */
+            xs *date = xs_utc_time("%Y-%m-%dT%H:%M:%SZ");
+            f_msg = xs_dict_set(f_msg, "published", date);
+        }
 
-        follower_add(snac, actor, msg);
+        timeline_add(snac, xs_dict_get(f_msg, "id"), f_msg, NULL, NULL);
+
+        follower_add(snac, actor, f_msg);
 
         snac_log(snac, xs_fmt("New follower %s", actor));
     }
