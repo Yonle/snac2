@@ -2,6 +2,10 @@
 
 ## Open
 
+Implement the helper thread.
+
+Import the man pages.
+
 Show dates in local time and not UTC.
 
 Add web interface for private messages.
@@ -10,29 +14,15 @@ Add web interface for the list of people being followed.
 
 Add an RSS to the local timeline.
 
-After 'Unfollow' or 'MUTE', the timeline should be rebuilt (regardless of the cached version).
-
 Implement image attachments.
 
 ## Wishlist and batshit crazy ideas
 
-Should this user's notes with in_reply_to be resolved inside the object?
-
-Should admirations download the admired object into the timeline instead of resolving?
-
-Add a user configuration flag to hide likes from the timeline.
-
 The 'history' pages are now just monthly snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you i.e. delete a post because it will be there in the history forever.
-
-Implement an input queue.
 
 Implement a way to save interesting posts.
 
 Create the `mastodon2snac` helper program (reading directly from the boxes, not using any exported data).
-
-Refactor HTML rendering because it's a mess and write build_timeline(), that generates a big structure with everything to show in a timeline, to be passed to the HTML renderer.
-
-Disk layout improve, related to build_timeline(): the tid in the timeline filenames is the published time of the message. When a timeline is processed, its in_reply_to is requested (recursively) and the entry moved down the tree while all ids are stored in the 'already seen' set. This allows: 1) to avoid rewriting the parents in timeline storage 2) download the parents asynchronously (by requesting them from a queue) instead of at message arrival.
 
 ## Closed
 
@@ -125,3 +115,15 @@ Do not show `Like` or `Boost` buttons if that was already done (2022-09-12T19:29
 Parents of a parent should also move up the timeline (2022-09-13T22:41:23+0200).
 
 When a new note has an in-reply-to, also download it (2022-09-24T07:20:16+0200).
+
+After 'Unfollow' or 'MUTE', the timeline should be rebuilt (regardless of the cached version) (2022-10-01T20:27:00+0200).
+
+Should this user's notes with in_reply_to be resolved inside the object? (2022-10-01T20:27:52+0200).
+
+Should admirations download the admired object into the timeline instead of resolving? (2022-10-01T20:27:52+0200).
+
+Add a user configuration flag to hide likes from the timeline (2022-10-01T20:27:52+0200).
+
+Implement an input queue (2022-10-01T20:27:52+0200).
+
+Refactor HTML rendering because it's a mess and write build_timeline(), that generates a big structure with everything to show in a timeline, to be passed to the HTML renderer (2022-10-01T20:27:52+0200).
