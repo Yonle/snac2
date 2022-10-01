@@ -6,6 +6,10 @@ Implement the helper thread.
 
 Import the man pages.
 
+Implement the 'init' command-line option.
+
+Implement the 'adduser' command-line option.
+
 Show dates in local time and not UTC.
 
 Add web interface for private messages.
