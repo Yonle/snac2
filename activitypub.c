@@ -66,8 +66,10 @@ int actor_request(snac *snac, char *actor, d_char **data)
         /* renew data */
         status = actor_add(snac, actor, payload);
 
-        *data   = payload;
-        payload = NULL;
+        if (data != NULL) {
+            *data   = payload;
+            payload = NULL;
+        }
     }
 
     return status;
@@ -88,6 +90,11 @@ int timeline_request(snac *snac, char *id, char *referrer)
             status = activitypub_request(snac, id, &object);
 
             if (valid_status(status)) {
+                char *actor = xs_dict_get(object, "actor");
+
+                /* request (and drop) the actor for this entry */
+                actor_request(snac, actor, NULL);
+
                 /* does it have an ancestor? */
                 char *in_reply_to = xs_dict_get(object, "inReplyTo");
 
