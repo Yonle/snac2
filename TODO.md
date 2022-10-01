@@ -2,6 +2,8 @@
 
 ## Open
 
+Implement the purge.
+
 Import the man pages.
 
 Implement the 'init' command-line option.
