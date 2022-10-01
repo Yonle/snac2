@@ -525,16 +525,15 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     }
 
     if (level == 0) {
-        char *referrer;
-        char *parent;
+        char *p;
 
         s = xs_str_cat(s, "<div class=\"snac-post\">\n");
 
         /* print the origin of the post, if any */
-        if (!xs_is_null(referrer = xs_dict_get(meta, "referrer"))) {
+        if (!xs_is_null(p = xs_dict_get(meta, "referrer"))) {
             xs *actor_r = NULL;
 
-            if (valid_status(actor_get(snac, referrer, &actor_r))) {
+            if (valid_status(actor_get(snac, p, &actor_r))) {
                 char *name;
 
                 if ((name = xs_dict_get(actor_r, "name")) == NULL)
@@ -552,12 +551,36 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
             }
         }
         else
-        if (!xs_is_null((parent = xs_dict_get(meta, "parent")))) {
+        if (!xs_is_null((p = xs_dict_get(meta, "parent"))) && *p) {
             /* this may happen if any of the autor or the parent aren't here */
             xs *s1 = xs_fmt(
                 "<div class=\"snac-origin\">%s "
                 "<a href=\"%s\">»</a></div>\n",
-                L("in reply to"), parent
+                L("in reply to"), p
+            );
+
+            s = xs_str_cat(s, s1);
+        }
+        else
+        if (!xs_is_null((p = xs_dict_get(meta, "announced_by"))) &&
+            xs_list_in(p, snac->actor) != -1) {
+            /* we boosted this */
+            xs *s1 = xs_fmt(
+                "<div class=\"snac-origin\">"
+                "<a href=\"%s\">%s</a> %s</a></div>",
+                snac->actor, xs_dict_get(snac->config, "name"), L("liked")
+            );
+
+            s = xs_str_cat(s, s1);
+        }
+        else
+        if (!xs_is_null((p = xs_dict_get(meta, "liked_by"))) &&
+            xs_list_in(p, snac->actor) != -1) {
+            /* we liked this */
+            xs *s1 = xs_fmt(
+                "<div class=\"snac-origin\">"
+                "<a href=\"%s\">%s</a> %s</a></div>",
+                snac->actor, xs_dict_get(snac->config, "name"), L("liked")
             );
 
             s = xs_str_cat(s, s1);
