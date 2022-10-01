@@ -2,13 +2,13 @@
 
 ## Open
 
-Implement the helper thread.
-
 Import the man pages.
 
 Implement the 'init' command-line option.
 
 Implement the 'adduser' command-line option.
+
+Implement the local timeline cache.
 
 Show dates in local time and not UTC.
 
@@ -131,3 +131,5 @@ Add a user configuration flag to hide likes from the timeline (2022-10-01T20:27:
 Implement an input queue (2022-10-01T20:27:52+0200).
 
 Refactor HTML rendering because it's a mess and write build_timeline(), that generates a big structure with everything to show in a timeline, to be passed to the HTML renderer (2022-10-01T20:27:52+0200).
+
+Implement the helper thread (2022-10-01T20:56:46+0200).

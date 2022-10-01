@@ -11,6 +11,7 @@
 #include "snac.h"
 
 #include <setjmp.h>
+#include <pthread.h>
 
 /* susie.png */
 const char *susie =
@@ -199,12 +200,41 @@ void term_handler(int s)
 }
 
 
+static void *helper_thread(void *arg)
+/* helper thread (queue management) */
+{
+    srv_log(xs_fmt("subthread start"));
+
+    while (srv_running) {
+        xs *list = user_list();
+        char *p, *uid;
+
+        p = list;
+        while (xs_list_iter(&p, &uid)) {
+            snac snac;
+
+            if (user_open(&snac, uid)) {
+                process_queue(&snac);
+                user_free(&snac);
+            }
+        }
+
+        sleep(3);
+    }
+
+    srv_log(xs_fmt("subthread stop"));
+
+    return NULL;
+}
+
+
 void httpd(void)
 /* starts the server */
 {
     char *address;
     int port;
     int rs;
+    pthread_t htid;
 
     address = xs_dict_get(srv_config, "address");
     port    = xs_number_get(xs_dict_get(srv_config, "port"));
@@ -222,6 +252,8 @@ void httpd(void)
 
     srv_log(xs_fmt("httpd start %s:%d", address, port));
 
+    pthread_create(&htid, NULL, helper_thread, NULL);
+
     if (setjmp(on_break) == 0) {
         for (;;) {
             httpd_connection(rs);
@@ -231,7 +263,7 @@ void httpd(void)
     srv_running = 0;
 
     /* wait for the helper thread to end */
-    /* ... */
+    pthread_join(htid, NULL);
 
     srv_log(xs_fmt("httpd stop %s:%d", address, port));
 }
