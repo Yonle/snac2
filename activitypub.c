@@ -163,12 +163,16 @@ d_char *recipient_list(snac *snac, char *msg, int expand_public)
     for (n = 0; lists[n]; n++) {
         char *l = lists[n];
         char *v;
+        xs *tl = NULL;
 
+        /* if it's a string, create a list with only one element */
         if (xs_type(l) == XSTYPE_STRING) {
-            if (xs_list_in(list, l) == -1)
-                list = xs_list_append(list, l);
+            tl = xs_list_new();
+            tl = xs_list_append(tl, l);
+
+            l = tl;
         }
-        else
+
         while (xs_list_iter(&l, &v)) {
             if (expand_public && strcmp(v, public_address) == 0) {
                 /* iterate the followers and add them */
@@ -450,6 +454,25 @@ d_char *msg_undo(snac *snac, char *object)
     d_char *msg = msg_base(snac, "Undo", "@object", snac->actor, "@now", object);
 
     msg = xs_dict_append(msg, "to", xs_dict_get(object, "object"));
+
+    return msg;
+}
+
+
+d_char *msg_delete(snac *snac, char *id)
+/* creates a 'Delete' + 'Tombstone' for a local entry */
+{
+    xs *tomb = xs_dict_new();
+    d_char *msg = NULL;
+
+    /* sculpt the tombstone */
+    tomb = xs_dict_append(tomb, "type", "Tombstone");
+    tomb = xs_dict_append(tomb, "id",   id);
+
+    /* now create the Delete */
+    msg = msg_base(snac, "Delete", "@object", snac->actor, "@now", tomb);
+
+    msg = xs_dict_append(msg, "to", public_address);
 
     return msg;
 }

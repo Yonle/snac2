@@ -930,6 +930,19 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         }
         else
         if (strcmp(action, L("Delete")) == 0) {
+            /* delete an entry */
+            if (xs_startswith(id, snac.actor)) {
+                /* it's a post by us: generate a delete */
+                xs *msg = msg_delete(&snac, id);
+
+                post(&snac, msg);
+
+                snac_log(&snac, xs_fmt("posted tombstone for %s", id));
+            }
+
+            timeline_del(&snac, id);
+
+            snac_log(&snac, xs_fmt("deleted entry %s", id));
         }
         else
             status = 404;
