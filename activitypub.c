@@ -746,11 +746,14 @@ int process_message(snac *snac, char *msg, char *req)
         else
             snac_log(snac, xs_fmt("ignored 'Update' for object type '%s'", utype));
     }
-/*
     else
     if (strcmp(type, "Delete") == 0) {
+        if (xs_type(object) == XSTYPE_DICT)
+            object = xs_dict_get(object, "id");
+
+        timeline_del(snac, object);
+        snac_log(snac, xs_fmt("received delete request for %s", object));
     }
-*/
     else
         snac_debug(snac, 1, xs_fmt("process_message type '%s' ignored", type));
 
