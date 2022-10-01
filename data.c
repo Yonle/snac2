@@ -885,6 +885,13 @@ d_char *history_get(snac *snac, char *id)
 }
 
 
+int history_del(snac *snac, char *id)
+{
+    xs *fn = _history_fn(snac, id);
+    return unlink(fn);
+}
+
+
 void enqueue_input(snac *snac, char *msg, char *req, int retries)
 /* enqueues an input message */
 {

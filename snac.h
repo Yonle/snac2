@@ -88,6 +88,7 @@ int static_get(snac *snac, char *id, d_char **data, int *size);
 double history_mtime(snac *snac, char *id);
 void history_add(snac *snac, char *id, char *content, int size);
 d_char *history_get(snac *snac, char *id);
+int history_del(snac *snac, char *id);
 
 void enqueue_input(snac *snac, char *msg, char *req, int retries);
 void enqueue_output(snac *snac, char *msg, char *actor, int retries);

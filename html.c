@@ -505,6 +505,10 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     if ((actor = xs_dict_get(msg, "attributedTo")) == NULL)
         return os;
 
+    /* ignore muted morons immediately */
+    if (is_muted(snac, actor))
+        return os;
+
     if (!valid_status(actor_get(snac, actor, &actor_o)))
         return os;
 
@@ -842,23 +846,40 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         if (action == NULL)
             return 404;
 
-        if (strcmp(action, "Like") == 0) {
+        snac_debug(&snac, 1, xs_fmt("web action '%s' received", action));
+
+        status = 303;
+
+        if (strcmp(action, L("Like")) == 0) {
             xs *msg = msg_admiration(&snac, id, "Like");
             post(&snac, msg);
             timeline_admire(&snac, id, snac.actor, 1);
-
-            status = 303;
         }
         else
-        if (strcmp(action, "Boost") == 0) {
+        if (strcmp(action, L("Boost")) == 0) {
             xs *msg = msg_admiration(&snac, id, "Announce");
             post(&snac, msg);
             timeline_admire(&snac, id, snac.actor, 0);
-
-            status = 303;
+        }
+        else
+        if (strcmp(action, L("MUTE")) == 0) {
+            mute(&snac, actor);
+        }
+        else
+        if (strcmp(action, L("Follow")) == 0) {
+        }
+        else
+        if (strcmp(action, L("Unfollow")) == 0) {
+        }
+        else
+        if (strcmp(action, L("Delete")) == 0) {
         }
         else
             status = 404;
+
+        /* delete the cached timeline */
+        if (status == 303)
+            history_del(&snac, "_timeline.html");
     }
     else
     if (p_path && strcmp(p_path, "admin/user-setup") == 0) {
