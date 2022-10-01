@@ -526,11 +526,12 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
 
     if (level == 0) {
         char *referrer;
+        char *parent;
 
         s = xs_str_cat(s, "<div class=\"snac-post\">\n");
 
         /* print the origin of the post, if any */
-        if ((referrer = xs_dict_get(meta, "referrer")) != NULL) {
+        if (!xs_is_null(referrer = xs_dict_get(meta, "referrer"))) {
             xs *actor_r = NULL;
 
             if (valid_status(actor_get(snac, referrer, &actor_r))) {
@@ -549,6 +550,17 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
 
                 s = xs_str_cat(s, s1);
             }
+        }
+        else
+        if (!xs_is_null((parent = xs_dict_get(meta, "parent")))) {
+            /* this may happen if any of the autor or the parent aren't here */
+            xs *s1 = xs_fmt(
+                "<div class=\"snac-origin\">%s "
+                "<a href=\"%s\">»</a></div>\n",
+                L("in reply to"), parent
+            );
+
+            s = xs_str_cat(s, s1);
         }
     }
     else
