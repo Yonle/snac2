@@ -867,7 +867,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         }
         else
         if (strcmp(action, L("Follow")) == 0) {
-            char *msg = msg_follow(&snac, actor);
+            xs *msg = msg_follow(&snac, actor);
 
             /* reload the actor from the message, in may be different */
             actor = xs_dict_get(msg, "object");
@@ -878,6 +878,20 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         }
         else
         if (strcmp(action, L("Unfollow")) == 0) {
+            /* get the following object */
+            xs *object = NULL;
+
+            if (valid_status(following_get(&snac, actor, &object))) {
+                xs *msg = msg_undo(&snac, xs_dict_get(object, "object"));
+
+                following_del(&snac, actor);
+
+                enqueue_output(&snac, msg, actor, 0);
+
+                snac_log(&snac, xs_fmt("unfollowed actor %s", actor));
+            }
+            else
+                snac_log(&snac, xs_fmt("actor is not being followed %s", actor));
         }
         else
         if (strcmp(action, L("Delete")) == 0) {

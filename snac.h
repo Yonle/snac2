@@ -75,6 +75,7 @@ d_char *local_list(snac *snac, int max);
 int following_add(snac *snac, char *actor, char *msg);
 int following_del(snac *snac, char *actor);
 int following_check(snac *snac, char *actor);
+int following_get(snac *snac, char *actor, d_char **data);
 
 void mute(snac *snac, char *actor);
 void unmute(snac *snac, char *actor);
@@ -112,6 +113,7 @@ d_char *msg_admiration(snac *snac, char *object, char *type);
 d_char *msg_create(snac *snac, char *object);
 d_char *msg_follow(snac *snac, char *actor);
 d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to);
+d_char *msg_undo(snac *snac, char *object);
 
 int activitypub_request(snac *snac, char *url, d_char **data);
 int actor_request(snac *snac, char *actor, d_char **data);

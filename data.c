@@ -693,6 +693,27 @@ int following_check(snac *snac, char *actor)
 }
 
 
+int following_get(snac *snac, char *actor, d_char **data)
+/* returns the 'Follow' object */
+{
+    xs *fn = _following_fn(snac, actor);
+    FILE *f;
+    int status = 200;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        xs *j = xs_readall(f);
+
+        fclose(f);
+
+        *data = xs_json_loads(j);
+    }
+    else
+        status = 404;
+
+    return status;
+}
+
+
 d_char *_muted_fn(snac *snac, char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));

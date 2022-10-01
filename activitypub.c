@@ -437,6 +437,17 @@ d_char *msg_create(snac *snac, char *object)
 }
 
 
+d_char *msg_undo(snac *snac, char *object)
+/* creates an 'Undo' message */
+{
+    d_char *msg = msg_base(snac, "Undo", "@object", snac->actor, "@now", object);
+
+    msg = xs_dict_append(msg, "to", xs_dict_get(object, "object"));
+
+    return msg;
+}
+
+
 d_char *msg_follow(snac *snac, char *actor)
 /* creates a 'Follow' message */
 {
