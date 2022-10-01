@@ -867,6 +867,14 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         }
         else
         if (strcmp(action, L("Follow")) == 0) {
+            char *msg = msg_follow(&snac, actor);
+
+            /* reload the actor from the message, in may be different */
+            actor = xs_dict_get(msg, "object");
+
+            following_add(&snac, actor, msg);
+
+            enqueue_output(&snac, msg, actor, 0);
         }
         else
         if (strcmp(action, L("Unfollow")) == 0) {
