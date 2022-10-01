@@ -2,6 +2,8 @@
 
 ## Open
 
+Implement the citations as @user@host in the reply textareas.
+
 Implement the purge.
 
 Import the man pages.
