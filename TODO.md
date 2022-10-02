@@ -2,8 +2,6 @@
 
 ## Open
 
-Implement the user-setup web interface.
-
 Implement the citations as @user@host in the reply textareas.
 
 Implement the purge.
@@ -143,3 +141,5 @@ Implement an input queue (2022-10-01T20:27:52+0200).
 Refactor HTML rendering because it's a mess and write build_timeline(), that generates a big structure with everything to show in a timeline, to be passed to the HTML renderer (2022-10-01T20:27:52+0200).
 
 Implement the helper thread (2022-10-01T20:56:46+0200).
+
+Implement the user-setup web interface (2022-10-02T17:45:03+0200).

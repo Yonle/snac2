@@ -8,6 +8,7 @@
 #include "xs_regex.h"
 #include "xs_set.h"
 #include "xs_openssl.h"
+#include "xs_time.h"
 
 #include "snac.h"
 
@@ -753,11 +754,24 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
 
     if (p_path == NULL) {
         /* public timeline */
-        xs *list = local_list(&snac, 0xfffffff);
+        xs *h = xs_str_localtime(0, "%Y-%m.html");
 
-        *body   = html_timeline(&snac, list, 1);
-        *b_size = strlen(*body);
-        status  = 200;
+        if (history_mtime(&snac, h) > timeline_mtime(&snac)) {
+            snac_debug(&snac, 1, xs_fmt("serving cached local timeline"));
+
+            *body   = history_get(&snac, h);
+            *b_size = strlen(*body);
+            status  = 200;
+        }
+        else {
+            xs *list = local_list(&snac, 0xfffffff);
+
+            *body   = html_timeline(&snac, list, 1);
+            *b_size = strlen(*body);
+            status  = 200;
+
+            history_add(&snac, h, *body, *b_size);
+        }
     }
     else
     if (strcmp(p_path, "admin") == 0) {
