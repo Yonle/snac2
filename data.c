@@ -825,7 +825,8 @@ int actor_get(snac *snac, char *actor, d_char **data)
 
         fclose(f);
 
-        *data = xs_json_loads(j);
+        if (data)
+            *data = xs_json_loads(j);
     }
     else
         status = 500;
