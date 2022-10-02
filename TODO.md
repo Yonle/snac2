@@ -22,9 +22,11 @@ Add web interface for private messages.
 
 Add web interface for the list of people being followed.
 
-Add an RSS to the local timeline.
-
 Implement image attachments.
+
+Implement the s/ (static) path.
+
+Implement the h/ (history) path.
 
 ## Wishlist and batshit crazy ideas
 
@@ -33,6 +35,8 @@ The 'history' pages are now just monthly snapshots of the local timeline. This i
 Implement a way to save interesting posts.
 
 Create the `mastodon2snac` helper program (reading directly from the boxes, not using any exported data).
+
+Add an RSS to the local timeline.
 
 ## Closed
 
