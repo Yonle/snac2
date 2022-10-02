@@ -22,8 +22,6 @@ Implement image attachments.
 
 Implement the s/ (static) path.
 
-Implement the h/ (history) path.
-
 ## Wishlist and batshit crazy ideas
 
 The 'history' pages are now just monthly snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you i.e. delete a post because it will be there in the history forever.
@@ -143,3 +141,5 @@ Implement the helper thread (2022-10-01T20:56:46+0200).
 Implement the user-setup web interface (2022-10-02T17:45:03+0200).
 
 Implement the local timeline cache (2022-10-02T18:17:27+0200).
+
+Implement the h/ (history) path (2022-10-02T18:23:24+0200).
