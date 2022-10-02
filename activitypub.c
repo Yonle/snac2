@@ -8,6 +8,7 @@
 #include "xs_mime.h"
 #include "xs_openssl.h"
 #include "xs_regex.h"
+#include "xs_time.h"
 
 #include "snac.h"
 
@@ -281,7 +282,7 @@ d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date, char
 
     /* generated values */
     if (date && strcmp(date, "@now") == 0)
-        date = published = xs_utc_time("%Y-%m-%dT%H:%M:%SZ");
+        date = published = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
 
     if (id != NULL) {
         if (strcmp(id, "@dummy") == 0) {
@@ -649,7 +650,7 @@ int process_message(snac *snac, char *msg, char *req)
 
         if (xs_is_null(xs_dict_get(f_msg, "published"))) {
             /* add a date if it doesn't include one (Mastodon) */
-            xs *date = xs_utc_time("%Y-%m-%dT%H:%M:%SZ");
+            xs *date = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
             f_msg = xs_dict_set(f_msg, "published", date);
         }
 

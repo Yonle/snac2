@@ -6,6 +6,7 @@
 #include "xs_encdec.h"
 #include "xs_openssl.h"
 #include "xs_curl.h"
+#include "xs_time.h"
 
 #include "snac.h"
 
@@ -27,7 +28,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
     char *k, *v;
     d_char *response;
 
-    date = xs_utc_time("%a, %d %b %Y %H:%M:%S GMT");
+    date = xs_str_utctime(0, "%a, %d %b %Y %H:%M:%S GMT");
 
     {
         xs *s = xs_replace(url, "https:/" "/", "");

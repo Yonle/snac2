@@ -14,6 +14,7 @@
 #include "xs_mime.h"
 #include "xs_regex.h"
 #include "xs_set.h"
+#include "xs_time.h"
 
 #include "snac.h"
 
@@ -26,24 +27,6 @@ d_char *srv_baseurl = NULL;
 int     srv_running = 0;
 
 int dbglevel = 0;
-
-
-d_char *xs_time(char *fmt, int local)
-/* returns a d_char with a formated time */
-{
-    time_t t = time(NULL);
-    struct tm tm;
-    char tmp[64];
-
-    if (local)
-        localtime_r(&t, &tm);
-    else
-        gmtime_r(&t, &tm);
-
-    strftime(tmp, sizeof(tmp), fmt, &tm);
-
-    return xs_str_new(tmp);
-}
 
 
 d_char *tid(int offset)
@@ -92,7 +75,7 @@ void srv_debug(int level, d_char *str)
     }
 
     if (dbglevel >= level) {
-        xs *tm = xs_local_time("%H:%M:%S");
+        xs *tm = xs_str_localtime(0, "%H:%M:%S");
         fprintf(stderr, "%s %s\n", tm, msg);
     }
 }
