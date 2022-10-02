@@ -12,8 +12,6 @@ Implement the 'init' command-line option.
 
 Implement the 'adduser' command-line option.
 
-Implement the local timeline cache.
-
 Show dates in local time and not UTC.
 
 Add web interface for private messages.
@@ -143,3 +141,5 @@ Refactor HTML rendering because it's a mess and write build_timeline(), that gen
 Implement the helper thread (2022-10-01T20:56:46+0200).
 
 Implement the user-setup web interface (2022-10-02T17:45:03+0200).
+
+Implement the local timeline cache (2022-10-02T18:17:27+0200).
