@@ -111,6 +111,8 @@ d_char *msg_follow(snac *snac, char *actor);
 d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to);
 d_char *msg_undo(snac *snac, char *object);
 d_char *msg_delete(snac *snac, char *id);
+d_char *msg_actor(snac *snac);
+d_char *msg_update(snac *snac, char *object);
 
 int activitypub_request(snac *snac, char *url, d_char **data);
 int actor_request(snac *snac, char *actor, d_char **data);

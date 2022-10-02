@@ -990,6 +990,11 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
         history_del(&snac, "_timeline.html");
 
+        xs *a_msg = msg_actor(&snac);
+        xs *u_msg = msg_update(&snac, a_msg);
+
+        post(&snac, u_msg);
+
         status = 303;
     }
 
