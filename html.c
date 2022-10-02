@@ -851,6 +851,12 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
     else
     if (xs_startswith(p_path, "h/")) {
         /* an entry from the history */
+        xs *id = xs_replace(p_path, "h/", "");
+
+        if ((*body = history_get(&snac, id)) != NULL) {
+            *b_size = strlen(*body);
+            status  = 200;
+        }
     }
     else
         status = 404;
