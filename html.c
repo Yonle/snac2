@@ -196,11 +196,13 @@ d_char *html_msg_icon(snac *snac, d_char *os, char *msg)
         if (!is_msg_public(snac, msg))
             s = xs_str_cat(s, " <span title=\"private\">&#128274;</span>");
 
-        if ((v = xs_dict_get(msg, "published")) == NULL)
-            v = "&nbsp;";
+        if ((v = xs_dict_get(msg, "published")) == NULL) {
+            s = xs_str_cat(s, "<br>\n<time>&nbsp;</time>\n");
+        }
+        else {
+            xs *s1 = xs_fmt(
+                "<br>\n<time class=\"dt-published snac-pubdate\">%s</time>\n", v);
 
-        {
-            xs *s1 = xs_fmt("<br>\n<time class=\"dt-published snac-pubdate\">%s</time>\n", v);
             s = xs_str_cat(s, s1);
         }
     }
