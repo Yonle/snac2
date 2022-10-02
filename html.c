@@ -956,6 +956,41 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
     else
     if (p_path && strcmp(p_path, "admin/user-setup") == 0) {
         /* change of user data */
+        char *v;
+        char *p1, *p2;
+
+        if ((v = xs_dict_get(p_vars, "name")) != NULL)
+            snac.config = xs_dict_set(snac.config, "name", v);
+        if ((v = xs_dict_get(p_vars, "avatar")) != NULL)
+            snac.config = xs_dict_set(snac.config, "avatar", v);
+        if ((v = xs_dict_get(p_vars, "bio")) != NULL)
+            snac.config = xs_dict_set(snac.config, "bio", v);
+
+        /* password change? */
+        if ((p1 = xs_dict_get(p_vars, "passwd1")) != NULL &&
+            (p2 = xs_dict_get(p_vars, "passwd2")) != NULL &&
+            *p1 && strcmp(p1, p2) == 0) {
+            xs *pw = hash_password(snac.uid, p1, NULL);
+            snac.config = xs_dict_set(snac.config, "passwd", pw);
+        }
+
+        xs *fn  = xs_fmt("%s/user.json", snac.basedir);
+        xs *bfn = xs_fmt("%s.bak", fn);
+        FILE *f;
+
+        rename(fn, bfn);
+
+        if ((f = fopen(fn, "w")) != NULL) {
+            xs *j = xs_json_dumps_pp(snac.config, 4);
+            fwrite(j, strlen(j), 1, f);
+            fclose(f);
+        }
+        else
+            rename(bfn, fn);
+
+        history_del(&snac, "_timeline.html");
+
+        status = 303;
     }
 
     if (status == 303) {
