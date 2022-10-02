@@ -483,6 +483,10 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     xs *actor_o = NULL;
     char *actor;
 
+    /* do not show non-public messages in the public timeline */
+    if (local && !is_msg_public(snac, msg))
+        return os;
+
     /* return if already seen */
     if (xs_set_add(seen, id) == 0)
         return os;
@@ -719,6 +723,31 @@ d_char *html_timeline(snac *snac, char *list, int local)
     }
 
     s = xs_str_cat(s, "</div>\n");
+
+    if (local) {
+        xs *s1 = xs_fmt(
+            "<div class=\"snac-history\">\n"
+            "<p class=\"snac-history-title\">%s</p><ul>\n",
+            L("History")
+        );
+
+        s = xs_str_cat(s, s1);
+
+        xs *list = history_list(snac);
+        char *p, *v;
+
+        p = list;
+        while (xs_list_iter(&p, &v)) {
+            xs *fn = xs_replace(v, ".html", "");
+            xs *s1 = xs_fmt(
+                        "<li><a href=\"%s/h/%s\">%s</li>\n",
+                        snac->actor, v, fn);
+
+            s = xs_str_cat(s, s1);
+        }
+
+        s = xs_str_cat(s, "</ul></div>\n");
+    }
 
     s = html_user_footer(snac, s);
 
