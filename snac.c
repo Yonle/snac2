@@ -15,6 +15,7 @@
 #include "xs_regex.h"
 #include "xs_set.h"
 #include "xs_time.h"
+#include "xs_glob.h"
 
 #include "snac.h"
 
