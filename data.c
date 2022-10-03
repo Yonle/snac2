@@ -912,32 +912,9 @@ int history_del(snac *snac, char *id)
 
 d_char *history_list(snac *snac)
 {
-    d_char *list;
-    xs *spec;
-    glob_t globbuf;
+    xs *spec = xs_fmt("%s/history/" "*.html", snac->basedir);
 
-    list = xs_list_new();
-    spec = xs_fmt("%s/history/" "*.html", snac->basedir);
-
-    if (glob(spec, 0, NULL, &globbuf) == 0) {
-        int n;
-        char *fn;
-
-        for (n = 0; (fn = globbuf.gl_pathv[n]) != NULL; n++) {
-            char *p;
-
-            if ((p = strrchr(fn, '/')) != NULL) {
-                *p++ = '\0';
-
-                if (*p != '_')
-                    list = xs_list_append(list, p);
-            }
-        }
-    }
-
-    globfree(&globbuf);
-
-    return list;
+    return xs_glob(spec, 1, 0);
 }
 
 
