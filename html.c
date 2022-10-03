@@ -809,10 +809,10 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         if (!login(&snac, req))
             status = 401;
         else {
-            if (history_mtime(&snac, "_timeline.html") > timeline_mtime(&snac)) {
+            if (history_mtime(&snac, "timeline.html_") > timeline_mtime(&snac)) {
                 snac_debug(&snac, 1, xs_fmt("serving cached timeline"));
 
-                *body   = history_get(&snac, "_timeline.html");
+                *body   = history_get(&snac, "timeline.html_");
                 *b_size = strlen(*body);
                 status  = 200;
             }
@@ -825,7 +825,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
                 *b_size = strlen(*body);
                 status  = 200;
 
-                history_add(&snac, "_timeline.html", *body, *b_size);
+                history_add(&snac, "timeline.html_", *body, *b_size);
             }
         }
     }
@@ -1000,7 +1000,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
         /* delete the cached timeline */
         if (status == 303)
-            history_del(&snac, "_timeline.html");
+            history_del(&snac, "timeline.html_");
     }
     else
     if (p_path && strcmp(p_path, "admin/user-setup") == 0) {
@@ -1037,7 +1037,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         else
             rename(bfn, fn);
 
-        history_del(&snac, "_timeline.html");
+        history_del(&snac, "timeline.html_");
 
         xs *a_msg = msg_actor(&snac);
         xs *u_msg = msg_update(&snac, a_msg);
