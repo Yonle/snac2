@@ -256,33 +256,29 @@ int follower_check(snac *snac, char *actor)
 d_char *follower_list(snac *snac)
 /* returns the list of followers */
 {
-    d_char *list;
-    xs *spec;
-    glob_t globbuf;
+    xs *spec = xs_fmt("%s/followers/" "*.json", snac->basedir);
+    xs *glist = xs_glob(spec, 0, 0);
+    char *p, *v;
+    d_char *list = xs_list_new();
 
-    list = xs_list_new();
-    spec = xs_fmt("%s/followers/" "*.json", snac->basedir);
+    /* iterate the list of files */
+    p = glist;
+    while (xs_list_iter(&p, &v)) {
+        FILE *f;
 
-    if (glob(spec, 0, NULL, &globbuf) == 0) {
-        int n;
-        char *fn;
+        /* load the follower data */
+        if ((f = fopen(v, "r")) != NULL) {
+            xs *j = xs_readall(f);
+            fclose(f);
 
-        for (n = 0; (fn = globbuf.gl_pathv[n]) != NULL; n++) {
-            FILE *f;
-
-            if ((f = fopen(fn, "r")) != NULL) {
-                xs *j = xs_readall(f);
+            if (j != NULL) {
                 xs *o = xs_json_loads(j);
 
                 if (o != NULL)
                     list = xs_list_append(list, o);
-
-                fclose(f);
             }
         }
     }
-
-    globfree(&globbuf);
 
     return list;
 }
