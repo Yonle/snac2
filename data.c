@@ -144,31 +144,44 @@ int user_open(snac *snac, char *uid)
 }
 
 
-d_char *user_list(void)
-/* returns the list of user ids */
+d_char *xs_glob_n(const char *spec, int basename, int reverse, int max)
+/* does a globbing and returns the found files */
 {
-    d_char *list;
-    xs *spec;
     glob_t globbuf;
-
-    globbuf.gl_offs = 1;
-
-    list = xs_list_new();
-    spec = xs_fmt("%s/user/" "*", srv_basedir);
+    d_char *list = xs_list_new();
 
     if (glob(spec, 0, NULL, &globbuf) == 0) {
         int n;
         char *p;
 
-        for (n = 0; (p = globbuf.gl_pathv[n]) != NULL; n++) {
-            if ((p = strrchr(p, '/')) != NULL)
-                list = xs_list_append(list, p + 1);
+        if (reverse) {
+        }
+        else {
+            for (n = 0; n < max && (p = globbuf.gl_pathv[n]) != NULL; n++) {
+                if (basename) {
+                    if ((p = strrchr(p, '/')) == NULL)
+                        continue;
+
+                    p++;
+                }
+
+                list = xs_list_append(list, p);
+            }
         }
     }
 
     globfree(&globbuf);
 
     return list;
+}
+#define xs_glob(spec, basename, reverse) xs_glob_n(spec, basename, reverse, 0xfffffff)
+
+
+d_char *user_list(void)
+/* returns the list of user ids */
+{
+    xs *spec = xs_fmt("%s/user/" "*", srv_basedir);
+    return xs_glob(spec, 1, 0);
 }
 
 
