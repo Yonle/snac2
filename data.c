@@ -296,15 +296,14 @@ d_char *_timeline_find_fn(snac *snac, char *id)
 {
     xs *md5  = xs_md5_hex(id, strlen(id));
     xs *spec = xs_fmt("%s/timeline/" "*-%s.json", snac->basedir, md5);
-    glob_t globbuf;
+    xs *list = NULL;
     d_char *fn = NULL;
 
-    if (glob(spec, 0, NULL, &globbuf) == 0 && globbuf.gl_pathc) {
-        /* get just the first file */
-        fn = xs_str_new(globbuf.gl_pathv[0]);
-    }
+    list = xs_glob(spec, 0, 0);
 
-    globfree(&globbuf);
+    /* if there is something, get the first one */
+    if (xs_list_len(list) > 0)
+        fn = xs_str_new(xs_list_get(list, 0));
 
     return fn;
 }
