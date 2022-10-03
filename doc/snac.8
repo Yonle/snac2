@@ -14,8 +14,16 @@ This is the admin manual. For user operation, see
 .Xr snac 1 .
 For file and data formats, see
 .Xr snac 5 .
-.Ss Installation
-Install the OpenSSL and urllib3 Python3 external packages, and run as root
+.Ss Building and Installation
+A C compiler must be installed in the system, as well as the development
+headers and libraries for OpenSSL and curl. To build
+.Nm ,
+run
+.Bd -literal -offset indent
+make
+.Ed
+.Pp
+And, after that, run as root
 .Bd -literal -offset indent
 make install
 .Ed
@@ -178,11 +186,6 @@ user's crontab:
 # execute a data purge on Sundays at 4 am
 0 4 * * 0 /usr/local/bin/snac purge /path/to/snac-data
 .Ed
-.Pp
-Other directories, like
-.Pa archive/ ,
-can grow very quickly if the debug level is greater than 0. These
-files must be deleted manually.
 .Pp
 The user-generated data (the local timeline) is never deleted.
 .Ss ActivityPub Support

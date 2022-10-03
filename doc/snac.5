@@ -60,6 +60,8 @@ The base directory contains the following files and folders:
 Server configuration.
 .It Pa user/
 Directory holding user subdirectories.
+.It Pa archive/
+If this directory exists, all input and output messages are stored into.
 .El
 .Pp
 Each user directory is a subdirectory of 
@@ -117,8 +119,7 @@ web interface.
 This directory contains generated HTML files. They may be snapshots of the
 local timeline in previous months or other cached data.
 .It Pa archive/
-This directory stores all input/output traffic of ActivityPub messages. There
-is a different file for each day. This information is only stored if
+This directory is no longer used in version 2.x and later. It can be deleted.
 .Nm
 is run with a debug level >= 1.
 .El
