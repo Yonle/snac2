@@ -137,9 +137,6 @@ Initializes the database. This is an interactive command; necessary
 information will be prompted for. The
 .Ar basedir
 directory must not exist.
-.It Cm check Ar basedir Op uid
-Does a minimal health check to the database and its users. If a
-user id is provided, only this user will be checked.
 .It Cm purge Ar basedir Op uid
 Purges old data from the timeline of all users. If a user id is
 provided, only this user's timeline will be purged.
@@ -157,25 +154,10 @@ Starts the daemon.
 Processes the output queue of the specied user, sending all
 enqueued messages and re-enqueing the failing ones. This command
 must not be executed if the server is running.
-.It Cm update Ar basedir Ar uid
-Enqueues a user information Update message to all followers.
 .It Cm passwd Ar basedir Ar uid
 Changes the password for a user (interactive).
 .It Cm follow Ar basedir Ar uid Ar actor
 Sends a Follow message for the specified actor URL.
-.It Cm unfollow Ar basedir Ar uid Ar actor
-Sends an Unfollow message for the specified actor URL.
-.It Cm mute Ar basedir Ar uid Ar actor
-Mutes an actor for the specified user. This is the most important
-command for the Fediverse. The user will no longer receive nor
-read another activity from the specified moron.
-.It Cm unmute Ar basedir Ar uid Ar actor
-In case a muted moron is no longer a moron, it can be unmuted
-this way. This is the least used command ever.
-.It Cm like Ar basedir Ar uid Ar url
-Enqueues a Like message for a post given its url.
-.It Cm announce Ar basedir Ar uid Ar url
-Enqueues an Announce (boost) message for a message post its url.
 .It Cm request Ar basedir Ar uid Ar url
 Requests an object and dumps it to stdout. This is a very low
 level command that is not very useful to you.
