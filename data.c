@@ -152,12 +152,19 @@ d_char *xs_glob_n(const char *spec, int basename, int reverse, int max)
 
     if (glob(spec, 0, NULL, &globbuf) == 0) {
         int n;
-        char *p;
 
-        if (reverse) {
-        }
-        else {
-            for (n = 0; n < max && (p = globbuf.gl_pathv[n]) != NULL; n++) {
+        if (max > globbuf.gl_pathc)
+            max = globbuf.gl_pathc;
+
+        for (n = 0; n < max; n++) {
+            char *p;
+
+            if (reverse)
+                p = globbuf.gl_pathv[globbuf.gl_pathc - n - 1];
+            else
+                p = globbuf.gl_pathv[n];
+
+            if (p != NULL) {
                 if (basename) {
                     if ((p = strrchr(p, '/')) == NULL)
                         continue;
@@ -379,36 +386,17 @@ d_char *timeline_get(snac *snac, char *fn)
 d_char *_timeline_list(snac *snac, char *directory, int max)
 /* returns a list of the timeline filenames */
 {
-    d_char *list;
     xs *spec = xs_fmt("%s/%s/" "*.json", snac->basedir, directory);
-    glob_t globbuf;
     int c_max;
 
     /* maximum number of items in the timeline */
     c_max = xs_number_get(xs_dict_get(srv_config, "max_timeline_entries"));
 
+    /* never more timeline entries than the configured maximum */
     if (max > c_max)
         max = c_max;
 
-    list = xs_list_new();
-
-    /* get the list in reverse order */
-    if (glob(spec, 0, NULL, &globbuf) == 0) {
-        int n;
-
-        if (max > globbuf.gl_pathc)
-            max = globbuf.gl_pathc;
-
-        for (n = 0; n < max; n++) {
-            char *fn = globbuf.gl_pathv[globbuf.gl_pathc - n - 1];
-
-            list = xs_list_append(list, fn);
-        }
-    }
-
-    globfree(&globbuf);
-
-    return list;
+    return xs_glob_n(spec, 0, 1, max);
 }
 
 
