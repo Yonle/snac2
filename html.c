@@ -896,12 +896,6 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
     p_vars = xs_dict_get(req, "p_vars");
 
-    {
-        xs *j1 = xs_json_dumps_pp(req, 4);
-        printf("%s\n", j1);
-        printf("[%s]\n", p_path);
-    }
-
     if (p_path && strcmp(p_path, "admin/note") == 0) {
         /* post note */
         char *content     = xs_dict_get(p_vars, "content");
