@@ -1,0 +1,208 @@
+.Dd $Mdocdate$
+.Dt SNAC 1
+.Os
+.Sh NAME
+.Nm snac
+.Nd A simple, minimalistic ActivityPub instance
+.Sh SYNOPSIS
+.Nm
+.Cm command
+.Ar basedir
+.Op Ar option ...
+.Sh DESCRIPTION
+The
+.Nm
+daemon processes messages from other servers in the Fediverse
+using the ActivityPub protocol.
+.Pp
+This is the user manual and expects an already running
+.Nm
+installation. For the administration manual, see
+.Xr snac 8 .
+For file and data formats, see
+.Xr snac 5 .
+.Ss Web Interface
+The web interface provided by
+.Nm
+is split in two data streams: the public timeline and the
+private timeline. There are no other feeds like the server-scoped
+or the federated firehoses provided by other similar ActivityPub
+implementations like Mastodon or Pleroma.
+.Pp
+The public timeline, also called the local timeline, is what an
+external visitor sees about the activity of a
+.Nm
+user: that is, only the list of public notes, boosts and likes
+the user generates or participates into. This is, obviously,
+read-only, and not very remarkable, unless the user publishes
+messages of staggering genious. A set of history links, grouped
+by month, will also be available at the bottom of the page.
+.Pp
+The private timeline, or simply the timeline, is the private,
+password-protected area of a
+.Nm
+server where the user really interacts with the rest of the
+Fediverse.
+.Pp
+The top area of the timeline provides a big text area to write
+notes for the public (i.e. for the user followers). As this is
+the second most important activity on the Fediverse, this is
+located in the most prominent area of the user page. You can
+enter plain text, @user@host mentions and other things. See the
+.Xr snac 5
+manual for more information on the allowed markup.
+.Pp
+More options are hidden under a toggle control. They are the
+following:
+.Bl -tag -offset indent
+.It Follow (by URL or user@host)
+Fill the input area with a user 'actor' URL or a user@host
+Fediverse identifier to follow.
+.It Boost (by URL)
+Fill the input area with the URL of a Fediverse note to be
+boosted.
+.It User setup...
+This option opens the user setup dialog.
+.El
+.Pp
+The user setup dialog allows some user information to be
+changed, specifically:
+.Bl -tag -offset indent
+.It User name
+Your user name, or not really that. People like to include
+emojis, flags and strange symbols for some reason.
+.It Avatar URL
+The URL of a picture to be used as your avatar in timelines
+around the world.
+.It Bio
+Enter here a bunch of self-indulgent blurb about yourself.
+The same markup options available for text notes apply here.
+.It Password
+Write the same string in these two fields to change your
+password. Don't write anything if you don't want to do this.
+.El
+.Pp
+The rest of the page contains your timeline in reverse
+chronological order (i.e., newest interactions first).
+.Nm
+shows the conversations as nested trees, unlike other Fediverse
+software; everytime something new is added to a conversation,
+the full thread is bumped up, so new interactions are shown
+always at the top of the page while the forgotten ones languish
+at the bottom.
+.Pp
+Private notes (a.k.a. direct messages) are also shown in
+the timeline as normal messages, but marked with a cute lock
+to mark them as non-public. Replies to direct messages are
+also private and cannot be liked nor boosted.
+.Pp
+For each entry in the timeline, a set of reasonable actions
+in the form of buttons will be shown. These can be:
+.Bl -tag -offset indent
+.It Reply
+Unveils a text area to write your intelligent and acute comment
+to an uninformed fellow. This note is sent to the original
+author as well as to your followers. The note can include
+mentions in the @user@format; these people will also become
+recipients of the message. If you reply to a boost or like,
+you are really replying to the note, not to the admirer of it.
+.It Like
+Click this if you admire this post. The poster and your
+followers will be informed.
+.It Boost
+Click this if you want to propagate this post to all your
+followers. The original author will also be informed.
+.It Follow
+Click here if you want to start receiving all the shenanigans
+the original author of the post will write in the future.
+.It Unfollow
+Click here if you are fed up of this fellow's activities.
+.It Delete
+Click here to send this post to the bin. If it's an activity
+written by you, the appropriate message is sent to the rest
+of involved parts telling them that you no longer want your
+thing in their servers (not all implementations really obey
+this kind of requirements, though).
+.It MUTE
+This is the most important button in
+.Nm
+and the Fediverse in general. Click it if you don't want
+to read crap from this user again in the forseeable future.
+.El
+.Ss Command-line options
+The command-line tool provide the following commands:
+.Bl -tag -offset indent
+.It Cm init Op basedir
+Initializes the database. This is an interactive command; necessary
+information will be prompted for. The
+.Ar basedir
+directory must not exist.
+.It Cm check Ar basedir Op uid
+Does a minimal health check to the database and its users. If a
+user id is provided, only this user will be checked.
+.It Cm purge Ar basedir Op uid
+Purges old data from the timeline of all users. If a user id is
+provided, only this user's timeline will be purged.
+.It Cm adduser Ar basedir Op uid
+Adds a new user to the server. This is an interactive command;
+necessary information will be prompted for. Also, a copy of
+the server
+.Pa style.css
+is installed in the user's
+.Pa static/
+directory.
+.It Cm httpd Ar basedir
+Starts the daemon.
+.It Cm queue Ar basedir Ar uid
+Processes the output queue of the specied user, sending all
+enqueued messages and re-enqueing the failing ones. This command
+must not be executed if the server is running.
+.It Cm update Ar basedir Ar uid
+Enqueues a user information Update message to all followers.
+.It Cm passwd Ar basedir Ar uid
+Changes the password for a user (interactive).
+.It Cm follow Ar basedir Ar uid Ar actor
+Sends a Follow message for the specified actor URL.
+.It Cm unfollow Ar basedir Ar uid Ar actor
+Sends an Unfollow message for the specified actor URL.
+.It Cm mute Ar basedir Ar uid Ar actor
+Mutes an actor for the specified user. This is the most important
+command for the Fediverse. The user will no longer receive nor
+read another activity from the specified moron.
+.It Cm unmute Ar basedir Ar uid Ar actor
+In case a muted moron is no longer a moron, it can be unmuted
+this way. This is the least used command ever.
+.It Cm like Ar basedir Ar uid Ar url
+Enqueues a Like message for a post given its url.
+.It Cm announce Ar basedir Ar uid Ar url
+Enqueues an Announce (boost) message for a message post its url.
+.It Cm request Ar basedir Ar uid Ar url
+Requests an object and dumps it to stdout. This is a very low
+level command that is not very useful to you.
+.It Cm note Ar basedir Ar uid Ar text
+Enqueues a Create + Note message to all followers. If the
+.Ar text
+argument is - (a lonely hyphen), the external editor defined
+by the EDITOR environment variable will be invoked to prepare
+a message.
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width Ds
+.It Ev DEBUG
+Overrides the debugging level from the server 'dbglevel' configuration
+variable. Set it to an integer value. The higher, the deeper in meaningless
+verbiage you'll find yourself into.
+.It Ev EDITOR
+The user-preferred interactive text editor to prepare messages.
+.El
+.Sh SEE ALSO
+.Xr snac 5 ,
+.Xr snac 8
+.Sh AUTHORS
+.An grunfink
+.Sh LICENSE
+See the LICENSE file for details.
+.Sh CAVEATS
+Use the Fediverse sparingly. Don't fear the mute button.
+.Sh BUGS
+Plenty. Some issues may be documented in the TODO.md file.

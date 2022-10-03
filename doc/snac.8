@@ -1,0 +1,326 @@
+.Dd $Mdocdate$
+.Dt SNAC 8
+.Os
+.Sh NAME
+.Nm snac
+.Nd snac administration
+.Sh DESCRIPTION
+The
+.Nm
+daemon processes messages from other servers in the Fediverse
+using the ActivityPub protocol.
+.Pp
+This is the admin manual. For user operation, see
+.Xr snac 1 .
+For file and data formats, see
+.Xr snac 5 .
+.Ss Installation
+Install the OpenSSL and urllib3 Python3 external packages, and run as root
+.Bd -literal -offset indent
+make install
+.Ed
+.Ss Database Initialization
+Once
+.Nm
+is properly installed on the system, designate a directory where
+the server and user data are to be stored. This directory
+must not exist yet.
+.Nm
+must always be run as a regular user; you can create one for
+it or use your own. To initialize the database, execute
+.Bd -literal -offset indent
+snac init $HOME/snac-data
+.Ed
+.Pp
+A small set of questions will be asked regarding the installation,
+specially the host name it will run under, the local network address
+and port
+.Nm
+will listen to, the optional path prefix and possibly other things.
+.Pp
+You can launch the
+.Nm
+process by running
+.Bd -literal -offset indent
+snac httpd $HOME/snac-data
+.Ed
+.Pp
+Use a web browser to connect to the specified address and port. You
+should see a greeting page.
+.Pp
+Log messages are sent to the standard error stream. By default, only
+relevant information is written there. You can increase the debugging
+level by editing the 'dbglevel' field in the
+.Pa server.json
+file or by setting a numeric value between 0 and 3 to the DEBUG
+environment variable, see below.
+.Pp
+If you run
+.Nm
+in an OS controlled by
+.Xr systemd 1 ,
+you can prepare a user service to start/stop the daemon. Following the
+previous example, create the file
+.Pa ~/.config/systemd/user/snac.service
+with the following content:
+.Bd -literal -offset indent
+[Unit]
+Description=snac daemon
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+ExecStart=/usr/local/bin/snac httpd /path/to/snac-data
+
+[Install]
+WantedBy=default.target
+.Ed
+.Pp
+And activate it by running
+.Bd -literal -offset indent
+systemctl --user enable snac.service
+systemctl --user start snac.service
+.Ed
+.Pp
+For other operating systems, please read the appropriate documentation
+on how to install a daemon as a non-root service.
+.Ss Server Setup
+.Pp
+An http server with TLS and proxying support must already be
+installed and configured.
+.Nm
+runs as a daemon and listens on a TCP/IP socket, preferrably
+on a local interface. It can serve the full domain or only
+a directory. The http server must be configured to route to the
+.Nm
+socket all related traffic and also the webfinger standard
+address. The Host header must be propagated.
+See the examples below.
+.Ss Adding Users
+.Pp
+Users must be created from the command line.
+You can do it by running
+.Bd -literal -offset indent
+snac adduser $HOME/snac-data
+.Ed
+.Pp
+All needed data will be prompted for. There is no artificial limit
+on the number of users that can be created.
+.Ss Customization
+The
+.Pa server.json
+configuration file allows some behaviour tuning:
+.Bl -tag -width tenletters
+.It Ic host
+The host name.
+.It Ic prefix
+The URL path prefix.
+.It Ic address
+The listen network address.
+.It Ic port
+The list network port.
+.It Ic dbglevel
+The debug level. An integer value, being 0 the less verbose (the default).
+.It Ic layout
+The disk storage layout version. Never touch this.
+.It Ic queue_retry_max
+Messages sent out are stored in a queue. If the posting of a messages fails,
+it's re-enqueued for later. This integer configures the maximum count of
+times the sending will be retried.
+.It Ic queue_retry_minutes
+The number of minutes to wait before the failed posting of a message is
+retried. This is not linear, but multipled by the number of retries
+already done.
+.It Ic max_timeline_entries
+This is the maximum timeline entries shown in the web interface.
+.It Ic timeline_purge_days
+Entries in the timeline older that this number of days are purged.
+.It Ic css_urls
+This is a list of URLs to CSS files that will be inserted, in this order,
+in the HTML before the user CSS. Use these files to configure the global
+site layout.
+.El
+.Pp
+You must restart the server to make effective these changes.
+.Pp
+If a file named
+.Pa greeting.html
+is present in the server base directory, it will be returned whenever
+the base URL of the server is requested. Fill it with whatever
+information about the instance you want to supply to people
+visiting the server, like sign up requirements, site policies
+and such. The special %userlist% mark in the file will cause
+the list of users in this instance to be inserted.
+.Pp
+Users can change a bit of information about themselves from the
+web interface. See
+.Xr snac 1
+for details. Further, every user has a private CSS file in their
+.Pa static/style.css
+that can be modified to suit their needs. This file contains
+a copy of the
+.Pa style.css
+file in the server root and it's inserted into the HTML output.
+It's not easily accesible from the web interface to avoid users
+shooting themselves in the foot by destroying everything.
+.Ss Old Data Purging
+The Fediverse generates big loads of data that get old and
+stale very quickly. By default, 
+.Nm
+does not delete anything; you must do it explicitly by issuing a
+.Ar purge
+command periodically. A cron entry will suffice. You can add the
+following to the
+.Nm
+user's crontab:
+.Bd -literal -offset indent
+# execute a data purge on Sundays at 4 am
+0 4 * * 0 /usr/local/bin/snac purge /path/to/snac-data
+.Ed
+.Pp
+Other directories, like
+.Pa archive/ ,
+can grow very quickly if the debug level is greater than 0. These
+files must be deleted manually.
+.Pp
+The user-generated data (the local timeline) is never deleted.
+.Ss ActivityPub Support
+These are the following activities and objects that
+.Nm
+supports:
+.Bl -tag -width tenletters
+.It Vt Follow
+Complete support, on input and output.
+.It Vt Undo
+For
+.Vt Follow ,
+.Vt Like
+and
+.Vt Announce
+objects, on input and output.
+.It Vt Create
+For
+.Vt Note
+objects, on input and output.
+.It Vt Accept
+For
+.Vt Follow
+objects, on input and output.
+.It Vt Like
+For
+.Vt Note
+objects, on input and output.
+.It Vt Announce
+For
+.Vt Note
+objects, on input and output.
+.It Vt Update
+For
+.Vt Person
+objects, on input and output. Support for updating
+.Vt Note
+objects will probably be added in the future.
+.It Vt Delete
+Supported for
+.Vt Note
+and
+.Vt Tomsbtone
+objects on input, and for
+.Vt Note
+objects on output.
+.El
+.Pp
+The rest of activities and objects are dropped on input.
+.Pp
+There is partial support for
+.Vt OrderedCollection
+objects in the
+.Pa /outbox 
+(with the last 20 entries of the local timeline shown). No pagination
+is supported. Intentionally, the
+.Pa /followers
+and
+.Pa /following
+paths return empty lists.
+.Ss Other Considerations
+.Nm
+stores all the messages it receives as JSON files, which are usually
+bloated and filled with redundant information. Using a filesystem with
+file compression enabled (like btrfs or zfs) will probably be a good
+choice to store the
+.Nm
+database into.
+.Sh ENVIRONMENT
+.Bl -tag -width Ds
+.It Ev DEBUG
+Overrides the debugging level from the server 'dbglevel' configuration
+variable. Set it to an integer value. The higher, the deeper in meaningless
+verbiage you'll find yourself into.
+.El
+.Sh EXAMPLES
+You want to install the
+.Nm
+Fediverse daemon in the host example.com, that is correctly configured
+with a valid TLS certificate and running the nginx httpd server.
+The service will be installed under the
+.Pa fedi
+location. Two users, walter and jessie, will be hosted in the system.
+Their Fediverse presence addresses will be https://example.com/fedi/walter
+and https://example.com/fedi/jesse, respectively. They will be known
+in the Fediverse as @walter@example.com and @jesse@example.com. The
+.Nm
+daemon will run as the user snacusr in the system and listen to the
+localhost:8001 network socket. All data will be stored in the
+.Pa /home/snacusr/fedidata
+directory.
+.Pp
+Log into the system as snacusr and execute:
+.Bd -literal -offset indent
+snac init /home/snacusr/fedidata
+.Ed
+.Pp
+Answer "example.com" to the host name question, "/fedi" to the path
+prefix question, "localhost" to the address and "8001" to the port.
+.Pp
+Create the users
+.Bd -literal -offset indent
+snac adduser /home/snacusr/fedidata walter
+snac adduser /home/snacusr/fedidata jesse
+.Ed
+.Pp
+Answer the questions with reasonable values.
+.Pp
+Execute the server:
+.Bd -literal -offset indent
+snac httpd /home/snacusr/fedidata
+.Ed
+.Pp
+Edit the nginx configuration and add the following snippet to the
+example.com server section:
+.Bd -literal -offset indent
+location /.well-known/webfinger {
+    proxy_pass http://localhost:8001;
+    proxy_set_header Host $http_host;
+}
+
+location /fedi {
+    proxy_pass http://localhost:8001;
+    proxy_set_header Host $http_host;
+}
+.Ed
+.Pp
+Restart the nginx daemon and connect to https://example.com/fedi/walter.
+The empty, default screen will be shown. Enter the admin section with the
+credentials defined for this user. Search people, start following
+them, engage in arid discussions and generally enjoy the frustrating
+experience of Social Media.
+.Sh SEE ALSO
+.Xr snac 1 ,
+.Xr snac 5
+.Sh AUTHORS
+.An grunfink
+.Sh LICENSE
+See the LICENSE file for details.
+.Sh CAVEATS
+JSON files are fragile when modified by hand. Take care.
