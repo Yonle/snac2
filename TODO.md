@@ -8,8 +8,6 @@ Implement the citations as @user@host in the reply textareas.
 
 Implement the purge.
 
-Import the man pages.
-
 Implement the 'init' command-line option.
 
 Implement the 'adduser' command-line option.
@@ -24,13 +22,13 @@ Implement image attachments.
 
 Implement the s/ (static) path.
 
+Implement a way to save interesting posts.
+
 ## Wishlist and batshit crazy ideas
 
 Process the timeline html from a dedicated thread.
 
 The 'history' pages are now just monthly snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you i.e. delete a post because it will be there in the history forever.
-
-Implement a way to save interesting posts.
 
 Create the `mastodon2snac` helper program (reading directly from the boxes, not using any exported data).
 
@@ -147,3 +145,5 @@ Implement the user-setup web interface (2022-10-02T17:45:03+0200).
 Implement the local timeline cache (2022-10-02T18:17:27+0200).
 
 Implement the h/ (history) path (2022-10-02T18:23:24+0200).
+
+Import the man pages (2022-10-03T21:38:23+0200).
