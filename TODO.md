@@ -26,6 +26,8 @@ Implement the s/ (static) path.
 
 ## Wishlist and batshit crazy ideas
 
+Process the timeline html from a dedicated thread.
+
 The 'history' pages are now just monthly snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you i.e. delete a post because it will be there in the history forever.
 
 Implement a way to save interesting posts.
