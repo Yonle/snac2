@@ -217,7 +217,7 @@ int adduser(char *uid)
     config = xs_dict_append(config, "avatar",    "");
     config = xs_dict_append(config, "bio",       "");
     config = xs_dict_append(config, "published", date);
-    config = xs_dict_append(config, "password",  pwd_f);
+    config = xs_dict_append(config, "passwd",    pwd_f);
 
     xs *basedir = xs_fmt("%s/user/%s", srv_basedir, uid);
 
