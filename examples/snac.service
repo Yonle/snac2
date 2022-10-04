@@ -1,0 +1,17 @@
+[Unit]
+Description=snac daemon
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+ExecStart=/usr/local/bin/snac httpd /PATH/TO/SNAC/BASEDIR
+
+[Install]
+WantedBy=default.target
+
+# This is a systemd user service example. Edit and run:
+# 
+# cp snac.service ~/.config/systemd/user/
+# systemctl --user enable snac.service
+# systemctl --user start snac.service
