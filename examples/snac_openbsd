@@ -1,0 +1,20 @@
+#!/bin/ksh
+
+daemon_args="httpd /PATH/TO/SNAC/BASEDIR"
+daemon_logger="daemon.info"
+daemon_user="SNACUSER"
+daemon="/usr/local/bin/snac ${daemon_args}"
+
+. /etc/rc.d/rc.subr
+
+pexp="${daemon}.*"
+rc_reload=NO
+rc_bg=YES
+
+rc_cmd $1
+
+# this is an OpenBSD /etc/rc.d startup script. Edit and run as root:
+#
+# install snac_openbsd /etc/rc.d/snac
+# rcctl enable snac
+# rcctl start snac
