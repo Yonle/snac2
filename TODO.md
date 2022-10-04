@@ -8,10 +8,6 @@ Implement the citations as @user@host in the reply textareas.
 
 Implement the purge.
 
-Implement the 'init' command-line option.
-
-Implement the 'adduser' command-line option.
-
 Show dates in local time and not UTC.
 
 Add web interface for private messages.
@@ -147,3 +143,7 @@ Implement the local timeline cache (2022-10-02T18:17:27+0200).
 Implement the h/ (history) path (2022-10-02T18:23:24+0200).
 
 Import the man pages (2022-10-03T21:38:23+0200).
+
+Implement the 'init' command-line option (2022-10-04T09:55:56+0200).
+
+Implement the 'adduser' command-line option  (2022-10-04T09:55:56+0200).
