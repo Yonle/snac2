@@ -6,8 +6,6 @@ Implement the :emojis: in actor names and messages.
 
 Implement the citations as @user@host in the reply textareas.
 
-Implement the purge.
-
 Show dates in local time and not UTC.
 
 Add web interface for private messages.
@@ -147,3 +145,5 @@ Import the man pages (2022-10-03T21:38:23+0200).
 Implement the 'init' command-line option (2022-10-04T09:55:56+0200).
 
 Implement the 'adduser' command-line option  (2022-10-04T09:55:56+0200).
+
+Implement the purge (2022-10-04T18:52:00+0200).
