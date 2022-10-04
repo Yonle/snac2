@@ -71,6 +71,8 @@ int main(int argc, char *argv[])
         /* ... */
         basedir = GET_ARGV();
 
+        initdb(basedir);
+
         return 0;
     }
 

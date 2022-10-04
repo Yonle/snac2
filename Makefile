@@ -2,7 +2,7 @@ CFLAGS=-g -Wall
 
 all: snac
 
-snac: snac.o main.o data.o http.o httpd.o webfinger.o activitypub.o html.o
+snac: snac.o main.o data.o http.o httpd.o webfinger.o activitypub.o html.o utils.o
 	$(CC) -L/usr/local/lib *.o -lcurl -lcrypto -pthread -o $@
 
 .c.o:
@@ -27,4 +27,5 @@ main.o: main.c xs.h xs_io.h xs_encdec.h xs_json.h snac.h
 snac.o: snac.c xs.h xs_io.h xs_encdec.h xs_json.h xs_curl.h xs_openssl.h \
  xs_socket.h xs_httpd.h xs_mime.h xs_regex.h xs_set.h xs_time.h xs_glob.h \
  snac.h
+utils.o: utils.c xs.h xs_io.h xs_encdec.h xs_json.h snac.h
 webfinger.o: webfinger.c xs.h xs_encdec.h xs_json.h xs_curl.h snac.h
