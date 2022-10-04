@@ -111,7 +111,7 @@ int initdb(const char *basedir)
         xs *i = xs_strip(xs_readline(stdin));
         if (*i) {
             xs *n = xs_number_new(atoi(i));
-            srv_config = xs_dict_set(srv_config, "port", i);
+            srv_config = xs_dict_set(srv_config, "port", n);
         }
     }
 
