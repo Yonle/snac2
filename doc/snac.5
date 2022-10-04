@@ -61,7 +61,8 @@ Server configuration.
 .It Pa user/
 Directory holding user subdirectories.
 .It Pa archive/
-If this directory exists, all input and output messages are stored into.
+If this directory exists, all input and output messages are logged inside it,
+including HTTP headers. Only useful for debugging. May grow to enormous sizes.
 .El
 .Pp
 Each user directory is a subdirectory of 
