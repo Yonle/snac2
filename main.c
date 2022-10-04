@@ -16,6 +16,7 @@ int usage(void)
     printf("Commands:\n");
     printf("\n");
     printf("init [{basedir}]                 Initializes the database\n");
+    printf("adduser {basedir} [{uid}]        Adds a new user\n");
     printf("httpd {basedir}                  Starts the HTTPD daemon\n");
     printf("webfinger {basedir} {user}       Queries about a @user@host or actor\n");
     printf("queue {basedir} {uid}            Processes a user queue\n");
@@ -23,7 +24,6 @@ int usage(void)
 
 //    printf("check {basedir} [{uid}]          Checks the database\n");
 //    printf("purge {basedir} [{uid}]          Purges old data\n");
-//    printf("adduser {basedir} [{uid}]        Adds a new user\n");
 
 //    printf("update {basedir} {uid}           Sends a user update to followers\n");
 //    printf("passwd {basedir} {uid}           Sets the password for {uid}\n");
@@ -71,9 +71,7 @@ int main(int argc, char *argv[])
         /* ... */
         basedir = GET_ARGV();
 
-        initdb(basedir);
-
-        return 0;
+        return initdb(basedir);
     }
 
     if ((basedir = GET_ARGV()) == NULL)
@@ -82,6 +80,14 @@ int main(int argc, char *argv[])
     if (!srv_open(basedir)) {
         srv_log(xs_fmt("error opening database at %s", basedir));
         return 1;
+    }
+
+    if (strcmp(cmd, "adduser") == 0) {
+        user = GET_ARGV();
+
+        return adduser(user);
+
+        return 0;
     }
 
     if (strcmp(cmd, "httpd") == 0) {

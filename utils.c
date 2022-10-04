@@ -5,10 +5,13 @@
 #include "xs_io.h"
 #include "xs_encdec.h"
 #include "xs_json.h"
+#include "xs_time.h"
+#include "xs_openssl.h"
 
 #include "snac.h"
 
 #include <sys/stat.h>
+#include <stdlib.h>
 
 const char *default_srv_config = "{"
     "\"host\":                 \"\","
@@ -170,5 +173,120 @@ int initdb(const char *basedir)
     fclose(f);
 
     printf("Done.\n");
+    return 0;
+}
+
+
+int adduser(char *uid)
+/* creates a new user */
+{
+    snac snac;
+    xs *config = xs_dict_new();
+    xs *date = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
+    int rndbuf[3];
+    xs *pwd = NULL;
+    xs *pwd_f = NULL;
+    xs *key = NULL;
+    FILE *f;
+
+    if (uid == NULL) {
+        printf("User id:\n");
+        uid = xs_strip(xs_readline(stdin));
+    }
+
+    if (!validate_uid(uid)) {
+        printf("ERROR: only alphanumeric characters and _ are allowed in user ids.\n");
+        return 1;
+    }
+
+    if (user_open(&snac, uid)) {
+        printf("ERROR: user '%s' already exists\n", uid);
+        return 1;
+    }
+
+    srandom(time(NULL) ^ getpid());
+    rndbuf[0] = random() & 0xffffffff;
+    rndbuf[1] = random() & 0xffffffff;
+    rndbuf[2] = random() & 0xffffffff;
+
+    pwd = xs_base64_enc((char *)rndbuf, sizeof(rndbuf));
+    pwd_f = hash_password(uid, pwd, NULL);
+
+    config = xs_dict_append(config, "uid",       uid);
+    config = xs_dict_append(config, "name",      uid);
+    config = xs_dict_append(config, "avatar",    "");
+    config = xs_dict_append(config, "bio",       "");
+    config = xs_dict_append(config, "published", date);
+    config = xs_dict_append(config, "password",  pwd_f);
+
+    xs *basedir = xs_fmt("%s/user/%s", srv_basedir, uid);
+
+    if (mkdir(basedir, 0755) == -1) {
+        printf("ERROR: cannot create directory '%s'\n", basedir);
+        return 0;
+    }
+
+    const char *dirs[] = {
+        "actors", "followers", "following", "local", "muted",
+        "queue", "static", "timeline", "history", NULL };
+    int n;
+
+    for (n = 0; dirs[n]; n++) {
+        xs *d = xs_fmt("%s/%s", basedir, dirs[n]);
+        mkdir(d, 0755);
+    }
+
+    xs *scssfn = xs_fmt("%s/style.css", srv_basedir);
+    xs *ucssfn = xs_fmt("%s/static/style.css", basedir);
+
+    if ((f = fopen(scssfn, "r")) != NULL) {
+        FILE *i;
+
+        if ((i = fopen(ucssfn, "w")) == NULL) {
+            printf("ERROR: cannot create file '%s'\n", ucssfn);
+            return 1;
+        }
+        else {
+            xs *c = xs_readall(f);
+            fwrite(c, strlen(c), 1, i);
+
+            fclose(i);
+        }
+
+        fclose(f);
+    }
+
+    xs *cfn = xs_fmt("%s/user.json", basedir);
+
+    if ((f = fopen(cfn, "w")) == NULL) {
+        printf("ERROR: cannot create '%s'\n", cfn);
+        return 1;
+    }
+    else {
+        xs *j = xs_json_dumps_pp(config, 4);
+        fwrite(j, strlen(j), 1, f);
+        fclose(f);
+    }
+
+    printf("\nCreating RSA key...\n");
+    key = xs_rsa_genkey(4096);
+    printf("Done.\n");
+
+    xs *kfn = xs_fmt("%s/key.json", basedir);
+
+    if ((f = fopen(kfn, "w")) == NULL) {
+        printf("ERROR: cannot create '%s'\n", kfn);
+        return 1;
+    }
+    else {
+        xs *j = xs_json_dumps_pp(key, 4);
+        fwrite(j, strlen(j), 1, f);
+        fclose(f);
+    }
+
+    printf("\nUser password is %s\n", pwd);
+
+    printf("\nGo to %s/%s and keep configuring your user.\n", srv_baseurl, uid);
+
     return 0;
 }
