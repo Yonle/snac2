@@ -63,34 +63,10 @@ level by editing the 'dbglevel' field in the
 file or by setting a numeric value between 0 and 3 to the DEBUG
 environment variable, see below.
 .Pp
-If you run
-.Nm
-in an OS controlled by
-.Xr systemd 1 ,
-you can prepare a user service to start/stop the daemon. Following the
-previous example, create the file
-.Pa ~/.config/systemd/user/snac.service
-with the following content:
-.Bd -literal -offset indent
-[Unit]
-Description=snac daemon
-
-[Service]
-Type=simple
-Restart=always
-RestartSec=5
-ExecStart=/usr/local/bin/snac httpd /path/to/snac-data
-
-[Install]
-WantedBy=default.target
-.Ed
-.Pp
-And activate it by running
-.Bd -literal -offset indent
-systemctl --user enable snac.service
-systemctl --user start snac.service
-.Ed
-.Pp
+If you operate a Linux systemd-enabled system or OpenBSD, there are
+startup scripts and configuration data in the
+.Pa examples
+directory.
 For other operating systems, please read the appropriate documentation
 on how to install a daemon as a non-root service.
 .Ss Server Setup
