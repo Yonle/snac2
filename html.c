@@ -672,7 +672,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
         while (xs_list_iter(&children, &id)) {
             xs *chd = timeline_find(snac, id);
 
-            if (left == 0)
+            if (left == 3)
                 s = xs_str_cat(s, "</details>\n");
 
             if (chd != NULL)
