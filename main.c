@@ -18,12 +18,12 @@ int usage(void)
     printf("init [{basedir}]                 Initializes the database\n");
     printf("adduser {basedir} [{uid}]        Adds a new user\n");
     printf("httpd {basedir}                  Starts the HTTPD daemon\n");
+    printf("purge {basedir}                  Purges old data\n");
     printf("webfinger {basedir} {user}       Queries about a @user@host or actor\n");
     printf("queue {basedir} {uid}            Processes a user queue\n");
     printf("follow {basedir} {uid} {actor}   Follows an actor\n");
 
 //    printf("check {basedir} [{uid}]          Checks the database\n");
-//    printf("purge {basedir} [{uid}]          Purges old data\n");
 
 //    printf("update {basedir} {uid}           Sends a user update to followers\n");
 //    printf("passwd {basedir} {uid}           Sets the password for {uid}\n");
@@ -92,6 +92,22 @@ int main(int argc, char *argv[])
 
     if (strcmp(cmd, "httpd") == 0) {
         httpd();
+        return 0;
+    }
+
+    if (strcmp(cmd, "purge") == 0) {
+        /* iterate all users */
+        xs *list = user_list();
+        char *p, *uid;
+
+        p = list;
+        while (xs_list_iter(&p, &uid)) {
+            if (user_open(&snac, uid)) {
+                purge(&snac);
+                user_free(&snac);
+            }
+        }
+
         return 0;
     }
 

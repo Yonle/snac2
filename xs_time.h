@@ -46,6 +46,7 @@ time_t xs_parse_time(const char *str, const char *fmt, int local)
     memset(&tm, '\0', sizeof(tm));
     strptime(str, fmt, &tm);
 
+    /* try to guess the Daylight Saving Time */
     if (local)
         tm.tm_isdst = -1;
 

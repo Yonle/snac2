@@ -996,3 +996,36 @@ d_char *dequeue(snac *snac, char *fn)
 
     return obj;
 }
+
+
+void purge(snac *snac)
+/* do the purge */
+{
+    int tpd = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
+    time_t mt = time(NULL) - tpd * 24 * 3600;
+    char *p, *v;
+
+    xs *t_spec = xs_fmt("%s/timeline/" "*.json", snac->basedir);
+    xs *t_list = xs_glob(t_spec, 0, 0);
+
+    p = t_list;
+    while (xs_list_iter(&p, &v)) {
+        if (mtime(v) < mt) {
+            /* older than the minimum time: delete it */
+            unlink(v);
+            snac_debug(snac, 1, xs_fmt("purged %s", v));
+        }
+    }
+
+    xs *a_spec = xs_fmt("%s/actors/" "*.json", snac->basedir);
+    xs *a_list = xs_glob(a_spec, 0, 0);
+
+    p = a_list;
+    while (xs_list_iter(&p, &v)) {
+        if (mtime(v) < mt) {
+            /* older than the minimum time: delete it */
+            unlink(v);
+            snac_debug(snac, 1, xs_fmt("purged %s", v));
+        }
+    }
+}
