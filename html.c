@@ -25,7 +25,7 @@ d_char *not_really_markdown(char *content, d_char **f_content)
     {
         /* split by special markup */
         xs *sm = xs_regex_split(content,
-            "(`[^`]+`|\\*\\*?[^\\*]+\\*?\\*|https?:/" "/[^ ]*)");
+            "(`[^`]+`|\\*\\*?[^\\*]+\\*?\\*|https?:/" "/[^[:space:]]+)");
         int n = 0;
 
         p = sm;
