@@ -1,3 +1,4 @@
+PREFIX=/usr/local
 CFLAGS=-g -Wall
 
 all: snac
@@ -13,6 +14,15 @@ clean:
 
 dep:
 	$(CC) -I/usr/local/include -MM *.c > makefile.depend
+
+install:
+	install -m 755 snac $(PREFIX)/bin/snac
+	mkdir -p -m 755 $(PREFIX)/man/man1
+	install -m 644 doc/snac.1 $(PREFIX)/man/man1/snac.1
+	mkdir -p -m 755 $(PREFIX)/man/man5
+	install -m 644 doc/snac.5 $(PREFIX)/man/man5/snac.5
+	mkdir -p -m 755 $(PREFIX)/man/man8
+	install -m 644 doc/snac.8 $(PREFIX)/man/man8/snac.8
 
 activitypub.o: activitypub.c xs.h xs_encdec.h xs_json.h xs_curl.h \
  xs_mime.h xs_openssl.h xs_regex.h xs_time.h snac.h
