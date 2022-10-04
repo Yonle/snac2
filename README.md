@@ -31,7 +31,7 @@ On Debian/Ubuntu, you can satisfy these requirements by running
     apt install libssl-dev libcurl4-openssl-dev
 ```
 
-On OpenBSD you don't need to install anything because the base system provides all the needed software.
+On OpenBSD and FreeBSD you don't need to install anything because the base system provides all the needed software.
 
 Run `make` and then `make install` as root.
 
