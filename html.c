@@ -315,7 +315,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
         "</form></p>\n"
 
-        "<form method=\"post\" action=\"%s\">\n"
+        "<form method=\"post\" action=\"%s/admin/action\">\n"
         "<input type=\"text\" name=\"id\" required=\"required\">\n"
         "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
         "</form></p>\n"
