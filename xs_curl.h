@@ -29,11 +29,11 @@ static size_t _header_callback(char *buffer, size_t size,
 
         xs_tolower(xs_list_get(knv, 0));
 
-        headers = xs_dict_append(headers, xs_list_get(knv, 0), xs_list_get(knv, 1));
+        headers = xs_dict_set(headers, xs_list_get(knv, 0), xs_list_get(knv, 1));
     }
     else
     if (xs_startswith(l, "HTTP/"))
-        headers = xs_dict_append(headers, "_proto", l);
+        headers = xs_dict_set(headers, "_proto", l);
 
     *userdata = headers;
 

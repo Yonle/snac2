@@ -82,10 +82,10 @@ FILE *xs_socket_accept(int rs)
 /* accepts an incoming connection */
 {
     int cs = -1;
-    struct sockaddr_in host;
-    socklen_t l = sizeof(host);
+    struct sockaddr_storage addr;
+    socklen_t l = sizeof(addr);
 
-    cs = accept(rs, (struct sockaddr *)&host, &l);
+    cs = accept(rs, (struct sockaddr *)&addr, &l);
 
     return cs == -1 ? NULL : fdopen(cs, "r+");
 }

@@ -266,12 +266,18 @@ d_char *_timeline_find_fn(snac *snac, char *id)
     xs *spec = xs_fmt("%s/timeline/" "*-%s.json", snac->basedir, md5);
     xs *list = NULL;
     d_char *fn = NULL;
+    int l;
 
     list = xs_glob(spec, 0, 0);
+    l = xs_list_len(list);
 
     /* if there is something, get the first one */
-    if (xs_list_len(list) > 0)
+    if (l > 0) {
         fn = xs_str_new(xs_list_get(list, 0));
+
+        if (l > 1)
+            snac_log(snac, xs_fmt("**ALERT** _timeline_find_fn %d > 1", l));
+    }
 
     return fn;
 }
