@@ -2,6 +2,8 @@
 
 ## Open
 
+Likes should not change the 'referrer' field (nor appear in the local timeline?).
+
 Implement the :emojis: in actor names and messages.
 
 Implement the citations as @user@host in the reply textareas.
