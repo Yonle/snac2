@@ -758,6 +758,7 @@ d_char *html_timeline(snac *snac, char *list, int local)
     if (!local)
         s = html_top_controls(snac, s);
 
+    s = xs_str_cat(s, "<a name=\"snac-posts\"></a>\n");
     s = xs_str_cat(s, "<div class=\"snac-posts\">\n");
 
     while (xs_list_iter(&list, &v)) {
@@ -1086,7 +1087,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
     }
 
     if (status == 303) {
-        *body   = xs_fmt("%s/admin", snac.actor);
+        *body   = xs_fmt("%s/admin#snac-posts", snac.actor);
         *b_size = strlen(*body);
     }
 
