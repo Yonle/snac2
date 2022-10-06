@@ -390,6 +390,45 @@ d_char *html_button(d_char *s, char *clss, char *label)
 }
 
 
+d_char *build_mentions(snac *snac, char *msg)
+/* returns a string with the mentions in msg */
+{
+    d_char *s = xs_str_new(NULL);
+    char *list = xs_dict_get(msg, "tag");
+    char *v;
+
+    while (xs_list_iter(&list, &v)) {
+        char *type = xs_dict_get(v, "type");
+        char *href = xs_dict_get(v, "href");
+        char *name = xs_dict_get(v, "name");
+
+        if (type && strcmp(type, "Mention") == 0 &&
+            href && strcmp(href, snac->actor) != 0 && name) {
+            xs *l = xs_split(name, "@");
+
+            /* if it's a name without host, query the webfinger */
+            if (xs_list_len(l) < 3) {
+#if 0
+                xs *actor = NULL;
+                xs *user  = NULL;
+
+                if (valid_status(webfinger_request(href, &actor, &user))) {
+                    s = xs_str_cat(s, user);
+                    s = xs_str_cat(s, " ");
+                }
+#endif
+            }
+            else {
+                s = xs_str_cat(s, name);
+                s = xs_str_cat(s, " ");
+            }
+        }
+    }
+
+    return s;
+}
+
+
 d_char *html_entry_controls(snac *snac, d_char *os, char *msg)
 {
     char *id    = xs_dict_get(msg, "id");
@@ -453,7 +492,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg)
 
     {
         /* the post textarea */
-        xs *ct = xs_str_new("");
+        xs *ct = build_mentions(snac, msg);
 
         xs *s1 = xs_fmt(
             "<p><div class=\"snac-note\" style=\"display: none\" id=\"%s_reply\">\n"
