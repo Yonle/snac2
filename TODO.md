@@ -2,8 +2,6 @@
 
 ## Open
 
-Likes should not change the 'referrer' field (nor appear in the local timeline?).
-
 Implement the :emojis: in actor names and messages.
 
 Implement the citations as @user@host in the reply textareas.
@@ -17,8 +15,6 @@ Add web interface for the list of people being followed.
 Implement image attachments.
 
 Implement the s/ (static) path.
-
-Implement a way to save interesting posts.
 
 ## Wishlist and batshit crazy ideas
 
