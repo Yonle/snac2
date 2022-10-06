@@ -4,8 +4,6 @@
 
 Implement the :emojis: in actor names and messages.
 
-Show dates in local time and not UTC.
-
 Add web interface for private messages.
 
 Add web interface for the list of people being followed.
@@ -147,3 +145,5 @@ Implement the 'adduser' command-line option  (2022-10-04T09:55:56+0200).
 Implement the purge (2022-10-04T18:52:00+0200).
 
 Implement the citations as @user@host in the reply textareas (2022-10-06T19:08:39+0200).
+
+Show dates in local time and not UTC (2022-10-06T19:45:53+0200).
