@@ -206,8 +206,9 @@ d_char *html_msg_icon(snac *snac, d_char *os, char *msg)
             s = xs_str_cat(s, "<br>\n<time>&nbsp;</time>\n");
         }
         else {
+            xs *sd = xs_crop(xs_dup(v), 0, 10);
             xs *s1 = xs_fmt(
-                "<br>\n<time class=\"dt-published snac-pubdate\">%s</time>\n", v);
+                "<br>\n<time class=\"dt-published snac-pubdate\">%s</time>\n", sd);
 
             s = xs_str_cat(s, s1);
         }
