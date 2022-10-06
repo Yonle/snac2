@@ -4,8 +4,6 @@
 
 Implement the :emojis: in actor names and messages.
 
-Implement the citations as @user@host in the reply textareas.
-
 Show dates in local time and not UTC.
 
 Add web interface for private messages.
@@ -15,6 +13,8 @@ Add web interface for the list of people being followed.
 Implement image attachments.
 
 Implement the s/ (static) path.
+
+build_mentions() should not query the webfinger (and it's disabled by now); process_message() should 'complete' the tag Mentions that don't include a host.
 
 ## Wishlist and batshit crazy ideas
 
@@ -145,3 +145,5 @@ Implement the 'init' command-line option (2022-10-04T09:55:56+0200).
 Implement the 'adduser' command-line option  (2022-10-04T09:55:56+0200).
 
 Implement the purge (2022-10-04T18:52:00+0200).
+
+Implement the citations as @user@host in the reply textareas (2022-10-06T19:08:39+0200).
