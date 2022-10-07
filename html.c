@@ -704,7 +704,10 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
         int left = xs_list_len(children);
         char *id;
 
-        s = xs_str_cat(s, "<div class=\"snac-children\">\n");
+        if (level < 4)
+            s = xs_str_cat(s, "<div class=\"snac-children\">\n");
+        else
+            s = xs_str_cat(s, "<div>\n");
 
         if (left > 3)
             s = xs_str_cat(s, "<details><summary>...</summary>\n");
