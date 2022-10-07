@@ -6,6 +6,30 @@
 
 #include "snac.h"
 
+/* emoticons, people laughing and such */
+
+struct {
+    const char *key;
+    const char *value;
+} smileys[] = {
+    { ":-)",        "&#128578;" },
+    { ":-D",        "&#128512;" },
+    { "X-D",        "&#128518;" },
+    { ";-)",        "&#128521;" },
+    { "B-)",        "&#128526;" },
+    { ":-(",        "&#128542;" },
+    { ":-*",        "&#128536;" },
+    { ":-/",        "&#128533;" },
+    { "8-o",        "&#128562;" },
+    { "%-)",        "&#129322;" },
+    { ":_(",        "&#128546;" },
+    { ":-|",        "&#128528;" },
+    { ":facepalm:", "&#129318;" },
+    { ":shrug:",    "&#129335;" },
+    { NULL,         NULL }
+};
+
+
 d_char *not_really_markdown(char *content, d_char **f_content)
 /* formats a content using some Markdown rules */
 {
@@ -109,6 +133,14 @@ d_char *not_really_markdown(char *content, d_char **f_content)
 
     /* some beauty fixes */
     s = xs_replace_i(s, "</blockquote><br>", "</blockquote>");
+
+    {
+        /* traditional emoticons */
+        int n;
+
+        for (n = 0; smileys[n].key; n++)
+            s = xs_replace_i(s, smileys[n].key, smileys[n].value);
+    }
 
     *f_content = s;
 
