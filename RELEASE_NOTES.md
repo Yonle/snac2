@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.03
+
+A small set of ASCII emoticons are translated to emojis.
+
 ## 2.02
 
 Fixed a bug that caused empty actor names look like crap.
