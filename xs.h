@@ -213,8 +213,18 @@ d_char *xs_expand(d_char *data, int offset, int size)
     int n;
 
     /* open room */
-    if (sz == 0 || _xs_blk_size(sz) != _xs_blk_size(sz + size))
-        data = realloc(data, _xs_blk_size(sz + size));
+    if (sz == 0 || _xs_blk_size(sz) != _xs_blk_size(sz + size)) {
+        d_char *ndata;
+
+        ndata = realloc(data, _xs_blk_size(sz + size));
+
+        if (ndata == NULL) {
+            fprintf(stderr, "**OUT OF MEMORY**");
+            abort();
+        }
+        else
+            data = ndata;
+    }
 
     /* move up the rest of the data */
     for (n = sz + size - 1; n >= offset + size; n--)
