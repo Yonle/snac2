@@ -4,7 +4,7 @@
 
 #define _XS_SOCKET_H
 
-int xs_socket_timeout(int s, float rto, float sto);
+int xs_socket_timeout(int s, double rto, double sto);
 int xs_socket_server(char *addr, int port);
 FILE *xs_socket_accept(int rs);
 
@@ -16,7 +16,7 @@ FILE *xs_socket_accept(int rs);
 #include <netinet/in.h>
 
 
-int xs_socket_timeout(int s, float rto, float sto)
+int xs_socket_timeout(int s, double rto, double sto)
 /* sets the socket timeout in seconds */
 {
     struct timeval tv;
@@ -24,14 +24,14 @@ int xs_socket_timeout(int s, float rto, float sto)
 
     if (rto > 0.0) {
         tv.tv_sec  = (int)rto;
-        tv.tv_usec = (int)((rto - (float)(int)rto) * 1000000.0);
+        tv.tv_usec = (int)((rto - (double)(int)rto) * 1000000.0);
 
         ret = setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv));
     }
 
     if (sto > 0.0) {
         tv.tv_sec  = (int)sto;
-        tv.tv_usec = (int)((sto - (float)(int)sto) * 1000000.0);
+        tv.tv_usec = (int)((sto - (double)(int)sto) * 1000000.0);
 
         ret = setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof(tv));
     }

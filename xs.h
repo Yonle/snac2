@@ -78,8 +78,9 @@ char *xs_dict_get(char *dict, const char *key);
 d_char *xs_dict_del(d_char *dict, const char *key);
 d_char *xs_dict_set(d_char *dict, const char *key, const char *data);
 d_char *xs_val_new(xstype t);
-d_char *xs_number_new(float f);
-float xs_number_get(char *v);
+d_char *xs_number_new(double f);
+double xs_number_get(char *v);
+char *xs_number_str(char *v);
 
 extern int _xs_debug;
 
@@ -176,7 +177,7 @@ int xs_size(const char *data)
         break;
 
     case XSTYPE_NUMBER:
-        len = sizeof(float) + 1;
+        len = 1 + xs_size(data + 1);
 
         break;
 
@@ -699,27 +700,59 @@ d_char *xs_val_new(xstype t)
 }
 
 
-d_char *xs_number_new(float f)
+/** numbers */
+
+d_char *xs_number_new(double f)
 /* adds a new number value */
 {
-    d_char *v = xs_realloc(NULL, _xs_blk_size(1 + sizeof(float)));
+    d_char *v;
+    char tmp[64];
+
+    snprintf(tmp, sizeof(tmp), "%.15lf", f);
+
+    /* strip useless zeros */
+    if (strchr(tmp, '.') != NULL) {
+        char *ptr;
+
+        for (ptr = tmp + strlen(tmp) - 1; *ptr == '0'; ptr--);
+
+        if (*ptr != '.')
+            ptr++;
+
+        *ptr = '\0';
+    }
+
+    /* alloc for the marker and the full string */
+    v = xs_realloc(NULL, _xs_blk_size(1 + xs_size(tmp)));
 
     v[0] = XSTYPE_NUMBER;
-    memcpy(&v[1], &f, sizeof(float));
+    memcpy(&v[1], tmp, xs_size(tmp));
 
     return v;
 }
 
 
-float xs_number_get(char *v)
-/* gets the number as a float */
+double xs_number_get(char *v)
+/* gets the number as a double */
 {
-    float f = 0.0;
+    double f = 0.0;
 
     if (v[0] == XSTYPE_NUMBER)
-        memcpy(&f, &v[1], sizeof(float));
+        f = atof(&v[1]);
 
     return f;
+}
+
+
+char *xs_number_str(char *v)
+/* gets the number as a string */
+{
+    char *p = NULL;
+
+    if (v[0] == XSTYPE_NUMBER)
+        p = &v[1];
+
+    return p;
 }
 
 
