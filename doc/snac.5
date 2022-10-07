@@ -45,6 +45,13 @@ Lines starting with >.
 Strings in the format @user@host are requested using the Webfinger
 protocol and converted to links and mentions if something reasonable
 is found.
+.It Emoticons / Smileys
+The following traditional ASCII emoticons or special strings are
+converted to related emojis:
+.Bd -literal
+:-) :-D X-D ;-) B-) :-( :-*
+:-/ 8-o %-) :_( :-| :facepalm: :shrug:
+.Ed
 .El
 .Pp
 HTML tags are left untouched. This is probably a bad idea that may
