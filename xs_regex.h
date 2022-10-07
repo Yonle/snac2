@@ -60,9 +60,10 @@ d_char *xs_regex_match_n(const char *str, const char *rx, int count)
     int n = 0;
 
     /* split */
-    p = split = xs_regex_split_n(str, rx, count);
+    split = xs_regex_split_n(str, rx, count);
 
     /* now iterate to get only the 'separators' (odd ones) */
+    p = split;
     while (xs_list_iter(&p, &v)) {
         if (n & 0x1)
             list = xs_list_append(list, v);

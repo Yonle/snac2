@@ -8,7 +8,7 @@ typedef struct _xs_set {
     int elems;              /* number of hash entries */
     int used;               /* number of used hash entries */
     d_char *list;           /* list of stored data */
-    int hash[0];            /* hashed offsets */
+    int hash[];             /* hashed offsets */
 } xs_set;
 
 xs_set *xs_set_new(int elems);

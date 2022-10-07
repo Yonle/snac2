@@ -133,7 +133,7 @@ d_char *xs_rsa_sign(char *secret, char *mem, int size)
     rsa = PEM_read_bio_RSAPrivateKey(b, NULL, NULL, NULL);
 
     /* alloc space */
-    sig = malloc(RSA_size(rsa));
+    sig = xs_realloc(NULL, RSA_size(rsa));
 
     if (RSA_sign(NID_sha256, (unsigned char *)mem, size, sig, &sig_len, rsa) == 1)
         signature = xs_base64_enc((char *)sig, sig_len);
@@ -200,7 +200,7 @@ d_char *xs_evp_sign(char *secret, char *mem, int size)
     mdctx = EVP_MD_CTX_new();
 
     sig_len = EVP_PKEY_size(pkey);
-    sig = malloc(sig_len);
+    sig = xs_realloc(NULL, sig_len);
 
     EVP_SignInit(mdctx, md);
     EVP_SignUpdate(mdctx, mem, size);

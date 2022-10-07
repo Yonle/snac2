@@ -43,6 +43,7 @@ xstype xs_type(const char *data);
 int xs_size(const char *data);
 int xs_is_null(char *data);
 d_char *xs_dup(const char *data);
+void *xs_realloc(void *ptr, size_t size);
 d_char *xs_expand(d_char *data, int offset, int size);
 d_char *xs_collapse(d_char *data, int offset, int size);
 d_char *xs_insert_m(d_char *data, int offset, const char *mem, int size);
@@ -198,7 +199,7 @@ d_char *xs_dup(const char *data)
 /* creates a duplicate of data */
 {
     int sz = xs_size(data);
-    d_char *s = malloc(_xs_blk_size(sz));
+    d_char *s = xs_realloc(NULL, _xs_blk_size(sz));
 
     memcpy(s, data, sz);
 
@@ -206,29 +207,31 @@ d_char *xs_dup(const char *data)
 }
 
 
+void *xs_realloc(void *ptr, size_t size)
+{
+    d_char *ndata = realloc(ptr, size);
+
+    if (ndata == NULL) {
+        fprintf(stderr, "**OUT OF MEMORY**\n");
+        abort();
+    }
+
+    return ndata;
+}
+
+
 d_char *xs_expand(d_char *data, int offset, int size)
 /* opens a hole in data */
 {
     int sz = xs_size(data);
-    int n;
 
     /* open room */
-    if (sz == 0 || _xs_blk_size(sz) != _xs_blk_size(sz + size)) {
-        d_char *ndata;
-
-        ndata = realloc(data, _xs_blk_size(sz + size));
-
-        if (ndata == NULL) {
-            fprintf(stderr, "**OUT OF MEMORY**");
-            abort();
-        }
-        else
-            data = ndata;
-    }
+    if (sz == 0 || _xs_blk_size(sz) != _xs_blk_size(sz + size))
+        data = xs_realloc(data, _xs_blk_size(sz + size));
 
     /* move up the rest of the data */
-    for (n = sz + size - 1; n >= offset + size; n--)
-        data[n] = data[n - size];
+    if (data != NULL)
+        memmove(data + offset + size, data + offset, sz - offset);
 
     return data;
 }
@@ -250,7 +253,7 @@ d_char *xs_collapse(d_char *data, int offset, int size)
     for (n = offset; n < sz; n++)
         data[n] = data[n + size];
 
-    return realloc(data, _xs_blk_size(sz));
+    return xs_realloc(data, _xs_blk_size(sz));
 }
 
 
@@ -311,7 +314,7 @@ d_char *xs_fmt(const char *fmt, ...)
         s = calloc(n, 1);
 
         va_start(ap, fmt);
-        n = vsnprintf(s, n, fmt, ap);
+        vsnprintf(s, n, fmt, ap);
         va_end(ap);
     }
 
@@ -398,7 +401,7 @@ d_char *xs_list_new(void)
 {
     d_char *list;
 
-    list = malloc(_xs_blk_size(2));
+    list = xs_realloc(NULL, _xs_blk_size(2));
     list[0] = XSTYPE_LIST;
     list[1] = XSTYPE_EOL;
 
@@ -573,7 +576,7 @@ d_char *xs_dict_new(void)
 {
     d_char *dict;
 
-    dict = malloc(_xs_blk_size(2));
+    dict = xs_realloc(NULL, _xs_blk_size(2));
     dict[0] = XSTYPE_DICT;
     dict[1] = XSTYPE_EOD;
 
@@ -688,7 +691,7 @@ d_char *xs_dict_set(d_char *dict, const char *key, const char *data)
 d_char *xs_val_new(xstype t)
 /* adds a new special value */
 {
-    d_char *v = malloc(_xs_blk_size(1));
+    d_char *v = xs_realloc(NULL, _xs_blk_size(1));
 
     v[0] = t;
 
@@ -699,7 +702,7 @@ d_char *xs_val_new(xstype t)
 d_char *xs_number_new(float f)
 /* adds a new number value */
 {
-    d_char *v = malloc(_xs_blk_size(1 + sizeof(float)));
+    d_char *v = xs_realloc(NULL, _xs_blk_size(1 + sizeof(float)));
 
     v[0] = XSTYPE_NUMBER;
     memcpy(&v[1], &f, sizeof(float));

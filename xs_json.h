@@ -508,7 +508,7 @@ d_char *xs_json_loads(const char *json)
     d_char *v = NULL;
     js_type t;
 
-    _xs_json_loads_lexer(&json, &t);
+    free(_xs_json_loads_lexer(&json, &t));
 
     if (t == JS_OBRACK)
         v = _xs_json_loads_array(&json, &t);
