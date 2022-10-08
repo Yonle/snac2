@@ -5,7 +5,7 @@
 #define _XS_SOCKET_H
 
 int xs_socket_timeout(int s, double rto, double sto);
-int xs_socket_server(char *addr, int port);
+int xs_socket_server(const char *addr, int port);
 FILE *xs_socket_accept(int rs);
 
 
@@ -40,7 +40,7 @@ int xs_socket_timeout(int s, double rto, double sto)
 }
 
 
-int xs_socket_server(char *addr, int port)
+int xs_socket_server(const char *addr, int port)
 /* opens a server socket */
 {
     int rs = -1;

@@ -4,7 +4,7 @@
 
 #define _XS_MIME
 
-char *xs_mime_by_ext(char *file);
+char *xs_mime_by_ext(const char *file);
 
 #ifdef XS_IMPLEMENTATION
 
@@ -27,7 +27,7 @@ struct _mime_info {
 };
 
 
-char *xs_mime_by_ext(char *file)
+char *xs_mime_by_ext(const char *file)
 /* returns the MIME type by file extension */
 {
     struct _mime_info *mi = mime_info;

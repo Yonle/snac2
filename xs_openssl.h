@@ -9,10 +9,10 @@ d_char *xs_sha1_hex(const void *input, int size);
 d_char *xs_sha256_hex(const void *input, int size);
 d_char *xs_sha256_base64(const void *input, int size);
 d_char *xs_rsa_genkey(int bits);
-d_char *xs_rsa_sign(char *secret, char *mem, int size);
-int xs_rsa_verify(char *pubkey, char *mem, int size, char *b64sig);
-d_char *xs_evp_sign(char *secret, char *mem, int size);
-int xs_evp_verify(char *pubkey, char *mem, int size, char *b64sig);
+d_char *xs_rsa_sign(const char *secret, const char *mem, int size);
+int xs_rsa_verify(const char *pubkey, const char *mem, int size, const char *b64sig);
+d_char *xs_evp_sign(const char *secret, const char *mem, int size);
+int xs_evp_verify(const char *pubkey, const char *mem, int size, const char *b64sig);
 
 
 #ifdef XS_IMPLEMENTATION
@@ -119,7 +119,7 @@ d_char *xs_rsa_genkey(int bits)
 }
 
 
-d_char *xs_rsa_sign(char *secret, char *mem, int size)
+d_char *xs_rsa_sign(const char *secret, const char *mem, int size)
 /* signs a memory block (secret is in PEM format) */
 {
     d_char *signature = NULL;
@@ -146,7 +146,7 @@ d_char *xs_rsa_sign(char *secret, char *mem, int size)
 }
 
 
-int xs_rsa_verify(char *pubkey, char *mem, int size, char *b64sig)
+int xs_rsa_verify(const char *pubkey, const char *mem, int size, const char *b64sig)
 /* verifies a base64 block, returns non-zero on ok */
 {
     int r = 0;
@@ -176,7 +176,7 @@ int xs_rsa_verify(char *pubkey, char *mem, int size, char *b64sig)
 }
 
 
-d_char *xs_evp_sign(char *secret, char *mem, int size)
+d_char *xs_evp_sign(const char *secret, const char *mem, int size)
 /* signs a memory block (secret is in PEM format) */
 {
     d_char *signature = NULL;
@@ -217,7 +217,7 @@ d_char *xs_evp_sign(char *secret, char *mem, int size)
 }
 
 
-int xs_evp_verify(char *pubkey, char *mem, int size, char *b64sig)
+int xs_evp_verify(const char *pubkey, const char *mem, int size, const char *b64sig)
 /* verifies a base64 block, returns non-zero on ok */
 {
     int r = 0;

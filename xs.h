@@ -41,7 +41,7 @@ void _xs_destroy(char **var);
 #define xs_debug() raise(SIGTRAP)
 xstype xs_type(const char *data);
 int xs_size(const char *data);
-int xs_is_null(char *data);
+int xs_is_null(const char *data);
 d_char *xs_dup(const char *data);
 void *xs_realloc(void *ptr, size_t size);
 d_char *xs_expand(d_char *data, int offset, int size);
@@ -54,9 +54,9 @@ d_char *xs_str_new(const char *str);
 d_char *xs_replace_i(d_char *str, const char *sfrom, const char *sto);
 #define xs_replace(str, sfrom, sto) xs_replace_i(xs_dup(str), sfrom, sto)
 d_char *xs_fmt(const char *fmt, ...);
-int xs_str_in(char *haystack, char *needle);
-int xs_startswith(char *str, char *prefix);
-int xs_endswith(char *str, char *postfix);
+int xs_str_in(const char *haystack, const char *needle);
+int xs_startswith(const char *str, const char *prefix);
+int xs_endswith(const char *str, const char *postfix);
 d_char *xs_crop(d_char *str, int start, int end);
 d_char *xs_strip(d_char *str);
 d_char *xs_tolower(d_char *str);
@@ -79,8 +79,8 @@ d_char *xs_dict_del(d_char *dict, const char *key);
 d_char *xs_dict_set(d_char *dict, const char *key, const char *data);
 d_char *xs_val_new(xstype t);
 d_char *xs_number_new(double f);
-double xs_number_get(char *v);
-char *xs_number_str(char *v);
+double xs_number_get(const char *v);
+const char *xs_number_str(const char *v);
 
 extern int _xs_debug;
 
@@ -189,7 +189,7 @@ int xs_size(const char *data)
 }
 
 
-int xs_is_null(char *data)
+int xs_is_null(const char *data)
 /* checks for null */
 {
     return !!(data == NULL || xs_type(data) == XSTYPE_NULL);
@@ -323,7 +323,7 @@ d_char *xs_fmt(const char *fmt, ...)
 }
 
 
-int xs_str_in(char *haystack, char *needle)
+int xs_str_in(const char *haystack, const char *needle)
 /* finds needle in haystack and returns the offset or -1 */
 {
     char *s;
@@ -336,14 +336,14 @@ int xs_str_in(char *haystack, char *needle)
 }
 
 
-int xs_startswith(char *str, char *prefix)
+int xs_startswith(const char *str, const char *prefix)
 /* returns true if str starts with prefix */
 {
     return !!(xs_str_in(str, prefix) == 0);
 }
 
 
-int xs_endswith(char *str, char *postfix)
+int xs_endswith(const char *str, const char *postfix)
 /* returns true if str ends with postfix */
 {
     int ssz = strlen(str);
@@ -732,7 +732,7 @@ d_char *xs_number_new(double f)
 }
 
 
-double xs_number_get(char *v)
+double xs_number_get(const char *v)
 /* gets the number as a double */
 {
     double f = 0.0;
@@ -744,10 +744,10 @@ double xs_number_get(char *v)
 }
 
 
-char *xs_number_str(char *v)
+const char *xs_number_str(const char *v)
 /* gets the number as a string */
 {
-    char *p = NULL;
+    const char *p = NULL;
 
     if (v[0] == XSTYPE_NUMBER)
         p = &v[1];

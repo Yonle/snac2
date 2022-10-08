@@ -13,7 +13,7 @@ typedef struct _xs_set {
 
 xs_set *xs_set_new(int elems);
 void xs_set_free(xs_set *s);
-int xs_set_add(xs_set *s, char *data);
+int xs_set_add(xs_set *s, const char *data);
 
 
 #ifdef XS_IMPLEMENTATION
@@ -40,7 +40,7 @@ void xs_set_free(xs_set *s)
 }
 
 
-unsigned int _xs_set_hash(char *data, int size)
+unsigned int _xs_set_hash(const char *data, int size)
 {
     unsigned int hash = 0x666;
     int n;
@@ -54,7 +54,7 @@ unsigned int _xs_set_hash(char *data, int size)
 }
 
 
-int xs_set_add(xs_set *s, char *data)
+int xs_set_add(xs_set *s, const char *data)
 /* adds the data to the set */
 /* returns: 1 if added, 0 if already there, -1 if it's full */
 {
