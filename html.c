@@ -708,6 +708,8 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
     int status = 404;
     snac snac;
     char *uid, *p_path;
+    int cache = 1;
+    char *v;
 
     xs *l = xs_split_n(q_path, "/", 2);
 
@@ -718,13 +720,17 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         return 404;
     }
 
+    /* check if server config variable 'disable_cache' is set */
+    if ((v = xs_dict_get(srv_config, "disable_cache")) && xs_type(v) == XSTYPE_TRUE)
+        cache = 0;
+
     p_path = xs_list_get(l, 2);
 
     if (p_path == NULL) {
         /* public timeline */
         xs *h = xs_str_localtime(0, "%Y-%m.html");
 
-        if (history_mtime(&snac, h) > timeline_mtime(&snac)) {
+        if (cache && history_mtime(&snac, h) > timeline_mtime(&snac)) {
             snac_debug(&snac, 1, xs_fmt("serving cached local timeline"));
 
             *body   = history_get(&snac, h);
@@ -748,7 +754,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         if (!login(&snac, req))
             status = 401;
         else {
-            if (history_mtime(&snac, "timeline.html_") > timeline_mtime(&snac)) {
+            if (cache && history_mtime(&snac, "timeline.html_") > timeline_mtime(&snac)) {
                 snac_debug(&snac, 1, xs_fmt("serving cached timeline"));
 
                 *body   = history_get(&snac, "timeline.html_");
