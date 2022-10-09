@@ -30,7 +30,7 @@ int srv_open(char *basedir)
     cfg_file = xs_fmt("%s/server.json", basedir);
 
     if ((f = fopen(cfg_file, "r")) == NULL)
-        error = xs_fmt("error opening '%s'", cfg_file);
+        error = xs_fmt("ERROR: cannot opening '%s'", cfg_file);
     else {
         xs *cfg_data;
 
@@ -41,18 +41,21 @@ int srv_open(char *basedir)
         srv_config = xs_json_loads(cfg_data);
 
         if (srv_config == NULL)
-            error = xs_fmt("cannot parse '%s'", cfg_file);
+            error = xs_fmt("ERROR: cannot parse '%s'", cfg_file);
         else {
             char *host;
             char *prefix;
             char *dbglvl;
+            char *layout;
+            double f = 0.0;
 
             host   = xs_dict_get(srv_config, "host");
             prefix = xs_dict_get(srv_config, "prefix");
             dbglvl = xs_dict_get(srv_config, "dbglevel");
+            layout = xs_dict_get(srv_config, "layout");
 
             if (host == NULL || prefix == NULL)
-                error = xs_str_new("cannot get server data");
+                error = xs_str_new("ERROR: cannot get server data");
             else {
                 srv_baseurl = xs_fmt("https://%s%s", host, prefix);
 
@@ -63,8 +66,12 @@ int srv_open(char *basedir)
                     error = xs_fmt("DEBUG level set to %d from environment", dbglevel);
                 }
 
-                ret = 1;
+                if (!layout || (f = xs_number_get(layout)) != 2.0)
+                    error = xs_fmt("ERROR: unsupported old disk layout %f\n", f);
+                else
+                    ret = 1;
             }
+
         }
     }
 
