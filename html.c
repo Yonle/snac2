@@ -611,7 +611,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
             if (chd != NULL)
                 s = html_entry(snac, s, chd, seen, local, level + 1);
             else
-                snac_debug(snac, 1, xs_fmt("cannot read from timeline child %s", id));
+                snac_debug(snac, 2, xs_fmt("cannot read from timeline child %s", id));
 
             left--;
         }
