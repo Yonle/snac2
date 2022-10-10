@@ -565,13 +565,26 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
         while (xs_list_iter(&attach, &v)) {
             char *t = xs_dict_get(v, "mediaType");
 
-            if (t && xs_startswith(t, "image/")) {
+            if (xs_is_null(t))
+                continue;
+
+            if (xs_startswith(t, "image/")) {
                 char *url  = xs_dict_get(v, "url");
                 char *name = xs_dict_get(v, "name");
 
                 if (url != NULL) {
                     xs *s1 = xs_fmt("<p><img src=\"%s\" alt=\"%s\"/></p>\n",
                         url, xs_is_null(name) ? "" : name);
+
+                    s = xs_str_cat(s, s1);
+                }
+            }
+            else
+            if (xs_startswith(t, "video/")) {
+                char *url  = xs_dict_get(v, "url");
+
+                if (url != NULL) {
+                    xs *s1 = xs_fmt("<p><object data=\"%s\"></object></p>\n", url);
 
                     s = xs_str_cat(s, s1);
                 }
