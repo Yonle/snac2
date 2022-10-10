@@ -2,7 +2,7 @@
 
 ## 2.03
 
-Notes can now attach images and other media. The web interface still limits this feature to only one attachment (given by URL).
+Notes can now attach images and other media. The web interface still limits this feature to only one attachment (given by URL, so the file must have been uploaded elsewhere).
 
 Videos attached to notes are now shown.
 
