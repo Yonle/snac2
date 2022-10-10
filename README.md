@@ -17,8 +17,6 @@ This program runs as a daemon (proxied by a TLS-enabled real httpd server) and p
 
 This is not the manual; man pages `snac(1)` (user manual), `snac(5)` (formats) and `snac(8)` (administrator manual) are what you are looking for.
 
-**This is a work in progress and everything is on fire and you can get hurt.**
-
 `snac` stands for Social Networks Are Crap.
 
 # Installation
