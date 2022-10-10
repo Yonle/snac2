@@ -10,8 +10,6 @@ Add web interface for the list of people being followed.
 
 Implement the s/ (static) path.
 
-build_mentions() should not query the webfinger (and it's disabled by now); process_message() should 'complete' the tag Mentions that don't include a host.
-
 ## Wishlist and batshit crazy ideas
 
 Process the timeline html from a dedicated thread.
@@ -149,3 +147,5 @@ Show dates in local time and not UTC (2022-10-06T19:45:53+0200).
 Embed videos (2022-10-10T08:25:39+0200).
 
 Implement image attachments (2022-10-10T09:04:22+0200).
+
+build_mentions() should not query the webfinger (and it's disabled by now); process_message() should 'complete' the tag Mentions that don't include a host (2022-10-10T09:45:57+0200).
