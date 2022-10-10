@@ -2,8 +2,6 @@
 
 ## Open
 
-Implement image attachments.
-
 Implement the :emojis: in actor names and messages.
 
 Add web interface for private messages.
@@ -149,3 +147,5 @@ Implement the citations as @user@host in the reply textareas (2022-10-06T19:08:3
 Show dates in local time and not UTC (2022-10-06T19:45:53+0200).
 
 Embed videos (2022-10-10T08:25:39+0200).
+
+Implement image attachments (2022-10-10T09:04:22+0200).
