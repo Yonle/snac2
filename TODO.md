@@ -12,8 +12,6 @@ Implement the s/ (static) path.
 
 ## Wishlist and batshit crazy ideas
 
-Process the timeline html from a dedicated thread.
-
 The 'history' pages are now just monthly snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you i.e. delete a post because it will be there in the history forever.
 
 Create the `mastodon2snac` helper program (reading directly from the boxes, not using any exported data).
@@ -149,3 +147,5 @@ Embed videos (2022-10-10T08:25:39+0200).
 Implement image attachments (2022-10-10T09:04:22+0200).
 
 build_mentions() should not query the webfinger (and it's disabled by now); process_message() should 'complete' the tag Mentions that don't include a host (2022-10-10T09:45:57+0200).
+
+Process the timeline html from a dedicated thread (2022-10-10T20:08:35+0200).
