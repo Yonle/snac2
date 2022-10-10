@@ -429,8 +429,6 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     xs *s = xs_str_new(NULL);
 
     if (strcmp(type, "Follow") == 0) {
-        actor = xs_dict_get(msg, "actor");
-
         s = xs_str_cat(s, "<div class=\"snac-post\">\n");
 
         xs *s1 = xs_fmt("<div class=\"snac-origin\">%s</div>\n", L("follows you"));
