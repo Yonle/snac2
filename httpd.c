@@ -197,10 +197,10 @@ void term_handler(int s)
 }
 
 
-static void *helper_thread(void *arg)
-/* helper thread (queue management) */
+static void *queue_thread(void *arg)
+/* queue thread (queue management) */
 {
-    srv_log(xs_fmt("subthread start"));
+    srv_log(xs_fmt("queue thread start"));
 
     while (srv_running) {
         xs *list = user_list();
@@ -219,11 +219,21 @@ static void *helper_thread(void *arg)
         sleep(3);
     }
 
-    srv_log(xs_fmt("subthread stop"));
+    srv_log(xs_fmt("queue thread stop"));
 
     return NULL;
 }
 
+
+static void *connection_thread(void *arg)
+/* connection thread */
+{
+    httpd_connection((FILE *)arg);
+    return NULL;
+}
+
+
+int threaded_connections = 1;
 
 void httpd(void)
 /* starts the server */
@@ -249,13 +259,19 @@ void httpd(void)
 
     srv_log(xs_fmt("httpd start %s:%d", address, port));
 
-    pthread_create(&htid, NULL, helper_thread, NULL);
+    pthread_create(&htid, NULL, queue_thread, NULL);
 
     if (setjmp(on_break) == 0) {
         for (;;) {
             FILE *f = xs_socket_accept(rs);
 
-            httpd_connection(f);
+            if (threaded_connections) {
+                pthread_t cth;
+
+                pthread_create(&cth, NULL, connection_thread, f);
+            }
+            else
+                httpd_connection(f);
         }
     }
 
