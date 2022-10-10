@@ -298,17 +298,16 @@ d_char *build_mentions(snac *snac, char *msg)
             href && strcmp(href, snac->actor) != 0 && name) {
             xs *l = xs_split(name, "@");
 
-            /* if it's a name without host, query the webfinger */
+            /* is it a name without a host? */
             if (xs_list_len(l) < 3) {
-#if 0
-                xs *actor = NULL;
-                xs *user  = NULL;
+                /* split the href and pick the host name LIKE AN ANIMAL */
+                /* would be better to query the webfinger but *won't do that* here */
+                xs *l2 = xs_split(href, "/");
 
-                if (valid_status(webfinger_request(href, &actor, &user))) {
-                    s = xs_str_cat(s, user);
-                    s = xs_str_cat(s, " ");
+                if (xs_list_len(l2) >= 3) {
+                    xs *s1 = xs_fmt("%s@%s ", name, xs_list_get(l2, 2));
+                    s = xs_str_cat(s, s1);
                 }
-#endif
             }
             else {
                 s = xs_str_cat(s, name);
