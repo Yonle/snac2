@@ -111,7 +111,7 @@ int webfinger_get_handler(d_char *req, char *q_path,
 d_char *msg_admiration(snac *snac, char *object, char *type);
 d_char *msg_create(snac *snac, char *object);
 d_char *msg_follow(snac *snac, char *actor);
-d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to);
+d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char *attach);
 d_char *msg_undo(snac *snac, char *object);
 d_char *msg_delete(snac *snac, char *id);
 d_char *msg_actor(snac *snac);

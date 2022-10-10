@@ -508,7 +508,7 @@ d_char *msg_follow(snac *snac, char *actor)
 }
 
 
-d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to)
+d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char *attach)
 /* creates a 'Note' message */
 {
     xs *ntid = tid(0);
@@ -520,6 +520,7 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to)
     xs *cc   = xs_list_new();
     xs *irt  = NULL;
     xs *tag  = NULL;
+    xs *atls = NULL;
     d_char *msg = msg_base(snac, "Note", id, NULL, "@now", NULL);
     char *p, *v;
 
@@ -561,6 +562,30 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to)
     else
         irt = xs_val_new(XSTYPE_NULL);
 
+    /* create the attachment list, if there are any */
+    if (!xs_is_null(attach) && *attach != '\0') {
+        xs *lsof1 = NULL;
+
+        if (xs_type(attach) == XSTYPE_STRING) {
+            lsof1 = xs_list_append(xs_list_new(), attach);
+            attach = lsof1;
+        }
+
+        atls = xs_list_new();
+        while (xs_list_iter(&attach, &v)) {
+            xs *d = xs_dict_new();
+            char *mime = xs_mime_by_ext(v);
+
+            d = xs_dict_append(d, "mediaType", mime);
+            d = xs_dict_append(d, "url",       v);
+            d = xs_dict_append(d, "name",      "");
+            d = xs_dict_append(d, "type",
+                xs_startswith(mime, "image/") ? "Image" : "Document");
+
+            atls = xs_list_append(atls, d);
+        }
+    }
+
     if (tag == NULL)
         tag = xs_list_new();
 
@@ -593,6 +618,9 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to)
     msg = xs_dict_append(msg, "cc",           cc);
     msg = xs_dict_append(msg, "inReplyTo",    irt);
     msg = xs_dict_append(msg, "tag",          tag);
+
+    if (atls != NULL)
+        msg = xs_dict_append(msg, "attachment", atls);
 
     return msg;
 }

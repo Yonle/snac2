@@ -195,6 +195,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "rows=\"8\" wrap=\"virtual\" required=\"required\"></textarea>\n"
         "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
         "<input type=\"submit\" class=\"button\" value=\"%s\">\n"
+        "<input type=\"text\" name=\"attach_url\"> Image URL<p>"
         "</form><p>\n"
         "</div>\n"
 
@@ -204,12 +205,12 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<form method=\"post\" action=\"%s/admin/action\">\n"
         "<input type=\"text\" name=\"actor\" required=\"required\">\n"
         "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
-        "</form></p>\n"
+        "</form><p>\n"
 
         "<form method=\"post\" action=\"%s/admin/action\">\n"
         "<input type=\"text\" name=\"id\" required=\"required\">\n"
         "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
-        "</form></p>\n"
+        "</form><p>\n"
 
         "<details><summary>%s</summary>\n"
 
@@ -222,7 +223,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<input type=\"text\" name=\"avatar\" value=\"%s\"></p>\n"
 
         "<p>%s:<br>\n"
-        "<textarea name=\"bio\" cols=60 rows=4>%s</textarea></p>\n"
+        "<textarea name=\"bio\" cols=\"40\" rows=\"4\">%s</textarea></p>\n"
 
         "<p>%s:<br>\n"
         "<input type=\"password\" name=\"passwd1\" value=\"\"></p>\n"
@@ -854,16 +855,24 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
     p_vars = xs_dict_get(req, "p_vars");
 
+#if 0
+    {
+        xs *j1 = xs_json_dumps_pp(p_vars, 4);
+        printf("%s\n", j1);
+    }
+#endif
+
     if (p_path && strcmp(p_path, "admin/note") == 0) {
         /* post note */
         char *content     = xs_dict_get(p_vars, "content");
         char *in_reply_to = xs_dict_get(p_vars, "in_reply_to");
+        char *attach_url  = xs_dict_get(p_vars, "attach_url");
 
         if (content != NULL) {
             xs *msg   = NULL;
             xs *c_msg = NULL;
 
-            msg = msg_note(&snac, content, NULL, in_reply_to);
+            msg = msg_note(&snac, content, NULL, in_reply_to, attach_url);
 
             c_msg = msg_create(&snac, msg);
 
