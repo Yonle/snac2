@@ -89,10 +89,9 @@ int server_get_handler(d_char *req, char *q_path,
 }
 
 
-void httpd_connection(int rs)
-/* the connection loop */
+void httpd_connection(FILE *f)
+/* the connection processor */
 {
-    FILE *f;
     xs *req;
     char *method;
     int status  = 0;
@@ -104,8 +103,6 @@ void httpd_connection(int rs)
     xs *payload = NULL;
     int p_size = 0;
     char *p;
-
-    f = xs_socket_accept(rs);
 
     req = xs_httpd_request(f, &payload, &p_size);
 
@@ -256,7 +253,9 @@ void httpd(void)
 
     if (setjmp(on_break) == 0) {
         for (;;) {
-            httpd_connection(rs);
+            FILE *f = xs_socket_accept(rs);
+
+            httpd_connection(f);
         }
     }
 
