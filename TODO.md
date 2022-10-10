@@ -2,13 +2,15 @@
 
 ## Open
 
+Embed videos.
+
+Implement image attachments.
+
 Implement the :emojis: in actor names and messages.
 
 Add web interface for private messages.
 
 Add web interface for the list of people being followed.
-
-Implement image attachments.
 
 Implement the s/ (static) path.
 
