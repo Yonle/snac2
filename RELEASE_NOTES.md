@@ -2,7 +2,13 @@
 
 ## 2.03
 
+Notes can now attach images and other media. The web interface still limits this feature to only one attachment (given by URL).
+
+Videos attached to notes are now shown.
+
 A small set of ASCII emoticons are translated to emojis.
+
+The new (optional) server configuration directive, `disable_cache`, disables the caching of timeline HTML output if set to `true` (useful only for debugging, don't use it otherwise).
 
 ## 2.02
 
