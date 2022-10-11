@@ -2,6 +2,8 @@
 
 ## Open
 
+Implement image upload.
+
 Implement the :emojis: in actor names and messages.
 
 Add web interface for private messages.
