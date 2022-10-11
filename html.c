@@ -717,14 +717,11 @@ d_char *html_timeline(snac *snac, char *list, int local)
 
 int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char **ctype)
 {
-    int status;
+    int status = 404;
     snac snac;
     char *uid, *p_path;
     int cache = 1;
     char *v;
-
-    status = 404;
-    *ctype = NULL;
 
     xs *l = xs_split_n(q_path, "/", 2);
 
