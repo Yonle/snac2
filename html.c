@@ -9,6 +9,7 @@
 #include "xs_set.h"
 #include "xs_openssl.h"
 #include "xs_time.h"
+#include "xs_mime.h"
 
 #include "snac.h"
 
@@ -716,11 +717,14 @@ d_char *html_timeline(snac *snac, char *list, int local)
 
 int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char **ctype)
 {
-    int status = 404;
+    int status;
     snac snac;
     char *uid, *p_path;
     int cache = 1;
     char *v;
+
+    status = 404;
+    *ctype = NULL;
 
     xs *l = xs_split_n(q_path, "/", 2);
 
@@ -803,11 +807,21 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
     else
     if (xs_startswith(p_path, "s/")) {
         /* a static file */
+        xs *l    = xs_split(p_path, "/");
+        char *id = xs_list_get(l, 1);
+        int sz;
+
+        if (valid_status(static_get(&snac, id, body, &sz))) {
+            *b_size = sz;
+            *ctype  = xs_mime_by_ext(id);
+            status  = 200;
+        }
     }
     else
     if (xs_startswith(p_path, "h/")) {
         /* an entry from the history */
-        xs *id = xs_replace(p_path, "h/", "");
+        xs *l    = xs_split(p_path, "/");
+        char *id = xs_list_get(l, 1);
 
         if ((*body = history_get(&snac, id)) != NULL) {
             *b_size = strlen(*body);
@@ -819,7 +833,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
 
     user_free(&snac);
 
-    if (valid_status(status)) {
+    if (valid_status(status) && *ctype == NULL) {
         *ctype = "text/html; charset=utf-8";
     }
 
