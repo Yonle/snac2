@@ -556,7 +556,7 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
 
     _timeline_write(snac, id, msg, parent, referrer);
 
-    snac_log(snac, xs_fmt("timeline_add %s", id));
+    snac_debug(snac, 1, xs_fmt("timeline_add %s", id));
 
     return 1;
 }
@@ -604,7 +604,7 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
 
         _timeline_write(snac, id, msg, xs_dict_get(meta, "parent"), admirer);
 
-        snac_log(snac, xs_fmt("timeline_admire (%s) %s %s",
+        snac_debug(snac, 1, xs_fmt("timeline_admire (%s) %s %s",
             like ? "Like" : "Announce", id, admirer));
     }
     else
