@@ -892,34 +892,45 @@ d_char *history_list(snac *snac)
 }
 
 
+static int _enqueue_put(char *fn, char *msg)
+/* writes safely to the queue */
+{
+    int ret = 1;
+    xs *tfn = xs_fmt("%s.tmp", fn);
+    FILE *f;
+
+    if ((f = fopen(tfn, "w")) != NULL) {
+        xs *j = xs_json_dumps_pp(msg, 4);
+
+        fwrite(j, strlen(j), 1, f);
+        fclose(f);
+
+        rename(tfn, fn);
+    }
+    else
+        ret = 0;
+
+    return ret;
+}
+
+
 void enqueue_input(snac *snac, char *msg, char *req, int retries)
 /* enqueues an input message */
 {
     int qrt  = xs_number_get(xs_dict_get(srv_config, "queue_retry_minutes"));
     xs *ntid = tid(retries * 60 * qrt);
     xs *fn   = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
-    xs *tfn  = xs_fmt("%s.tmp", fn);
-    FILE *f;
+    xs *qmsg = xs_dict_new();
+    xs *rn   = xs_number_new(retries);
 
-    if ((f = fopen(tfn, "w")) != NULL) {
-        xs *qmsg = xs_dict_new();
-        xs *rn   = xs_number_new(retries);
-        xs *j;
+    qmsg = xs_dict_append(qmsg, "type",    "input");
+    qmsg = xs_dict_append(qmsg, "object",  msg);
+    qmsg = xs_dict_append(qmsg, "req",     req);
+    qmsg = xs_dict_append(qmsg, "retries", rn);
 
-        qmsg = xs_dict_append(qmsg, "type",    "input");
-        qmsg = xs_dict_append(qmsg, "object",  msg);
-        qmsg = xs_dict_append(qmsg, "req",     req);
-        qmsg = xs_dict_append(qmsg, "retries", rn);
+    _enqueue_put(fn, qmsg);
 
-        j = xs_json_dumps_pp(qmsg, 4);
-
-        fwrite(j, strlen(j), 1, f);
-        fclose(f);
-
-        rename(tfn, fn);
-
-        snac_debug(snac, 1, xs_fmt("enqueue_input %s", fn));
-    }
+    snac_debug(snac, 1, xs_fmt("enqueue_input %s", fn));
 }
 
 
@@ -934,28 +945,17 @@ void enqueue_output(snac *snac, char *msg, char *actor, int retries)
     int qrt  = xs_number_get(xs_dict_get(srv_config, "queue_retry_minutes"));
     xs *ntid = tid(retries * 60 * qrt);
     xs *fn   = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
-    xs *tfn  = xs_fmt("%s.tmp", fn);
-    FILE *f;
+    xs *qmsg = xs_dict_new();
+    xs *rn   = xs_number_new(retries);
 
-    if ((f = fopen(tfn, "w")) != NULL) {
-        xs *qmsg = xs_dict_new();
-        xs *rn   = xs_number_new(retries);
-        xs *j;
+    qmsg = xs_dict_append(qmsg, "type",    "output");
+    qmsg = xs_dict_append(qmsg, "actor",   actor);
+    qmsg = xs_dict_append(qmsg, "object",  msg);
+    qmsg = xs_dict_append(qmsg, "retries", rn);
 
-        qmsg = xs_dict_append(qmsg, "type",    "output");
-        qmsg = xs_dict_append(qmsg, "actor",   actor);
-        qmsg = xs_dict_append(qmsg, "object",  msg);
-        qmsg = xs_dict_append(qmsg, "retries", rn);
+    _enqueue_put(fn, qmsg);
 
-        j = xs_json_dumps_pp(qmsg, 4);
-
-        fwrite(j, strlen(j), 1, f);
-        fclose(f);
-
-        rename(tfn, fn);
-
-        snac_debug(snac, 1, xs_fmt("enqueue_output %s %s %d", actor, fn, retries));
-    }
+    snac_debug(snac, 1, xs_fmt("enqueue_output %s %s %d", actor, fn, retries));
 }
 
 
