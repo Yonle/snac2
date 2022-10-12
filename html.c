@@ -196,7 +196,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "rows=\"8\" wrap=\"virtual\" required=\"required\"></textarea>\n"
         "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
         "<input type=\"submit\" class=\"button\" value=\"%s\">\n"
-        "<input type=\"text\" name=\"attach_url\"> Image URL<p>"
+        "<input type=\"text\" name=\"attach_url\"> %s<p>"
         "</form><p>\n"
         "</div>\n"
 
@@ -244,6 +244,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
         L("Post"),
+        L("Image to attach (URL)"),
 
         L("More options..."),
 
@@ -393,13 +394,15 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg)
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
             "<input type=\"hidden\" name=\"in_reply_to\" value=\"%s\">\n"
             "<input type=\"submit\" class=\"button\" value=\"%s\">\n"
+            "<input type=\"text\" name=\"attach_url\"> %s<p>"
             "</form><p></div>\n",
 
             md5,
             snac->actor, md5,
             ct,
             id,
-            L("Post")
+            L("Post"),
+            L("Image to attach (URL)")
         );
 
         s = xs_str_cat(s, s1);
