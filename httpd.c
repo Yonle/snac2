@@ -200,6 +200,9 @@ void term_handler(int s)
 static void *queue_thread(void *arg)
 /* queue thread (queue management) */
 {
+    pthread_mutex_t dummy_mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t  dummy_cond  = PTHREAD_COND_INITIALIZER;
+
     srv_log(xs_fmt("queue thread start"));
 
     while (srv_running) {
@@ -216,7 +219,14 @@ static void *queue_thread(void *arg)
             }
         }
 
-        sleep(3);
+        /* sleep 3 seconds */
+        struct timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        ts.tv_sec += 3;
+
+        pthread_mutex_lock(&dummy_mutex);
+        while (pthread_cond_timedwait(&dummy_cond, &dummy_mutex, &ts) == 0);
+        pthread_mutex_unlock(&dummy_mutex);
     }
 
     srv_log(xs_fmt("queue thread stop"));
