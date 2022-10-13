@@ -22,6 +22,7 @@ int usage(void)
     printf("webfinger {basedir} {user}       Queries about a @user@host or actor\n");
     printf("queue {basedir} {uid}            Processes a user queue\n");
     printf("follow {basedir} {uid} {actor}   Follows an actor\n");
+    printf("unfollow {basedir} {uid} {actor} Unfollows an actor\n");
 
 //    printf("check {basedir} [{uid}]          Checks the database\n");
 
@@ -173,6 +174,24 @@ int main(int argc, char *argv[])
                 printf("%s\n", j);
             }
         }
+
+        return 0;
+    }
+
+    if (strcmp(cmd, "unfollow") == 0) {
+        xs *object = NULL;
+
+        if (valid_status(following_get(&snac, url, &object))) {
+            xs *msg = msg_undo(&snac, xs_dict_get(object, "object"));
+
+            following_del(&snac, url);
+
+            enqueue_output(&snac, msg, url, 0);
+
+            snac_log(&snac, xs_fmt("unfollowed actor %s", url));
+        }
+        else
+            snac_log(&snac, xs_fmt("actor is not being followed %s", url));
 
         return 0;
     }
