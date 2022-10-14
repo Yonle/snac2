@@ -10,6 +10,8 @@ Add web interface for private messages.
 
 Add web interface for the list of people being followed.
 
+Implement hashtags.
+
 ## Wishlist and batshit crazy ideas
 
 The 'history' pages are now just monthly snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you i.e. delete a post because it will be there in the history forever.
