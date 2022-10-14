@@ -1,5 +1,17 @@
 # Release Notes
 
+## 2.04
+
+More multithreading.
+
+Image URLs can also be attached to reply messages.
+
+Improved default mentions in reply text fields.
+
+The static directory now works.
+
+New command line `unfollow`.
+
 ## 2.03
 
 Notes can now attach images and other media. The web interface still limits this feature to only one attachment (given by URL, so the file must have been uploaded elsewhere).
