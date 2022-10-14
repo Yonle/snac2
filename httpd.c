@@ -267,7 +267,7 @@ void httpd(void)
     signal(SIGTERM, term_handler);
     signal(SIGINT, term_handler);
 
-    srv_log(xs_fmt("httpd start %s:%d", address, port));
+    srv_log(xs_fmt("httpd start %s:%d %s", address, port, USER_AGENT));
 
     pthread_create(&htid, NULL, queue_thread, NULL);
 
