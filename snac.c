@@ -34,9 +34,8 @@ d_char *tid(int offset)
 /* returns a time-based Id */
 {
     struct timeval tv;
-    struct timezone tz;
 
-    gettimeofday(&tv, &tz);
+    gettimeofday(&tv, NULL);
 
     return xs_fmt("%10d.%06d", tv.tv_sec + offset, tv.tv_usec);
 }
