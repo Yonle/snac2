@@ -6,7 +6,7 @@ Implement image upload.
 
 Implement the :emojis: in actor names and messages.
 
-Add web interface for private messages.
+Add web interface for sending private messages (they can already be answered like normal replies).
 
 Add web interface for the list of people being followed.
 
@@ -14,11 +14,13 @@ Implement hashtags.
 
 ## Wishlist and batshit crazy ideas
 
-The 'history' pages are now just monthly snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you i.e. delete a post because it will be there in the history forever.
+The 'history' pages are now just monthly snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you e.g. delete a post because it will be there in the history forever.
 
 Create the `mastodon2snac` helper program (reading directly from the boxes, not using any exported data).
 
 Add an RSS to the local timeline.
+
+Idea for a new disk layout: timelines stored like in git (2 character directories and then the md5.json inside); two binary indexes ala Gruta, updated on input, 1) by inverse time, and 2) by parent + inverse time. Timelines are built by reading from 1 and consulting 2 for the nested children. This change a) simplifies timeline_write() and associated functions (no parent / grampa rewriting needed), b) no big glob() inverse functions on huge directories, so big histories won't be problematic.
 
 ## Closed
 
