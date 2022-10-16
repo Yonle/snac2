@@ -12,6 +12,8 @@ Implement hashtags.
 
 ## Wishlist and batshit crazy ideas
 
+Implement HTTP caches (If-None-Match / ETag).
+
 The 'history' pages are now just monthly snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you e.g. delete a post because it will be there in the history forever.
 
 Create the `mastodon2snac` helper program (reading directly from the boxes, not using any exported data).
