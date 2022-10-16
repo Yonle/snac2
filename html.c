@@ -191,12 +191,12 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<div class=\"snac-top-controls\">\n"
 
         "<div class=\"snac-note\">\n"
-        "<form method=\"post\" action=\"%s/admin/note\">\n"
+        "<form method=\"post\" action=\"%s/admin/note\" enctype=\"multipart/form-data\">\n"
         "<textarea class=\"snac-textarea\" name=\"content\" "
         "rows=\"8\" wrap=\"virtual\" required=\"required\"></textarea>\n"
         "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
-        "<input type=\"submit\" class=\"button\" value=\"%s\">\n"
-        "<input type=\"text\" name=\"attach_url\"> %s<p>"
+        "<p><input type=\"file\" name=\"attach\">\n"
+        "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
         "</form><p>\n"
         "</div>\n"
 
@@ -244,7 +244,6 @@ d_char *html_top_controls(snac *snac, d_char *s)
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
         L("Post"),
-        L("Image to attach (URL)"),
 
         L("More options..."),
 

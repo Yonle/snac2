@@ -69,6 +69,109 @@ d_char *xs_url_vars(char *str)
 }
 
 
+d_char *_xs_multipart_form_data(char *payload, int p_size, char *header)
+/* parses a multipart/form-data payload */
+{
+    d_char *p_vars = xs_dict_new();
+    xs *boundary = NULL;
+    int offset = 0;
+    int bsz;
+    char *p;
+
+    /* build the boundary string */
+    {
+        xs *l1 = xs_split(header, "=");
+
+        if (xs_list_len(l1) != 2)
+            return NULL;
+
+        boundary = xs_fmt("--%s", xs_list_get(l1, 1));
+    }
+
+    bsz = strlen(boundary);
+
+    /* iterate searching the boundaries */
+    while ((p = memmem(payload + offset, p_size - offset, boundary, bsz)) != NULL) {
+        xs *s1 = NULL;
+        xs *l1 = NULL;
+        char *vn = NULL;
+        char *fn = NULL;
+        char *q;
+        int po, ps;
+
+        /* final boundary? */
+        p += bsz;
+
+        if (p[0] == '-' && p[1] == '-')
+            break;
+
+        /* skip the \r\n */
+        p += 2;
+
+        /* now on a Content-Disposition... line; get it */
+        q = strchr(p, '\r');
+        s1 = xs_realloc(NULL, q - p + 1);
+        memcpy(s1, p, q - p);
+        s1[q - p] = '\0';
+
+        /* move on (over a \r\n) */
+        p = q;
+
+        /* split by " like a primitive man */
+        l1 = xs_split(s1, "\"");
+
+        /* get the variable name */
+        vn = xs_list_get(l1, 1);
+
+        /* is it an attached file? */
+        if (xs_list_len(l1) >= 4 && strcmp(xs_list_get(l1, 2), "; filename=") == 0) {
+            /* get the file name */
+            fn = xs_list_get(l1, 3);
+        }
+
+        /* find the start of the part content */
+        if ((p = memmem(p, p_size - offset, "\r\n\r\n", 4)) == NULL)
+            break;
+
+        p += 4;
+
+        /* find the next boundary */
+        if ((q = memmem(p, p_size - offset, boundary, bsz)) == NULL)
+            break;
+
+        po = p - payload;
+        ps = q - p - 2;     /* - 2 because the final \r\n */
+
+        /* is it a filename? */
+        if (fn != NULL) {
+            /* p_var value is a list */
+            xs *l1 = xs_list_new();
+            xs *vpo = xs_number_new(po);
+            xs *vps = xs_number_new(ps);
+
+            l1 = xs_list_append(l1, fn);
+            l1 = xs_list_append(l1, vpo);
+            l1 = xs_list_append(l1, vps);
+
+            p_vars = xs_dict_append(p_vars, vn, l1);
+        }
+        else {
+            /* regular variable; just copy */
+            xs *vc = xs_realloc(NULL, ps + 1);
+            memcpy(vc, payload + po, ps);
+            vc[ps] = '\0';
+
+            p_vars = xs_dict_append(p_vars, vn, vc);
+        }
+
+        /* move on */
+        offset = q - payload;
+    }
+
+    return p_vars;
+}
+
+
 d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
 /* processes an httpd connection */
 {
@@ -131,12 +234,15 @@ d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
         *payload = xs_read(f, p_size);
     }
 
-    /* is the payload form urlencoded variables? */
     v = xs_dict_get(req, "content-type");
 
     if (v && strcmp(v, "application/x-www-form-urlencoded") == 0) {
         xs *upl = xs_url_dec(*payload);
         p_vars  = xs_url_vars(upl);
+    }
+    else
+    if (v && xs_startswith(v, "multipart/form-data")) {
+        p_vars = _xs_multipart_form_data(*payload, *p_size, v);
     }
     else
         p_vars = xs_dict_new();
