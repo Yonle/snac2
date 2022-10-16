@@ -84,6 +84,10 @@ d_char *xs_read(FILE *f, int *sz)
         size -= r;
     }
 
+    /* null terminate, just in case it's treated as a string */
+    s = xs_realloc(s, rdsz + 1);
+    s[rdsz] = '\0';
+
     *sz = rdsz;
 
     return s;
