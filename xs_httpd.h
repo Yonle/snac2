@@ -69,6 +69,8 @@ d_char *xs_url_vars(char *str)
 }
 
 
+void *memmem(const void *, size_t, const void *, size_t);
+
 d_char *_xs_multipart_form_data(char *payload, int p_size, char *header)
 /* parses a multipart/form-data payload */
 {
