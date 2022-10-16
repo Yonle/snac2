@@ -737,7 +737,7 @@ double xs_number_get(const char *v)
 {
     double f = 0.0;
 
-    if (v[0] == XSTYPE_NUMBER)
+    if (v != NULL && v[0] == XSTYPE_NUMBER)
         f = atof(&v[1]);
 
     return f;
@@ -749,7 +749,7 @@ const char *xs_number_str(const char *v)
 {
     const char *p = NULL;
 
-    if (v[0] == XSTYPE_NUMBER)
+    if (v != NULL && v[0] == XSTYPE_NUMBER)
         p = &v[1];
 
     return p;

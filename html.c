@@ -877,12 +877,37 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         char *content     = xs_dict_get(p_vars, "content");
         char *in_reply_to = xs_dict_get(p_vars, "in_reply_to");
         char *attach_url  = xs_dict_get(p_vars, "attach_url");
+        char *attach_file = xs_dict_get(p_vars, "attach");
+        xs *attach_list   = xs_list_new();
+
+        /* is attach_url set? */
+        if (!xs_is_null(attach_url) && *attach_url != '\0')
+            attach_list = xs_list_append(attach_list, attach_url);
+
+        /* is attach_file set? */
+        if (!xs_is_null(attach_file) && xs_type(attach_file) == XSTYPE_LIST) {
+            char *fn = xs_list_get(attach_file, 0);
+
+            if (*fn != '\0') {
+                char *ext = strrchr(fn, '.');
+                xs *ntid  = tid(0);
+                xs *id    = xs_fmt("%s%s", ntid, ext);
+                xs *url   = xs_fmt("%s/s/%s", snac.actor, id);
+                int fo    = xs_number_get(xs_list_get(attach_file, 1));
+                int fs    = xs_number_get(xs_list_get(attach_file, 2));
+
+                /* store */
+                static_put(&snac, id, payload + fo, fs);
+
+                attach_list = xs_list_append(attach_list, url);
+            }
+        }
 
         if (content != NULL) {
             xs *msg   = NULL;
             xs *c_msg = NULL;
 
-            msg = msg_note(&snac, content, NULL, in_reply_to, attach_url);
+            msg = msg_note(&snac, content, NULL, in_reply_to, attach_list);
 
             c_msg = msg_create(&snac, msg);
 

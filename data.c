@@ -805,14 +805,14 @@ int actor_get(snac *snac, char *actor, d_char **data)
 }
 
 
-d_char *_static_fn(snac *snac, char *id)
+d_char *_static_fn(snac *snac, const char *id)
 /* gets the filename for a static file */
 {
     return xs_fmt("%s/static/%s", snac->basedir, id);
 }
 
 
-int static_get(snac *snac, char *id, d_char **data, int *size)
+int static_get(snac *snac, const char *id, d_char **data, int *size)
 /* returns static content */
 {
     xs *fn = _static_fn(snac, id);
@@ -827,6 +827,19 @@ int static_get(snac *snac, char *id, d_char **data, int *size)
     }
 
     return status;
+}
+
+
+void static_put(snac *snac, const char *id, const char *data, int size)
+/* writes status content */
+{
+    xs *fn = _static_fn(snac, id);
+    FILE *f;
+
+    if ((f = fopen(fn, "wb")) != NULL) {
+        fwrite(data, size, 1, f);
+        fclose(f);
+    }
 }
 
 

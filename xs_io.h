@@ -59,26 +59,29 @@ d_char *xs_readline(FILE *f)
 d_char *xs_read(FILE *f, int *sz)
 /* reads up to size bytes from f */
 {
-    d_char *s;
-    int size = *sz;
-    int rdsz = 0;
+    d_char *s  = NULL;
+    int size   = *sz;
+    int rdsz   = 0;
 
     errno = 0;
 
-    s = xs_str_new(NULL);
-
     while (size > 0 && !feof(f)) {
-        char tmp[2048];
+        char tmp[4096];
         int n, r;
 
         if ((n = sizeof(tmp)) > size)
             n = size;
 
         r = fread(tmp, 1, n, f);
-        s = xs_append_m(s, tmp, r);
 
-        size -= r;
+        /* open room */
+        s = xs_realloc(s, rdsz + r);
+
+        /* copy read data */
+        memcpy(s + rdsz, tmp, r);
+
         rdsz += r;
+        size -= r;
     }
 
     *sz = rdsz;

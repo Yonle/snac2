@@ -80,7 +80,8 @@ int is_muted(snac *snac, char *actor);
 int actor_add(snac *snac, char *actor, char *msg);
 int actor_get(snac *snac, char *actor, d_char **data);
 
-int static_get(snac *snac, char *id, d_char **data, int *size);
+int static_get(snac *snac, const char *id, d_char **data, int *size);
+void static_put(snac *snac, const char *id, const char *data, int size);
 
 double history_mtime(snac *snac, char *id);
 void history_add(snac *snac, char *id, char *content, int size);
