@@ -388,20 +388,20 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg)
 
         xs *s1 = xs_fmt(
             "<p><div class=\"snac-note\" style=\"display: none\" id=\"%s_reply\">\n"
-            "<form method=\"post\" action=\"%s/admin/note\" id=\"%s_reply_form\">\n"
+            "<form method=\"post\" action=\"%s/admin/note\" "
+            "enctype=\"multipart/form-data\" id=\"%s_reply_form\">\n"
             "<textarea class=\"snac-textarea\" name=\"content\" "
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
             "<input type=\"hidden\" name=\"in_reply_to\" value=\"%s\">\n"
-            "<input type=\"submit\" class=\"button\" value=\"%s\">\n"
-            "<input type=\"text\" name=\"attach_url\"> %s<p>"
+            "<p><input type=\"file\" name=\"attach\">\n"
+            "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
             "</form><p></div>\n",
 
             md5,
             snac->actor, md5,
             ct,
             id,
-            L("Post"),
-            L("Image to attach (URL)")
+            L("Post")
         );
 
         s = xs_str_cat(s, s1);
