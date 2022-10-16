@@ -1,5 +1,15 @@
 # Release Notes
 
+## 2.05
+
+Image upload is now supported (one image per post).
+
+Added support for HEAD methods (who knew it was necessary?).
+
+Fixed bug in greeting.html completion (%host% was not being replaced).
+
+Referrers (actors that like or announce posts) are not overwritten.
+
 ## 2.04
 
 More multithreading.
