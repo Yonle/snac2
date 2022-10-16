@@ -10,6 +10,8 @@ Add web interface for the list of people being followed.
 
 Implement hashtags.
 
+Make local likes / announces more visible.
+
 ## Wishlist and batshit crazy ideas
 
 Implement HTTP caches (If-None-Match / ETag).
