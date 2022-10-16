@@ -2,8 +2,6 @@
 
 ## Open
 
-Implement image upload.
-
 Implement the :emojis: in actor names and messages.
 
 Add web interface for sending private messages (they can already be answered like normal replies).
@@ -155,3 +153,5 @@ build_mentions() should not query the webfinger (and it's disabled by now); proc
 Process the timeline html from a dedicated thread (2022-10-10T20:08:35+0200).
 
 Implement the s/ (static) path (2022-10-11T08:52:09+0200).
+
+Implement image upload (2022-10-16T20:08:16+0200).
