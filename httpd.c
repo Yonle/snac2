@@ -7,6 +7,7 @@
 #include "xs_json.h"
 #include "xs_socket.h"
 #include "xs_httpd.h"
+#include "xs_mime.h"
 
 #include "snac.h"
 
@@ -30,7 +31,7 @@ int server_get_handler(d_char *req, char *q_path,
     char *acpt = xs_dict_get(req, "accept");
 
     if (acpt == NULL)
-        return 400;
+        return 0;
 
     /* is it the server root? */
     if (*q_path == '\0') {
@@ -126,7 +127,7 @@ void httpd_connection(FILE *f)
     if (xs_startswith(q_path, p))
         q_path = xs_crop(q_path, strlen(p), 0);
 
-    if (strcmp(method, "GET") == 0) {
+    if (strcmp(method, "GET") == 0 || strcmp(method, "HEAD") == 0) {
         /* cascade through */
         if (status == 0)
             status = server_get_handler(req, q_path, &body, &b_size, &ctype);
@@ -180,6 +181,12 @@ void httpd_connection(FILE *f)
 
     if (b_size == 0 && body != NULL)
         b_size = strlen(body);
+
+    /* if it was a HEAD, no body will be sent */
+    if (strcmp(method, "HEAD") == 0) {
+        free(body);
+        body = NULL;
+    }
 
     xs_httpd_response(f, status, headers, body, b_size);
 

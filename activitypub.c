@@ -880,7 +880,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
     xs *msg = NULL;
 
     if (accept == NULL)
-        return 400;
+        return 0;
 
     if (xs_str_in(accept, "application/activity+json") == -1 &&
         xs_str_in(accept, "application/ld+json") == -1)
