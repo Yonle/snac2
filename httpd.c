@@ -44,6 +44,9 @@ int server_get_handler(d_char *req, char *q_path,
 
             status = 200;
 
+            /* replace %host% */
+            s = xs_replace_i(s, "%host%", xs_dict_get(srv_config, "host"));
+
             /* does it have a %userlist% mark? */
             if (xs_str_in(s, "%userlist%") != -1) {
                 char *host = xs_dict_get(srv_config, "host");
