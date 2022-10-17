@@ -77,8 +77,9 @@ d_char *html_msg_icon(snac *snac, d_char *os, char *msg)
 
                     if (n && i) {
                         char *u = xs_dict_get(i, "url");
+                        xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\"/>", u);
 
-                        name = xs_replace_i(name, n, u);
+                        name = xs_replace_i(name, n, img);
                     }
                 }
             }
