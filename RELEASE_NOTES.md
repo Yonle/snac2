@@ -4,6 +4,8 @@
 
 The purge is managed internally, so there is no longer a need to add a cron job for that. If you don't want any timeline data to be purged, set `timeline_purge_days` to 0.
 
+The :shortnames: or Emoji or whatever the fuck these things are called are now shown in actor names and post contents.
+
 ## 2.05
 
 Image upload is now supported (one image per post).
