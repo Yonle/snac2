@@ -207,18 +207,37 @@ void term_handler(int s)
 }
 
 
+static void *purge_thread(void *arg)
+/* spawned purge */
+{
+    srv_log(xs_dup("purge start"));
+
+    purge_all();
+
+    srv_log(xs_dup("purge end"));
+
+    return NULL;
+}
+
+
 static void *queue_thread(void *arg)
 /* queue thread (queue management) */
 {
     pthread_mutex_t dummy_mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t  dummy_cond  = PTHREAD_COND_INITIALIZER;
+    time_t purge_time;
+
+    /* first purge time */
+    purge_time = time(NULL) + 15 * 60;
 
     srv_log(xs_fmt("queue thread start"));
 
     while (srv_running) {
         xs *list = user_list();
         char *p, *uid;
+        time_t t;
 
+        /* process queues for all users */
         p = list;
         while (xs_list_iter(&p, &uid)) {
             snac snac;
@@ -227,6 +246,16 @@ static void *queue_thread(void *arg)
                 process_queue(&snac);
                 user_free(&snac);
             }
+        }
+
+        /* time to purge? */
+        if ((t = time(NULL)) > purge_time) {
+            pthread_t pth;
+
+            pthread_create(&pth, NULL, purge_thread, NULL);
+
+            /* next purge time is tomorrow */
+            purge_time = t + 24 * 60 * 60;
         }
 
         /* sleep 3 seconds */
