@@ -1031,6 +1031,12 @@ void purge(snac *snac)
     time_t mt = time(NULL) - tpd * 24 * 3600;
     char *p, *v;
 
+    /* purge days set to 0? disable purging */
+    if (tpd == 0) {
+        /* well, enjoy your data drive exploding */
+        return;
+    }
+
     xs *t_spec = xs_fmt("%s/timeline/" "*.json", snac->basedir);
     xs *t_list = xs_glob(t_spec, 0, 0);
 
