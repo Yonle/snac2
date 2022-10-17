@@ -97,18 +97,7 @@ int main(int argc, char *argv[])
     }
 
     if (strcmp(cmd, "purge") == 0) {
-        /* iterate all users */
-        xs *list = user_list();
-        char *p, *uid;
-
-        p = list;
-        while (xs_list_iter(&p, &uid)) {
-            if (user_open(&snac, uid)) {
-                purge(&snac);
-                user_free(&snac);
-            }
-        }
-
+        purge_all();
         return 0;
     }
 

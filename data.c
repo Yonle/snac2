@@ -1055,3 +1055,24 @@ void purge(snac *snac)
         }
     }
 }
+
+
+void purge_all(void)
+/* purge all users */
+{
+    snac snac;
+    xs *list = user_list();
+    char *p, *uid;
+
+    srv_debug(1, xs_fmt("purge start"));
+
+    p = list;
+    while (xs_list_iter(&p, &uid)) {
+        if (user_open(&snac, uid)) {
+            purge(&snac);
+            user_free(&snac);
+        }
+    }
+
+    srv_debug(1, xs_fmt("purge end"));
+}

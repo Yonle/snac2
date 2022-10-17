@@ -96,6 +96,7 @@ d_char *queue(snac *snac);
 d_char *dequeue(snac *snac, char *fn);
 
 void purge(snac *snac);
+void purge_all(void);
 
 d_char *http_signed_request(snac *snac, char *method, char *url,
                         d_char *headers,
