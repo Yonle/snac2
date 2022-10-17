@@ -36,6 +36,7 @@ int srv_open(char *basedir)
 
         /* read full config file */
         cfg_data = xs_readall(f);
+        fclose(f);
 
         /* parse */
         srv_config = xs_json_loads(cfg_data);
@@ -823,6 +824,8 @@ int static_get(snac *snac, const char *id, d_char **data, int *size)
 
     if ((f = fopen(fn, "rb")) != NULL) {
         *data = xs_read(f, size);
+        fclose(f);
+
         status = 200;
     }
 
