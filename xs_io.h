@@ -4,30 +4,12 @@
 
 #define _XS_IO_H
 
-d_char *xs_readall(FILE *f);
 d_char *xs_readline(FILE *f);
 d_char *xs_read(FILE *f, int *size);
+d_char *xs_readall(FILE *f);
 
 
 #ifdef XS_IMPLEMENTATION
-
-d_char *xs_readall(FILE *f)
-/* reads the rest of the file into a string */
-{
-    d_char *s;
-    char tmp[1024];
-
-    errno = 0;
-
-    /* create the new string */
-    s = xs_str_new(NULL);
-
-    while (fgets(tmp, sizeof(tmp), f))
-        s = xs_str_cat(s, tmp);
-
-    return s;
-}
-
 
 d_char *xs_readline(FILE *f)
 /* reads a line from a file */
@@ -92,6 +74,16 @@ d_char *xs_read(FILE *f, int *sz)
 
     return s;
 }
+
+
+d_char *xs_readall(FILE *f)
+/* reads the rest of the file into a string */
+{
+    int size = 0xfffffff;
+
+    return xs_read(f, &size);
+}
+
 
 #endif /* XS_IMPLEMENTATION */
 
