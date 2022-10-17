@@ -151,20 +151,8 @@ file in the server root and it's inserted into the HTML output.
 It's not easily accesible from the web interface to avoid users
 shooting themselves in the foot by destroying everything.
 .Ss Old Data Purging
-The Fediverse generates big loads of data that get old and
-stale very quickly. By default, 
-.Nm
-does not delete anything; you must do it explicitly by issuing a
-.Ar purge
-command periodically. A cron entry will suffice. You can add the
-following to the
-.Nm
-user's crontab:
-.Bd -literal -offset indent
-# execute a data purge on Sundays at 4 am
-0 4 * * 0 /usr/local/bin/snac purge /path/to/snac-data
-.Ed
-.Pp
+From version 2.06, there is no longer a need to add a special
+cron job for purging old data, as this is managed internally.
 The user-generated data (the local timeline) is never deleted.
 .Ss ActivityPub Support
 These are the following activities and objects that
