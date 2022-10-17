@@ -1028,8 +1028,6 @@ void purge(snac *snac)
 /* do the purge */
 {
     int tpd = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
-    time_t mt = time(NULL) - tpd * 24 * 3600;
-    char *p, *v;
 
     /* purge days set to 0? disable purging */
     if (tpd == 0) {
@@ -1037,8 +1035,10 @@ void purge(snac *snac)
         return;
     }
 
+    time_t mt  = time(NULL) - tpd * 24 * 3600;
     xs *t_spec = xs_fmt("%s/timeline/" "*.json", snac->basedir);
     xs *t_list = xs_glob(t_spec, 0, 0);
+    char *p, *v;
 
     p = t_list;
     while (xs_list_iter(&p, &v)) {

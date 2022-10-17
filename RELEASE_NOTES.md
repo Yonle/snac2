@@ -2,7 +2,7 @@
 
 ## 2.06
 
-The purge is managed internally, so there is no longer a need to add a cron job for that.
+The purge is managed internally, so there is no longer a need to add a cron job for that. If you don't want any timeline data to be purged, set `timeline_purge_days` to 0.
 
 ## 2.05
 
