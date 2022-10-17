@@ -129,7 +129,9 @@ This is a list of URLs to CSS files that will be inserted, in this order,
 in the HTML before the user CSS. Use these files to configure the global
 site layout.
 .It Ic disable_cache
-If set to true, timeline caching is not done.
+If set to true, timeline caching is not done. This is only useful for
+debugging purposes; don't enable it unless you know what do you want, as
+it makes everything slower.
 .El
 .Pp
 You must restart the server to make effective these changes.
