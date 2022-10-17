@@ -54,7 +54,7 @@ d_char *html_msg_icon(snac *snac, d_char *os, char *msg)
     if (actor_id && valid_status(actor_get(snac, actor_id, &actor))) {
         xs *name   = NULL;
         xs *avatar = NULL;
-        char *v;
+        char *p, *v;
 
         /* get the name */
         if (xs_is_null((v = xs_dict_get(actor, "name"))) || *v == '\0') {
@@ -64,6 +64,25 @@ d_char *html_msg_icon(snac *snac, d_char *os, char *msg)
         }
 
         name = xs_dup(v);
+
+        /* replace the :shortnames: */
+        if (!xs_is_null(p = xs_dict_get(actor, "tag"))) {
+            /* iterate the tags */
+            while (xs_list_iter(&p, &v)) {
+                char *t = xs_dict_get(v, "type");
+
+                if (t && strcmp(t, "Emoji") == 0) {
+                    char *n = xs_dict_get(v, "name");
+                    char *i = xs_dict_get(v, "icon");
+
+                    if (n && i) {
+                        char *u = xs_dict_get(i, "url");
+
+                        name = xs_replace_i(name, n, u);
+                    }
+                }
+            }
+        }
 
         /* get the avatar */
         if ((v = xs_dict_get(actor, "icon")) != NULL &&
