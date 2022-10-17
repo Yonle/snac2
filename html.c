@@ -559,6 +559,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
 
     {
         xs *c = xs_dup(xs_dict_get(msg, "content"));
+        char *p, *v;
 
         /* do some tweaks to the content */
         c = xs_replace_i(c, "\r", "");
@@ -572,6 +573,27 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
             xs *s1 = c;
             c = xs_fmt("<p>%s</p>", s1);
         }
+
+        /* replace the :shortnames: */
+        if (!xs_is_null(p = xs_dict_get(msg, "tag"))) {
+            /* iterate the tags */
+            while (xs_list_iter(&p, &v)) {
+                char *t = xs_dict_get(v, "type");
+
+                if (t && strcmp(t, "Emoji") == 0) {
+                    char *n = xs_dict_get(v, "name");
+                    char *i = xs_dict_get(v, "icon");
+
+                    if (n && i) {
+                        char *u = xs_dict_get(i, "url");
+                        xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\"/>", u);
+
+                        c = xs_replace_i(c, n, img);
+                    }
+                }
+            }
+        }
+
 
         s = xs_str_cat(s, c);
     }
