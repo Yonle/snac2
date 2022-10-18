@@ -24,11 +24,7 @@ int login(snac *snac, char *headers)
         xs *s1 = xs_crop(xs_dup(auth), 6, 0);
         xs *s2 = xs_base64_dec(s1, &sz);
 
-        /* copy to asciiz it */
-        xs *s3 = calloc(sz + 1, 1);
-        memcpy(s3, s2, sz);
-
-        xs *l1 = xs_split_n(s3, ":", 1);
+        xs *l1 = xs_split_n(s2, ":", 1);
 
         if (xs_list_len(l1) == 2) {
             logged_in = check_password(
