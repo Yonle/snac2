@@ -4,11 +4,11 @@
 
 #define _XS_ENCDEC_H
 
-d_char *xs_hex_enc(const char *data, int size);
-d_char *xs_hex_dec(const char *hex);
-d_char *xs_base64_enc(const char *data, int sz);
-d_char *xs_base64_dec(const char *data, int *size);
-d_char *xs_utf8_enc(d_char *str, unsigned int cpoint);
+ d_char *xs_hex_enc(const char *data, int size);
+ d_char *xs_hex_dec(const char *hex, int *size);
+ d_char *xs_base64_enc(const char *data, int sz);
+ d_char *xs_base64_dec(const char *data, int *size);
+ d_char *xs_utf8_enc(d_char *str, unsigned int cpoint);
 
 
 #ifdef XS_IMPLEMENTATION
@@ -20,18 +20,20 @@ d_char *xs_hex_enc(const char *data, int size)
     char *p;
     int n;
 
-    p = s = calloc(size * 2 + 1, 1);
+    p = s = xs_realloc(NULL, _xs_blk_size(size * 2 + 1));
 
     for (n = 0; n < size; n++) {
         sprintf(p, "%02x", (unsigned char)data[n]);
         p += 2;
     }
 
+    *p = '\0';
+
     return s;
 }
 
 
-d_char *xs_hex_dec(const char *hex)
+d_char *xs_hex_dec(const char *hex, int *size)
 /* decodes an hexdump into data */
 {
     int sz = strlen(hex);
@@ -40,22 +42,25 @@ d_char *xs_hex_dec(const char *hex)
     int n;
 
     if (sz % 2)
-        return s;
+        return NULL;
 
-    p = s = calloc(sz / 2, 1);
+    p = s = xs_realloc(NULL, _xs_blk_size(sz / 2 + 1));
 
     for (n = 0; n < sz; n += 2) {
         int i;
         if (sscanf(&hex[n], "%02x", &i) == 0) {
             /* decoding error */
             free(s);
-            s = NULL;
+            return NULL;
         }
         else
             *p = i;
 
         p++;
     }
+
+    *p = '\0';
+    *size = sz / 2;
 
     return s;
 }
@@ -73,7 +78,7 @@ d_char *xs_base64_enc(const char *data, int sz)
                            "0123456789+/";
 
     bsz = ((sz + 3 - 1) / 3) * 4;
-    i = s = calloc(bsz + 1, 1);
+    i = s = xs_realloc(NULL, _xs_blk_size(bsz + 1));
     p = (unsigned char *)data;
 
     for (n = 0; n < sz; n += 3) {
@@ -100,6 +105,8 @@ d_char *xs_base64_enc(const char *data, int sz)
         }
     }
 
+    *i = '\0';
+
     return s;
 }
 
@@ -118,7 +125,7 @@ d_char *xs_base64_dec(const char *data, int *size)
 
     /* size of data must be a multiple of 4 */
     if (strlen(p) % 4)
-        return s;
+        return NULL;
 
     for (p = (char *)data; *p; p += 4) {
         int cs[4];
@@ -151,10 +158,14 @@ d_char *xs_base64_dec(const char *data, int *size)
             tmp[n++] = cs[2] << 6 | (cs[3] & 0x3f);
 
         /* must be done manually because data can be pure binary */
-        s = realloc(s, sz + n);
+        s = xs_realloc(s, _xs_blk_size(sz + n));
         memcpy(s + sz, tmp, n);
         sz += n;
     }
+
+    /* asciiz it to use it as a string */
+    s = xs_realloc(s, _xs_blk_size(sz + 1));
+    s[sz] = '\0';
 
     *size = sz;
 
