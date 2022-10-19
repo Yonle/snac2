@@ -468,6 +468,9 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     if (is_muted(snac, actor))
         return os;
 
+    if (strcmp(actor, snac->actor) == 0)
+        actor_o = msg_actor(snac);
+    else
     if (!valid_status(actor_get(snac, actor, &actor_o)))
         return os;
 
