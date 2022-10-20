@@ -38,5 +38,3 @@ See the administrator manual on how to proceed from here.
 # License and author
 
 See the LICENSE file for details.
-
-Fediverse user: @grunfink@comam.es
