@@ -116,6 +116,8 @@ Do not show `Like` or `Boost` buttons if that was already done (2022-09-12T19:29
 
 Parents of a parent should also move up the timeline (2022-09-13T22:41:23+0200).
 
+Started the **real** version (developed in C instead of Python) (2022-09-19T20:40:42 2022 +0200).
+
 When a new note has an in-reply-to, also download it (2022-09-24T07:20:16+0200).
 
 After 'Unfollow' or 'MUTE', the timeline should be rebuilt (regardless of the cached version) (2022-10-01T20:27:00+0200).
