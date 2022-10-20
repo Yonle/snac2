@@ -479,6 +479,8 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
         int likes  = xs_list_len(xs_dict_get(meta, "liked_by"));
         int boosts = xs_list_len(xs_dict_get(meta, "announced_by"));
 
+        /* alternate emojis: %d &#128077; %d &#128257; */
+
         xs *s1 = xs_fmt(
             "<div class=\"snac-score\">%d &#9733; %d &#8634;</div>\n",
             likes, boosts);
