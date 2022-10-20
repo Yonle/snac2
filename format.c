@@ -73,7 +73,7 @@ d_char *not_really_markdown(char *content, d_char **f_content)
                 }
                 else
                 if (xs_startswith(v, "http")) {
-                    xs *s1 = xs_fmt("<a href=\"%s\">%s</a>", v, v);
+                    xs *s1 = xs_fmt("<a href=\"%s\" target=\"_blank\">%s</a>", v, v);
                     wrk = xs_str_cat(wrk, s1);
                 }
                 else
