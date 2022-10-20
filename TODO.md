@@ -10,7 +10,9 @@ Implement hashtags.
 
 Make local likes / announces more visible.
 
-## Wishlist and batshit crazy ideas
+## Wishlist
+
+Implement notification by email of private messgaes.
 
 Implement HTTP caches (If-None-Match / ETag).
 
@@ -21,6 +23,8 @@ Create the `mastodon2snac` helper program (reading directly from the boxes, not 
 Add an RSS to the local timeline.
 
 Idea for a new disk layout: timelines stored like in git (2 character directories and then the md5.json inside); two binary indexes ala Gruta, updated on input, 1) by inverse time, and 2) by parent + inverse time. Timelines are built by reading from 1 and consulting 2 for the nested children. This change a) simplifies timeline_write() and associated functions (no parent / grampa rewriting needed), b) no big glob() inverse functions on huge directories, so big histories won't be problematic.
+
+Implement sensitive messages: they have a non-empty `summary` field and a `sensitive` field set to *true*.
 
 ## Closed
 
