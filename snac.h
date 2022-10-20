@@ -60,7 +60,7 @@ double timeline_mtime(snac *snac);
 int timeline_here(snac *snac, char *id);
 d_char *_timeline_find_fn(snac *snac, char *id);
 d_char *timeline_find(snac *snac, char *id);
-void timeline_del(snac *snac, char *id);
+int timeline_del(snac *snac, char *id);
 d_char *timeline_get(snac *snac, char *fn);
 d_char *timeline_list(snac *snac, int max);
 int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer);

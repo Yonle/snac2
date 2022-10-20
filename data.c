@@ -321,10 +321,11 @@ d_char *timeline_find(snac *snac, char *id)
 }
 
 
-void timeline_del(snac *snac, char *id)
+int timeline_del(snac *snac, char *id)
 /* deletes a message from the timeline */
 {
-    xs *fn = _timeline_find_fn(snac, id);
+    int ret = 404;
+    xs *fn  = _timeline_find_fn(snac, id);
 
     if (fn != NULL) {
         xs *lfn = NULL;
@@ -337,7 +338,11 @@ void timeline_del(snac *snac, char *id)
 
         if (unlink(lfn) != -1)
             snac_debug(snac, 1, xs_fmt("timeline_del (local) %s", id));
+
+        ret = 200;
     }
+
+    return ret;
 }
 
 

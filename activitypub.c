@@ -781,8 +781,10 @@ int process_message(snac *snac, char *msg, char *req)
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
 
-        timeline_del(snac, object);
-        snac_log(snac, xs_fmt("received delete request for %s", object));
+        if (valid_status(timeline_del(snac, object)))
+            snac_log(snac, xs_fmt("New 'Delete' %s %s", actor, object));
+        else
+            snac_debug(snac, 1, xs_fmt("ignored 'Delete' for unknown object %s", object));
     }
     else
         snac_debug(snac, 1, xs_fmt("process_message type '%s' ignored", type));
