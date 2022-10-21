@@ -8,6 +8,8 @@ The purge is managed internally, so there is no longer a need to add a cron job 
 
 The :shortnames: or Emoji or whatever the fuck these things are called are now shown in actor names and post contents.
 
+Added optional email notifications.
+
 ## 2.05
 
 Image upload is now supported (one image per post).
