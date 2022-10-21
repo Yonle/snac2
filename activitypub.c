@@ -650,7 +650,7 @@ void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
         return;
 
     if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
-        object = xs_str_get(msg, "object");
+        object = xs_dict_get(msg, "object");
 
         if (xs_is_null(object))
             return;
