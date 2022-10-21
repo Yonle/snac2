@@ -631,7 +631,8 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
 void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
 /* notifies the user of relevant events */
 {
-    char *email = xs_dict_get(snac->config, "email");
+    char *email  = xs_dict_get(snac->config, "email");
+    char *object = NULL;
 
     /* no email address? done */
     if (xs_is_null(email) || *email == '\0')
@@ -647,6 +648,21 @@ void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
 
     if (strcmp(type, "Undo") == 0 && strcmp(utype, "Follow") != 0)
         return;
+
+    if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
+        object = xs_str_get(msg, "object");
+
+        if (xs_is_null(object))
+            return;
+        else {
+            if (xs_type(object) == XSTYPE_DICT)
+                object = xs_dict_get(object, "id");
+
+            /* if it's not an admiration about something by us, done */
+            if (xs_is_null(object) || !xs_startswith(object, snac->actor))
+                return;
+        }
+    }
 
     snac_debug(snac, 1, xs_fmt("notify(%s, %s, %s)", type, utype, actor));
 
@@ -678,19 +694,9 @@ void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
         body = xs_str_cat(body, s1);
     }
 
-    if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
-        /* there is a related object: add it */
-        char *object = xs_dict_get(msg, "object");
-
-        if (!xs_is_null(object)) {
-            if (xs_type(object) == XSTYPE_DICT)
-                object = xs_dict_get(object, "id");
-
-            if (!xs_is_null(object)) {
-                xs *s1 = xs_fmt("Object: %s\n", object);
-                body = xs_str_cat(body, s1);
-            }
-        }
+    if (object != NULL) {
+        xs *s1 = xs_fmt("Object: %s\n", object);
+        body = xs_str_cat(body, s1);
     }
 
     /* now write */
