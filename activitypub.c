@@ -626,6 +626,73 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
 }
 
 
+
+
+void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
+/* notifies the user of relevant events */
+{
+    char *email = xs_dict_get(snac->config, "email");
+
+    /* no email address? done */
+    if (xs_is_null(email) || *email == '\0')
+        return;
+
+    if (strcmp(type, "Create") == 0) {
+        /* only notify of notes specifically for us */
+        char *rcpts = recipient_list(snac, msg, 0);
+
+        if (xs_list_in(rcpts, snac->actor) == -1)
+            return;
+    }
+
+    if (strcmp(type, "Undo") == 0 && strcmp(utype, "Follow") != 0)
+        return;
+
+    snac_debug(snac, 1, xs_fmt("notify(%s, %s, %s)", type, utype, actor));
+
+    /* now write */
+    FILE *f;
+
+    if ((f = popen("/usr/sbin/sendmail -t", "w")) == NULL) {
+        snac_log(snac, xs_fmt("cannot pipe to sendmail (errno: %d)", errno));
+        return;
+    }
+
+    xs *subject = xs_fmt("snac notify for @%s@%s",
+                    xs_dict_get(snac->config, "uid"), xs_dict_get(srv_config, "host"));
+    xs *from    = xs_fmt("snac-daemon@%s (snac daemon)", xs_dict_get(srv_config, "host"));
+
+    fprintf(f, "From: %s\n", from);
+    fprintf(f, "To: %s\n", email);
+    fprintf(f, "Subject: %s\n", subject);
+    fprintf(f, "\n");
+
+    fprintf(f, "Type  : %s", type);
+
+    if (strcmp(utype, "(null)") != 0)
+        fprintf(f, " + %s", utype);
+    fprintf(f, "\n");
+
+    fprintf(f, "Actor : %s\n", actor);
+
+    if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
+        /* there is a related object: add it */
+        char *object = xs_dict_get(msg, "object");
+
+        if (!xs_is_null(object)) {
+            if (xs_type(object) == XSTYPE_DICT)
+                object = xs_dict_get(object, "id");
+
+            if (!xs_is_null(object))
+                fprintf(f, "Object: %s\n", object);
+        }
+    }
+
+    if (fclose(f) == EOF)
+        snac_log(snac, xs_fmt("fclose error in pipe to sendmail (errno: %d)", errno));
+}
+
+
 /** queues **/
 
 int process_message(snac *snac, char *msg, char *req)
@@ -636,6 +703,7 @@ int process_message(snac *snac, char *msg, char *req)
     char *type   = xs_dict_get(msg, "type");
     xs *actor_o = NULL;
     int a_status;
+    int do_notify = 0;
 
     char *object, *utype;
 
@@ -687,12 +755,15 @@ int process_message(snac *snac, char *msg, char *req)
         follower_add(snac, actor, f_msg);
 
         snac_log(snac, xs_fmt("New follower %s", actor));
+        do_notify = 1;
     }
     else
     if (strcmp(type, "Undo") == 0) {
         if (strcmp(utype, "Follow") == 0) {
-            if (valid_status(follower_del(snac, actor)))
+            if (valid_status(follower_del(snac, actor))) {
                 snac_log(snac, xs_fmt("no longer following us %s", actor));
+                do_notify = 1;
+            }
             else
                 snac_log(snac, xs_fmt("error deleting follower %s", actor));
         }
@@ -710,8 +781,10 @@ int process_message(snac *snac, char *msg, char *req)
 
                 timeline_request(snac, in_reply_to, NULL);
 
-                if (timeline_add(snac, id, object, in_reply_to, NULL))
+                if (timeline_add(snac, id, object, in_reply_to, NULL)) {
                     snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
+                    do_notify = 1;
+                }
             }
         }
         else
@@ -737,6 +810,7 @@ int process_message(snac *snac, char *msg, char *req)
 
         timeline_admire(snac, object, actor, 1);
         snac_log(snac, xs_fmt("new 'Like' %s %s", actor, object));
+        do_notify = 1;
     }
     else
     if (strcmp(type, "Announce") == 0) {
@@ -757,6 +831,7 @@ int process_message(snac *snac, char *msg, char *req)
                 if (valid_status(actor_request(snac, who, &who_o))) {
                     timeline_admire(snac, object, actor, 0);
                     snac_log(snac, xs_fmt("new 'Announce' %s %s", actor, object));
+                    do_notify = 1;
                 }
                 else
                     snac_log(snac, xs_fmt("dropped 'Announce' on actor request error %s", who));
@@ -788,6 +863,9 @@ int process_message(snac *snac, char *msg, char *req)
     }
     else
         snac_debug(snac, 1, xs_fmt("process_message type '%s' ignored", type));
+
+    if (do_notify)
+        notify(snac, type, utype, actor, msg);
 
     return 1;
 }
@@ -869,8 +947,6 @@ void post(snac *snac, char *msg)
         enqueue_output(snac, msg, v, 0);
     }
 }
-
-
 /** HTTP handlers */
 
 int activitypub_get_handler(d_char *req, char *q_path,
