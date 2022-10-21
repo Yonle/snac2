@@ -626,8 +626,6 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
 }
 
 
-
-
 void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
 /* notifies the user of relevant events */
 {
@@ -670,7 +668,7 @@ void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
 
     xs *subject = xs_fmt("snac notify for @%s@%s",
                     xs_dict_get(snac->config, "uid"), xs_dict_get(srv_config, "host"));
-    xs *from    = xs_fmt("snac-daemon@%s (snac daemon)", xs_dict_get(srv_config, "host"));
+    xs *from    = xs_fmt("snac-daemon <snac-daemon@%s>", xs_dict_get(srv_config, "host"));
     xs *header  = xs_fmt(
                     "From: %s\n"
                     "To: %s\n"
@@ -699,23 +697,7 @@ void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
         body = xs_str_cat(body, s1);
     }
 
-    /* now write */
-    FILE *f;
-
-    if ((f = popen("/usr/sbin/sendmail -t", "w")) != NULL) {
-        fprintf(f, "%s\n", body);
-
-        if (fclose(f) == EOF) {
-            snac_log(snac, xs_fmt("fclose error in pipe to sendmail (errno: %d)", errno));
-
-            if ((f = fopen("/tmp/dead-letter", "w")) != NULL) {
-                fprintf(f, "%s\n", body);
-                fclose(f);
-            }
-        }
-    }
-    else
-        snac_log(snac, xs_fmt("cannot pipe to sendmail (errno: %d)", errno));
+    enqueue_email(snac, body, 0);
 }
 
 
@@ -958,6 +940,35 @@ void process_queue(snac *snac)
                 }
             }
         }
+        else
+        if (strcmp(type, "email") == 0) {
+            /* send this email */
+            char *msg   = xs_dict_get(q_item, "message");
+            int retries = xs_number_get(xs_dict_get(q_item, "retries"));
+            FILE *f;
+            int ok = 0;
+
+            if ((f = popen("/usr/sbin/sendmail -t", "w")) != NULL) {
+                fprintf(f, "%s\n", msg);
+
+                if (fclose(f) != EOF)
+                    ok = 1;
+            }
+
+            if (ok)
+                snac_debug(snac, 1, xs_fmt("email message sent"));
+            else {
+                if (retries > queue_retry_max)
+                    snac_log(snac, xs_fmt("process_queue email giving up (errno: %d)", errno));
+                else {
+                    /* requeue */
+                    snac_log(snac, xs_fmt(
+                        "process_queue email requeue %d (errno: %d)", retries + 1, errno));
+
+                    enqueue_email(snac, msg, retries + 1);
+                }
+            }
+        }
     }
 }
 
@@ -973,6 +984,8 @@ void post(snac *snac, char *msg)
         enqueue_output(snac, msg, v, 0);
     }
 }
+
+
 /** HTTP handlers */
 
 int activitypub_get_handler(d_char *req, char *q_path,

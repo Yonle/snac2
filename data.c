@@ -980,6 +980,25 @@ void enqueue_output(snac *snac, char *msg, char *actor, int retries)
 }
 
 
+void enqueue_email(snac *snac, char *msg, int retries)
+/* enqueues an email message to be sent */
+{
+    int qrt  = xs_number_get(xs_dict_get(srv_config, "queue_retry_minutes"));
+    xs *ntid = tid(retries * 60 * qrt);
+    xs *fn   = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
+    xs *qmsg = xs_dict_new();
+    xs *rn   = xs_number_new(retries);
+
+    qmsg = xs_dict_append(qmsg, "type",    "email");
+    qmsg = xs_dict_append(qmsg, "message", msg);
+    qmsg = xs_dict_append(qmsg, "retries", rn);
+
+    _enqueue_put(fn, qmsg);
+
+    snac_debug(snac, 1, xs_fmt("enqueue_email %d", retries));
+}
+
+
 d_char *queue(snac *snac)
 /* returns a list with filenames that can be dequeued */
 {
@@ -997,7 +1016,7 @@ d_char *queue(snac *snac)
         time_t t2 = atol(bn + 1);
 
         if (t2 > t)
-            snac_debug(snac, 2, xs_fmt("queue not yet time for %s", v));
+            snac_debug(snac, 2, xs_fmt("queue not yet time for %s [%ld]", v, t));
         else {
             list = xs_list_append(list, v);
             snac_debug(snac, 2, xs_fmt("queue ready for %s", v));
