@@ -243,6 +243,9 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<textarea name=\"bio\" cols=\"40\" rows=\"4\">%s</textarea></p>\n"
 
         "<p>%s:<br>\n"
+        "<input type=\"text\" name=\"email\" value=\"%s\"></p>\n"
+
+        "<p>%s:<br>\n"
         "<input type=\"password\" name=\"passwd1\" value=\"\"></p>\n"
 
         "<p>%s:<br>\n"
@@ -256,6 +259,10 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "</details>\n"
         "</div>\n"
         "</div>\n";
+
+    char *email = xs_dict_get(snac->config, "email");
+    if (xs_is_null(email))
+        email = "";
 
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
@@ -277,6 +284,8 @@ d_char *html_top_controls(snac *snac, d_char *s)
         xs_dict_get(snac->config, "avatar"),
         L("Bio"),
         xs_dict_get(snac->config, "bio"),
+        L("Email address for notifications"),
+        email,
         L("Password (only to change it)"),
         L("Repeat Password"),
         L("Update user info")
@@ -1053,6 +1062,8 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
             snac.config = xs_dict_set(snac.config, "avatar", v);
         if ((v = xs_dict_get(p_vars, "bio")) != NULL)
             snac.config = xs_dict_set(snac.config, "bio", v);
+        if ((v = xs_dict_get(p_vars, "email")) != NULL)
+            snac.config = xs_dict_set(snac.config, "email", v);
 
         /* password change? */
         if ((p1 = xs_dict_get(p_vars, "passwd1")) != NULL &&
