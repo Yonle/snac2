@@ -650,30 +650,33 @@ void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
 
     snac_debug(snac, 1, xs_fmt("notify(%s, %s, %s)", type, utype, actor));
 
-    /* now write */
-    FILE *f;
-
-    if ((f = popen("/usr/sbin/sendmail -t", "w")) == NULL) {
-        snac_log(snac, xs_fmt("cannot pipe to sendmail (errno: %d)", errno));
-        return;
-    }
+    /* prepare message */
 
     xs *subject = xs_fmt("snac notify for @%s@%s",
                     xs_dict_get(snac->config, "uid"), xs_dict_get(srv_config, "host"));
     xs *from    = xs_fmt("snac-daemon@%s (snac daemon)", xs_dict_get(srv_config, "host"));
+    xs *header  = xs_fmt(
+                    "From: %s\n"
+                    "To: %s\n"
+                    "Subject: %s\n"
+                    "\n",
+                    from, email, subject);
 
-    fprintf(f, "From: %s\n", from);
-    fprintf(f, "To: %s\n", email);
-    fprintf(f, "Subject: %s\n", subject);
-    fprintf(f, "\n");
+    xs *body = xs_str_new(header);
 
-    fprintf(f, "Type  : %s", type);
+    if (strcmp(utype, "(null)") != 0) {
+        xs *s1 = xs_fmt("Type  : %s + %s\n", type, utype);
+        body = xs_str_cat(body, s1);
+    }
+    else {
+        xs *s1 = xs_fmt("Type  : %s\n", type);
+        body = xs_str_cat(body, s1);
+    }
 
-    if (strcmp(utype, "(null)") != 0)
-        fprintf(f, " + %s", utype);
-    fprintf(f, "\n");
-
-    fprintf(f, "Actor : %s\n", actor);
+    {
+        xs *s1 = xs_fmt("Actor : %s\n", actor);
+        body = xs_str_cat(body, s1);
+    }
 
     if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
         /* there is a related object: add it */
@@ -683,13 +686,30 @@ void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
             if (xs_type(object) == XSTYPE_DICT)
                 object = xs_dict_get(object, "id");
 
-            if (!xs_is_null(object))
-                fprintf(f, "Object: %s\n", object);
+            if (!xs_is_null(object)) {
+                xs *s1 = xs_fmt("Object: %s\n", object);
+                body = xs_str_cat(body, s1);
+            }
         }
     }
 
-    if (fclose(f) == EOF)
-        snac_log(snac, xs_fmt("fclose error in pipe to sendmail (errno: %d)", errno));
+    /* now write */
+    FILE *f;
+
+    if ((f = popen("/usr/sbin/sendmail -t", "w")) != NULL) {
+        fprintf(f, "%s\n", body);
+
+        if (fclose(f) == EOF) {
+            snac_log(snac, xs_fmt("fclose error in pipe to sendmail (errno: %d)", errno));
+
+            if ((f = fopen("/tmp/dead-letter", "w")) != NULL) {
+                fprintf(f, "%s\n", body);
+                fclose(f);
+            }
+        }
+    }
+    else
+        snac_log(snac, xs_fmt("cannot pipe to sendmail (errno: %d)", errno));
 }
 
 
