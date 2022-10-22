@@ -29,11 +29,11 @@ activitypub.o: activitypub.c xs.h xs_encdec.h xs_json.h xs_curl.h \
 data.o: data.c xs.h xs_io.h xs_json.h xs_openssl.h xs_glob.h snac.h
 format.o: format.c xs.h xs_regex.h snac.h
 html.o: html.c xs.h xs_io.h xs_encdec.h xs_json.h xs_regex.h xs_set.h \
-  xs_openssl.h xs_time.h snac.h
+  xs_openssl.h xs_time.h xs_mime.h snac.h
 http.o: http.c xs.h xs_io.h xs_encdec.h xs_openssl.h xs_curl.h xs_time.h \
   snac.h
 httpd.o: httpd.c xs.h xs_io.h xs_encdec.h xs_json.h xs_socket.h \
-  xs_httpd.h snac.h
+  xs_httpd.h xs_mime.h snac.h
 main.o: main.c xs.h xs_io.h xs_encdec.h xs_json.h snac.h
 snac.o: snac.c xs.h xs_io.h xs_encdec.h xs_json.h xs_curl.h \
   xs_openssl.h xs_socket.h xs_httpd.h xs_mime.h xs_regex.h xs_set.h \
