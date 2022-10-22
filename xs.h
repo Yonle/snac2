@@ -475,21 +475,20 @@ int xs_list_len(char *list)
 char *xs_list_get(char *list, int num)
 /* returns the element #num */
 {
-    char *v, *r = NULL;
+    char *v;
     int c = 0;
 
     if (num < 0)
         num = xs_list_len(list) + num;
 
     while (xs_list_iter(&list, &v)) {
-        if (c == num) {
-            r = v;
-            break;
-        }
+        if (c == num)
+            return v;
+
         c++;
     }
 
-    return r;
+    return NULL;
 }
 
 
@@ -497,20 +496,17 @@ int xs_list_in(char *list, char *val)
 /* returns the position of val in list or -1 */
 {
     int n = 0;
-    int r = -1;
     char *v;
     int sz = xs_size(val);
 
-    while (r == -1 && xs_list_iter(&list, &v)) {
-        int vsz = xs_size(v);
-
-        if (sz == vsz && memcmp(val, v, sz) == 0)
-            r = n;
+    while (xs_list_iter(&list, &v)) {
+        if (sz == xs_size(v) && memcmp(val, v, sz) == 0)
+            return n;
 
         n++;
     }
 
-    return r;
+    return -1;
 }
 
 
@@ -641,16 +637,14 @@ int xs_dict_iter(char **dict, char **key, char **value)
 char *xs_dict_get(char *dict, const char *key)
 /* returns the value directed by key */
 {
-    char *k, *v, *r = NULL;
+    char *k, *v;
 
     while (xs_dict_iter(&dict, &k, &v)) {
-        if (strcmp(k, key) == 0) {
-            r = v;
-            break;
-        }
+        if (strcmp(k, key) == 0)
+            return v;
     }
 
-    return r;
+    return NULL;
 }
 
 
