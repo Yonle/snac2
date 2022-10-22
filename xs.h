@@ -34,9 +34,7 @@ typedef char d_char;
 /* auto-destroyable strings */
 #define xs __attribute__ ((__cleanup__ (_xs_destroy))) d_char
 
-#define _XS_BLK_SIZE 16
-#define _xs_blk_size(sz) ((((sz) + _XS_BLK_SIZE) / _XS_BLK_SIZE) * _XS_BLK_SIZE)
-
+int _xs_blk_size(int sz);
 void _xs_destroy(char **var);
 #define xs_debug() raise(SIGTRAP)
 xstype xs_type(const char *data);
@@ -96,6 +94,22 @@ void _xs_destroy(char **var)
 
     free(*var);
 }
+
+
+int _xs_blk_size(int sz)
+/* calculates the block size */
+{
+    int blk_size = 4096;
+
+    if (sz < 256)
+        blk_size = 32;
+    else
+    if (sz < 4096)
+        blk_size = 256;
+
+    return ((((sz) + blk_size) / blk_size) * blk_size);
+}
+
 
 xstype xs_type(const char *data)
 /* return the type of data */
