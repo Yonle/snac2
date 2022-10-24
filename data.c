@@ -796,16 +796,17 @@ int actor_get(snac *snac, char *actor, d_char **data)
         status = 200;
     }
 
-    if ((f = fopen(fn, "r")) != NULL) {
-        xs *j = xs_readall(f);
+    if (data) {
+        if ((f = fopen(fn, "r")) != NULL) {
+            xs *j = xs_readall(f);
 
-        fclose(f);
+            fclose(f);
 
-        if (data)
             *data = xs_json_loads(j);
+        }
+        else
+            status = 500;
     }
-    else
-        status = 500;
 
     return status;
 }

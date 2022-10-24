@@ -443,7 +443,6 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     char *id    = xs_dict_get(msg, "id");
     char *type  = xs_dict_get(msg, "type");
     char *meta  = xs_dict_get(msg, "_snac");
-    xs *actor_o = NULL;
     char *actor;
 
     /* do not show non-public messages in the public timeline */
@@ -477,10 +476,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     if (is_muted(snac, actor))
         return os;
 
-    if (strcmp(actor, snac->actor) == 0)
-        actor_o = msg_actor(snac);
-    else
-    if (!valid_status(actor_get(snac, actor, &actor_o)))
+    if (strcmp(actor, snac->actor) != 0 && !valid_status(actor_get(snac, actor, NULL)))
         return os;
 
     /* if this is our post, add the score */

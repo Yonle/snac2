@@ -98,14 +98,14 @@ void httpd_connection(FILE *f)
 {
     xs *req;
     char *method;
-    int status  = 0;
-    char *body  = NULL;
-    int b_size  = 0;
-    char *ctype = NULL;
-    xs *headers = NULL;
-    xs *q_path  = NULL;
-    xs *payload = NULL;
-    int p_size = 0;
+    int status   = 0;
+    d_char *body = NULL;
+    int b_size   = 0;
+    char *ctype  = NULL;
+    xs *headers  = NULL;
+    xs *q_path   = NULL;
+    xs *payload  = NULL;
+    int p_size   = 0;
     char *p;
 
     req = xs_httpd_request(f, &payload, &p_size);
