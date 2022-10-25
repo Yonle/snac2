@@ -779,6 +779,13 @@ int actor_get(snac *snac, char *actor, d_char **data)
     int status;
     FILE *f;
 
+    if (strcmp(actor, snac->actor) == 0) {
+        if (data)
+            *data = msg_actor(snac);
+
+        return 200;
+    }
+
     t = mtime(fn);
 
     /* no mtime? there is nothing here */
