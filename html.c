@@ -537,7 +537,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
             xs *s1 = xs_fmt(
                 "<div class=\"snac-origin\">"
                 "<a href=\"%s\">%s</a> %s</a></div>",
-                snac->actor, xs_dict_get(snac->config, "name"), L("liked")
+                snac->actor, xs_dict_get(snac->config, "name"), L("boosted")
             );
 
             s = xs_str_cat(s, s1);
@@ -651,9 +651,9 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     /** children **/
 
     char *children = xs_dict_get(meta, "children");
+    int left       = xs_list_len(children);
 
-    if (xs_list_len(children)) {
-        int left = xs_list_len(children);
+    if (left) {
         char *id;
 
         if (level < 4)
