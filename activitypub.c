@@ -1043,8 +1043,9 @@ int activitypub_get_handler(d_char *req, char *q_path,
         }
 
         /* replace the 'orderedItems' with the latest posts */
+        xs *items = xs_number_new(xs_list_len(list));
         msg = xs_dict_set(msg, "orderedItems", list);
-        msg = xs_dict_set(msg, "totalItems",   xs_number_new(xs_list_len(list)));
+        msg = xs_dict_set(msg, "totalItems",   items);
     }
     else
     if (strcmp(p_path, "followers") == 0 || strcmp(p_path, "following") == 0) {
