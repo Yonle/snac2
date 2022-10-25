@@ -93,6 +93,7 @@ int main(int argc, char *argv[])
 
     if (strcmp(cmd, "httpd") == 0) {
         httpd();
+        srv_free();
         return 0;
     }
 
