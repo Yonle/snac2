@@ -83,6 +83,14 @@ int srv_open(char *basedir)
 }
 
 
+void srv_free(void)
+{
+    xs_free(srv_basedir);
+    xs_free(srv_config);
+    xs_free(srv_baseurl);
+}
+
+
 void user_free(snac *snac)
 /* frees a user snac */
 {
