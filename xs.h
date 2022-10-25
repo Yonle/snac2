@@ -34,6 +34,9 @@ typedef char d_char;
 /* auto-destroyable strings */
 #define xs __attribute__ ((__cleanup__ (_xs_destroy))) d_char
 
+void *xs_free(void *ptr);
+void *_xs_realloc(void *ptr, size_t size, const char *file, int line);
+#define xs_realloc(ptr, size) _xs_realloc(ptr, size, __FILE__, __LINE__)
 int _xs_blk_size(int sz);
 void _xs_destroy(char **var);
 #define xs_debug() raise(SIGTRAP)
@@ -41,7 +44,6 @@ xstype xs_type(const char *data);
 int xs_size(const char *data);
 int xs_is_null(const char *data);
 d_char *xs_dup(const char *data);
-void *xs_realloc(void *ptr, size_t size);
 d_char *xs_expand(d_char *data, int offset, int size);
 d_char *xs_collapse(d_char *data, int offset, int size);
 d_char *xs_insert_m(d_char *data, int offset, const char *mem, int size);
@@ -80,19 +82,56 @@ d_char *xs_number_new(double f);
 double xs_number_get(const char *v);
 const char *xs_number_str(const char *v);
 
-extern int _xs_debug;
-
 
 #ifdef XS_IMPLEMENTATION
 
-int _xs_debug = 0;
+void *_xs_realloc(void *ptr, size_t size, const char *file, int line)
+{
+    d_char *ndata = realloc(ptr, size);
+
+    if (ndata == NULL) {
+        fprintf(stderr, "**OUT OF MEMORY**\n");
+        abort();
+    }
+
+#ifdef XS_DEBUG
+    if (ndata != ptr) {
+        FILE *f = fopen("xs_memory.out", "a");
+
+        if (ptr != NULL)
+            fprintf(f, "%p b\n", ptr);
+
+        fprintf(f, "%p a %ld %s %d\n", ndata, size, file, line);
+        fclose(f);
+    }
+#endif
+
+    return ndata;
+}
+
+
+void *xs_free(void *ptr)
+{
+#ifdef XS_DEBUG
+    if (ptr != NULL) {
+        FILE *f = fopen("xs_memory.out", "a");
+        fprintf(f, "%p b\n", ptr);
+        fclose(f);
+    }
+#endif
+
+    free(ptr);
+    return NULL;
+}
+
 
 void _xs_destroy(char **var)
 {
+/*
     if (_xs_debug)
         printf("_xs_destroy %p\n", var);
-
-    free(*var);
+*/
+    xs_free(*var);
 }
 
 
@@ -222,19 +261,6 @@ d_char *xs_dup(const char *data)
 }
 
 
-void *xs_realloc(void *ptr, size_t size)
-{
-    d_char *ndata = realloc(ptr, size);
-
-    if (ndata == NULL) {
-        fprintf(stderr, "**OUT OF MEMORY**\n");
-        abort();
-    }
-
-    return ndata;
-}
-
-
 d_char *xs_expand(d_char *data, int offset, int size)
 /* opens a hole in data */
 {
@@ -325,11 +351,10 @@ d_char *xs_fmt(const char *fmt, ...)
     va_end(ap);
 
     if (n > 0) {
-        n = _xs_blk_size(n + 1);
-        s = calloc(n, 1);
+        s = xs_realloc(NULL, _xs_blk_size(n + 1));
 
         va_start(ap, fmt);
-        vsnprintf(s, n, fmt, ap);
+        vsnprintf(s, n + 1, fmt, ap);
         va_end(ap);
     }
 

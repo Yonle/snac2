@@ -54,7 +54,7 @@ static int _data_callback(void *buffer, size_t size,
 
     /* open space */
     pd->size += sz;
-    pd->data = realloc(pd->data, pd->size + 1);
+    pd->data = xs_realloc(pd->data, pd->size + 1);
 
     /* copy data */
     memcpy(pd->data + pd->offset, buffer, sz);
@@ -166,7 +166,7 @@ d_char *xs_http_request(char *method, char *url, d_char *headers,
             ipd.data[ipd.size] = '\0';
     }
     else
-        free(ipd.data);
+        xs_free(ipd.data);
 
     return response;
 }

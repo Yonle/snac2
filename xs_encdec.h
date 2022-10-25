@@ -50,8 +50,7 @@ d_char *xs_hex_dec(const char *hex, int *size)
         int i;
         if (sscanf(&hex[n], "%02x", &i) == 0) {
             /* decoding error */
-            free(s);
-            return NULL;
+            return xs_free(s);
         }
         else
             *p = i;
@@ -137,8 +136,7 @@ d_char *xs_base64_dec(const char *data, int *size)
 
             if (ss == NULL) {
                 /* not a base64 char */
-                free(s);
-                return NULL;
+                return xs_free(s);
             }
 
             cs[n] = ss - b64_tbl;

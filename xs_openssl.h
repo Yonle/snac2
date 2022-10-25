@@ -140,7 +140,7 @@ d_char *xs_rsa_sign(const char *secret, const char *mem, int size)
 
     BIO_free(b);
     RSA_free(rsa);
-    free(sig);
+    xs_free(sig);
 
     return signature;
 }
@@ -211,7 +211,7 @@ d_char *xs_evp_sign(const char *secret, const char *mem, int size)
     EVP_MD_CTX_free(mdctx);
     EVP_PKEY_free(pkey);
     BIO_free(b);
-    free(sig);
+    xs_free(sig);
 
     return signature;
 }

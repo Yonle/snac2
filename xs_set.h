@@ -22,7 +22,9 @@ xs_set *xs_set_new(int elems)
 /* creates a new set with a maximum of size hashed data */
 {
     int sz = sizeof(struct _xs_set) + sizeof(int) * elems;
-    xs_set *s = calloc(sz, 1);
+    xs_set *s = xs_realloc(NULL, sz);
+
+    memset(s, '\0', sz);
 
     /* initialize */
     s->elems  = elems;
@@ -35,8 +37,8 @@ xs_set *xs_set_new(int elems)
 void xs_set_free(xs_set *s)
 /* frees a set */
 {
-    free(s->list);
-    free(s);
+    xs_free(s->list);
+    xs_free(s);
 }
 
 

@@ -252,10 +252,8 @@ d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
     req = xs_dict_append(req, "q_vars",  q_vars);
     req = xs_dict_append(req, "p_vars",  p_vars);
 
-    if (errno) {
-        free(req);
-        req = NULL;
-    }
+    if (errno)
+        req = xs_free(req);
 
     return req;
 }
