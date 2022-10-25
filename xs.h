@@ -35,8 +35,8 @@ typedef char d_char;
 #define xs __attribute__ ((__cleanup__ (_xs_destroy))) d_char
 
 void *xs_free(void *ptr);
-void *_xs_realloc(void *ptr, size_t size, const char *file, int line);
-#define xs_realloc(ptr, size) _xs_realloc(ptr, size, __FILE__, __LINE__)
+void *_xs_realloc(void *ptr, size_t size, const char *file, int line, const char *func);
+#define xs_realloc(ptr, size) _xs_realloc(ptr, size, __FILE__, __LINE__, __FUNCTION__)
 int _xs_blk_size(int sz);
 void _xs_destroy(char **var);
 #define xs_debug() raise(SIGTRAP)
@@ -85,7 +85,7 @@ const char *xs_number_str(const char *v);
 
 #ifdef XS_IMPLEMENTATION
 
-void *_xs_realloc(void *ptr, size_t size, const char *file, int line)
+void *_xs_realloc(void *ptr, size_t size, const char *file, int line, const char *func)
 {
     d_char *ndata = realloc(ptr, size);
 
@@ -99,9 +99,9 @@ void *_xs_realloc(void *ptr, size_t size, const char *file, int line)
         FILE *f = fopen("xs_memory.out", "a");
 
         if (ptr != NULL)
-            fprintf(f, "%p b\n", ptr);
+            fprintf(f, "%p r\n", ptr);
 
-        fprintf(f, "%p a %ld %s %d\n", ndata, size, file, line);
+        fprintf(f, "%p a %ld %s %d %s\n", ndata, size, file, line, func);
         fclose(f);
     }
 #endif
