@@ -86,11 +86,11 @@ int srv_open(char *basedir)
 void user_free(snac *snac)
 /* frees a user snac */
 {
-    free(snac->uid);
-    free(snac->basedir);
-    free(snac->config);
-    free(snac->key);
-    free(snac->actor);
+    xs_free(snac->uid);
+    xs_free(snac->basedir);
+    xs_free(snac->config);
+    xs_free(snac->key);
+    xs_free(snac->actor);
 }
 
 
