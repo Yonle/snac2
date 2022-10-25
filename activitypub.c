@@ -123,7 +123,7 @@ int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_s
     response = http_signed_request(snac, "POST", inbox,
         NULL, j_msg, strlen(j_msg), &status, payload, p_size);
 
-    free(response);
+    xs_free(response);
 
     return status;
 }
@@ -553,7 +553,7 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
 
             /* if this message is public, ours will also be */
             if (is_msg_public(snac, p_msg) &&
-                xs_list_in(to, (char *)public_address) == -1)
+                xs_list_in(to, public_address) == -1)
                 to = xs_list_append(to, public_address);
         }
 

@@ -183,10 +183,8 @@ void httpd_connection(FILE *f)
         b_size = strlen(body);
 
     /* if it was a HEAD, no body will be sent */
-    if (strcmp(method, "HEAD") == 0) {
-        free(body);
-        body = NULL;
-    }
+    if (strcmp(method, "HEAD") == 0)
+        body = xs_free(body);
 
     xs_httpd_response(f, status, headers, body, b_size);
 
@@ -194,7 +192,7 @@ void httpd_connection(FILE *f)
 
     srv_archive("RECV", req, payload, p_size, status, headers, body, b_size);
 
-    free(body);
+    xs_free(body);
 }
 
 
@@ -233,18 +231,21 @@ static void *queue_thread(void *arg)
     srv_log(xs_fmt("queue thread start"));
 
     while (srv_running) {
-        xs *list = user_list();
-        char *p, *uid;
         time_t t;
 
-        /* process queues for all users */
-        p = list;
-        while (xs_list_iter(&p, &uid)) {
-            snac snac;
+        {
+            xs *list = user_list();
+            char *p, *uid;
 
-            if (user_open(&snac, uid)) {
-                process_queue(&snac);
-                user_free(&snac);
+            /* process queues for all users */
+            p = list;
+            while (xs_list_iter(&p, &uid)) {
+                snac snac;
+
+                if (user_open(&snac, uid)) {
+                    process_queue(&snac);
+                    user_free(&snac);
+                }
             }
         }
 

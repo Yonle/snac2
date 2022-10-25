@@ -66,7 +66,7 @@ d_char *xs_list_append_m(d_char *list, const char *mem, int dsz);
 int xs_list_iter(char **list, char **value);
 int xs_list_len(char *list);
 char *xs_list_get(char *list, int num);
-int xs_list_in(char *list, char *val);
+int xs_list_in(char *list, const char *val);
 d_char *xs_join(char *list, const char *sep);
 d_char *xs_split_n(const char *str, const char *sep, int times);
 #define xs_split(str, sep) xs_split_n(str, sep, 0xfffffff)
@@ -96,12 +96,27 @@ void *_xs_realloc(void *ptr, size_t size, const char *file, int line, const char
 
 #ifdef XS_DEBUG
     if (ndata != ptr) {
+        int n;
         FILE *f = fopen("xs_memory.out", "a");
 
         if (ptr != NULL)
             fprintf(f, "%p r\n", ptr);
 
-        fprintf(f, "%p a %ld %s %d %s\n", ndata, size, file, line, func);
+        fprintf(f, "%p a %ld %s:%d: %s", ndata, size, file, line, func);
+
+        if (ptr != NULL) {
+            fprintf(f, " [");
+            for (n = 0; n < 32 && ndata[n]; n++) {
+                if (ndata[n] >= 32 && ndata[n] <= 127)
+                    fprintf(f, "%c", ndata[n]);
+                else
+                    fprintf(f, "\\%02x", (unsigned char)ndata[n]);
+            }
+            fprintf(f, "]");
+        }
+
+        fprintf(f, "\n");
+
         fclose(f);
     }
 #endif
@@ -531,7 +546,7 @@ char *xs_list_get(char *list, int num)
 }
 
 
-int xs_list_in(char *list, char *val)
+int xs_list_in(char *list, const char *val)
 /* returns the position of val in list or -1 */
 {
     int n = 0;

@@ -526,10 +526,10 @@ void _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referr
                 fclose(f);
 
                 xs *g_msg    = xs_json_loads(j);
-                d_char *meta = xs_dict_get(g_msg, "_snac");
-                d_char *p    = xs_dict_get(meta,  "parent");
+                char *meta   = xs_dict_get(g_msg, "_snac");
+                char *p      = xs_dict_get(meta,  "parent");
 
-                free(grampa);
+                xs_free(grampa);
                 grampa = xs_dup(p);
             }
         }
