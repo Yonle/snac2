@@ -54,6 +54,7 @@ char *get_argv(int *argi, int argc, char *argv[])
 
 #define GET_ARGV() get_argv(&argi, argc, argv)
 
+d_char *html_timeline(snac *snac, char *list, int local);
 
 int main(int argc, char *argv[])
 {
@@ -128,6 +129,17 @@ int main(int argc, char *argv[])
 
     if (strcmp(cmd, "queue") == 0) {
         process_queue(&snac);
+        return 0;
+    }
+
+    if (strcmp(cmd, "timeline") == 0) {
+        xs *list = local_list(&snac, 0xfffffff);
+        xs *body = html_timeline(&snac, list, 1);
+
+        printf("%s\n", body);
+        user_free(&snac);
+        srv_free();
+
         return 0;
     }
 

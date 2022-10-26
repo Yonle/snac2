@@ -14,10 +14,9 @@ extern int dbglevel;
 
 extern const char *susie;
 
-#define valid_status(status) ((status) >= 200 && (status) <= 299)
-
 #define L(s) (s)
 
+int valid_status(int status);
 d_char *tid(int offset);
 double ftime(void);
 

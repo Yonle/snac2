@@ -30,6 +30,13 @@ int     srv_running = 0;
 int dbglevel = 0;
 
 
+int valid_status(int status)
+/* is this HTTP status valid? */
+{
+    return status >= 200 && status <= 299;
+}
+
+
 d_char *tid(int offset)
 /* returns a time-based Id */
 {
