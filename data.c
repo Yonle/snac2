@@ -76,7 +76,7 @@ int srv_open(char *basedir)
         }
     }
 
-    if (ret == 0 && error != NULL)
+    if (error != NULL)
         srv_log(error);
 
     return ret;
