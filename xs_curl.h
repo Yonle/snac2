@@ -152,6 +152,8 @@ d_char *xs_http_request(char *method, char *url, d_char *headers,
 
     curl_easy_cleanup(curl);
 
+    curl_slist_free_all(list);
+
     if (status != NULL)
         *status = (int) lstatus;
 
