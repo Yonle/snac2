@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.07
+
+Fixed some minor memory leaks.
+
 ## 2.06
 
 Fixed a nasty bug in newly created users.
