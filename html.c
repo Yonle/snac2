@@ -1098,6 +1098,8 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         *b_size = strlen(*body);
     }
 
+    user_free(&snac);
+
     return status;
 }
 
