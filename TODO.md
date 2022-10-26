@@ -12,6 +12,8 @@ Make local likes / announces more visible.
 
 Implement bulleted lists.
 
+Shorten HTML labels.
+
 ## Wishlist
 
 Implement notification by email of private messages.
