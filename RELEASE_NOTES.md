@@ -4,6 +4,8 @@
 
 Fixed some minor memory leaks.
 
+Mail notifications are sent through the queue (and retried if failed).
+
 ## 2.06
 
 Fixed a nasty bug in newly created users.
