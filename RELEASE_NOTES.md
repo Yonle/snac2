@@ -1,12 +1,14 @@
 # Release Notes
 
+## 2.08
+
+More aggressive HTML sanitization.
+
 ## 2.07
 
 Fixed some minor memory leaks.
 
 Mail notifications are sent through the queue (and retried if failed).
-
-More aggressive HTML sanitization.
 
 ## 2.06
 
