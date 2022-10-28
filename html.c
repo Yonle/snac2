@@ -600,8 +600,9 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
             }
         }
 
+        xs *sc = sanitize(c);
 
-        s = xs_str_cat(s, c);
+        s = xs_str_cat(s, sc);
     }
 
     s = xs_str_cat(s, "\n");

@@ -150,3 +150,54 @@ d_char *not_really_markdown(char *content, d_char **f_content)
 
     return *f_content;
 }
+
+
+const char *valid_tags[] = {
+    "a", "p", "br", "img", "blockquote", "ul", "li", "span", NULL
+};
+
+d_char *sanitize(d_char *content)
+/* cleans dangerous HTML output */
+{
+    d_char *s = xs_str_new(NULL);
+    xs *sl;
+    int n = 0;
+    char *p, *v;
+
+    sl = xs_regex_split(content, "</?[^>]+>");
+
+    p = sl;
+
+    while (xs_list_iter(&p, &v)) {
+        if (n & 0x1) {
+            xs *s1  = xs_strip(xs_crop(xs_dup(v), v[1] == '/' ? 2 : 1, -1));
+            xs *l1  = xs_split_n(s1, " ", 1);
+            xs *tag = xs_tolower(xs_dup(xs_list_get(l1, 0)));
+            int i;
+
+            /* check if it's one of the valid tags */
+            for (i = 0; valid_tags[i]; i++) {
+                if (strcmp(tag, valid_tags[i]) == 0)
+                    break;
+            }
+
+            if (valid_tags[i]) {
+                /* accepted tag */
+                s = xs_str_cat(s, v);
+            }
+            else {
+                /* bad tag */
+                xs *s2 = xs_replace(v, "<", "&lt;");
+                s = xs_str_cat(s, s2);
+            }
+        }
+        else {
+            /* non-tag */
+            s = xs_str_cat(s, v);
+        }
+
+        n++;
+    }
+
+    return s;
+}
