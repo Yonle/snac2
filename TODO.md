@@ -8,15 +8,9 @@ Add web interface for the list of people being followed.
 
 Implement hashtags.
 
-Make local likes / announces more visible.
-
 Implement bulleted lists.
 
-Shorten HTML labels.
-
 ## Wishlist
-
-Implement notification by email of private messages.
 
 Implement HTTP caches (If-None-Match / ETag).
 
@@ -171,3 +165,7 @@ Implement the s/ (static) path (2022-10-11T08:52:09+0200).
 Implement image upload (2022-10-16T20:08:16+0200).
 
 Implement the :emojis: in actor names and messages (2022-10-17T12:12:58+0200).
+
+Implement notification by email of private messages (2022-10-28T21:17:27+0200).
+
+Make local likes / announces more visible (2022-10-28T21:18:41+0200).
