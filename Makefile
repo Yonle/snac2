@@ -4,7 +4,7 @@ CFLAGS=-g -Wall
 all: snac
 
 snac: snac.o main.o data.o http.o httpd.o webfinger.o activitypub.o html.o utils.o format.o
-	$(CC) -L/usr/local/lib *.o -lcurl -lcrypto -pthread -o $@
+	$(CC) $(CFLAGS) -L/usr/local/lib *.o -lcurl -lcrypto -pthread -o $@
 
 .c.o:
 	$(CC) $(CFLAGS) -I/usr/local/include -c $<
