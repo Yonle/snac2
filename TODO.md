@@ -22,8 +22,6 @@ Add an RSS to the local timeline.
 
 Idea for a new disk layout: timelines stored like in git (2 character directories and then the md5.json inside); two binary indexes ala Gruta, updated on input, 1) by inverse time, and 2) by parent + inverse time. Timelines are built by reading from 1 and consulting 2 for the nested children. This change a) simplifies timeline_write() and associated functions (no parent / grampa rewriting needed), b) no big glob() inverse functions on huge directories, so big histories won't be problematic.
 
-Implement sensitive messages: they have a non-empty `summary` field and a `sensitive` field set to *true*.
-
 Add a 'Follow' button next to a follow notification.
 
 ## Closed
@@ -169,3 +167,5 @@ Implement the :emojis: in actor names and messages (2022-10-17T12:12:58+0200).
 Implement notification by email of private messages (2022-10-28T21:17:27+0200).
 
 Make local likes / announces more visible (2022-10-28T21:18:41+0200).
+
+Implement sensitive messages: they have a non-empty `summary` field and a `sensitive` field set to *true* (2022-10-30T06:19:13+0100).
