@@ -35,6 +35,10 @@ Run `make` and then `make install` as root.
 
 See the administrator manual on how to proceed from here.
 
-# License and author
+# License
 
 See the LICENSE file for details.
+
+# Author
+
+grunfink @grunfink@comam.es
