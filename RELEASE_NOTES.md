@@ -2,6 +2,8 @@
 
 ## 2.08
 
+Messages marked as sensitive are now hidden behind a dropdown.
+
 More aggressive HTML sanitization.
 
 ## 2.07
