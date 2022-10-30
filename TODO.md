@@ -20,7 +20,7 @@ Create the `mastodon2snac` helper program (reading directly from the boxes, not 
 
 Add an RSS to the local timeline.
 
-Idea for a new disk layout: timelines stored like in git (2 character directories and then the md5.json inside); two binary indexes ala Gruta, updated on input, 1) by inverse time, and 2) by parent + inverse time. Timelines are built by reading from 1 and consulting 2 for the nested children. This change a) simplifies timeline_write() and associated functions (no parent / grampa rewriting needed), b) no big glob() inverse functions on huge directories, so big histories won't be problematic.
+Idea for a new disk layout: timelines stored like in git (2 character directories and then the md5.json inside); one append-only index with entry ids, read backwards (easy because md5 binary ids measure the same); children lists as append-only files stored inside the timeline directories with almost the same names as the parent entry; liked-by and announced-by lists as append-only files of actor ids. No _snac metadata inside the message. (But, what about the referrer? With this layout, do I need it?).
 
 Add a 'Follow' button next to a follow notification.
 
