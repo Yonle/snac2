@@ -4,8 +4,8 @@ A simple, minimalistic ActivityPub instance
 
 # Features
 
-- lightweight, minimal dependencies
-- large support of ActivityPub operations, e.g. write public notes, follow users, be followed, reply to the notes of others, admire wonderful content (like or boost), write private messages...
+- Lightweight, minimal dependencies
+- Extensive support of ActivityPub operations, e.g. write public notes, follow users, be followed, reply to the notes of others, admire wonderful content (like or boost), write private messages...
 - Easily-accessed MUTE button to silence morons
 - Tested interoperability with similar software
 - No database needed
@@ -29,7 +29,7 @@ On Debian/Ubuntu, you can satisfy these requirements by running
     apt install libssl-dev libcurl4-openssl-dev
 ```
 
-On OpenBSD and FreeBSD you don't need to install anything because the base system provides all the needed software.
+On OpenBSD and FreeBSD you don't need to install anything because the base system provides all the needed software and libraries.
 
 Run `make` and then `make install` as root.
 
