@@ -55,8 +55,14 @@ converted to related emojis:
 .Ed
 .El
 .Pp
-HTML tags are left untouched. This is probably a bad idea that may
-change in future versions.
+HTML tags are not filtered on input.
+.Pp
+.Ss Accepted HTML
+All HTML tags in entries are neutered except the following ones:
+.Bd -literal
+a p br img blockquote ul li
+span i b pre code em strong
+.Ed
 .Pp
 .Ss Disk Layout
 This section documents version 1 of the disk storage layout. It's still
