@@ -444,6 +444,8 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     char *type  = xs_dict_get(msg, "type");
     char *meta  = xs_dict_get(msg, "_snac");
     char *actor;
+    int sensitive = 0;
+    char *v;
 
     /* do not show non-public messages in the public timeline */
     if (local && !is_msg_public(snac, msg))
@@ -563,6 +565,17 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     /* add the content */
     s = xs_str_cat(s, "<div class=\"e-content snac-content\">\n");
 
+    /* is it sensitive? */
+    if (!xs_is_null(v = xs_dict_get(msg, "sensitive")) && xs_type(v) == XSTYPE_TRUE) {
+        if (xs_is_null(v = xs_dict_get(msg, "summary")) || *v == '\0')
+            v = "...";
+
+        xs *s1 = xs_fmt("<details><summary>%s [%s]</summary>\n", v, L("SENSITIVE CONTENT"));
+        s = xs_str_cat(s, s1);
+
+        sensitive = 1;
+    }
+
     {
         xs *c = xs_dup(xs_dict_get(msg, "content"));
         char *p, *v;
@@ -641,6 +654,9 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
             }
         }
     }
+
+    if (sensitive)
+        s = xs_str_cat(s, "</details><p>\n");
 
     s = xs_str_cat(s, "</div>\n");
 
