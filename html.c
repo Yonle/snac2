@@ -346,7 +346,7 @@ d_char *build_mentions(snac *snac, char *msg)
 }
 
 
-d_char *html_entry_controls(snac *snac, d_char *os, char *msg)
+d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
 {
     char *id    = xs_dict_get(msg, "id");
     char *actor = xs_dict_get(msg, "attributedTo");
@@ -362,6 +362,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg)
             "<form method=\"post\" action=\"%s/admin/action\">\n"
             "<input type=\"hidden\" name=\"id\" value=\"%s\">\n"
             "<input type=\"hidden\" name=\"actor\" value=\"%s\">\n"
+            "<input type=\"hidden\" name=\"redir\" value=\"%d_entry\">\n"
             "<input type=\"button\" name=\"action\" "
             "value=\"%s\" onclick=\""
                 "x = document.getElementById('%s_reply'); "
@@ -370,7 +371,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg)
                 "   x.style.display = 'block';"
             "\">\n",
 
-            snac->actor, id, actor,
+            snac->actor, id, actor, num,
             L("Reply"),
             md5
         );
@@ -447,6 +448,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     char *actor;
     int sensitive = 0;
     char *v;
+    int num = xs_list_len(seen->list);
 
     /* do not show non-public messages in the public timeline */
     if (local && !is_msg_public(snac, msg))
@@ -457,6 +459,12 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
         return os;
 
     xs *s = xs_str_new(NULL);
+
+    {
+        xs *s1 = xs_fmt("<a name=\"%d_entry\"></a>\n", num);
+
+        s = xs_str_cat(s, s1);
+    }
 
     if (strcmp(type, "Follow") == 0) {
         s = xs_str_cat(s, "<div class=\"snac-post\">\n");
@@ -664,7 +672,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     /** controls **/
 
     if (!local)
-        s = html_entry_controls(snac, s, msg);
+        s = html_entry_controls(snac, s, msg, num + 1);
 
     /** children **/
 
@@ -1112,7 +1120,12 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
     }
 
     if (status == 303) {
-        *body   = xs_fmt("%s/admin#snac-posts", snac.actor);
+        char *redir = xs_dict_get(p_vars, "redir");
+
+        if (xs_is_null(redir))
+            redir = "snac-posts";
+
+        *body   = xs_fmt("%s/admin#%s", snac.actor, redir);
         *b_size = strlen(*body);
     }
 
