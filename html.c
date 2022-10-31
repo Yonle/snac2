@@ -399,8 +399,9 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg)
         }
         else {
             s = html_button(s, "follow", L("Follow"));
-            s = html_button(s, "mute", L("MUTE"));
         }
+
+        s = html_button(s, "mute", L("MUTE"));
     }
 
     s = html_button(s, "delete", L("Delete"));
