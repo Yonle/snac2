@@ -54,7 +54,7 @@ d_char *not_really_markdown(char *content, d_char **f_content)
         while (xs_list_iter(&p, &v)) {
             if ((n & 0x1)) {
                 /* markup */
-                if (xs_startswith(v, "`")) {
+                if (xs_startswith(v, "`") && v[1] != '\n') {
                     xs *s1 = xs_crop(xs_dup(v), 1, -1);
                     xs *s2 = xs_fmt("<code>%s</code>", s1);
                     wrk = xs_str_cat(wrk, s2);
@@ -77,7 +77,6 @@ d_char *not_really_markdown(char *content, d_char **f_content)
                     wrk = xs_str_cat(wrk, s1);
                 }
                 else
-                    /* what the hell is this */
                     wrk = xs_str_cat(wrk, v);
             }
             else
