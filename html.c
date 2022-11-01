@@ -936,8 +936,10 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
     p_path = xs_list_get(l, 2);
 
     /* all posts must be authenticated */
-    if (!login(&snac, req))
+    if (!login(&snac, req)) {
+        user_free(&snac);
         return 401;
+    }
 
     p_vars = xs_dict_get(req, "p_vars");
 
