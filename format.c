@@ -136,6 +136,7 @@ d_char *not_really_markdown(char *content, d_char **f_content)
 
     /* some beauty fixes */
     s = xs_replace_i(s, "</blockquote><br>", "</blockquote>");
+    s = xs_replace_i(s, "</pre><br>", "</pre>");
 
     {
         /* traditional emoticons */
