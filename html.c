@@ -168,7 +168,8 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
         xs *s1;
 
         if (local)
-            s1 = xs_fmt("<a href=\"%s/admin\">%s</a></nav>\n", snac->actor, L("admin"));
+            s1 = xs_fmt("<a href=\"%s/admin\" rel=\"nofollow\">%s</a></nav>\n",
+                        snac->actor, L("admin"));
         else
             s1 = xs_fmt("<a href=\"%s\">%s</a></nav>\n", snac->actor, L("public"));
 
