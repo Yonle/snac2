@@ -982,10 +982,11 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         }
 
         if (content != NULL) {
-            xs *msg   = NULL;
-            xs *c_msg = NULL;
+            xs *msg       = NULL;
+            xs *c_msg     = NULL;
+            xs *content_2 = xs_replace(content, "\r", "");
 
-            msg = msg_note(&snac, content, NULL, in_reply_to, attach_list);
+            msg = msg_note(&snac, content_2, NULL, in_reply_to, attach_list);
 
             c_msg = msg_create(&snac, msg);
 
