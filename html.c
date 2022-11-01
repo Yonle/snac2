@@ -440,7 +440,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
 }
 
 
-d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, int level)
+d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, int level, int *num)
 {
     char *id    = xs_dict_get(msg, "id");
     char *type  = xs_dict_get(msg, "type");
@@ -448,7 +448,6 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     char *actor;
     int sensitive = 0;
     char *v;
-    int num = xs_list_len(seen->list);
 
     /* do not show non-public messages in the public timeline */
     if (local && !is_msg_public(snac, msg))
@@ -460,8 +459,10 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
 
     xs *s = xs_str_new(NULL);
 
-    {
-        xs *s1 = xs_fmt("<a name=\"%d_entry\"></a>\n", num);
+    if (level == 0) {
+        xs *s1 = xs_fmt("<a name=\"%d_entry\"></a>\n", *num);
+
+        *num = *num + 1;
 
         s = xs_str_cat(s, s1);
     }
@@ -672,7 +673,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     /** controls **/
 
     if (!local)
-        s = html_entry_controls(snac, s, msg, num + 1);
+        s = html_entry_controls(snac, s, msg, *num);
 
     /** children **/
 
@@ -697,7 +698,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
                 s = xs_str_cat(s, "</details>\n");
 
             if (chd != NULL)
-                s = html_entry(snac, s, chd, seen, local, level + 1);
+                s = html_entry(snac, s, chd, seen, local, level + 1, num);
             else
                 snac_debug(snac, 2, xs_fmt("cannot read from timeline child %s", id));
 
@@ -734,6 +735,7 @@ d_char *html_timeline(snac *snac, char *list, int local)
     xs_set *seen = xs_set_new(4096);
     char *v;
     double t = ftime();
+    int num = 0;
 
     s = html_user_header(snac, s, local);
 
@@ -746,7 +748,7 @@ d_char *html_timeline(snac *snac, char *list, int local)
     while (xs_list_iter(&list, &v)) {
         xs *msg = timeline_get(snac, v);
 
-        s = html_entry(snac, s, msg, seen, local, 0);
+        s = html_entry(snac, s, msg, seen, local, 0, &num);
     }
 
     s = xs_str_cat(s, "</div>\n");
