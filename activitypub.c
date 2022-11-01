@@ -91,20 +91,24 @@ int timeline_request(snac *snac, char *id, char *referrer)
             status = activitypub_request(snac, id, &object);
 
             if (valid_status(status)) {
-                char *actor = xs_dict_get(object, "attributedTo");
+                char *type = xs_dict_get(object, "type");
 
-                /* request (and drop) the actor for this entry */
-                if (!xs_is_null(actor))
-                    actor_request(snac, actor, NULL);
+                if (!xs_is_null(type) && strcmp(type, "Note") == 0) {
+                    char *actor = xs_dict_get(object, "attributedTo");
 
-                /* does it have an ancestor? */
-                char *in_reply_to = xs_dict_get(object, "inReplyTo");
+                    /* request (and drop) the actor for this entry */
+                    if (!xs_is_null(actor))
+                        actor_request(snac, actor, NULL);
 
-                /* recurse! */
-                timeline_request(snac, in_reply_to, referrer);
+                    /* does it have an ancestor? */
+                    char *in_reply_to = xs_dict_get(object, "inReplyTo");
 
-                /* finally store */
-                timeline_add(snac, id, object, in_reply_to, referrer);
+                    /* recurse! */
+                    timeline_request(snac, in_reply_to, referrer);
+
+                    /* finally store */
+                    timeline_add(snac, id, object, in_reply_to, referrer);
+                }
             }
         }
     }
