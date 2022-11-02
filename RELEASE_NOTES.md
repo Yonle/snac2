@@ -2,6 +2,8 @@
 
 ## 2.08
 
+A new page showing the list of people being followed and that follows us has been implemented, with all operations associated (including sending Direct Messages).
+
 Messages marked as sensitive are now hidden behind a dropdown.
 
 More aggressive HTML sanitization.
