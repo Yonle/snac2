@@ -840,7 +840,7 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
         if (valid_status(actor_get(snac, actor_id, &actor))) {
             s = xs_str_cat(s, "<div class=\"snac-post\">\n");
 
-            s = html_actor_icon(snac, s, actor, NULL, NULL, 0);
+            s = html_actor_icon(snac, s, actor, xs_dict_get(actor, "published"), NULL, 0);
 
 
             /* content (user bio) */
