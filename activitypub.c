@@ -484,12 +484,21 @@ d_char *msg_delete(snac *snac, char *id)
 }
 
 
-d_char *msg_follow(snac *snac, char *actor)
+d_char *msg_follow(snac *snac, char *url_or_uid)
 /* creates a 'Follow' message */
 {
-    d_char *actor_o = NULL;
+    xs *actor_o = NULL;
+    xs *actor   = NULL;
     d_char *msg = NULL;
     int status;
+
+    if (xs_startswith(url_or_uid, "https:/"))
+        actor = xs_dup(url_or_uid);
+    else
+    if (!valid_status(webfinger_request(url_or_uid, &actor, NULL))) {
+        snac_log(snac, xs_fmt("cannot resolve user %s to follow", url_or_uid));
+        return NULL;
+    }
 
     /* request the actor */
     status = actor_request(snac, actor, &actor_o);
