@@ -6,6 +6,12 @@ Messages marked as sensitive are now hidden behind a dropdown.
 
 More aggressive HTML sanitization.
 
+Some fixes to formatting in post creation.
+
+Fixed a small memory leak.
+
+After a like or boost, the scrolling position is set to the next entry in the timeline and not to the top of the page. This is still somewhat confusing so it may change again in the future.
+
 ## 2.07
 
 Fixed some minor memory leaks.
