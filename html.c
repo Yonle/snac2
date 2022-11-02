@@ -37,91 +37,110 @@ int login(snac *snac, char *headers)
 }
 
 
+d_char *html_actor_icon(snac *snac, d_char *os, char *actor, char *date, char *url, int priv)
+{
+    xs *s = xs_str_new(NULL);
+
+    xs *name   = NULL;
+    xs *avatar = NULL;
+    char *p, *v;
+
+    /* get the name */
+    if (xs_is_null((v = xs_dict_get(actor, "name"))) || *v == '\0') {
+        if (xs_is_null(v = xs_dict_get(actor, "preferredUsername"))) {
+            v = "user";
+        }
+    }
+
+    name = xs_dup(v);
+
+    /* replace the :shortnames: */
+    if (!xs_is_null(p = xs_dict_get(actor, "tag"))) {
+        /* iterate the tags */
+        while (xs_list_iter(&p, &v)) {
+            char *t = xs_dict_get(v, "type");
+
+            if (t && strcmp(t, "Emoji") == 0) {
+                char *n = xs_dict_get(v, "name");
+                char *i = xs_dict_get(v, "icon");
+
+                if (n && i) {
+                    char *u = xs_dict_get(i, "url");
+                    xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\"/>", u);
+
+                    name = xs_replace_i(name, n, img);
+                }
+            }
+        }
+    }
+
+    /* get the avatar */
+    if ((v = xs_dict_get(actor, "icon")) != NULL &&
+        (v = xs_dict_get(v, "url")) != NULL) {
+        avatar = xs_dup(v);
+    }
+
+    if (avatar == NULL)
+        avatar = xs_fmt("data:image/png;base64, %s", susie);
+
+    {
+        xs *s1 = xs_fmt("<p><img class=\"snac-avatar\" src=\"%s\" alt=\"\"/>\n", avatar);
+        s = xs_str_cat(s, s1);
+    }
+
+    {
+        xs *s1 = xs_fmt("<a href=\"%s\" class=\"p-author h-card snac-author\">%s</a>",
+            xs_dict_get(actor, "id"), name);
+        s = xs_str_cat(s, s1);
+    }
+
+    if (!xs_is_null(url)) {
+        xs *s1 = xs_fmt(" <a href=\"%s\">»</a>", url);
+        s = xs_str_cat(s, s1);
+    }
+
+    if (priv)
+        s = xs_str_cat(s, " <span title=\"private\">&#128274;</span>");
+
+    if (xs_is_null(date)) {
+        s = xs_str_cat(s, "<br>\n&nbsp;\n");
+    }
+    else {
+        xs *sd = xs_crop(xs_dup(date), 0, 10);
+        xs *s1 = xs_fmt(
+            "<br>\n<time class=\"dt-published snac-pubdate\">%s</time>\n", sd);
+
+        s = xs_str_cat(s, s1);
+    }
+
+    return xs_str_cat(os, s);
+}
+
+
 d_char *html_msg_icon(snac *snac, d_char *os, char *msg)
 {
     char *actor_id;
     xs *actor = NULL;
 
-    xs *s = xs_str_new(NULL);
-
     if ((actor_id = xs_dict_get(msg, "attributedTo")) == NULL)
         actor_id = xs_dict_get(msg, "actor");
 
     if (actor_id && valid_status(actor_get(snac, actor_id, &actor))) {
-        xs *name   = NULL;
-        xs *avatar = NULL;
-        char *p, *v;
+        char *date = NULL;
+        char *url = NULL;
+        int priv = 0;
 
-        /* get the name */
-        if (xs_is_null((v = xs_dict_get(actor, "name"))) || *v == '\0') {
-            if (xs_is_null(v = xs_dict_get(actor, "preferredUsername"))) {
-                v = "user";
-            }
-        }
+        if (strcmp(xs_dict_get(msg, "type"), "Note") == 0)
+            url = xs_dict_get(msg, "id");
 
-        name = xs_dup(v);
+        priv = !is_msg_public(snac, msg);
 
-        /* replace the :shortnames: */
-        if (!xs_is_null(p = xs_dict_get(actor, "tag"))) {
-            /* iterate the tags */
-            while (xs_list_iter(&p, &v)) {
-                char *t = xs_dict_get(v, "type");
+        date = xs_dict_get(msg, "published");
 
-                if (t && strcmp(t, "Emoji") == 0) {
-                    char *n = xs_dict_get(v, "name");
-                    char *i = xs_dict_get(v, "icon");
-
-                    if (n && i) {
-                        char *u = xs_dict_get(i, "url");
-                        xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\"/>", u);
-
-                        name = xs_replace_i(name, n, img);
-                    }
-                }
-            }
-        }
-
-        /* get the avatar */
-        if ((v = xs_dict_get(actor, "icon")) != NULL &&
-            (v = xs_dict_get(v, "url")) != NULL) {
-            avatar = xs_dup(v);
-        }
-
-        if (avatar == NULL)
-            avatar = xs_fmt("data:image/png;base64, %s", susie);
-
-        {
-            xs *s1 = xs_fmt("<p><img class=\"snac-avatar\" src=\"%s\" alt=\"\"/>\n", avatar);
-            s = xs_str_cat(s, s1);
-        }
-
-        {
-            xs *s1 = xs_fmt("<a href=\"%s\" class=\"p-author h-card snac-author\">%s</a>",
-                actor_id, name);
-            s = xs_str_cat(s, s1);
-        }
-
-        if (strcmp(xs_dict_get(msg, "type"), "Note") == 0) {
-            xs *s1 = xs_fmt(" <a href=\"%s\">»</a>", xs_dict_get(msg, "id"));
-            s = xs_str_cat(s, s1);
-        }
-
-        if (!is_msg_public(snac, msg))
-            s = xs_str_cat(s, " <span title=\"private\">&#128274;</span>");
-
-        if ((v = xs_dict_get(msg, "published")) == NULL) {
-            s = xs_str_cat(s, "<br>\n<time>&nbsp;</time>\n");
-        }
-        else {
-            xs *sd = xs_crop(xs_dup(v), 0, 10);
-            xs *s1 = xs_fmt(
-                "<br>\n<time class=\"dt-published snac-pubdate\">%s</time>\n", sd);
-
-            s = xs_str_cat(s, s1);
-        }
+        os = html_actor_icon(snac, os, actor, date, url, priv);
     }
 
-    return xs_str_cat(os, s);
+    return os;
 }
 
 
