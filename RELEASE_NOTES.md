@@ -8,6 +8,8 @@ Messages marked as sensitive are now hidden behind a dropdown.
 
 More aggressive HTML sanitization.
 
+Fixed possible crash when following somebody by its @user@host.
+
 Some fixes to formatting in post creation.
 
 Fixed a small memory leak.
