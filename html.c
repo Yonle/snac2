@@ -155,7 +155,11 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
     }
 
     {
-        xs *s1 = xs_fmt("<title>%s</title>\n", xs_dict_get(snac->config, "name"));
+        xs *s1 = xs_fmt("<title>%s (@%s@%s)</title>\n",
+            xs_dict_get(snac->config, "name"),
+            snac->uid,
+            xs_dict_get(srv_config,   "host"));
+
         s = xs_str_cat(s, s1);
     }
 
