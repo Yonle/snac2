@@ -195,8 +195,11 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
                         snac->actor, L("admin"));
         else
             s1 = xs_fmt(
-                "<a href=\"%s\">%s</a> - <a href=\"%s/people\">%s</a></nav>\n",
+                "<a href=\"%s\">%s</a> - "
+                "<a href=\"%s/admin\">%s</a> - "
+                "<a href=\"%s/people\">%s</a></nav>\n",
                 snac->actor, L("public"),
+                snac->actor, L("admin"),
                 snac->actor, L("people"));
 
         s = xs_str_cat(s, s1);
@@ -820,7 +823,7 @@ d_char *html_timeline(snac *snac, char *list, int local)
 }
 
 
-d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *header)
+d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *header, const char *t)
 {
     xs *s = xs_str_new(NULL);
     xs *h = xs_fmt("<h2>%s</h2>\n", header);
@@ -867,7 +870,7 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
                 "<input type=\"hidden\" name=\"actor\" value=\"%s\">\n"
                 "<input type=\"button\" name=\"action\" "
                 "value=\"%s\" onclick=\""
-                    "x = document.getElementById('%s_reply'); "
+                    "x = document.getElementById('%s_%s_dm'); "
                     "if (x.style.display == 'block') "
                     "   x.style.display = 'none'; else "
                     "   x.style.display = 'block';"
@@ -875,7 +878,7 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
 
                 snac->actor, actor_id,
                 L("DM"),
-                md5
+                md5, t
             );
             s = xs_str_cat(s, s1);
 
@@ -893,7 +896,7 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
 
             /* the post textarea */
             xs *s2 = xs_fmt(
-                "<p><div class=\"snac-note\" style=\"display: none\" id=\"%s_reply\">\n"
+                "<p><div class=\"snac-note\" style=\"display: none\" id=\"%s_%s_dm\">\n"
                 "<form method=\"post\" action=\"%s/admin/note\" "
                 "enctype=\"multipart/form-data\" id=\"%s_reply_form\">\n"
                 "<textarea class=\"snac-textarea\" name=\"content\" "
@@ -903,7 +906,7 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
                 "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
                 "</form><p></div>\n",
 
-                md5,
+                md5, t,
                 snac->actor, md5,
                 actor_id,
                 L("Post")
@@ -928,9 +931,9 @@ d_char *html_people(snac *snac)
 
     s = html_user_header(snac, s, 0);
 
-    s = html_people_list(snac, s, wing, L("People you follow"));
+    s = html_people_list(snac, s, wing, L("People you follow"), "i");
 
-    s = html_people_list(snac, s, wers, L("People that follows you"));
+    s = html_people_list(snac, s, wers, L("People that follows you"), "e");
 
     s = html_user_footer(snac, s);
 
