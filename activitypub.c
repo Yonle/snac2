@@ -509,10 +509,9 @@ d_char *msg_follow(snac *snac, char *url_or_uid)
 
         if (r_actor && strcmp(actor, r_actor) != 0) {
             snac_log(snac, xs_fmt("actor to follow is an alias %s -> %s", actor, r_actor));
-            actor = r_actor;
         }
 
-        msg = msg_base(snac, "Follow", "@dummy", snac->actor, NULL, actor);
+        msg = msg_base(snac, "Follow", "@dummy", snac->actor, NULL, r_actor);
     }
     else
         snac_log(snac, xs_fmt("cannot get actor to follow %s %d", actor, status));
