@@ -530,8 +530,14 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
 
     if (rcpts == NULL)
         to = xs_list_new();
-    else
-        to = xs_dup(rcpts);
+    else {
+        if (xs_type(rcpts) == XSTYPE_STRING) {
+            to = xs_list_new();
+            to = xs_list_append(to, rcpts);
+        }
+        else
+            to = xs_dup(rcpts);
+    }
 
     /* format the content */
     not_really_markdown(content, &fc2);

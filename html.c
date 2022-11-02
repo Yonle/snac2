@@ -194,7 +194,10 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
             s1 = xs_fmt("<a href=\"%s/admin\" rel=\"nofollow\">%s</a></nav>\n",
                         snac->actor, L("admin"));
         else
-            s1 = xs_fmt("<a href=\"%s\">%s</a></nav>\n", snac->actor, L("public"));
+            s1 = xs_fmt(
+                "<a href=\"%s\">%s</a> - <a href=\"%s/people\">%s</a></nav>\n",
+                snac->actor, L("public"),
+                snac->actor, L("people"));
 
         s = xs_str_cat(s, s1);
     }
@@ -817,6 +820,116 @@ d_char *html_timeline(snac *snac, char *list, int local)
 }
 
 
+d_char *html_people(snac *snac)
+{
+    d_char *s = xs_str_new(NULL);
+    xs *wers = NULL;
+    xs *wing = NULL;
+    char *p, *v;
+
+    s = html_user_header(snac, s, 0);
+
+    s = xs_str_cat(s, "<h2>");
+    s = xs_str_cat(s, L("People you follow"));
+    s = xs_str_cat(s, "</h2>\n");
+
+    s = xs_str_cat(s, "<h2>");
+    s = xs_str_cat(s, L("People that follows you"));
+    s = xs_str_cat(s, "</h2>\n");
+
+    p = wers = follower_list(snac);
+    while (xs_list_iter(&p, &v)) {
+        char *actor_id = xs_dict_get(v, "actor");
+        xs *md5 = xs_md5_hex(actor_id, strlen(actor_id));
+        xs *actor;
+
+        if (valid_status(actor_get(snac, actor_id, &actor))) {
+            s = xs_str_cat(s, "<div class=\"snac-post\">\n");
+
+            s = html_actor_icon(snac, s, actor, NULL, NULL, 0);
+
+
+            /* content (user bio) */
+            char *c = xs_dict_get(actor, "summary");
+
+            if (!xs_is_null(c)) {
+                s = xs_str_cat(s, "<div class=\"snac-content\">\n");
+
+                xs *sc = sanitize(c);
+
+                if (xs_startswith(sc, "<p>"))
+                    s = xs_str_cat(s, sc);
+                else {
+                    xs *s1 = xs_fmt("<p>%s</p>", sc);
+                    s = xs_str_cat(s, s1);
+                }
+
+                s = xs_str_cat(s, "</div>\n");
+            }
+
+
+            /* buttons */
+            s = xs_str_cat(s, "<div class=\"snac-controls\">\n");
+
+            xs *s1 = xs_fmt(
+                "<form method=\"post\" action=\"%s/admin/action\">\n"
+                "<input type=\"hidden\" name=\"actor\" value=\"%s\">\n"
+                "<input type=\"button\" name=\"action\" "
+                "value=\"%s\" onclick=\""
+                    "x = document.getElementById('%s_reply'); "
+                    "if (x.style.display == 'block') "
+                    "   x.style.display = 'none'; else "
+                    "   x.style.display = 'block';"
+                "\">\n",
+
+                snac->actor, actor_id,
+                L("DM"),
+                md5
+            );
+            s = xs_str_cat(s, s1);
+
+            s = html_button(s, "unfollow", L("Unfollow"));
+
+            if (is_muted(snac, actor_id))
+                s = html_button(s, "unmute", L("Unmute"));
+            else
+                s = html_button(s, "mute", L("MUTE"));
+
+            s = xs_str_cat(s, "</form>\n");
+
+            /* the post textarea */
+            xs *s2 = xs_fmt(
+                "<p><div class=\"snac-note\" style=\"display: none\" id=\"%s_reply\">\n"
+                "<form method=\"post\" action=\"%s/admin/note\" "
+                "enctype=\"multipart/form-data\" id=\"%s_reply_form\">\n"
+                "<textarea class=\"snac-textarea\" name=\"content\" "
+                "rows=\"4\" wrap=\"virtual\" required=\"required\"></textarea>\n"
+                "<input type=\"hidden\" name=\"to\" value=\"%s\">\n"
+                "<p><input type=\"file\" name=\"attach\">\n"
+                "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
+                "</form><p></div>\n",
+
+                md5,
+                snac->actor, md5,
+                actor_id,
+                L("Post")
+            );
+            s = xs_str_cat(s, s2);
+
+            s = xs_str_cat(s, "</div>\n");
+
+            s = xs_str_cat(s, "</div>\n");
+        }
+    }
+
+    s = html_user_footer(snac, s);
+
+    s = xs_str_cat(s, "</body>\n</html>\n");
+
+    return s;
+}
+
+
 int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char **ctype)
 {
     int status = 404;
@@ -886,6 +999,18 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
 
                 history_add(&snac, "timeline.html_", *body, *b_size);
             }
+        }
+    }
+    else
+    if (strcmp(p_path, "people") == 0) {
+        /* the list of people */
+
+        if (!login(&snac, req))
+            status = 401;
+        else {
+            *body   = html_people(&snac);
+            *b_size = strlen(*body);
+            status  = 200;
         }
     }
     else
@@ -980,6 +1105,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         char *in_reply_to = xs_dict_get(p_vars, "in_reply_to");
         char *attach_url  = xs_dict_get(p_vars, "attach_url");
         char *attach_file = xs_dict_get(p_vars, "attach");
+        char *to          = xs_dict_get(p_vars, "to");
         xs *attach_list   = xs_list_new();
 
         /* is attach_url set? */
@@ -1010,7 +1136,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
             xs *c_msg     = NULL;
             xs *content_2 = xs_replace(content, "\r", "");
 
-            msg = msg_note(&snac, content_2, NULL, in_reply_to, attach_list);
+            msg = msg_note(&snac, content_2, to, in_reply_to, attach_list);
 
             c_msg = msg_create(&snac, msg);
 
@@ -1049,6 +1175,10 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         else
         if (strcmp(action, L("MUTE")) == 0) {
             mute(&snac, actor);
+        }
+        else
+        if (strcmp(action, L("Unmute")) == 0) {
+            unmute(&snac, actor);
         }
         else
         if (strcmp(action, L("Follow")) == 0) {
