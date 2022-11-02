@@ -699,6 +699,41 @@ int following_get(snac *snac, char *actor, d_char **data)
 }
 
 
+d_char *following_list(snac *snac)
+/* returns the list of people being followed */
+{
+    xs *spec = xs_fmt("%s/following/" "*.json", snac->basedir);
+    xs *glist = xs_glob(spec, 0, 0);
+    char *p, *v;
+    d_char *list = xs_list_new();
+
+    /* iterate the list of files */
+    p = glist;
+    while (xs_list_iter(&p, &v)) {
+        FILE *f;
+
+        /* load the follower data */
+        if ((f = fopen(v, "r")) != NULL) {
+            xs *j = xs_readall(f);
+            fclose(f);
+
+            if (j != NULL) {
+                xs *o = xs_json_loads(j);
+
+                if (o != NULL) {
+                    char *type = xs_dict_get(o, "type");
+
+                    if (!xs_is_null(type) && strcmp(type, "Accept") == 0)
+                        list = xs_list_append(list, o);
+                }
+            }
+        }
+    }
+
+    return list;
+}
+
+
 d_char *_muted_fn(snac *snac, char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));

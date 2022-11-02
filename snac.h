@@ -72,6 +72,7 @@ int following_add(snac *snac, char *actor, char *msg);
 int following_del(snac *snac, char *actor);
 int following_check(snac *snac, char *actor);
 int following_get(snac *snac, char *actor, d_char **data);
+d_char *following_list(snac *snac);
 
 void mute(snac *snac, char *actor);
 void unmute(snac *snac, char *actor);

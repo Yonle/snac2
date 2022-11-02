@@ -820,28 +820,19 @@ d_char *html_timeline(snac *snac, char *list, int local)
 }
 
 
-d_char *html_people(snac *snac)
+d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *header)
 {
-    d_char *s = xs_str_new(NULL);
-    xs *wers = NULL;
-    xs *wing = NULL;
+    xs *s = xs_str_new(NULL);
+    xs *h = xs_fmt("<h2>%s</h2>\n", header);
     char *p, *v;
 
-    s = html_user_header(snac, s, 0);
+    s = xs_str_cat(s, h);
 
-    s = xs_str_cat(s, "<h2>");
-    s = xs_str_cat(s, L("People you follow"));
-    s = xs_str_cat(s, "</h2>\n");
-
-    s = xs_str_cat(s, "<h2>");
-    s = xs_str_cat(s, L("People that follows you"));
-    s = xs_str_cat(s, "</h2>\n");
-
-    p = wers = follower_list(snac);
+    p = list;
     while (xs_list_iter(&p, &v)) {
         char *actor_id = xs_dict_get(v, "actor");
         xs *md5 = xs_md5_hex(actor_id, strlen(actor_id));
-        xs *actor;
+        xs *actor = NULL;
 
         if (valid_status(actor_get(snac, actor_id, &actor))) {
             s = xs_str_cat(s, "<div class=\"snac-post\">\n");
@@ -888,7 +879,10 @@ d_char *html_people(snac *snac)
             );
             s = xs_str_cat(s, s1);
 
-            s = html_button(s, "unfollow", L("Unfollow"));
+            if (following_check(snac, actor_id))
+                s = html_button(s, "unfollow", L("Unfollow"));
+            else
+                s = html_button(s, "follow", L("Follow"));
 
             if (is_muted(snac, actor_id))
                 s = html_button(s, "unmute", L("Unmute"));
@@ -921,6 +915,22 @@ d_char *html_people(snac *snac)
             s = xs_str_cat(s, "</div>\n");
         }
     }
+
+    return xs_str_cat(os, s);
+}
+
+
+d_char *html_people(snac *snac)
+{
+    d_char *s = xs_str_new(NULL);
+    xs *wing = following_list(snac);
+    xs *wers = follower_list(snac);
+
+    s = html_user_header(snac, s, 0);
+
+    s = html_people_list(snac, s, wing, L("People you follow"));
+
+    s = html_people_list(snac, s, wers, L("People that follows you"));
 
     s = html_user_footer(snac, s);
 
