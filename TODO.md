@@ -2,10 +2,6 @@
 
 ## Open
 
-Add web interface for sending private messages (they can already be answered like normal replies).
-
-Add web interface for the list of people being followed and who follows us.
-
 Implement hashtags.
 
 Implement bulleted lists.
@@ -167,3 +163,7 @@ Implement notification by email of private messages (2022-10-28T21:17:27+0200).
 Make local likes / announces more visible (2022-10-28T21:18:41+0200).
 
 Implement sensitive messages: they have a non-empty `summary` field and a `sensitive` field set to *true* (2022-10-30T06:19:13+0100).
+
+Add web interface for sending private messages (they can already be answered like normal replies) (2022-11-02T11:07:40+0100).
+
+Add web interface for the list of people being followed and who follows us (2022-11-02T11:07:40+0100).
