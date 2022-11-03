@@ -43,6 +43,7 @@ const char *default_css =
     ".snac-textarea { font-family: inherit; width: 100% }\n"
     ".snac-history { border: 1px solid #606060; border-radius: 3px; margin: 2.5em 0; padding: 0 2em }\n"
     ".snac-btn-mute { float: right; margin-left: 0.5em }\n"
+    ".snac-btn-unmute { float: right; margin-left: 0.5em }\n"
     ".snac-btn-follow { float: right; margin-left: 0.5em }\n"
     ".snac-btn-unfollow { float: right; margin-left: 0.5em }\n"
     ".snac-btn-delete { float: right; margin-left: 0.5em }\n"
