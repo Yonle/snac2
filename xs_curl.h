@@ -143,6 +143,9 @@ d_char *xs_http_request(char *method, char *url, d_char *headers,
         list = curl_slist_append(list, h);
     }
 
+    /* disable server support for 100-continue */
+    list = curl_slist_append(list, "Expect:");
+
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
 
     /* do it */
