@@ -435,6 +435,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
         s = html_button(s, "mute", L("MUTE"));
     }
 
+    s = html_button(s, "hide", L("Hide"));
     s = html_button(s, "delete", L("Delete"));
 
     s = xs_str_cat(s, "</form>\n");
@@ -488,6 +489,12 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
         return os;
 
     xs *s = xs_str_new(NULL);
+
+    /* top wrap */
+    if ((v = xs_dict_get(meta, "hidden")) && xs_type(v) == XSTYPE_TRUE)
+        s = xs_str_cat(s, "<div style=\"display: none\">\n");
+    else
+        s = xs_str_cat(s, "<div>\n");
 
     if (level == 0) {
         xs *s1 = xs_fmt("<a name=\"%d_entry\"></a>\n", *num);
@@ -738,7 +745,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
         s = xs_str_cat(s, "</div>\n");
     }
 
-    s = xs_str_cat(s, "</div>\n");
+    s = xs_str_cat(s, "</div>\n</div>\n");
 
     return xs_str_cat(os, s);
 }
@@ -1192,6 +1199,10 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         else
         if (strcmp(action, L("Unmute")) == 0) {
             unmute(&snac, actor);
+        }
+        else
+        if (strcmp(action, L("Hide")) == 0) {
+            timeline_hide(&snac, id, 1);
         }
         else
         if (strcmp(action, L("Follow")) == 0) {

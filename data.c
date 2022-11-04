@@ -627,6 +627,37 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
 }
 
 
+int timeline_hide(snac *snac, char *id, int hide)
+/* hides/unhides a timeline entry */
+{
+    int ret = 0;
+    xs *fn = _timeline_find_fn(snac, id);
+    FILE *f;
+
+    if (fn != NULL && (f = fopen(fn, "r")) != NULL) {
+        xs *s1   = xs_readall(f);
+        xs *msg  = xs_json_loads(s1);
+        xs *meta = xs_dup(xs_dict_get(msg, "_snac"));
+
+        fclose(f);
+
+        meta = xs_dict_set(meta, "hidden", xs_val_new(hide ? XSTYPE_TRUE : XSTYPE_FALSE));
+        msg  = xs_dict_set(msg,  "_snac",  meta);
+
+        if ((f = fopen(fn, "w")) != NULL) {
+            xs *j1 = xs_json_dumps_pp(msg, 4);
+
+            fwrite(j1, strlen(j1), 1, f);
+            fclose(f);
+
+            ret = 1;
+        }
+    }
+
+    return ret;
+}
+
+
 d_char *_following_fn(snac *snac, char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
