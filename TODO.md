@@ -2,6 +2,8 @@
 
 ## Open
 
+Add a 'Hide' button, to stop showing a post and its children.
+
 Implement hashtags.
 
 Implement bulleted lists.
