@@ -4,6 +4,8 @@
 
 Implement bulleted lists.
 
+Add a purge timeout also for the local timeline.
+
 ## Wishlist
 
 Implement HTTP caches (If-None-Match / ETag).
