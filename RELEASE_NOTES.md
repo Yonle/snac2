@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.09
+
+New button `Hide`, to hide a post and its children.
+
 ## 2.08
 
 A new page showing the list of people being followed and that follows us has been implemented, with all operations associated (including sending Direct Messages).
