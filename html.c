@@ -435,8 +435,8 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
         s = html_button(s, "mute", L("MUTE"));
     }
 
-    s = html_button(s, "hide", L("Hide"));
     s = html_button(s, "delete", L("Delete"));
+    s = html_button(s, "hide",   L("Hide"));
 
     s = xs_str_cat(s, "</form>\n");
 
