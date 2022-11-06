@@ -44,9 +44,12 @@ d_char *not_really_markdown(char *content, d_char **f_content)
     char *p, *v;
     xs *wrk = xs_str_new(NULL);
 
+    /* some preparation to avoid writing very kludgy code */
+    xs *p_content = xs_replace(content, "```", "@pre@");
+
     {
         /* split by special markup */
-        xs *sm = xs_regex_split(content,
+        xs *sm = xs_regex_split(p_content,
             "(`[^`]+`|\\*\\*?[^\\*]+\\*?\\*|https?:/" "/[^[:space:]]+)");
         int n = 0;
 
@@ -54,7 +57,7 @@ d_char *not_really_markdown(char *content, d_char **f_content)
         while (xs_list_iter(&p, &v)) {
             if ((n & 0x1)) {
                 /* markup */
-                if (xs_startswith(v, "`") && v[1] != '\n') {
+                if (xs_startswith(v, "`")) {
                     xs *s1 = xs_crop(xs_dup(v), 1, -1);
                     xs *s2 = xs_fmt("<code>%s</code>", s1);
                     wrk = xs_str_cat(wrk, s2);
@@ -95,7 +98,7 @@ d_char *not_really_markdown(char *content, d_char **f_content)
     while (xs_list_iter(&p, &v)) {
         xs *ss = xs_strip(xs_dup(v));
 
-        if (xs_startswith(ss, "```")) {
+        if (xs_startswith(ss, "@pre@")) {
             if (!in_pre)
                 s = xs_str_cat(s, "<pre>");
             else
