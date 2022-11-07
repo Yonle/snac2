@@ -656,7 +656,7 @@ void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
 
     if (strcmp(type, "Create") == 0) {
         /* only notify of notes specifically for us */
-        char *rcpts = recipient_list(snac, msg, 0);
+        xs *rcpts = recipient_list(snac, msg, 0);
 
         if (xs_list_in(rcpts, snac->actor) == -1)
             return;
