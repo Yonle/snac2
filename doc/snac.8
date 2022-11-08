@@ -218,6 +218,20 @@ is supported. Intentionally, the
 and
 .Pa /following
 paths return empty lists.
+.Ss Migrating from Mastodon
+User migration from different Fediverse instances is a pain in the ass
+that has been implemented everywhere as a kludgy afterthought. There is
+not much that can be done, other than importing the list of people you
+follow to your new
+.Nm
+account.
+.Pp
+To do this, download the user's list of accounts being followed (in CSV
+format) from the Mastodon web interface and execute this:
+.Bd -literal -offset indent
+awk -F, 'NR > 1 { print $1 }' /path/to/following_accounts.csv | \\
+xargs -n 1 snac follow $SNAC_BASEDIR $SNAC_USER
+.Ed
 .Ss Other Considerations
 .Nm
 stores all the messages it receives as JSON files, which are usually

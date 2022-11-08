@@ -77,6 +77,10 @@ around the world.
 .It Bio
 Enter here a bunch of self-indulgent blurb about yourself.
 The same markup options available for text notes apply here.
+.It Email address for notifications
+If this field is not empty, an email message will be sent
+to this address whenever a post written by you is liked,
+boosted or replied to.
 .It Password
 Write the same string in these two fields to change your
 password. Don't write anything if you don't want to do this.
@@ -171,6 +175,10 @@ argument is - (a lonely hyphen), the external editor defined
 by the EDITOR environment variable will be invoked to prepare
 a message.
 .El
+.Ss Migrating from Mastodon
+See 
+.Xr snac 8
+for details.
 .Sh ENVIRONMENT
 .Bl -tag -width Ds
 .It Ev DEBUG
@@ -188,6 +196,6 @@ The user-preferred interactive text editor to prepare messages.
 .Sh LICENSE
 See the LICENSE file for details.
 .Sh CAVEATS
-Use the Fediverse sparingly. Don't fear the mute button.
+Use the Fediverse sparingly. Don't fear the MUTE button.
 .Sh BUGS
 Plenty. Some issues may be documented in the TODO.md file.
