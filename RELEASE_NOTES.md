@@ -4,6 +4,8 @@
 
 New button `Hide`, to hide a post and its children.
 
+You can boost your own posts indefinitely, because Social Media is about repeating yourself until the others care about you.
+
 ## 2.08
 
 A new page showing the list of people being followed and that follows us has been implemented, with all operations associated (including sending Direct Messages).
