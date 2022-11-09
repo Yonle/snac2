@@ -31,6 +31,7 @@ const char *default_css =
     "body { max-width: 48em; margin: auto; line-height: 1.5; padding: 0.8em }\n"
     "img { max-width: 100% }\n"
     ".snac-origin { font-size: 85% }\n"
+    ".snac-score { float: right; font-size: 85% }\n"
     ".snac-top-user { text-align: center; padding-bottom: 2em }\n"
     ".snac-top-user-name { font-size: 200% }\n"
     ".snac-top-user-id { font-size: 150% }\n"
