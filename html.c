@@ -409,8 +409,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
         s = xs_str_cat(s, s1);
     }
 
-    if (strcmp(actor, snac->actor) != 0) {
-        /* controls for other actors than this one */
+    {
         char *l;
 
         l = xs_dict_get(meta, "liked_by");
@@ -420,11 +419,14 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
         }
 
         l = xs_dict_get(meta, "announced_by");
-        if (xs_list_in(l, snac->actor) == -1) {
-            /* not already boosted; add button */
+        if (strcmp(actor, snac->actor) == 0 || xs_list_in(l, snac->actor) == -1) {
+            /* not already boosted or us; add button */
             s = html_button(s, "boost", L("Boost"));
         }
+    }
 
+    if (strcmp(actor, snac->actor) != 0) {
+        /* controls for other actors than this one */
         if (following_check(snac, actor)) {
             s = html_button(s, "unfollow", L("Unfollow"));
         }
