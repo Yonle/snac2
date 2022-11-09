@@ -76,6 +76,15 @@ int main(int argc, char *argv[])
         return initdb(basedir);
     }
 
+    if (strcmp(cmd, "markdown") == 0) {
+        /* undocumented, for testing only */
+        xs *c = xs_readall(stdin);
+        xs *fc = not_really_markdown(c, &fc);
+
+        printf("<html>\n%s\n</html>\n", fc);
+        return 0;
+    }
+
     if ((basedir = GET_ARGV()) == NULL)
         return usage();
 
