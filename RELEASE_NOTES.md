@@ -6,7 +6,9 @@ New button `Hide`, to hide a post and its children.
 
 You can boost your own posts indefinitely, because Social Media is about repeating yourself until the others care about you.
 
-Fixed bug in the webfinger query (@user@host queries should no longer fail).
+Fixed bug in the webfinger query (uid queries should no longer fail).
+
+Updated documentation.
 
 ## 2.08
 
