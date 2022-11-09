@@ -39,7 +39,7 @@ int webfinger_request(char *qs, char **actor, char **user)
 
         if (xs_list_len(l) == 2) {
             host     = xs_list_get(l, 1);
-            resource = xs_fmt("acct:%s", qs);
+            resource = xs_fmt("acct:%s", s);
         }
     }
 
