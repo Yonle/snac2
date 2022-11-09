@@ -319,6 +319,7 @@ void httpd(void)
                 pthread_t cth;
 
                 pthread_create(&cth, NULL, connection_thread, f);
+                pthread_detach(cth);
             }
             else
                 httpd_connection(f);
