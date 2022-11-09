@@ -6,6 +6,8 @@ Implement bulleted lists. Mastodon is crap and won't show them, but other instan
 
 Add a purge timeout also for the local timeline.
 
+Support uploading the avatar, instead of needing an URL to an image. As a kludgy workaround, you can post something with an attached image, copy the auto-generated URL and use it. You can even delete the post, as images are never deleted (I said it was kludgy).
+
 ## Wishlist
 
 Implement HTTP caches (If-None-Match / ETag).
