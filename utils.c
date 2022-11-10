@@ -289,7 +289,7 @@ int adduser(char *uid)
 
     printf("\nUser password is %s\n", pwd);
 
-    printf("\nGo to %s/%s and keep configuring your user.\n", srv_baseurl, uid);
+    printf("\nGo to %s/%s and continue configuring your user there.\n", srv_baseurl, uid);
 
     return 0;
 }
