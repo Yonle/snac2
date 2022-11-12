@@ -24,7 +24,8 @@ const char *default_srv_config = "{"
     "\"queue_retry_max\":      10,"
     "\"cssurls\":              [\"\"],"
     "\"max_timeline_entries\": 256,"
-    "\"timeline_purge_days\":  120"
+    "\"timeline_purge_days\":  120,"
+    "\"local_purge_days\":     0"
     "}";
 
 const char *default_css =

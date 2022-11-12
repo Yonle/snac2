@@ -1130,42 +1130,38 @@ d_char *dequeue(snac *snac, char *fn)
 }
 
 
+static void _purge_subdir(snac *snac, const char *subdir, int days)
+/* purges all files in subdir older than days */
+{
+    if (days) {
+        time_t mt = time(NULL) - days * 24 * 3600;
+        xs *spec  = xs_fmt("%s/%s/" "*.json", snac->basedir, subdir);
+        xs *list  = xs_glob(spec, 0, 0);
+        char *p, *v;
+
+        p = list;
+        while (xs_list_iter(&p, &v)) {
+            if (mtime(v) < mt) {
+                /* older than the minimum time: delete it */
+                unlink(v);
+                snac_debug(snac, 1, xs_fmt("purged %s", v));
+            }
+        }
+    }
+}
+
+
 void purge(snac *snac)
 /* do the purge */
 {
-    int tpd = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
+    int days;
 
-    /* purge days set to 0? disable purging */
-    if (tpd == 0) {
-        /* well, enjoy your data drive exploding */
-        return;
-    }
+    days = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
+    _purge_subdir(snac, "timeline", days);
+    _purge_subdir(snac, "actors", days);
 
-    time_t mt  = time(NULL) - tpd * 24 * 3600;
-    xs *t_spec = xs_fmt("%s/timeline/" "*.json", snac->basedir);
-    xs *t_list = xs_glob(t_spec, 0, 0);
-    char *p, *v;
-
-    p = t_list;
-    while (xs_list_iter(&p, &v)) {
-        if (mtime(v) < mt) {
-            /* older than the minimum time: delete it */
-            unlink(v);
-            snac_debug(snac, 1, xs_fmt("purged %s", v));
-        }
-    }
-
-    xs *a_spec = xs_fmt("%s/actors/" "*.json", snac->basedir);
-    xs *a_list = xs_glob(a_spec, 0, 0);
-
-    p = a_list;
-    while (xs_list_iter(&p, &v)) {
-        if (mtime(v) < mt) {
-            /* older than the minimum time: delete it */
-            unlink(v);
-            snac_debug(snac, 1, xs_fmt("purged %s", v));
-        }
-    }
+    days = xs_number_get(xs_dict_get(srv_config, "local_purge_days"));
+    _purge_subdir(snac, "local", days);
 }
 
 
