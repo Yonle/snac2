@@ -8,7 +8,7 @@ Support uploading the avatar, instead of needing an URL to an image. As a kludgy
 
 Implement HTTP caches (If-None-Match / ETag).
 
-The 'history' pages are now just monthly HTML snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you e.g. delete a post because it will be there in the history forever. Or may be this is what you want.
+The 'history' pages are just monthly HTML snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you e.g. intentionally delete a post because it will remain there in the history forever. If you activate local timeline purging, purged entries will remain in the history as 'ghosts', which may or may not be what the user wants.
 
 Add an RSS to the local timeline.
 
@@ -16,7 +16,7 @@ Implement hashtags. They are not very useful, as they can only be implemented as
 
 Implement bulleted lists. Mastodon is crap and won't show them, but other instances (Friendica, Pleroma) will do.
 
-Idea for a new disk layout: timelines stored like in git (2 character directories and then the md5.json inside); one append-only index with entry ids, read backwards (easy because md5 binary ids measure the same); children lists as append-only files stored inside the timeline directories with almost the same names as the parent entry; liked-by and announced-by lists as append-only files of actor ids. No _snac metadata inside the message (But, what about the referrer? With this layout, do I need it?). The instance storage may even be global, not per user; this could help in very bing instances (but will this be a use-case for snac? not probably).
+Idea for a new disk layout: timelines stored like in git (2 character directories and then the md5.json inside); one append-only index with entry ids, read backwards (easy because md5 binary ids have a constant size); children lists as append-only files stored inside the timeline directories with almost the same names as the parent entry; liked-by and announced-by lists as append-only files of actor ids. No _snac metadata inside the message (But, what about the referrer? With this layout, do I need it?). The instance storage may even be global, not per user; this could help in very big instances (but will this be a use-case for snac? not probably).
 
 ## Closed
 
