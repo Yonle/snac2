@@ -2,10 +2,6 @@
 
 ## Open
 
-Implement bulleted lists. Mastodon is crap and won't show them, but other instances (Friendica, Pleroma) will do.
-
-Add a purge timeout also for the local timeline.
-
 Support uploading the avatar, instead of needing an URL to an image. As a kludgy workaround, you can post something with an attached image, copy the auto-generated URL and use it. You can even delete the post, as images are never deleted (I said it was kludgy).
 
 ## Wishlist
@@ -17,6 +13,8 @@ The 'history' pages are now just monthly snapshots of the local timeline. This i
 Add an RSS to the local timeline.
 
 Implement hashtags. They are not very useful, as they can only be implemented as instance-only (not propagated), but it may help classifiying your own posts.
+
+Implement bulleted lists. Mastodon is crap and won't show them, but other instances (Friendica, Pleroma) will do.
 
 Idea for a new disk layout: timelines stored like in git (2 character directories and then the md5.json inside); one append-only index with entry ids, read backwards (easy because md5 binary ids measure the same); children lists as append-only files stored inside the timeline directories with almost the same names as the parent entry; liked-by and announced-by lists as append-only files of actor ids. No _snac metadata inside the message (But, what about the referrer? With this layout, do I need it?). The instance storage may even be global, not per user; this could help in very bing instances (but will this be a use-case for snac? not probably).
 
@@ -171,3 +169,5 @@ Add web interface for sending private messages (they can already be answered lik
 Add web interface for the list of people being followed and who follows us (2022-11-02T11:07:40+0100).
 
 Add a 'Hide' button, to stop showing a post and its children (2022-11-04T09:45:39+0100).
+
+Add a purge timeout also for the local timeline (2022-11-12T08:32:56+0100).
