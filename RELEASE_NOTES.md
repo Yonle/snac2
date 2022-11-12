@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2.10
+
+The local timeline purge has been implemented. The maximum days to live can be configured by setting the field `local_purge_days` in the server configuration file. By default it's 0 (no purging).
+
+Some memory usage fixes.
+
 ## 2.09
 
 New button `Hide`, to hide a post and its children.
