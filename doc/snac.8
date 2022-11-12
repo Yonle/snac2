@@ -122,8 +122,9 @@ This is the maximum timeline entries shown in the web interface.
 Entries in the timeline older that this number of days are purged.
 If you don't want any timeline purging and enjoy your data drives
 fill up with old crap and finally burst in flames, you can disable
-purging by setting this to 0 (this only applies to the private timeline,
-the local timeline is never touched).
+purging by setting this to 0.
+.It Ic local_purge_days
+Same as before, but for the user-generated entries in the local timeline.
 .It Ic css_urls
 This is a list of URLs to CSS files that will be inserted, in this order,
 in the HTML before the user CSS. Use these files to configure the global
@@ -159,7 +160,6 @@ shooting themselves in the foot by destroying everything.
 .Ss Old Data Purging
 From version 2.06, there is no longer a need to add a special
 cron job for purging old data, as this is managed internally.
-The user-generated data (the local timeline) is never deleted.
 .Ss ActivityPub Support
 These are the following activities and objects that
 .Nm
