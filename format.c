@@ -34,71 +34,73 @@ struct {
 };
 
 
+static d_char *format_line(const char *line)
+/* formats a line */
+{
+    d_char *s = xs_str_new(NULL);
+    char *p, *v;
+
+    /* split by markup */
+    xs *sm = xs_regex_split(line,
+        "(`[^`]+`|\\*\\*?[^\\*]+\\*?\\*|https?:/" "/[^[:space:]]+)");
+    int n = 0;
+
+    p = sm;
+    while (xs_list_iter(&p, &v)) {
+        if ((n & 0x1)) {
+            /* markup */
+            if (xs_startswith(v, "`")) {
+                xs *s1 = xs_crop(xs_dup(v), 1, -1);
+                xs *s2 = xs_fmt("<code>%s</code>", s1);
+                s = xs_str_cat(s, s2);
+            }
+            else
+            if (xs_startswith(v, "**")) {
+                xs *s1 = xs_crop(xs_dup(v), 2, -2);
+                xs *s2 = xs_fmt("<b>%s</b>", s1);
+                s = xs_str_cat(s, s2);
+            }
+            else
+            if (xs_startswith(v, "*")) {
+                xs *s1 = xs_crop(xs_dup(v), 1, -1);
+                xs *s2 = xs_fmt("<i>%s</i>", s1);
+                s = xs_str_cat(s, s2);
+            }
+            else
+            if (xs_startswith(v, "http")) {
+                xs *s1 = xs_fmt("<a href=\"%s\" target=\"_blank\">%s</a>", v, v);
+                s = xs_str_cat(s, s1);
+            }
+            else
+                s = xs_str_cat(s, v);
+        }
+        else
+            /* surrounded text, copy directly */
+            s = xs_str_cat(s, v);
+
+        n++;
+    }
+
+    return s;
+}
+
+
 d_char *not_really_markdown(char *content)
 /* formats a content using some Markdown rules */
 {
-    d_char *s = NULL;
+    d_char *s = xs_str_new(NULL);
     int in_pre = 0;
     int in_blq = 0;
     xs *list;
     char *p, *v;
-    xs *wrk = xs_str_new(NULL);
 
-    /* some preparation to avoid writing very kludgy code */
-    xs *p_content = xs_replace(content, "```", "@pre@");
-
-    {
-        /* split by special markup */
-        xs *sm = xs_regex_split(p_content,
-            "(`[^`]+`|\\*\\*?[^\\*]+\\*?\\*|https?:/" "/[^[:space:]]+)");
-        int n = 0;
-
-        p = sm;
-        while (xs_list_iter(&p, &v)) {
-            if ((n & 0x1)) {
-                /* markup */
-                if (xs_startswith(v, "`")) {
-                    xs *s1 = xs_crop(xs_dup(v), 1, -1);
-                    xs *s2 = xs_fmt("<code>%s</code>", s1);
-                    wrk = xs_str_cat(wrk, s2);
-                }
-                else
-                if (xs_startswith(v, "**")) {
-                    xs *s1 = xs_crop(xs_dup(v), 2, -2);
-                    xs *s2 = xs_fmt("<b>%s</b>", s1);
-                    wrk = xs_str_cat(wrk, s2);
-                }
-                else
-                if (xs_startswith(v, "*")) {
-                    xs *s1 = xs_crop(xs_dup(v), 1, -1);
-                    xs *s2 = xs_fmt("<i>%s</i>", s1);
-                    wrk = xs_str_cat(wrk, s2);
-                }
-                else
-                if (xs_startswith(v, "http")) {
-                    xs *s1 = xs_fmt("<a href=\"%s\" target=\"_blank\">%s</a>", v, v);
-                    wrk = xs_str_cat(wrk, s1);
-                }
-                else
-                    wrk = xs_str_cat(wrk, v);
-            }
-            else
-                /* surrounded text, copy directly */
-                wrk = xs_str_cat(wrk, v);
-
-            n++;
-        }
-    }
-
-    /* now work by lines */
-    p = list = xs_split(wrk, "\n");
-
-    s = xs_str_new(NULL);
+    /* work by lines */
+    p = list = xs_split(content, "\n");
 
     while (xs_list_iter(&p, &v)) {
-        xs *ss = xs_strip(xs_dup(v));
+        xs *ss = NULL;
 
-        if (xs_startswith(ss, "@pre@")) {
+        if (strcmp(v, "```") == 0) {
             if (!in_pre)
                 s = xs_str_cat(s, "<pre>");
             else
@@ -107,6 +109,11 @@ d_char *not_really_markdown(char *content)
             in_pre = !in_pre;
             continue;
         }
+
+        if (in_pre)
+            ss = xs_dup(v);
+        else
+            ss = xs_strip(format_line(v));
 
         if (xs_startswith(ss, ">")) {
             /* delete the > and subsequent spaces */
@@ -138,6 +145,7 @@ d_char *not_really_markdown(char *content)
         s = xs_str_cat(s, "</pre>");
 
     /* some beauty fixes */
+    s = xs_replace_i(s, "<br><br><blockquote>", "<br><blockquote>");
     s = xs_replace_i(s, "</blockquote><br>", "</blockquote>");
     s = xs_replace_i(s, "</pre><br>", "</pre>");
 
