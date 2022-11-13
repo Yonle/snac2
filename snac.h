@@ -135,7 +135,7 @@ int activitypub_post_handler(d_char *req, char *q_path,
                              char *payload, int p_size,
                              char **body, int *b_size, char **ctype);
 
-d_char *not_really_markdown(char *content, d_char **f_content);
+d_char *not_really_markdown(char *content);
 d_char *sanitize(d_char *str);
 
 int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char **ctype);

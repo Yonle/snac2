@@ -34,7 +34,7 @@ struct {
 };
 
 
-d_char *not_really_markdown(char *content, d_char **f_content)
+d_char *not_really_markdown(char *content)
 /* formats a content using some Markdown rules */
 {
     d_char *s = NULL;
@@ -149,9 +149,7 @@ d_char *not_really_markdown(char *content, d_char **f_content)
             s = xs_replace_i(s, smileys[n].key, smileys[n].value);
     }
 
-    *f_content = s;
-
-    return *f_content;
+    return s;
 }
 
 

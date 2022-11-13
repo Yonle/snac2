@@ -409,7 +409,7 @@ d_char *msg_actor(snac *snac)
     msg = xs_dict_set(msg, "preferredUsername", snac->uid);
     msg = xs_dict_set(msg, "published",         xs_dict_get(snac->config, "published"));
 
-    not_really_markdown(xs_dict_get(snac->config, "bio"), &f_bio);
+    f_bio = not_really_markdown(xs_dict_get(snac->config, "bio"));
     msg = xs_dict_set(msg, "summary", f_bio);
 
     char *folders[] = { "inbox", "outbox", "followers", "following", NULL };
@@ -548,7 +548,7 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
     }
 
     /* format the content */
-    not_really_markdown(content, &fc2);
+    fc2 = not_really_markdown(content);
 
     /* extract the tags */
     process_tags(fc2, &fc1, &tag);

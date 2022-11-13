@@ -215,7 +215,7 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
             "<div class=\"p-note snac-top-user-bio\">%s</div>\n"
             "</div>\n";
 
-        not_really_markdown(xs_dict_get(snac->config, "bio"), &bio);
+        bio = not_really_markdown(xs_dict_get(snac->config, "bio"));
 
         xs *s1 = xs_fmt(_tmpl,
             xs_dict_get(snac->config, "name"),
