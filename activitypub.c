@@ -243,7 +243,7 @@ void process_tags(const char *content, d_char **n_content, d_char **tag)
                 if (valid_status(status)) {
                     xs *d = xs_dict_new();
                     xs *n = xs_fmt("@%s", uid);
-                    xs *l = xs_fmt("<a href=\"%s\">%s</a>", actor, n);
+                    xs *l = xs_fmt("<a href=\"%s\" class=\"u-url mention\">%s</a>", actor, n);
 
                     d = xs_dict_append(d, "type",   "Mention");
                     d = xs_dict_append(d, "href",   actor);
