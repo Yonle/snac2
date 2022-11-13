@@ -395,9 +395,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
             "<input type=\"hidden\" name=\"redir\" value=\"%d_entry\">\n"
             "\n",
 
-            snac->actor, id, actor, num,
-            L("Reply"),
-            md5
+            snac->actor, id, actor, num
         );
 
         s = xs_str_cat(s, s1);
