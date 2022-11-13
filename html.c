@@ -454,7 +454,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
             "</details><p>"
             "\n",
 
-            L("Reply"),
+            L("Reply..."),
             md5,
             snac->actor, md5,
             ct,
@@ -873,18 +873,10 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
             s = xs_str_cat(s, "<div class=\"snac-controls\">\n");
 
             xs *s1 = xs_fmt(
-                "<form method=\"post\" action=\"%s/admin/action\">\n"
-                "<input type=\"hidden\" name=\"actor\" value=\"%s\">\n"
-                "<input type=\"button\" name=\"action\" "
-                "value=\"%s\" onclick=\""
-                    "x = document.getElementById('%s_%s_dm'); "
-                    "if (x.style.display == 'block') "
-                    "   x.style.display = 'none'; else "
-                    "   x.style.display = 'block';"
-                "\">\n",
+                "<p><form method=\"post\" action=\"%s/admin/action\">\n"
+                "<input type=\"hidden\" name=\"actor\" value=\"%s\">\n",
 
                 snac->actor, actor_id,
-                L("DM"),
                 md5, t
             );
             s = xs_str_cat(s, s1);
@@ -903,7 +895,8 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
 
             /* the post textarea */
             xs *s2 = xs_fmt(
-                "<p><div class=\"snac-note\" style=\"display: none\" id=\"%s_%s_dm\">\n"
+                "<p><details><summary>%s</summary>\n"
+                "<p><div class=\"snac-note\" id=\"%s_%s_dm\">\n"
                 "<form method=\"post\" action=\"%s/admin/note\" "
                 "enctype=\"multipart/form-data\" id=\"%s_reply_form\">\n"
                 "<textarea class=\"snac-textarea\" name=\"content\" "
@@ -911,8 +904,10 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
                 "<input type=\"hidden\" name=\"to\" value=\"%s\">\n"
                 "<p><input type=\"file\" name=\"attach\">\n"
                 "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
-                "</form><p></div>\n",
+                "</form><p></div>\n"
+                "</details><p>\n",
 
+                L("Direct Message..."),
                 md5, t,
                 snac->actor, md5,
                 actor_id,
