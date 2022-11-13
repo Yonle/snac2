@@ -8,8 +8,9 @@ A simple, minimalistic ActivityPub instance
 - Extensive support of ActivityPub operations, e.g. write public notes, follow users, be followed, reply to the notes of others, admire wonderful content (like or boost), write private messages...
 - Simple but effective web interface
 - Easily-accessed MUTE button to silence morons
-- Tested interoperability with similar software
+- Tested interoperability with related software
 - No database needed
+- Totally JavaScript-free
 - Not much bullshit
 
 # About
