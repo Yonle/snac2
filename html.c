@@ -442,7 +442,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
 
         xs *s1 = xs_fmt(
             "<p><details><summary>%s</summary>\n"
-            "<div class=\"snac-note\" id=\"%s_reply\">\n"
+            "<p><div class=\"snac-note\" id=\"%s_reply\">\n"
             "<form method=\"post\" action=\"%s/admin/note\" "
             "enctype=\"multipart/form-data\" id=\"%s_reply_form\">\n"
             "<textarea class=\"snac-textarea\" name=\"content\" "
