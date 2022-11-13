@@ -6,6 +6,8 @@ The local timeline purge has been implemented. The maximum days to live can be c
 
 Some memory usage fixes.
 
+More formatting fixes.
+
 ## 2.09
 
 New button `Hide`, to hide a post and its children.
