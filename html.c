@@ -393,13 +393,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
             "<input type=\"hidden\" name=\"id\" value=\"%s\">\n"
             "<input type=\"hidden\" name=\"actor\" value=\"%s\">\n"
             "<input type=\"hidden\" name=\"redir\" value=\"%d_entry\">\n"
-            "<input type=\"button\" name=\"action\" "
-            "value=\"%s\" onclick=\""
-                "x = document.getElementById('%s_reply'); "
-                "if (x.style.display == 'block') "
-                "   x.style.display = 'none'; else "
-                "   x.style.display = 'block';"
-            "\">\n",
+            "\n",
 
             snac->actor, id, actor, num,
             L("Reply"),
@@ -447,7 +441,8 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
         xs *ct = build_mentions(snac, msg);
 
         xs *s1 = xs_fmt(
-            "<p><div class=\"snac-note\" style=\"display: none\" id=\"%s_reply\">\n"
+            "<p><details><summary>%s</summary>\n"
+            "<div class=\"snac-note\" id=\"%s_reply\">\n"
             "<form method=\"post\" action=\"%s/admin/note\" "
             "enctype=\"multipart/form-data\" id=\"%s_reply_form\">\n"
             "<textarea class=\"snac-textarea\" name=\"content\" "
@@ -455,8 +450,11 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
             "<input type=\"hidden\" name=\"in_reply_to\" value=\"%s\">\n"
             "<p><input type=\"file\" name=\"attach\">\n"
             "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
-            "</form><p></div>\n",
+            "</form><p></div>\n"
+            "</details><p>"
+            "\n",
 
+            L("Reply"),
             md5,
             snac->actor, md5,
             ct,
