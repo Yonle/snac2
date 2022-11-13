@@ -8,6 +8,8 @@ Some memory usage fixes.
 
 More formatting fixes.
 
+The only JavaScript snippet has been replaced by pure HTML, so `snac` is now purely JavaScript-free.
+
 ## 2.09
 
 New button `Hide`, to hide a post and its children.
