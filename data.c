@@ -79,6 +79,12 @@ int srv_open(char *basedir)
     if (error != NULL)
         srv_log(error);
 
+#ifdef __OpenBSD__
+    srv_debug(2, xs_fmt("Calling unveil()"));
+    unveil(basedir, "rwc");
+    unveil(NULL,    NULL);
+#endif /* __OpenBSD__ */
+
     return ret;
 }
 
