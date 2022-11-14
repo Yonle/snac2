@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.11
+
+On OpenBSD, call the `unveil()` function upon the base directory for added security.
+
 ## 2.10
 
 The local timeline purge has been implemented. The maximum days to live can be configured by setting the field `local_purge_days` in the server configuration file. By default it's 0 (no purging).
