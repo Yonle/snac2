@@ -2,7 +2,7 @@
 
 ## 2.11
 
-On OpenBSD, call the `unveil()` function upon the base directory for added security.
+**disabled by now** On OpenBSD, use the `unveil()` function.
 
 ## 2.10
 
