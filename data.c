@@ -79,11 +79,15 @@ int srv_open(char *basedir)
     if (error != NULL)
         srv_log(error);
 
+/* disabled temporarily; messages can't be sent */
+#if 0
 #ifdef __OpenBSD__
     srv_debug(2, xs_fmt("Calling unveil()"));
-    unveil(basedir, "rwc");
-    unveil(NULL,    NULL);
+    unveil(basedir,     "rwc");
+    unveil("/usr/sbin", "x");
+    unveil(NULL,        NULL);
 #endif /* __OpenBSD__ */
+#endif
 
     return ret;
 }
