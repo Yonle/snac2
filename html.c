@@ -108,7 +108,8 @@ d_char *html_actor_icon(snac *snac, d_char *os, char *actor, char *date, char *u
     else {
         xs *sd = xs_crop(xs_dup(date), 0, 10);
         xs *s1 = xs_fmt(
-            "<br>\n<time class=\"dt-published snac-pubdate\">%s</time>\n", sd);
+            "<br>\n<time class=\"dt-published snac-pubdate\" title=\"%s\">%s</time>\n",
+                date, sd);
 
         s = xs_str_cat(s, s1);
     }
