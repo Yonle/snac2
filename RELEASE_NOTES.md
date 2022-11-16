@@ -4,6 +4,8 @@
 
 Marking posts and replies as sensitive content is now possible.
 
+Much more aggresive HTML sanitization.
+
 **disabled by now** On OpenBSD, use the `unveil()` function.
 
 ## 2.10
