@@ -420,12 +420,40 @@ d_char *_timeline_new_fn(snac *snac, char *id)
 }
 
 
-void _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referrer)
+int _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referrer)
 /* writes a timeline entry and refreshes the ancestors */
 {
-    xs *fn = _timeline_new_fn(snac, id);
+    xs *fn    = _timeline_new_fn(snac, id);
+    xs *pfn   = NULL;
+    xs *p_msg = NULL;
     FILE *f;
 
+    if (!xs_is_null(parent)) {
+        /* get the parent */
+        pfn = _timeline_find_fn(snac, parent);
+
+        if (pfn != NULL && (f = fopen(pfn, "r")) != NULL) {
+            xs *j;
+            char *v;
+
+            j = xs_readall(f);
+            fclose(f);
+
+            p_msg = xs_json_loads(j);
+
+            if ((v = xs_dict_get(p_msg, "_snac")) != NULL) {
+                /* is parent hidden? */
+                if ((v = xs_dict_get(v, "hidden")) && xs_type(v) == XSTYPE_TRUE) {
+                    snac_debug(snac, 1,
+                        xs_fmt("_timeline_write dropping child of hidden parent %s", id));
+
+                    return 0;
+                }
+            }
+        }
+    }
+
+    /* write the message */
     if ((f = fopen(fn, "w")) != NULL) {
         xs *j = xs_json_dumps_pp(msg, 4);
 
@@ -445,23 +473,8 @@ void _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referr
         snac_debug(snac, 1, xs_fmt("_timeline_write (local) %s %s", id, lfn));
     }
 
-    if (!xs_is_null(parent)) {
+    if (p_msg != NULL) {
         /* update the parent, adding this id to its children list */
-        xs *pfn   = _timeline_find_fn(snac, parent);
-        xs *p_msg = NULL;
-
-        if (pfn != NULL && (f = fopen(pfn, "r")) != NULL) {
-            xs *j;
-
-            j = xs_readall(f);
-            fclose(f);
-
-            p_msg = xs_json_loads(j);
-        }
-
-        if (p_msg == NULL)
-            return;
-
         xs *meta     = xs_dup(xs_dict_get(p_msg, "_snac"));
         xs *children = xs_dup(xs_dict_get(meta,  "children"));
 
@@ -499,7 +512,7 @@ void _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referr
             }
         }
         else
-            return;
+            return 0;
 
         /* now iterate all parents up, just renaming the files */
         xs *grampa = xs_dup(xs_dict_get(meta, "parent"));
@@ -544,6 +557,8 @@ void _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referr
             }
         }
     }
+
+    return 1;
 }
 
 
@@ -551,6 +566,7 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
 /* adds a message to the timeline */
 {
     xs *pfn = _timeline_find_fn(snac, id);
+    int ret = 0;
 
     if (pfn != NULL) {
         snac_log(snac, xs_fmt("timeline_add refusing rewrite %s %s", id, pfn));
@@ -578,13 +594,12 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
 
     msg = xs_dict_set(msg, "_snac", md);
 
-    _timeline_write(snac, id, msg, parent, referrer);
+    ret = _timeline_write(snac, id, msg, parent, referrer);
 
-    snac_debug(snac, 1, xs_fmt("timeline_add %s", id));
+    snac_debug(snac, 1, xs_fmt("timeline_add %s %d", id, ret));
 
-    return 1;
+    return ret;
 }
-
 
 
 void timeline_admire(snac *snac, char *id, char *admirer, int like)
