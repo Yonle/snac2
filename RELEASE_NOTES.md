@@ -2,6 +2,8 @@
 
 ## 2.11
 
+Marking posts and replies as sensitive content is now possible.
+
 **disabled by now** On OpenBSD, use the `unveil()` function.
 
 ## 2.10
