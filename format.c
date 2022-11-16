@@ -185,6 +185,7 @@ d_char *sanitize(const char *content)
             xs *s1  = xs_strip(xs_crop(xs_dup(v), v[1] == '/' ? 2 : 1, -1));
             xs *l1  = xs_split_n(s1, " ", 1);
             xs *tag = xs_tolower(xs_dup(xs_list_get(l1, 0)));
+            xs *s2  = NULL;
             int i;
 
             /* check if it's one of the valid tags */
@@ -194,14 +195,18 @@ d_char *sanitize(const char *content)
             }
 
             if (valid_tags[i]) {
-                /* accepted tag */
-                s = xs_str_cat(s, v);
+                /* accepted tag: rebuild it with only the accepted elements */
+                xs *el = xs_regex_match(v, "(href|rel|class|target)=\"[^\"]*\"");
+                xs *s3 = xs_join(el, " ");
+
+                s2 = xs_fmt("<%s%s %s>", v[1] == '/' ? "/" : "", tag, s3);
             }
             else {
-                /* bad tag */
-                xs *s2 = xs_replace(v, "<", "&lt;");
-                s = xs_str_cat(s, s2);
+                /* bad tag: escape it */
+                s2 = xs_replace(v, "<", "&lt;");
             }
+
+            s = xs_str_cat(s, s2);
         }
         else {
             /* non-tag */
