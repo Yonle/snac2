@@ -87,7 +87,7 @@ static d_char *format_line(const char *line)
 }
 
 
-d_char *not_really_markdown(char *content)
+d_char *not_really_markdown(const char *content)
 /* formats a content using some Markdown rules */
 {
     d_char *s = xs_str_new(NULL);
@@ -164,11 +164,11 @@ d_char *not_really_markdown(char *content)
 
 
 const char *valid_tags[] = {
-    "a", "p", "br", "br/", "img", "blockquote", "ul", "li",
+    "a", "p", "br", "br/", "blockquote", "ul", "li",
     "span", "i", "b", "pre", "code", "em", "strong", NULL
 };
 
-d_char *sanitize(d_char *content)
+d_char *sanitize(const char *content)
 /* cleans dangerous HTML output */
 {
     d_char *s = xs_str_new(NULL);

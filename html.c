@@ -627,7 +627,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     }
 
     {
-        xs *c = xs_dup(xs_dict_get(msg, "content"));
+        xs *c  = sanitize(xs_dict_get(msg, "content"));
         char *p, *v;
 
         /* do some tweaks to the content */
@@ -663,9 +663,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
             }
         }
 
-        xs *sc = sanitize(c);
-
-        s = xs_str_cat(s, sc);
+        s = xs_str_cat(s, c);
     }
 
     s = xs_str_cat(s, "\n");
