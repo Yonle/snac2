@@ -242,6 +242,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<textarea class=\"snac-textarea\" name=\"content\" "
         "rows=\"8\" wrap=\"virtual\" required=\"required\"></textarea>\n"
         "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
+        "<p><input type=\"checkbox\" name=\"sensitive\"> %s\n"
         "<p><input type=\"file\" name=\"attach\">\n"
         "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
         "</form><p>\n"
@@ -297,6 +298,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
 
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
+        L("Sensitive content"),
         L("Post"),
 
         L("More options..."),
@@ -1120,6 +1122,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         char *attach_url  = xs_dict_get(p_vars, "attach_url");
         char *attach_file = xs_dict_get(p_vars, "attach");
         char *to          = xs_dict_get(p_vars, "to");
+        char *sensitive   = xs_dict_get(p_vars, "sensitive");
         xs *attach_list   = xs_list_new();
 
         /* is attach_url set? */
@@ -1151,6 +1154,13 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
             xs *content_2 = xs_replace(content, "\r", "");
 
             msg = msg_note(&snac, content_2, to, in_reply_to, attach_list);
+
+            if (sensitive != NULL) {
+                xs *t = xs_val_new(XSTYPE_TRUE);
+
+                msg = xs_dict_set(msg, "sensitive", t);
+                msg = xs_dict_set(msg, "summary",   "...");
+            }
 
             c_msg = msg_create(&snac, msg);
 

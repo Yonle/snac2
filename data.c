@@ -79,7 +79,7 @@ int srv_open(char *basedir)
     if (error != NULL)
         srv_log(error);
 
-/* disabled temporarily; messages can't be sent */
+/* disabled temporarily; messages can't be sent (libcurl issue?) */
 #if 0
 #ifdef __OpenBSD__
     srv_debug(2, xs_fmt("Calling unveil()"));
