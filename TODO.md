@@ -6,8 +6,6 @@ Add support for uploading the avatar, instead of needing an URL to an image. As 
 
 Add (back) the possibility to attach an image by URL.
 
-Add a switch for sensitive posts.
-
 ## Wishlist
 
 Implement HTTP caches (If-None-Match / ETag).
@@ -175,3 +173,5 @@ Add web interface for the list of people being followed and who follows us (2022
 Add a 'Hide' button, to stop showing a post and its children (2022-11-04T09:45:39+0100).
 
 Add a purge timeout also for the local timeline (2022-11-12T08:32:56+0100).
+
+Add a switch for sensitive posts (2022-11-16T12:17:50+0100).
