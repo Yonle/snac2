@@ -449,6 +449,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
             "<textarea class=\"snac-textarea\" name=\"content\" "
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
             "<input type=\"hidden\" name=\"in_reply_to\" value=\"%s\">\n"
+            "<p><input type=\"checkbox\" name=\"sensitive\"> %s\n"
             "<p><input type=\"file\" name=\"attach\">\n"
             "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
             "</form><p></div>\n"
@@ -460,6 +461,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
             snac->actor, md5,
             ct,
             id,
+            L("Sensitive content"),
             L("Post")
         );
 

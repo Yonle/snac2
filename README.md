@@ -11,6 +11,7 @@ A simple, minimalistic ActivityPub instance
 - Tested interoperability with related software
 - No database needed
 - Totally JavaScript-free
+- No cookies either
 - Not much bullshit
 
 # About
