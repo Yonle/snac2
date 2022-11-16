@@ -199,7 +199,8 @@ d_char *sanitize(const char *content)
                 xs *el = xs_regex_match(v, "(href|rel|class|target)=\"[^\"]*\"");
                 xs *s3 = xs_join(el, " ");
 
-                s2 = xs_fmt("<%s%s %s>", v[1] == '/' ? "/" : "", tag, s3);
+                s2 = xs_fmt("<%s%s%s%s>",
+                    v[1] == '/' ? "/" : "", tag, xs_list_len(s3) ? " " : "", s3);
             }
             else {
                 /* bad tag: escape it */
