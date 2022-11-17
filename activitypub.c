@@ -133,23 +133,34 @@ int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_s
 }
 
 
+d_char *get_actor_inbox(snac *snac, char *actor)
+/* gets an actor's inbox */
+{
+    xs *data = NULL;
+    char *v = NULL;
+
+    if (valid_status(actor_request(snac, actor, &data))) {
+        /* try first endpoints/sharedInbox */
+        if ((v = xs_dict_get(data, "endpoints")))
+            v = xs_dict_get(v, "sharedInbox");
+
+        /* try then the regular inbox */
+        if (xs_is_null(v))
+            v = xs_dict_get(data, "inbox");
+    }
+
+    return xs_is_null(v) ? NULL : xs_dup(v);
+}
+
+
 int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size)
 /* sends a message to an actor */
 {
-    int status;
-    xs *data = NULL;
+    int status = 400;
+    xs *inbox = get_actor_inbox(snac, actor);
 
-    /* resolve the actor first */
-    status = actor_request(snac, actor, &data);
-
-    if (valid_status(status)) {
-        char *inbox = xs_dict_get(data, "inbox");
-
-        if (inbox != NULL)
-            status = send_to_inbox(snac, inbox, msg, payload, p_size);
-        else
-            status = 400;
-    }
+    if (!xs_is_null(inbox))
+        status = send_to_inbox(snac, inbox, msg, payload, p_size);
 
     snac_log(snac, xs_fmt("send_to_actor %s %d", actor, status));
 
