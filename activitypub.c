@@ -162,7 +162,7 @@ int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_s
     if (!xs_is_null(inbox))
         status = send_to_inbox(snac, inbox, msg, payload, p_size);
 
-    snac_log(snac, xs_fmt("send_to_actor %s %d", actor, status));
+    snac_log(snac, xs_fmt("send_to_actor %s (%s) %d", actor, inbox, status));
 
     return status;
 }
