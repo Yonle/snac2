@@ -162,8 +162,6 @@ int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_s
     if (!xs_is_null(inbox))
         status = send_to_inbox(snac, inbox, msg, payload, p_size);
 
-    snac_log(snac, xs_fmt("send_to_actor %s (%s) %d", actor, inbox, status));
-
     return status;
 }
 
@@ -942,15 +940,17 @@ void process_queue(snac *snac)
             status = send_to_actor(snac, actor, msg, &payload, &p_size);
 
             if (!valid_status(status)) {
-                /* error sending; reenqueue? */
+                /* error sending; requeue? */
                 if (retries > queue_retry_max)
                     snac_log(snac, xs_fmt("process_queue giving up %s %d", actor, status));
                 else {
-                    /* reenqueue */
+                    /* requeue */
                     enqueue_output(snac, msg, actor, retries + 1);
                     snac_log(snac, xs_fmt("process_queue requeue %s %d", actor, retries + 1));
                 }
             }
+            else
+                snac_log(snac, xs_fmt("process_queue sent to actor %s %d", actor, status));
         }
         else
         if (strcmp(type, "input") == 0) {
