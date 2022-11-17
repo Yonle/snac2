@@ -212,6 +212,28 @@ d_char *recipient_list(snac *snac, char *msg, int expand_public)
 }
 
 
+d_char *inbox_list(snac *snac, char *msg)
+/* returns the list of inboxes that are recipients of this message */
+{
+    d_char *list = xs_list_new();
+    xs *rcpts    = recipient_list(snac, msg, 1);
+    char *p, *v;
+
+    p = rcpts;
+    while (xs_list_iter(&p, &v)) {
+        xs *inbox;
+
+        if ((inbox = get_actor_inbox(snac, v)) != NULL) {
+            /* add the inbox if it's not already there */
+            if (xs_list_in(list, inbox) == -1)
+                list = xs_list_append(list, inbox);
+        }
+    }
+
+    return list;
+}
+
+
 int is_msg_public(snac *snac, char *msg)
 /* checks if a message is public */
 {
@@ -930,27 +952,30 @@ void process_queue(snac *snac)
 
         if (strcmp(type, "output") == 0) {
             int status;
-            char *actor = xs_dict_get(q_item, "actor");
+            char *inbox = xs_dict_get(q_item, "inbox");
             char *msg   = xs_dict_get(q_item, "object");
             int retries = xs_number_get(xs_dict_get(q_item, "retries"));
             xs *payload = NULL;
             int p_size = 0;
 
+            if (xs_is_null(inbox) || xs_is_null(msg))
+                continue;
+
             /* deliver */
-            status = send_to_actor(snac, actor, msg, &payload, &p_size);
+            status = send_to_inbox(snac, inbox, msg, &payload, &p_size);
 
             if (!valid_status(status)) {
                 /* error sending; requeue? */
                 if (retries > queue_retry_max)
-                    snac_log(snac, xs_fmt("process_queue giving up %s %d", actor, status));
+                    snac_log(snac, xs_fmt("process_queue giving up %s %d", inbox, status));
                 else {
                     /* requeue */
-                    enqueue_output(snac, msg, actor, retries + 1);
-                    snac_log(snac, xs_fmt("process_queue requeue %s %d", actor, retries + 1));
+                    enqueue_output(snac, msg, inbox, retries + 1);
+                    snac_log(snac, xs_fmt("process_queue requeue %s %d", inbox, retries + 1));
                 }
             }
             else
-                snac_log(snac, xs_fmt("process_queue sent to actor %s %d", actor, status));
+                snac_log(snac, xs_fmt("process_queue sent to inbox %s %d", inbox, status));
         }
         else
         if (strcmp(type, "input") == 0) {
@@ -1005,10 +1030,10 @@ void process_queue(snac *snac)
 void post(snac *snac, char *msg)
 /* enqueues a message to all its recipients */
 {
-    xs *rcpts = recipient_list(snac, msg, 1);
+    xs *inboxes = inbox_list(snac, msg);
     char *p, *v;
 
-    p = rcpts;
+    p = inboxes;
     while (xs_list_iter(&p, &v)) {
         enqueue_output(snac, msg, v, 0);
     }

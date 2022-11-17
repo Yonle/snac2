@@ -92,7 +92,7 @@ int history_del(snac *snac, char *id);
 d_char *history_list(snac *snac);
 
 void enqueue_input(snac *snac, char *msg, char *req, int retries);
-void enqueue_output(snac *snac, char *msg, char *actor, int retries);
+void enqueue_output(snac *snac, char *msg, char *inbox, int retries);
 void enqueue_email(snac *snac, char *msg, int retries);
 
 d_char *queue(snac *snac);
