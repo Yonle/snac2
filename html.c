@@ -948,26 +948,46 @@ d_char *html_people(snac *snac)
 
 int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char **ctype)
 {
+    char *accept = xs_dict_get(req, "accept");
     int status = 404;
     snac snac;
-    char *uid, *p_path;
+    xs *uid = NULL;
+    char *p_path;
     int cache = 1;
     char *v;
 
     xs *l = xs_split_n(q_path, "/", 2);
+    v = xs_list_get(l, 1);
 
-    uid = xs_list_get(l, 1);
+    if (xs_is_null(v)) {
+        srv_log(xs_fmt("html_get_handler bad query '%s'", q_path));
+        return 404;
+    }
+
+    uid = xs_dup(v);
+
+    /* rss? */
+    if (xs_endswith(uid, ".rss")) {
+        uid = xs_crop(uid, 0, -4);
+        p_path = ".rss";
+    }
+    else
+        p_path = xs_list_get(l, 2);
+
     if (!uid || !user_open(&snac, uid)) {
         /* invalid user */
         srv_log(xs_fmt("html_get_handler bad user %s", uid));
         return 404;
     }
 
+    /* return the RSS if requested by Accept header */
+    if (xs_str_in(accept, "text/xml") != -1 ||
+        xs_str_in(accept, "application/rss+xml") != -1)
+        p_path = ".rss";
+
     /* check if server config variable 'disable_cache' is set */
     if ((v = xs_dict_get(srv_config, "disable_cache")) && xs_type(v) == XSTYPE_TRUE)
         cache = 0;
-
-    p_path = xs_list_get(l, 2);
 
     if (p_path == NULL) {
         /* public timeline */
@@ -1067,6 +1087,69 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
             *b_size = strlen(*body);
             status  = 200;
         }
+    }
+    else
+    if (strcmp(p_path, ".rss") == 0) {
+        /* public timeline in RSS format */
+        d_char *rss;
+        xs *elems = local_list(&snac, 20);
+        char *p, *v;
+
+        rss = xs_fmt(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            "<rss version=\"0.91\">\n"
+            "<channel>\n"
+            "<title>%s</title>\n"
+            "<language>en</language>\n"
+            "<link>%s.rss</link>\n"
+            "<description>%s</description>\n",
+            snac.actor,
+            snac.actor,
+            snac.actor
+        );
+
+        p = elems;
+        while (xs_list_iter(&p, &v)) {
+            xs *msg  = timeline_get(&snac, v);
+            char *id = xs_dict_get(msg, "id");
+
+            if (!xs_startswith(id, snac.actor))
+                continue;
+
+            xs *content = sanitize(xs_dict_get(msg, "content"));
+            xs *title   = xs_dup(content);
+
+            /* escape tags */
+            content = xs_replace_i(content, "<", "&lt;");
+            content = xs_replace_i(content, ">", "&gt;");
+
+            /* cut title in the first tag start */
+            if ((v = strchr(title, '<')) != NULL)
+                *v = '\0';
+
+            if (strlen(title) > 40) {
+                title = xs_crop(title, 0, 40);
+                title = xs_str_cat(title, "...");
+            }
+
+            xs *s = xs_fmt(
+                "<item>\n"
+                "<title>%s</title>\n"
+                "<link>%s</link>\n"
+                "<description>%s</description>\n"
+                "</item>\n",
+                *title ? title : "...", id, content
+            );
+
+            rss = xs_str_cat(rss, s);
+        }
+
+        rss = xs_str_cat(rss, "</channel>\n</rss>\n");
+
+        *body   = rss;
+        *b_size = strlen(rss);
+        *ctype  = "application/rss+xml; charset=utf-8";
+        status  = 200;
     }
     else
         status = 404;
