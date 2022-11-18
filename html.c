@@ -1124,7 +1124,9 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
             content = xs_replace_i(content, ">", "&gt;");
 
             /* cut title in the first tag start */
-            if ((v = strchr(title, '&')) || (v = strchr(title, '<')))
+            if ((v = strchr(title, '<')))
+                *v = '\0';
+            if ((v = strchr(title, '&')))
                 *v = '\0';
 
             if (strlen(title) > 40) {
