@@ -4,7 +4,7 @@
 
 Marking posts and replies as sensitive content is now possible.
 
-On output, use shared inboxes on instances that support it. This reduces bandwidth usage greatly, specially for very popular users with thousands of followers.
+On output, shared inboxes are used on instances that support it. This reduces bandwidth usage greatly, specially for very popular users with thousands of followers.
 
 Much more aggresive HTML sanitization.
 
