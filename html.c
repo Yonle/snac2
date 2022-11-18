@@ -984,9 +984,11 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
     }
 
     /* return the RSS if requested by Accept header */
-    if (xs_str_in(accept, "text/xml") != -1 ||
-        xs_str_in(accept, "application/rss+xml") != -1)
-        p_path = ".rss";
+    if (accept != NULL) {
+        if (xs_str_in(accept, "text/xml") != -1 ||
+            xs_str_in(accept, "application/rss+xml") != -1)
+            p_path = ".rss";
+    }
 
     /* check if server config variable 'disable_cache' is set */
     if ((v = xs_dict_get(srv_config, "disable_cache")) && xs_type(v) == XSTYPE_TRUE)
