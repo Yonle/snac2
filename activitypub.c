@@ -973,7 +973,7 @@ void process_queue(snac *snac)
                 else {
                     /* requeue */
                     enqueue_output(snac, msg, inbox, retries + 1);
-                    snac_log(snac, xs_fmt("process_queue requeue %s %d", inbox, retries + 1));
+                    snac_log(snac, xs_fmt("process_queue requeue %s #%d", inbox, retries + 1));
                 }
             }
         }
@@ -990,7 +990,7 @@ void process_queue(snac *snac)
                 else {
                     /* reenqueue */
                     enqueue_input(snac, msg, req, retries + 1);
-                    snac_log(snac, xs_fmt("process_queue input requeue %d", retries + 1));
+                    snac_log(snac, xs_fmt("process_queue input requeue #%d", retries + 1));
                 }
             }
         }
@@ -1017,7 +1017,7 @@ void process_queue(snac *snac)
                 else {
                     /* requeue */
                     snac_log(snac, xs_fmt(
-                        "process_queue email requeue %d (errno: %d)", retries + 1, errno));
+                        "process_queue email requeue #%d (errno: %d)", retries + 1, errno));
 
                     enqueue_email(snac, msg, retries + 1);
                 }

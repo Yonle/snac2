@@ -594,9 +594,8 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
 
     msg = xs_dict_set(msg, "_snac", md);
 
-    ret = _timeline_write(snac, id, msg, parent, referrer);
-
-    snac_debug(snac, 1, xs_fmt("timeline_add %s %d", id, ret));
+    if ((ret = _timeline_write(snac, id, msg, parent, referrer)))
+        snac_debug(snac, 1, xs_fmt("timeline_add %s", id));
 
     return ret;
 }
