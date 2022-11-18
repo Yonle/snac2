@@ -1,0 +1,24 @@
+Messages in `snac` allow a special subset of Markdown, that includes *emphasized*, **strong** and `monospaced` styles by surrounding text with one asterisk, two asterisks or backquotes, respectively.
+
+Line breaks are output as you write it.
+
+
+Prepending a less-than in a line makes it a quote:
+
+> This is quoted text
+>
+> All angle-prepended lines are grouped in the same blockquote
+
+It also allows preformatted text using three backquotes in a single line:
+
+```
+  /* this is preformatted text */
+
+  struct node {
+      struct node *prev;
+      struct node *next;
+  };
+
+```
+
+URLs like https://en.wikipedia.org/wiki/Main_Page are made clickable.
