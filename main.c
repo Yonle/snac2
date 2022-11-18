@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 
             following_add(&snac, actor, msg);
 
-            enqueue_output(&snac, msg, actor, 0);
+            enqueue_output_by_actor(&snac, msg, actor, 0);
 
             if (dbglevel) {
                 xs *j = xs_json_dumps_pp(msg, 4);
@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
 
             following_del(&snac, url);
 
-            enqueue_output(&snac, msg, url, 0);
+            enqueue_output_by_actor(&snac, msg, url, 0);
 
             snac_log(&snac, xs_fmt("unfollowed actor %s", url));
         }

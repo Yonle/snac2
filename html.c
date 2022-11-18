@@ -1215,11 +1215,10 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
             if (msg != NULL) {
                 /* reload the actor from the message, in may be different */
                 actor = xs_dict_get(msg, "object");
-                xs *inbox = get_actor_inbox(&snac, actor);
 
                 following_add(&snac, actor, msg);
 
-                enqueue_output(&snac, msg, inbox, 0);
+                enqueue_output_by_actor(&snac, msg, actor, 0);
             }
         }
         else
@@ -1232,7 +1231,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
                 following_del(&snac, actor);
 
-                enqueue_output(&snac, msg, actor, 0);
+                enqueue_output_by_actor(&snac, msg, actor, 0);
 
                 snac_log(&snac, xs_fmt("unfollowed actor %s", actor));
             }

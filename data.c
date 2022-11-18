@@ -1064,7 +1064,7 @@ void enqueue_input(snac *snac, char *msg, char *req, int retries)
 
 
 void enqueue_output(snac *snac, char *msg, char *inbox, int retries)
-/* enqueues an output message for an actor */
+/* enqueues an output message to an inbox */
 {
     if (xs_startswith(inbox, snac->actor)) {
         snac_debug(snac, 1, xs_str_new("refusing enqueue to myself"));
@@ -1085,6 +1085,18 @@ void enqueue_output(snac *snac, char *msg, char *inbox, int retries)
     _enqueue_put(fn, qmsg);
 
     snac_debug(snac, 1, xs_fmt("enqueue_output %s %s %d", inbox, fn, retries));
+}
+
+
+void enqueue_output_by_actor(snac *snac, char *msg, char *actor, int retries)
+/* enqueues an output message for an actor */
+{
+    xs *inbox = get_actor_inbox(snac, actor);
+
+    if (!xs_is_null(inbox))
+        enqueue_output(snac, msg, inbox, retries);
+    else
+        snac_log(snac, xs_fmt("enqueue_output_by_actor cannot get inbox %s", actor));
 }
 
 
