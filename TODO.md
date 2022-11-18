@@ -12,8 +12,6 @@ Implement HTTP caches (If-None-Match / ETag).
 
 The 'history' pages are just monthly HTML snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you e.g. intentionally delete a post because it will remain there in the history forever. If you activate local timeline purging, purged entries will remain in the history as 'ghosts', which may or may not be what the user wants.
 
-Add an RSS to the local timeline.
-
 Implement hashtags. They are not very useful, as they can only be implemented as instance-only (not propagated), but it may help classifiying your own posts.
 
 Implement bulleted lists. Mastodon is crap and won't show them, but other implementations (Friendica, Pleroma) will do.
@@ -175,3 +173,5 @@ Add a 'Hide' button, to stop showing a post and its children (2022-11-04T09:45:3
 Add a purge timeout also for the local timeline (2022-11-12T08:32:56+0100).
 
 Add a switch for sensitive posts (2022-11-16T12:17:50+0100).
+
+Add an RSS to the local timeline (2022-11-18T11:43:54+0100).
