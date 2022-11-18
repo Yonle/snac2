@@ -964,6 +964,8 @@ void process_queue(snac *snac)
             /* deliver */
             status = send_to_inbox(snac, inbox, msg, &payload, &p_size);
 
+            snac_log(snac, xs_fmt("process_queue sent to inbox %s %d", inbox, status));
+
             if (!valid_status(status)) {
                 /* error sending; requeue? */
                 if (retries > queue_retry_max)
@@ -974,8 +976,6 @@ void process_queue(snac *snac)
                     snac_log(snac, xs_fmt("process_queue requeue %s %d", inbox, retries + 1));
                 }
             }
-            else
-                snac_log(snac, xs_fmt("process_queue sent to inbox %s %d", inbox, status));
         }
         else
         if (strcmp(type, "input") == 0) {
