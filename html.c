@@ -969,7 +969,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
 
     uid = xs_dup(v);
 
-    /* rss? */
+    /* rss extension? */
     if (xs_endswith(uid, ".rss")) {
         uid = xs_crop(uid, 0, -4);
         p_path = ".rss";
@@ -1155,6 +1155,8 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         *b_size = strlen(rss);
         *ctype  = "application/rss+xml; charset=utf-8";
         status  = 200;
+
+        snac_debug(&snac, 1, xs_fmt("serving RSS"));
     }
     else
         status = 404;
