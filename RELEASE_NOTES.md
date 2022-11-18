@@ -6,6 +6,8 @@ Marking posts and replies as sensitive content is now possible.
 
 On output, shared inboxes are used on instances that support it. This reduces bandwidth usage greatly, specially for very popular users with thousands of followers.
 
+Added RSS output support for the user posts.
+
 Much more aggresive HTML sanitization.
 
 **disabled by now** On OpenBSD, use the `unveil()` function.
