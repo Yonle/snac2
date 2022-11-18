@@ -28,10 +28,6 @@ int server_get_handler(d_char *req, char *q_path,
 /* basic server services */
 {
     int status = 0;
-    char *acpt = xs_dict_get(req, "accept");
-
-    if (acpt == NULL)
-        return 0;
 
     /* is it the server root? */
     if (*q_path == '\0') {
