@@ -6,11 +6,9 @@ Marking posts and replies as sensitive content is now possible.
 
 On output, shared inboxes are used on instances that support it. This reduces bandwidth usage greatly, specially for very popular users with thousands of followers.
 
-Added RSS output support for the user posts.
+Added RSS output support for the user posts (by adding .rss to the actor URL or by requesting the actor with an Accept HTTP header of `text/xml` or `application/rss+xml`).
 
 Much more aggresive HTML sanitization.
-
-**disabled by now** On OpenBSD, use the `unveil()` function.
 
 ## 2.10
 
