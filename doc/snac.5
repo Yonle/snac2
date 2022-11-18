@@ -45,13 +45,13 @@ Lines starting with >.
 Strings in the format @user@host are requested using the Webfinger
 protocol and converted to links and mentions if something reasonable
 is found.
-.It Emoticons / Smileys
+.It Emoticons / Smileys / Silly Symbols
 The following traditional ASCII emoticons or special strings are
 converted to related emojis:
 .Bd -literal
-:-) :-D X-D ;-) B-) :-( :-* <3
-:-/ 8-o %-) :_( :-| :facepalm: :shrug:
-:eyeroll: :beer: :beers: :munch: :thumb:
+:-) :-D X-D ;-) B-) :-( :-* <3 :-/ 8-o
+%-) :_( :-| :facepalm: :shrug: :eyeroll:
+:beer: :beers: :munch: :thumb:
 .Ed
 .El
 .Pp
@@ -60,7 +60,7 @@ HTML tags are not filtered on input.
 .Ss Accepted HTML
 All HTML tags in entries are neutered except the following ones:
 .Bd -literal
-a p br img blockquote ul li
+a p br blockquote ul li
 span i b pre code em strong
 .Ed
 .Pp
