@@ -1098,19 +1098,26 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         /* public timeline in RSS format */
         d_char *rss;
         xs *elems = local_list(&snac, 20);
+        xs *bio   = not_really_markdown(xs_dict_get(snac.config, "bio"));
         char *p, *v;
+
+        /* escape tags */
+        bio = xs_replace_i(bio, "<", "&lt;");
+        bio = xs_replace_i(bio, ">", "&gt;");
 
         rss = xs_fmt(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             "<rss version=\"0.91\">\n"
             "<channel>\n"
-            "<title>%s</title>\n"
+            "<title>%s (@%s@%s)</title>\n"
             "<language>en</language>\n"
             "<link>%s.rss</link>\n"
             "<description>%s</description>\n",
+            xs_dict_get(snac.config, "name"),
+            snac.uid,
+            xs_dict_get(srv_config, "host"),
             snac.actor,
-            snac.actor,
-            snac.actor
+            bio
         );
 
         p = elems;
@@ -1122,22 +1129,11 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
                 continue;
 
             xs *content = sanitize(xs_dict_get(msg, "content"));
-            xs *title   = xs_dup(content);
+            char *title = xs_dict_get(msg, "published");
 
             /* escape tags */
             content = xs_replace_i(content, "<", "&lt;");
             content = xs_replace_i(content, ">", "&gt;");
-
-            /* cut title in the first tag start */
-            if ((v = strchr(title, '<')))
-                *v = '\0';
-            if ((v = strchr(title, '&')))
-                *v = '\0';
-
-            if (strlen(title) > 40) {
-                title = xs_crop(title, 0, 40);
-                title = xs_str_cat(title, "...");
-            }
 
             xs *s = xs_fmt(
                 "<item>\n"
@@ -1145,7 +1141,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
                 "<link>%s</link>\n"
                 "<description>%s</description>\n"
                 "</item>\n",
-                *title ? title : "...", id, content
+                xs_is_null(title) ? "..." : title, id, content
             );
 
             rss = xs_str_cat(rss, s);
