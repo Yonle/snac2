@@ -1136,6 +1136,10 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
             content = xs_replace_i(content, "<", "&lt;");
             content = xs_replace_i(content, ">", "&gt;");
 
+            /* add the post link */
+            xs *l = xs_fmt("<p><a href=\"%s\">%s</a><p>", id, id);
+            content = xs_str_cat(content, l);
+
             if (strlen(title) > 40)
                 title = xs_crop(title, 0, i = 40);
 
