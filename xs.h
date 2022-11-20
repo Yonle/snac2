@@ -66,6 +66,11 @@ d_char *xs_list_append_m(d_char *list, const char *mem, int dsz);
 int xs_list_iter(char **list, char **value);
 int xs_list_len(char *list);
 char *xs_list_get(char *list, int num);
+d_char *xs_list_del(d_char *list, int num);
+d_char *xs_list_insert(d_char *list, int num, const char *data);
+d_char *xs_list_insert_sorted(d_char *list, const char *str);
+d_char *xs_list_set(d_char *list, int num, const char *data);
+d_char *xs_list_pop(d_char *list, char **data);
 int xs_list_in(char *list, const char *val);
 d_char *xs_join(char *list, const char *sep);
 d_char *xs_split_n(const char *str, const char *sep, int times);
@@ -464,16 +469,22 @@ d_char *xs_list_new(void)
 }
 
 
+d_char *_xs_list_write_litem(d_char *list, int offset, const char *mem, int dsz)
+/* writes a list item */
+{
+    char c = XSTYPE_LITEM;
+
+    list = xs_insert_m(list, offset,     &c,  1);
+    list = xs_insert_m(list, offset + 1, mem, dsz);
+
+    return list;
+}
+
+
 d_char *xs_list_append_m(d_char *list, const char *mem, int dsz)
 /* adds a memory block to the list */
 {
-    char c = XSTYPE_LITEM;
-    int lsz = xs_size(list);
-
-    list = xs_insert_m(list, lsz - 1, &c, 1);
-    list = xs_insert_m(list, lsz, mem, dsz);
-
-    return list;
+    return _xs_list_write_litem(list, xs_size(list) - 1, mem, dsz);
 }
 
 
@@ -543,6 +554,74 @@ char *xs_list_get(char *list, int num)
     }
 
     return NULL;
+}
+
+
+d_char *xs_list_del(d_char *list, int num)
+/* deletes element #num */
+{
+    char *v;
+
+    if ((v = xs_list_get(list, num)) != NULL)
+        list = xs_collapse(list, v - 1 - list, xs_size(v - 1));
+
+    return list;
+}
+
+
+d_char *xs_list_insert(d_char *list, int num, const char *data)
+/* inserts an element at #num position */
+{
+    char *v;
+    int offset;
+
+    if ((v = xs_list_get(list, num)) != NULL)
+        offset = v - list;
+    else
+        offset = xs_size(list);
+
+    return _xs_list_write_litem(list, offset - 1, data, xs_size(data));
+}
+
+
+d_char *xs_list_insert_sorted(d_char *list, const char *str)
+/* inserts a string in the list in its ordered position */
+{
+    char *p, *v;
+    int offset = xs_size(list);
+
+    p = list;
+    while (xs_list_iter(&p, &v)) {
+        /* if this element is greater or equal, insert here */
+        if (strcmp(v, str) >= 0) {
+            offset = v - list;
+            break;
+        }
+    }
+
+    return _xs_list_write_litem(list, offset - 1, str, xs_size(str));
+}
+
+
+d_char *xs_list_set(d_char *list, int num, const char *data)
+/* sets the element at #num position */
+{
+    list = xs_list_del(list, num);
+    list = xs_list_insert(list, num, data);
+
+    return list;
+}
+
+
+d_char *xs_list_pop(d_char *list, char **data)
+/* pops the last element from the list */
+{
+    if ((*data = xs_list_get(list, -1)) != NULL) {
+        *data = xs_dup(*data);
+        list = xs_list_del(list, -1);
+    }
+
+    return list;
 }
 
 
