@@ -1129,11 +1129,24 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
                 continue;
 
             xs *content = sanitize(xs_dict_get(msg, "content"));
-            char *title = xs_dict_get(msg, "published");
+            xs *title   = xs_dup(content);
+            int i = -1;
 
             /* escape tags */
             content = xs_replace_i(content, "<", "&lt;");
             content = xs_replace_i(content, ">", "&gt;");
+
+            if (strlen(title) > 40)
+                title[i = 40] = '\0';
+
+            if ((v = strchr(title, '<')))
+                title[i = (v - title)] = '\0';
+
+            if ((v = strchr(title, '&')))
+                title[i = (v - title)] = '\0';
+
+            if (i != -1)
+                title = xs_str_cat(xs_strip(title), "...");
 
             xs *s = xs_fmt(
                 "<item>\n"
@@ -1141,7 +1154,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
                 "<link>%s</link>\n"
                 "<description>%s</description>\n"
                 "</item>\n",
-                xs_is_null(title) ? "..." : title, id, content
+                title, id, content
             );
 
             rss = xs_str_cat(rss, s);
