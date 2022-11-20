@@ -1129,8 +1129,8 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
                 continue;
 
             xs *content = sanitize(xs_dict_get(msg, "content"));
-            xs *title   = xs_dup(content);
-            int i = -1;
+            xs *title   = xs_str_new(NULL);
+            int i;
 
             /* add the post link */
             xs *l = xs_fmt("<p><a href=\"%s\">%s</a><p>", id, id);
@@ -1140,21 +1140,12 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
             content = xs_replace_i(content, "<", "&lt;");
             content = xs_replace_i(content, ">", "&gt;");
 
-            if (strlen(title) > 40)
-                title = xs_crop(title, 0, i = 40);
-
-            if ((v = strchr(title, '<')))
-                title = xs_crop(title, 0, i = (v - title));
-
-            if ((v = strchr(title, '&')))
-                title = xs_crop(title, 0, i = (v - title));
-
-            if (i != -1)
-                title = xs_str_cat(xs_strip(title), "...");
+            for (i = 0; content[i] && content[i] != '<' && content[i] != '&' && i < 40; i++)
+                title = xs_append_m(title, &content[i], 1);
 
             xs *s = xs_fmt(
                 "<item>\n"
-                "<title>%s</title>\n"
+                "<title>%s...</title>\n"
                 "<link>%s</link>\n"
                 "<description>%s</description>\n"
                 "</item>\n",
