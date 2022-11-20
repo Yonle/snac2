@@ -1137,13 +1137,13 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
             content = xs_replace_i(content, ">", "&gt;");
 
             if (strlen(title) > 40)
-                title[i = 40] = '\0';
+                title = xs_crop(title, 0, i = 40);
 
             if ((v = strchr(title, '<')))
-                title[i = (v - title)] = '\0';
+                title = xs_crop(title, 0, i = (v - title));
 
             if ((v = strchr(title, '&')))
-                title[i = (v - title)] = '\0';
+                title = xs_crop(title, 0, i = (v - title));
 
             if (i != -1)
                 title = xs_str_cat(xs_strip(title), "...");
