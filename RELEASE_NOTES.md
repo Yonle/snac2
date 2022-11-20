@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2.12
+
+Fixed some bugs triggered when a GET query does not have an `Accept:` header.
+
+RSS feeds are a bit less ugly.
+
 ## 2.11
 
 Marking posts and replies as sensitive content is now possible.
