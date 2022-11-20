@@ -445,7 +445,7 @@ int _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referre
                 /* is parent hidden? */
                 if ((v = xs_dict_get(v, "hidden")) && xs_type(v) == XSTYPE_TRUE) {
                     snac_debug(snac, 1,
-                        xs_fmt("_timeline_write dropping child of hidden parent %s", id));
+                        xs_fmt("_timeline_write dropping due to hidden parent %s (%s)", id, parent));
 
                     return 0;
                 }
