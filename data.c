@@ -662,17 +662,26 @@ int timeline_hide(snac *snac, char *id, int hide)
         xs *s1   = xs_readall(f);
         xs *msg  = xs_json_loads(s1);
         xs *meta = xs_dup(xs_dict_get(msg, "_snac"));
+        xs *hdn  = xs_val_new(hide ? XSTYPE_TRUE : XSTYPE_FALSE);
 
         fclose(f);
 
-        meta = xs_dict_set(meta, "hidden", xs_val_new(hide ? XSTYPE_TRUE : XSTYPE_FALSE));
+        meta = xs_dict_set(meta, "hidden", hdn);
         msg  = xs_dict_set(msg,  "_snac",  meta);
 
         if ((f = fopen(fn, "w")) != NULL) {
+            char *p, *v;
             xs *j1 = xs_json_dumps_pp(msg, 4);
 
             fwrite(j1, strlen(j1), 1, f);
             fclose(f);
+
+            snac_debug(snac, 1, xs_fmt("timeline_hide %d %s", hide, id));
+
+            /* now hide the children */
+            p = xs_dict_get(meta, "children");
+            while (xs_list_iter(&p, &v))
+                timeline_hide(snac, v, hide);
 
             ret = 1;
         }
