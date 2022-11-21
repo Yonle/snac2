@@ -663,14 +663,18 @@ int timeline_hide(snac *snac, char *id, int hide)
         xs *msg  = xs_json_loads(s1);
         xs *meta = xs_dup(xs_dict_get(msg, "_snac"));
         xs *hdn  = xs_val_new(hide ? XSTYPE_TRUE : XSTYPE_FALSE);
+        char *p, *v;
 
         fclose(f);
+
+        /* if it's already in this hidden state, we're done */
+        if ((v = xs_dict_get(meta, "hidden")) && xs_type(v) == xs_type(hdn))
+            return ret;
 
         meta = xs_dict_set(meta, "hidden", hdn);
         msg  = xs_dict_set(msg,  "_snac",  meta);
 
         if ((f = fopen(fn, "w")) != NULL) {
-            char *p, *v;
             xs *j1 = xs_json_dumps_pp(msg, 4);
 
             fwrite(j1, strlen(j1), 1, f);
