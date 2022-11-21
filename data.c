@@ -561,7 +561,7 @@ int _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referre
                 break;
 
             if (--max_levels == 0) {
-                snac_log(snac, xs_dup("_timeline_write maximum grampa levels reached"));
+                snac_debug(snac, 1, xs_dup("_timeline_write maximum grampa levels reached"));
                 break;
             }
         }
