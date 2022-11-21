@@ -517,6 +517,8 @@ int _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referre
         /* now iterate all parents up, just renaming the files */
         xs *grampa = xs_dup(xs_dict_get(meta, "parent"));
 
+        int max_levels = 10;
+
         while (!xs_is_null(grampa)) {
             xs *gofn = _timeline_find_fn(snac, grampa);
 
@@ -554,6 +556,13 @@ int _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referre
 
                 xs_free(grampa);
                 grampa = xs_dup(p);
+            }
+            else
+                break;
+
+            if (--max_levels == 0) {
+                snac_log(snac, xs_dup("_timeline_write maximum grampa levels reached"));
+                break;
             }
         }
     }
