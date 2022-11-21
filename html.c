@@ -773,10 +773,12 @@ d_char *html_timeline(snac *snac, char *list, int local)
 /* returns the HTML for the timeline */
 {
     d_char *s = xs_str_new(NULL);
-    xs_set *seen = xs_set_new(4096);
+    xs_set seen;
     char *v;
     double t = ftime();
     int num = 0;
+
+    xs_set_init(&seen);
 
     s = html_user_header(snac, s, local);
 
@@ -789,7 +791,7 @@ d_char *html_timeline(snac *snac, char *list, int local)
     while (xs_list_iter(&list, &v)) {
         xs *msg = timeline_get(snac, v);
 
-        s = html_entry(snac, s, msg, seen, local, 0, &num);
+        s = html_entry(snac, s, msg, &seen, local, 0, &num);
     }
 
     s = xs_str_cat(s, "</div>\n");
@@ -828,7 +830,7 @@ d_char *html_timeline(snac *snac, char *list, int local)
 
     s = xs_str_cat(s, "</body>\n</html>\n");
 
-    xs_set_free(seen);
+    xs_set_free(&seen);
 
     return s;
 }

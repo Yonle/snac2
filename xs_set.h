@@ -7,42 +7,40 @@
 typedef struct _xs_set {
     int elems;              /* number of hash entries */
     int used;               /* number of used hash entries */
+    int *hash;              /* hashed offsets */
     d_char *list;           /* list of stored data */
-    int hash[];             /* hashed offsets */
 } xs_set;
 
-xs_set *xs_set_new(int elems);
+void xs_set_init(xs_set *s);
 void xs_set_free(xs_set *s);
 int xs_set_add(xs_set *s, const char *data);
 
 
 #ifdef XS_IMPLEMENTATION
 
-xs_set *xs_set_new(int elems)
-/* creates a new set with a maximum of size hashed data */
+
+void xs_set_init(xs_set *s)
+/* initializes a set */
 {
-    int sz = sizeof(struct _xs_set) + sizeof(int) * elems;
-    xs_set *s = xs_realloc(NULL, sz);
+    /* arbitrary default */
+    s->elems = 256;
+    s->used  = 0;
+    s->hash  = xs_realloc(NULL, s->elems * sizeof(int));
+    s->list  = xs_list_new();
 
-    memset(s, '\0', sz);
-
-    /* initialize */
-    s->elems  = elems;
-    s->list   = xs_list_new();
-
-    return s;
+    memset(s->hash, '\0', s->elems * sizeof(int));
 }
 
 
 void xs_set_free(xs_set *s)
 /* frees a set */
 {
-    xs_free(s->list);
-    xs_free(s);
+    s->hash = xs_free(s->hash);
+    s->list = xs_free(s->list);
 }
 
 
-unsigned int _xs_set_hash(const char *data, int size)
+static unsigned int _calc_hash(const char *data, int size)
 {
     unsigned int hash = 0x666;
     int n;
@@ -56,14 +54,12 @@ unsigned int _xs_set_hash(const char *data, int size)
 }
 
 
-int xs_set_add(xs_set *s, const char *data)
-/* adds the data to the set */
-/* returns: 1 if added, 0 if already there, -1 if it's full */
+static int _store_hash(xs_set *s, const char *data, int value)
 {
     unsigned int hash, i;
     int sz = xs_size(data);
 
-    hash = _xs_set_hash(data, sz);
+    hash = _calc_hash(data, sz);
 
     while (s->hash[(i = hash % s->elems)]) {
         /* get the pointer to the stored data */
@@ -77,19 +73,43 @@ int xs_set_add(xs_set *s, const char *data)
         hash++;
     }
 
-    /* is it full? fail */
-    if (s->used == s->elems / 2)
-        return -1;
-
-    /* store the position */
-    s->hash[i] = xs_size(s->list);
-
-    /* add the data */
-    s->list = xs_list_append_m(s->list, data, sz);
+    /* store the new value */
+    s->hash[i] = value;
 
     s->used++;
 
     return 1;
+}
+
+
+int xs_set_add(xs_set *s, const char *data)
+/* adds the data to the set */
+/* returns: 1 if added, 0 if already there */
+{
+    /* is it 'full'? */
+    if (s->used >= s->elems / 2) {
+        char *p, *v;
+
+        /* expand! */
+        s->elems *= 2;
+        s->used  = 0;
+        s->hash  = xs_realloc(s->hash, s->elems * sizeof(int));
+
+        memset(s->hash, '\0', s->elems * sizeof(int));
+
+        /* add the list elements back */
+        p = s->list;
+        while (xs_list_iter(&p, &v))
+            _store_hash(s, v, v - s->list);
+    }
+
+    int ret = _store_hash(s, data, xs_size(s->list));
+
+    /* if it's new, add the data */
+    if (ret)
+        s->list = xs_list_append_m(s->list, data, xs_size(data));
+
+    return ret;
 }
 
 #endif /* XS_IMPLEMENTATION */
