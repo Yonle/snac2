@@ -584,6 +584,9 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
     /* extract the tags */
     process_tags(fc2, &fc1, &tag);
 
+    if (tag == NULL)
+        tag = xs_list_new();
+
     if (in_reply_to != NULL) {
         xs *p_msg = NULL;
 
@@ -592,11 +595,26 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
 
         if ((p_msg = timeline_find(snac, in_reply_to)) != NULL) {
             /* add this author as recipient */
-            char *v;
+            char *a, *v;
 
-            if ((v = xs_dict_get(p_msg, "attributedTo")) && xs_list_in(to, v) == -1)
-                to = xs_list_append(to, v);
+            if ((a = xs_dict_get(p_msg, "attributedTo")) && xs_list_in(to, a) == -1)
+                to = xs_list_append(to, a);
 
+            /* add this author to the tag list as a mention */
+            xs *t_href;
+            xs *t_name;
+
+            if (!xs_is_null(a) && valid_status(webfinger_request(a, &t_href, &t_name))) {
+                xs *t = xs_dict_new();
+
+                t = xs_dict_append(t, "type", "Mention");
+                t = xs_dict_append(t, "href", t_href);
+                t = xs_dict_append(t, "name", t_name);
+
+                tag = xs_list_append(tag, t);
+            }
+
+            /* get the context, if there is one */
             if ((v = xs_dict_get(p_msg, "context")))
                 ctxt = xs_dup(v);
 
@@ -634,9 +652,6 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
             atls = xs_list_append(atls, d);
         }
     }
-
-    if (tag == NULL)
-        tag = xs_list_new();
 
     if (ctxt == NULL)
         ctxt = xs_fmt("%s#ctxt", id);
