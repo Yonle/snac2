@@ -517,7 +517,7 @@ int _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referre
         /* now iterate all parents up, just renaming the files */
         xs *grampa = xs_dup(xs_dict_get(meta, "parent"));
 
-        int max_levels = 10;
+        int max_levels = 20;
 
         while (!xs_is_null(grampa)) {
             xs *gofn = _timeline_find_fn(snac, grampa);
