@@ -243,6 +243,8 @@ int object_get(const char *id, d_char **obj, const char *type)
     else
         *obj = NULL;
 
+    srv_debug(2, xs_fmt("object_get %s %d", id, status));
+
     return status;
 }
 
@@ -264,6 +266,8 @@ int object_add(const char *id, d_char *obj)
     }
     else
         status = 500;
+
+    srv_debug(2, xs_fmt("object_add %s %d", id, status));
 
     return status;
 }
@@ -938,57 +942,43 @@ d_char *_actor_fn(snac *snac, char *actor)
 }
 
 
-int actor_add(snac *snac, char *actor, char *msg)
+int actor_add(snac *snac, const char *actor, d_char *msg)
 /* adds an actor */
 {
-    int ret = 201; /* created */
-    xs *fn = _actor_fn(snac, actor);
-    FILE *f;
-
-    if ((f = fopen(fn, "w")) != NULL) {
-        xs *j = xs_json_dumps_pp(msg, 4);
-
-        fwrite(j, 1, strlen(j), f);
-        fclose(f);
-    }
-    else
-        ret = 500;
-
-    snac_debug(snac, 2, xs_fmt("actor_add %s %s", actor, fn));
-
-//    object_add(actor, msg);
-
-    return ret;
+    return object_add(actor, msg);
 }
 
 
-int actor_get(snac *snac, char *actor, d_char **data)
+int actor_get(snac *snac, const char *actor, d_char **data)
 /* returns an already downloaded actor */
 {
-    xs *fn = _actor_fn(snac, actor);
-    double t;
-    double max_time;
-    int status;
-    FILE *f;
+    int status = 200;
+    char *d;
 
     if (strcmp(actor, snac->actor) == 0) {
+        /* this actor */
         if (data)
             *data = msg_actor(snac);
 
-        return 200;
+        return status;
     }
 
-    t = mtime(fn);
+    /* read the object */
+    if (!valid_status(status = object_get(actor, &d, "Person")))
+        return status;
 
-    /* no mtime? there is nothing here */
-    if (t == 0.0)
-        return 404;
+    if (data)
+        *data = d;
+
+    xs *fn = _object_fn_by_id(actor);
+    double max_time;
 
     /* maximum time for the actor data to be considered stale */
     max_time = 3600.0 * 36.0;
 
-    if (t + max_time < (double) time(NULL)) {
+    if (mtime(fn) + max_time < (double) time(NULL)) {
         /* actor data exists but also stinks */
+        FILE *f;
 
         if ((f = fopen(fn, "a")) != NULL) {
             /* write a blank at the end to 'touch' the file */
@@ -997,22 +987,6 @@ int actor_get(snac *snac, char *actor, d_char **data)
         }
 
         status = 205; /* "205: Reset Content" "110: Response Is Stale" */
-    }
-    else {
-        /* it's still valid */
-        status = 200;
-    }
-
-    if (data) {
-        if ((f = fopen(fn, "r")) != NULL) {
-            xs *j = xs_readall(f);
-
-            fclose(f);
-
-            *data = xs_json_loads(j);
-        }
-        else
-            status = 500;
     }
 
     return status;
