@@ -10,8 +10,9 @@
 #include "snac.h"
 
 #include <time.h>
-#include <glob.h>
 #include <sys/stat.h>
+#include <sys/file.h>
+#include <fcntl.h>
 
 double db_layout = 2.1;
 
@@ -218,6 +219,8 @@ int object_get(const char *id, d_char **obj, const char *type)
     FILE *f;
 
     if ((f = fopen(fn, "r")) != NULL) {
+        flock(fileno(f), LOCK_SH);
+
         xs *j = xs_readall(f);
         fclose(f);
 
@@ -252,6 +255,8 @@ int object_add(const char *id, d_char *obj)
     FILE *f;
 
     if ((f = fopen(fn, "w")) != NULL) {
+        flock(fileno(f), LOCK_EX);
+
         xs *j = xs_json_dumps_pp(obj, 4);
 
         fwrite(j, strlen(j), 1, f);
