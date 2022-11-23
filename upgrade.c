@@ -40,6 +40,40 @@ int db_upgrade(d_char **error)
 
             nf = 2.1;
         }
+        else
+        if (f < 2.2) {
+            xs *users = user_list();
+            char *p, *v;
+
+            p = users;
+            while (xs_list_iter(&p, &v)) {
+                snac snac;
+
+                if (user_open(&snac, v)) {
+                    xs *spec = xs_fmt("%s/actors/" "*.json", snac.basedir);
+                    xs *list = xs_glob(spec, 0, 0);
+                    char *g, *fn;
+
+                    g = list;
+                    while (xs_list_iter(&g, &fn)) {
+                        xs *l   = xs_split(fn, "/");
+                        char *b = xs_list_get(l, -1);
+                        xs *dir = xs_fmt("%s/object/%c%c", srv_basedir, b[0], b[1]);
+                        xs *nfn = xs_fmt("%s/%s", dir, b);
+
+                        mkdir(dir, 0755);
+                        rename(fn, nfn);
+                    }
+
+                    xs *odir = xs_fmt("%s/actors", snac.basedir);
+                    rmdir(odir);
+
+                    user_free(&snac);
+                }
+            }
+
+            nf = 2.2;
+        }
 
         if (f < nf) {
             f          = nf;

@@ -14,7 +14,7 @@
 #include <sys/file.h>
 #include <fcntl.h>
 
-double db_layout = 2.1;
+double db_layout = 2.2;
 
 
 int db_upgrade(d_char **error);
@@ -195,7 +195,7 @@ double mtime(char *fn)
 
 d_char *_object_fn_by_md5(const char *md5)
 {
-    xs *bfn = xs_fmt("%s/object/%c%c/", srv_basedir, md5[0], md5[1]);
+    xs *bfn = xs_fmt("%s/object/%c%c", srv_basedir, md5[0], md5[1]);
 
     mkdir(bfn, 0755);
 
