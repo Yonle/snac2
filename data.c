@@ -288,6 +288,25 @@ int object_del(const char *id)
 }
 
 
+int list_add_md5(const char *fn, const char *md5)
+/* adds an md5 to a list */
+{
+    int status = 200;
+    FILE *f;
+
+    if ((f = fopen(fn, "a")) != NULL) {
+        flock(fileno(f), LOCK_EX);
+
+        fprintf(f, "%s\n", md5);
+        fclose(f);
+    }
+    else
+        status = 500;
+
+    return status;
+}
+
+
 d_char *_follower_fn(snac *snac, char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
