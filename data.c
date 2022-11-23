@@ -1320,11 +1320,16 @@ int db_upgrade(d_char **error)
     int changed = 0;
     double f = 0.0;
 
-    do {
+    for (;;) {
         char *layout = xs_dict_get(srv_config, "layout");
         double nf;
 
         f = nf = xs_number_get(layout);
+
+        if (!(f < db_layout))
+            break;
+
+        srv_log(xs_fmt("db_upgrade %1.1lf < %1.1lf", f, db_layout));
 
         if (f < 2.0) {
             *error = xs_fmt("ERROR: unsupported old disk layout %1.1lf\n", f);
@@ -1344,13 +1349,12 @@ int db_upgrade(d_char **error)
             xs *nv     = xs_number_new(f);
             srv_config = xs_dict_set(srv_config, "layout", nv);
 
-            srv_log(xs_fmt("upgraded db layout to version %1.1lf", f));
+            srv_log(xs_fmt("db_upgrade converted to version %1.1lf", f));
             changed++;
         }
         else
             break;
-
-    } while (f < db_layout);
+    }
 
     if (f > db_layout) {
         *error = xs_fmt("ERROR: unknown future version %lf\n", f);
