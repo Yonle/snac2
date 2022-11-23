@@ -324,17 +324,18 @@ int listfile_del_md5(const char *fn, const char *md5)
         flock(fileno(i), LOCK_EX);
 
         xs *nfn = xs_fmt("%s.new", fn);
-        char line[32 + 1];
+        char line[256];
 
         if ((o = fopen(nfn, "w")) != NULL) {
             while (fgets(line, sizeof(line), i) != NULL) {
+                line[32] = '\0';
                 if (memcmp(line, md5, 32) != 0)
-                    fwrite(line, sizeof(line), 1, o);
+                    fprintf(o, "%s\n", line);
             }
 
             fclose(o);
 
-            xs *ofn = xs_fmt("%s.old", fn);
+            xs *ofn = xs_fmt("%s.bak", fn);
 
             link(fn, ofn);
             rename(nfn, fn);
@@ -354,14 +355,14 @@ int listfile_del_md5(const char *fn, const char *md5)
 d_char *listfile_get_n(const char *fn, int max)
 /* returns a list */
 {
-    xs *list = NULL;
+    d_char *list = NULL;
     FILE *f;
     int n = 0;
 
     if ((f = fopen(fn, "r")) != NULL) {
         flock(fileno(f), LOCK_SH);
 
-        char line[32 + 1];
+        char line[256];
         list = xs_list_new();
 
         while (n < max && fgets(line, sizeof(line), f) != NULL) {
@@ -380,25 +381,25 @@ d_char *listfile_get_n(const char *fn, int max)
 d_char *listfile_get_inv_n(const char *fn, int max)
 /* returns a list, inversely */
 {
-    xs *list = NULL;
+    d_char *list = NULL;
     FILE *f;
     int n = 0;
 
     if ((f = fopen(fn, "r")) != NULL) {
         flock(fileno(f), LOCK_SH);
 
-        char line[32 + 1];
+        char line[256];
         list = xs_list_new();
 
         /* move to the end minus one entry */
-        if (!fseek(f, 0, SEEK_END) && !fseek(f, -sizeof(line), SEEK_SET)) {
+        if (!fseek(f, 0, SEEK_END) && !fseek(f, -33, SEEK_CUR)) {
             while (n < max && fgets(line, sizeof(line), f) != NULL) {
                 line[32] = '\0';
                 list = xs_list_append(list, line);
                 n++;
 
                 /* move backwards 2 entries */
-                if (fseek(f, -sizeof(line) * 2, SEEK_SET) == -1)
+                if (fseek(f, -66, SEEK_CUR) == -1)
                     break;
             }
         }
