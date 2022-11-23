@@ -295,7 +295,7 @@ int object_del(const char *id)
 }
 
 
-int list_add_md5(const char *fn, const char *md5)
+int listfile_add_md5(const char *fn, const char *md5)
 /* adds an md5 to a list */
 {
     int status = 200;
@@ -314,7 +314,7 @@ int list_add_md5(const char *fn, const char *md5)
 }
 
 
-int list_del_md5(const char *fn, const char *md5)
+int listfile_del_md5(const char *fn, const char *md5)
 /* deletes an md5 from a list */
 {
     int status = 404;
@@ -324,10 +324,9 @@ int list_del_md5(const char *fn, const char *md5)
         flock(fileno(i), LOCK_EX);
 
         xs *nfn = xs_fmt("%s.new", fn);
+        char line[32 + 1];
 
         if ((o = fopen(nfn, "w")) != NULL) {
-            char line[32 + 1];
-
             while (fgets(line, sizeof(line), i) != NULL) {
                 if (memcmp(line, md5, 32) != 0)
                     fwrite(line, sizeof(line), 1, o);
@@ -349,6 +348,65 @@ int list_del_md5(const char *fn, const char *md5)
         status = 500;
 
     return status;
+}
+
+
+d_char *listfile_get_n(const char *fn, int max)
+/* returns a list */
+{
+    xs *list = NULL;
+    FILE *f;
+    int n = 0;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        flock(fileno(f), LOCK_SH);
+
+        char line[32 + 1];
+        list = xs_list_new();
+
+        while (n < max && fgets(line, sizeof(line), f) != NULL) {
+            line[32] = '\0';
+            list = xs_list_append(list, line);
+            n++;
+        }
+
+        fclose(f);
+    }
+
+    return list;
+}
+
+
+d_char *listfile_get_inv_n(const char *fn, int max)
+/* returns a list, inversely */
+{
+    xs *list = NULL;
+    FILE *f;
+    int n = 0;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        flock(fileno(f), LOCK_SH);
+
+        char line[32 + 1];
+        list = xs_list_new();
+
+        /* move to the end minus one entry */
+        if (!fseek(f, 0, SEEK_END) && !fseek(f, -sizeof(line), SEEK_SET)) {
+            while (n < max && fgets(line, sizeof(line), f) != NULL) {
+                line[32] = '\0';
+                list = xs_list_append(list, line);
+                n++;
+
+                /* move backwards 2 entries */
+                if (fseek(f, -sizeof(line) * 2, SEEK_SET) == -1)
+                    break;
+            }
+        }
+
+        fclose(f);
+    }
+
+    return list;
 }
 
 
