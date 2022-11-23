@@ -956,7 +956,7 @@ int actor_add(snac *snac, char *actor, char *msg)
 
     snac_debug(snac, 2, xs_fmt("actor_add %s %s", actor, fn));
 
-    object_add(actor, msg);
+//    object_add(actor, msg);
 
     return ret;
 }
