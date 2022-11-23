@@ -5,6 +5,7 @@
 
 #define USER_AGENT "snac/" VERSION
 
+extern double db_layout;
 extern d_char *srv_basedir;
 extern d_char *srv_config;
 extern d_char *srv_baseurl;

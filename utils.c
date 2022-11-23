@@ -18,7 +18,7 @@ const char *default_srv_config = "{"
     "\"prefix\":               \"\","
     "\"address\":              \"127.0.0.1\","
     "\"port\":                 8001,"
-    "\"layout\":               2,"
+    "\"layout\":               0.0,"
     "\"dbglevel\":             0,"
     "\"queue_retry_minutes\":  2,"
     "\"queue_retry_max\":      10,"
@@ -103,6 +103,9 @@ int initdb(const char *basedir)
 
     srv_config = xs_json_loads(default_srv_config);
 
+    xs *layout = xs_number_new(db_layout);
+    srv_config = xs_dict_set(srv_config, "layout", layout);
+
     printf("Network address [%s]:\n", xs_dict_get(srv_config, "address"));
     {
         xs *i = xs_strip(xs_readline(stdin));
@@ -147,6 +150,9 @@ int initdb(const char *basedir)
 
     xs *udir = xs_fmt("%s/user", srv_basedir);
     mkdir(udir, 0755);
+
+    xs *odir = xs_fmt("%s/object", srv_basedir);
+    mkdir(odir, 0755);
 
     xs *gfn = xs_fmt("%s/greeting.html", srv_basedir);
     if ((f = fopen(gfn, "w")) == NULL) {

@@ -13,6 +13,10 @@
 #include <glob.h>
 #include <sys/stat.h>
 
+double db_layout = 2.0;
+
+
+int db_upgrade(d_char **error);
 
 int srv_open(char *basedir)
 /* opens a server */
@@ -47,13 +51,10 @@ int srv_open(char *basedir)
             char *host;
             char *prefix;
             char *dbglvl;
-            char *layout;
-            double f = 0.0;
 
             host   = xs_dict_get(srv_config, "host");
             prefix = xs_dict_get(srv_config, "prefix");
             dbglvl = xs_dict_get(srv_config, "dbglevel");
-            layout = xs_dict_get(srv_config, "layout");
 
             if (host == NULL || prefix == NULL)
                 error = xs_str_new("ERROR: cannot get server data");
@@ -67,10 +68,7 @@ int srv_open(char *basedir)
                     error = xs_fmt("DEBUG level set to %d from environment", dbglevel);
                 }
 
-                if (!layout || (f = xs_number_get(layout)) != 2.0)
-                    error = xs_fmt("ERROR: unsupported old disk layout %f\n", f);
-                else
-                    ret = 1;
+                ret = db_upgrade(&error);
             }
 
         }
@@ -1237,4 +1235,56 @@ void purge_all(void)
             user_free(&snac);
         }
     }
+}
+
+
+int db_upgrade(d_char **error)
+{
+    int ret = 1;
+    int changed = 0;
+    double f = 0.0;
+
+    do {
+        char *layout = xs_dict_get(srv_config, "layout");
+
+        f = xs_number_get(layout);
+
+        if (f < 2.0) {
+            *error = xs_fmt("ERROR: unsupported old disk layout %lf\n", f);
+            ret    = 0;
+            break;
+        }
+/*        else
+        if (f < 2.1) {
+            srv_log(xs_dup("upgrading db layout to version 2.1"));
+
+            xs *dir = xs_fmt("%s/object", srv_basedir);
+            mkdir(dir, 0755);
+
+            xs *nv = xs_number_new(2.1);
+            srv_config = xs_dict_set(srv_config, "layout", nv);
+            changed++;
+        }*/
+    } while (f < db_layout);
+
+    if (f > db_layout) {
+        *error = xs_fmt("ERROR: unknown future version %lf\n", f);
+        ret    = 0;
+    }
+
+    if (changed) {
+        /* upgrade the configuration file */
+        xs *fn = xs_fmt("%s/server.json", srv_basedir);
+        FILE *f;
+
+        if ((f = fopen(fn, "w")) != NULL) {
+            xs *j = xs_json_dumps_pp(srv_config, 4);
+            fwrite(j, strlen(j), 1, f);
+            fclose(f);
+        }
+        else
+            ret = 0;
+    }
+
+    return ret;
 }
