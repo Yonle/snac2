@@ -211,11 +211,11 @@ d_char *_object_fn(const char *id)
 }
 
 
-int object_get(const char *id, d_char **obj, const char *type)
+int object_get_by_md5(const char *md5, d_char **obj, const char *type)
 /* returns a loaded object, optionally of the requested type */
 {
     int status = 404;
-    xs *fn     = _object_fn(id);
+    xs *fn     = _object_fn_by_md5(md5);
     FILE *f;
 
     if ((f = fopen(fn, "r")) != NULL) {
@@ -243,9 +243,16 @@ int object_get(const char *id, d_char **obj, const char *type)
     else
         *obj = NULL;
 
-    srv_debug(2, xs_fmt("object_get %s %d", id, status));
-
     return status;
+}
+
+
+int object_get(const char *id, d_char **obj, const char *type)
+/* returns a loaded object, optionally of the requested type */
+{
+    xs *md5 = xs_md5_hex(id, strlen(id));
+
+    return object_get_by_md5(md5, obj, type);
 }
 
 
