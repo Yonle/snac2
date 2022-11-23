@@ -52,6 +52,11 @@ void srv_archive(char *direction, char *req, char *payload, int p_size,
 
 double mtime(char *fn);
 
+int listfile_add_md5(const char *fn, const char *md5);
+int listfile_del_md5(const char *fn, const char *md5);
+d_char *listfile_get_n(const char *fn, int max);
+d_char *listfile_get_inv_n(const char *fn, int max);
+
 int follower_add(snac *snac, char *actor, char *msg);
 int follower_del(snac *snac, char *actor);
 int follower_check(snac *snac, char *actor);
