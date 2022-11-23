@@ -314,6 +314,44 @@ int list_add_md5(const char *fn, const char *md5)
 }
 
 
+int list_del_md5(const char *fn, const char *md5)
+/* deletes an md5 from a list */
+{
+    int status = 404;
+    FILE *i, *o;
+
+    if ((i = fopen(fn, "r")) != NULL) {
+        flock(fileno(i), LOCK_EX);
+
+        xs *nfn = xs_fmt("%s.new", fn);
+
+        if ((o = fopen(nfn, "w")) != NULL) {
+            char line[32 + 1];
+
+            while (fgets(line, sizeof(line), i) != NULL) {
+                if (memcmp(line, md5, 32) != 0)
+                    fwrite(line, sizeof(line), 1, o);
+            }
+
+            fclose(o);
+
+            xs *ofn = xs_fmt("%s.old", fn);
+
+            link(fn, ofn);
+            rename(nfn, fn);
+        }
+        else
+            status = 500;
+
+        fclose(i);
+    }
+    else
+        status = 500;
+
+    return status;
+}
+
+
 d_char *_follower_fn(snac *snac, char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
