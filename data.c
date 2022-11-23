@@ -934,14 +934,6 @@ int is_muted(snac *snac, char *actor)
 }
 
 
-d_char *_actor_fn(snac *snac, char *actor)
-/* returns the file name for an actor */
-{
-    xs *md5 = xs_md5_hex(actor, strlen(actor));
-    return xs_fmt("%s/actors/%s.json", snac->basedir, md5);
-}
-
-
 int actor_add(snac *snac, const char *actor, d_char *msg)
 /* adds an actor */
 {
@@ -1269,7 +1261,6 @@ void purge(snac *snac)
 
     days = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
     _purge_subdir(snac, "timeline", days);
-    _purge_subdir(snac, "actors", days);
 
     days = xs_number_get(xs_dict_get(srv_config, "local_purge_days"));
     _purge_subdir(snac, "local", days);
