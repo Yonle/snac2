@@ -273,6 +273,21 @@ int object_add(const char *id, d_char *obj)
 }
 
 
+int object_del(const char *id)
+/* deletes an object */
+{
+    int status = 404;
+    xs *fn     = _object_fn_by_id(id);
+
+    if (fn != NULL && unlink(fn) != -1)
+        status = 200;
+
+    srv_debug(2, xs_fmt("object_del %s %d", id, status));
+
+    return status;
+}
+
+
 d_char *_follower_fn(snac *snac, char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
