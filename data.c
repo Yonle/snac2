@@ -203,7 +203,7 @@ d_char *_object_fn_by_md5(const char *md5)
 }
 
 
-d_char *_object_fn_by_id(const char *id)
+d_char *_object_fn(const char *id)
 {
     xs *md5 = xs_md5_hex(id, strlen(id));
 
@@ -215,7 +215,7 @@ int object_get(const char *id, d_char **obj, const char *type)
 /* returns a loaded object, optionally of the requested type */
 {
     int status = 404;
-    xs *fn     = _object_fn_by_id(id);
+    xs *fn     = _object_fn(id);
     FILE *f;
 
     if ((f = fopen(fn, "r")) != NULL) {
@@ -253,7 +253,7 @@ int object_add(const char *id, d_char *obj)
 /* stores an object */
 {
     int status = 201; /* Created */
-    xs *fn     = _object_fn_by_id(id);
+    xs *fn     = _object_fn(id);
     FILE *f;
 
     if ((f = fopen(fn, "w")) != NULL) {
@@ -277,7 +277,7 @@ int object_del(const char *id)
 /* deletes an object */
 {
     int status = 404;
-    xs *fn     = _object_fn_by_id(id);
+    xs *fn     = _object_fn(id);
 
     if (fn != NULL && unlink(fn) != -1)
         status = 200;
@@ -996,7 +996,7 @@ int actor_get(snac *snac, const char *actor, d_char **data)
     if (data)
         *data = d;
 
-    xs *fn = _object_fn_by_id(actor);
+    xs *fn = _object_fn(actor);
     double max_time;
 
     /* maximum time for the actor data to be considered stale */
