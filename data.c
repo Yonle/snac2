@@ -190,6 +190,80 @@ double mtime(char *fn)
 }
 
 
+/** object database 2.1+ **/
+
+d_char *_object_fn_by_md5(const char *md5)
+{
+    xs *bfn = xs_fmt("%s/object/%c%c/", srv_basedir, md5[0], md5[1]);
+
+    mkdir(bfn, 0755);
+
+    return xs_fmt("%s/%s.json", bfn, md5);
+}
+
+
+d_char *_object_fn_by_id(const char *id)
+{
+    xs *md5 = xs_md5_hex(id, strlen(id));
+
+    return _object_fn_by_md5(md5);
+}
+
+
+int object_get(const char *id, d_char **obj, const char *type)
+/* returns a loaded object, optionally of the requested type */
+{
+    int status = 404;
+    xs *fn     = _object_fn_by_id(id);
+    FILE *f;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        xs *j = xs_readall(f);
+        fclose(f);
+
+        *obj = xs_json_loads(j);
+
+        if (*obj) {
+            status = 200;
+
+            /* specific type requested? */
+            if (!xs_is_null(type)) {
+                char *v = xs_dict_get(*obj, "type");
+
+                if (xs_is_null(v) || strcmp(v, type) != 0) {
+                    status = 404;
+                    *obj   = xs_free(*obj);
+                }
+            }
+        }
+    }
+    else
+        *obj = NULL;
+
+    return status;
+}
+
+
+int object_add(const char *id, d_char *obj)
+/* stores an object */
+{
+    int status = 201; /* Created */
+    xs *fn     = _object_fn_by_id(id);
+    FILE *f;
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        xs *j = xs_json_dumps_pp(obj, 4);
+
+        fwrite(j, strlen(j), 1, f);
+        fclose(f);
+    }
+    else
+        status = 500;
+
+    return status;
+}
+
+
 d_char *_follower_fn(snac *snac, char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
@@ -876,6 +950,8 @@ int actor_add(snac *snac, char *actor, char *msg)
         ret = 500;
 
     snac_debug(snac, 2, xs_fmt("actor_add %s %s", actor, fn));
+
+    object_add(actor, msg);
 
     return ret;
 }
