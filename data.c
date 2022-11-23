@@ -13,7 +13,7 @@
 #include <glob.h>
 #include <sys/stat.h>
 
-double db_layout = 2.0;
+double db_layout = 2.1;
 
 
 int db_upgrade(d_char **error);
@@ -1246,25 +1246,34 @@ int db_upgrade(d_char **error)
 
     do {
         char *layout = xs_dict_get(srv_config, "layout");
+        double nf;
 
-        f = xs_number_get(layout);
+        f = nf = xs_number_get(layout);
 
         if (f < 2.0) {
-            *error = xs_fmt("ERROR: unsupported old disk layout %lf\n", f);
+            *error = xs_fmt("ERROR: unsupported old disk layout %1.1lf\n", f);
             ret    = 0;
             break;
         }
-/*        else
+        else
         if (f < 2.1) {
-            srv_log(xs_dup("upgrading db layout to version 2.1"));
-
             xs *dir = xs_fmt("%s/object", srv_basedir);
             mkdir(dir, 0755);
 
-            xs *nv = xs_number_new(2.1);
+            nf = 2.1;
+        }
+
+        if (f < nf) {
+            f          = nf;
+            xs *nv     = xs_number_new(f);
             srv_config = xs_dict_set(srv_config, "layout", nv);
+
+            srv_log(xs_fmt("upgraded db layout to version %1.1lf", f));
             changed++;
-        }*/
+        }
+        else
+            break;
+
     } while (f < db_layout);
 
     if (f > db_layout) {
@@ -1281,6 +1290,8 @@ int db_upgrade(d_char **error)
             xs *j = xs_json_dumps_pp(srv_config, 4);
             fwrite(j, strlen(j), 1, f);
             fclose(f);
+
+            srv_log(xs_fmt("upgraded db %s after %d changes", fn, changed));
         }
         else
             ret = 0;
