@@ -274,7 +274,7 @@ int object_add(const char *id, d_char *obj)
     else
         status = 500;
 
-    srv_debug(2, xs_fmt("object_add %s %d", id, status));
+    srv_debug(2, xs_fmt("object_add %s %s %d", id, fn, status));
 
     return status;
 }
@@ -1094,7 +1094,7 @@ int actor_get(snac *snac, const char *actor, d_char **data)
     }
 
     /* read the object */
-    if (!valid_status(status = object_get(actor, &d, "Person")))
+    if (!valid_status(status = object_get(actor, &d, NULL)))
         return status;
 
     if (data)
