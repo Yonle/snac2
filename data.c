@@ -1097,8 +1097,15 @@ void hide(snac *snac, const char *id)
         char *p, *v;
 
         p = chld;
-        while (xs_list_iter(&p, &v))
-            hide(snac, v);
+        while (xs_list_iter(&p, &v)) {
+            xs *co = NULL;
+
+            /* resolve to get the id */
+            if (valid_status(object_get_by_md5(v, &co, NULL))) {
+                if ((v = xs_dict_get(co, "id")) != NULL)
+                    hide(snac, v);
+            }
+        }
     }
 }
 
