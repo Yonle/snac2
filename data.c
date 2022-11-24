@@ -503,10 +503,11 @@ int object_admire(const char *id, const char *actor, int like)
 
     fn = xs_replace_i(fn, ".json", like ? "_l.idx" : "_a.idx");
 
-    srv_debug(0, xs_fmt("object_admire (%s) %s %s", like ? "Like" : "Announce", actor, fn));
-
-    if (!index_in(fn, actor))
+    if (!index_in(fn, actor)) {
         status = index_add(fn, actor);
+
+        srv_debug(0, xs_fmt("object_admire (%s) %s %s", like ? "Like" : "Announce", actor, fn));
+    }
 
     return status;
 }
