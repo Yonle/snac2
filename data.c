@@ -463,6 +463,19 @@ d_char *object_children(const char *id)
 }
 
 
+int object_admire(const char *id, const char *actor, int like)
+/* actor likes or announces this object */
+{
+    xs *fn = _object_fn(id);
+
+    fn = xs_replace_i(fn, ".json", like ? "_l.idx" : "_a.idx");
+
+    srv_debug(0, xs_fmt("object_admire (%s) %s %s", like ? "Like" : "Announce", actor, fn));
+
+    return index_add(fn, actor);
+}
+
+
 d_char *_follower_fn(snac *snac, char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
@@ -921,6 +934,8 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
     }
     else
         snac_log(snac, xs_fmt("timeline_admire ignored for unknown object %s", id));
+
+    object_admire(id, admirer, like);
 }
 
 
