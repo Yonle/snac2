@@ -452,6 +452,17 @@ int object_del(const char *id)
 }
 
 
+d_char *object_children(const char *id)
+/* returns the list of an object's children */
+{
+    xs *fn = _object_fn(id);
+
+    fn = xs_replace_i(fn, ".json", "_c.idx");
+
+    return index_list(fn, XS_ALL);
+}
+
+
 d_char *_follower_fn(snac *snac, char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
@@ -1080,6 +1091,14 @@ void hide(snac *snac, const char *id)
         fclose(f);
 
         snac_debug(snac, 2, xs_fmt("hidden %s %s", id, fn));
+
+        /* hide all the children */
+        xs *chld = object_children(id);
+        char *p, *v;
+
+        p = chld;
+        while (xs_list_iter(&p, &v))
+            hide(snac, v);
     }
 }
 
