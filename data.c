@@ -196,7 +196,7 @@ double mtime(char *fn)
 int index_add_md5(const char *fn, const char *md5)
 /* adds an md5 to an index */
 {
-    int status = 200;
+    int status = 201; /* Created */
     FILE *f;
 
     if ((f = fopen(fn, "a")) != NULL) {
@@ -498,13 +498,17 @@ d_char *object_children(const char *id)
 int object_admire(const char *id, const char *actor, int like)
 /* actor likes or announces this object */
 {
-    xs *fn = _object_fn(id);
+    int status = 200;
+    xs *fn     = _object_fn(id);
 
     fn = xs_replace_i(fn, ".json", like ? "_l.idx" : "_a.idx");
 
     srv_debug(0, xs_fmt("object_admire (%s) %s %s", like ? "Like" : "Announce", actor, fn));
 
-    return index_add(fn, actor);
+    if (!index_in(fn, actor))
+        status = index_add(fn, actor);
+
+    return status;
 }
 
 
