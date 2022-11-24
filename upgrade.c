@@ -84,9 +84,22 @@ int db_upgrade(d_char **error)
                 snac snac;
 
                 if (user_open(&snac, v)) {
+                    char *p, *v;
                     xs *dir = xs_fmt("%s/hidden", snac.basedir);
 
+                    /* create the hidden directory */
                     mkdir(dir, 0755);
+
+                    /* rename all muted files incorrectly named .json */
+                    xs *spec = xs_fmt("%s/muted/" "*.json", snac.basedir);
+                    xs *fns  = xs_glob(spec, 0, 0);
+
+                    p = fns;
+                    while (xs_list_iter(&p, &v)) {
+                        xs *nfn = xs_replace(v, ".json", "");
+                        rename(v, nfn);
+                    }
+
                     user_free(&snac);
                 }
             }

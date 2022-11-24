@@ -1034,7 +1034,7 @@ d_char *following_list(snac *snac)
 d_char *_muted_fn(snac *snac, char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
-    return xs_fmt("%s/muted/%s.json", snac->basedir, md5);
+    return xs_fmt("%s/muted/%s", snac->basedir, md5);
 }
 
 
