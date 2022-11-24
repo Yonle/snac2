@@ -424,10 +424,23 @@ int object_del(const char *id)
     int status = 404;
     xs *fn     = _object_fn(id);
 
-    if (fn != NULL && unlink(fn) != -1)
+    if (fn != NULL && unlink(fn) != -1) {
         status = 200;
 
-    srv_debug(2, xs_fmt("object_del %s %d", id, status));
+        /* also delete associated indexes */
+        xs *spec = _object_fn(id);
+        spec = xs_replace_i(spec, ".json", "*.idx");
+        xs *files = xs_glob(spec, 0, 0);
+        char *p, *v;
+
+        p = files;
+        while (xs_list_iter(&p, &v)) {
+            srv_debug(0, xs_fmt("object_del index %s", v));
+            unlink(v);
+        }
+    }
+
+    srv_debug(0, xs_fmt("object_del %s %d", id, status));
 
     return status;
 }
@@ -600,6 +613,8 @@ int timeline_del(snac *snac, char *id)
 
         ret = 200;
     }
+
+    object_del(id);
 
     return ret;
 }
