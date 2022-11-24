@@ -216,7 +216,6 @@ int index_add(const char *fn, const char *id)
 /* adds an id to an index */
 {
     xs *md5 = xs_md5_hex(id, strlen(id));
-
     return index_add_md5(fn, md5);
 }
 
@@ -256,6 +255,39 @@ int index_del(const char *fn, const char *md5)
         status = 500;
 
     return status;
+}
+
+
+int index_in_md5(const char *fn, const char *md5)
+/* checks if the md5 is already in the index */
+{
+    FILE *f;
+    int ret = 0;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        flock(fileno(f), LOCK_SH);
+
+        char line[256];
+
+        while (!ret && fgets(line, sizeof(line), f) != NULL) {
+            line[32] = '\0';
+
+            if (strcmp(line, md5) == 0)
+                ret = 1;
+        }
+
+        fclose(f);
+    }
+
+    return ret;
+}
+
+
+int index_in(const char *fn, const char *id)
+/* checks if the object id is already in the index */
+{
+    xs *md5 = xs_md5_hex(id, strlen(id));
+    return index_in_md5(fn, md5);
 }
 
 
