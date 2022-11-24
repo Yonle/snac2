@@ -399,7 +399,7 @@ int object_add(const char *id, d_char *obj)
         /* does this object has a parent? */
         char *in_reply_to = xs_dict_get(obj, "inReplyTo");
 
-        if (!xs_is_null(in_reply_to)) {
+        if (!xs_is_null(in_reply_to) && *in_reply_to) {
             /* update the children index of the parent */
             xs *pfn = _object_fn(in_reply_to);
 
@@ -412,7 +412,7 @@ int object_add(const char *id, d_char *obj)
     else
         status = 500;
 
-    srv_debug(2, xs_fmt("object_add %s %s %d", id, fn, status));
+    srv_debug(0, xs_fmt("object_add %s %s %d", id, fn, status));
 
     return status;
 }
@@ -844,8 +844,10 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
 
     msg = xs_dict_set(msg, "_snac", md);
 
-    if ((ret = _timeline_write(snac, id, msg, parent, referrer)))
+    if ((ret = _timeline_write(snac, id, msg, parent, referrer))) {
         snac_debug(snac, 1, xs_fmt("timeline_add %s", id));
+        object_add(id, o_msg);
+    }
 
     return ret;
 }
