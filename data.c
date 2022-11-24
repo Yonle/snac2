@@ -337,7 +337,7 @@ d_char *_object_fn(const char *id)
 
 
 int object_get_by_md5(const char *md5, d_char **obj, const char *type)
-/* returns a loaded object, optionally of the requested type */
+/* returns a stored object, optionally of the requested type */
 {
     int status = 404;
     xs *fn     = _object_fn_by_md5(md5);
@@ -373,7 +373,7 @@ int object_get_by_md5(const char *md5, d_char **obj, const char *type)
 
 
 int object_get(const char *id, d_char **obj, const char *type)
-/* returns a loaded object, optionally of the requested type */
+/* returns a stored object, optionally of the requested type */
 {
     xs *md5 = xs_md5_hex(id, strlen(id));
 
@@ -954,7 +954,7 @@ int following_add(snac *snac, char *actor, char *msg)
 
 
 int following_del(snac *snac, char *actor)
-/* someone is no longer following us */
+/* we're not following this actor any longer */
 {
     xs *fn = _following_fn(snac, actor);
 
@@ -967,7 +967,7 @@ int following_del(snac *snac, char *actor)
 
 
 int following_check(snac *snac, char *actor)
-/* checks if someone is following us */
+/* checks if we are following this actor */
 {
     xs *fn = _following_fn(snac, actor);
 
