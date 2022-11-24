@@ -14,7 +14,7 @@
 #include <sys/file.h>
 #include <fcntl.h>
 
-double db_layout = 2.2;
+double db_layout = 2.3;
 
 
 int db_upgrade(d_char **error);
@@ -913,50 +913,6 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
 }
 
 
-int timeline_hide(snac *snac, char *id, int hide)
-/* hides/unhides a timeline entry */
-{
-    int ret = 0;
-    xs *fn = _timeline_find_fn(snac, id);
-    FILE *f;
-
-    if (fn != NULL && (f = fopen(fn, "r")) != NULL) {
-        xs *s1   = xs_readall(f);
-        xs *msg  = xs_json_loads(s1);
-        xs *meta = xs_dup(xs_dict_get(msg, "_snac"));
-        xs *hdn  = xs_val_new(hide ? XSTYPE_TRUE : XSTYPE_FALSE);
-        char *p, *v;
-
-        fclose(f);
-
-        /* if it's already in this hidden state, we're done */
-        if ((v = xs_dict_get(meta, "hidden")) && xs_type(v) == xs_type(hdn))
-            return ret;
-
-        meta = xs_dict_set(meta, "hidden", hdn);
-        msg  = xs_dict_set(msg,  "_snac",  meta);
-
-        if ((f = fopen(fn, "w")) != NULL) {
-            xs *j1 = xs_json_dumps_pp(msg, 4);
-
-            fwrite(j1, strlen(j1), 1, f);
-            fclose(f);
-
-            snac_debug(snac, 1, xs_fmt("timeline_hide %d %s", hide, id));
-
-            /* now hide the children */
-            p = xs_dict_get(meta, "children");
-            while (xs_list_iter(&p, &v))
-                timeline_hide(snac, v, hide);
-
-            ret = 1;
-        }
-    }
-
-    return ret;
-}
-
-
 d_char *_following_fn(snac *snac, char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
@@ -1109,7 +1065,7 @@ int is_muted(snac *snac, char *actor)
 d_char *_hidden_fn(snac *snac, const char *id)
 {
     xs *md5 = xs_md5_hex(id, strlen(id));
-    return xs_fmt("%s/hidden/%s.json", snac->basedir, md5);
+    return xs_fmt("%s/hidden/%s", snac->basedir, md5);
 }
 
 

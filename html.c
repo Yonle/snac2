@@ -497,7 +497,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
     xs *s = xs_str_new(NULL);
 
     /* top wrap */
-    if ((v = xs_dict_get(meta, "hidden")) && xs_type(v) == XSTYPE_TRUE)
+    if (is_hidden(snac, id))
         s = xs_str_cat(s, "<div style=\"display: none\">\n");
     else
         s = xs_str_cat(s, "<div>\n");
@@ -1300,7 +1300,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         }
         else
         if (strcmp(action, L("Hide")) == 0) {
-            timeline_hide(&snac, id, 1);
+            hide(&snac, id);
         }
         else
         if (strcmp(action, L("Follow")) == 0) {
