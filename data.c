@@ -411,6 +411,8 @@ int object_add(const char *id, d_char *obj)
 
             pfn = xs_replace_i(pfn, ".json", "_c.idx");
             index_add(pfn, id);
+
+            srv_debug(0, xs_fmt("object_add added child %s to %s", id, pfn));
         }
     }
     else
