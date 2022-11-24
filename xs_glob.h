@@ -5,7 +5,7 @@
 #define _XS_GLOB_H
 
 d_char *xs_glob_n(const char *spec, int basename, int reverse, int max);
-#define xs_glob(spec, basename, reverse) xs_glob_n(spec, basename, reverse, 0xfffffff)
+#define xs_glob(spec, basename, reverse) xs_glob_n(spec, basename, reverse, XS_ALL)
 
 
 #ifdef XS_IMPLEMENTATION

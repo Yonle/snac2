@@ -34,6 +34,9 @@ typedef char d_char;
 /* auto-destroyable strings */
 #define xs __attribute__ ((__cleanup__ (_xs_destroy))) d_char
 
+/* not really all, just very much */
+#define XS_ALL 0xfffffff
+
 void *xs_free(void *ptr);
 void *_xs_realloc(void *ptr, size_t size, const char *file, int line, const char *func);
 #define xs_realloc(ptr, size) _xs_realloc(ptr, size, __FILE__, __LINE__, __FUNCTION__)
@@ -74,7 +77,7 @@ d_char *xs_list_pop(d_char *list, char **data);
 int xs_list_in(char *list, const char *val);
 d_char *xs_join(char *list, const char *sep);
 d_char *xs_split_n(const char *str, const char *sep, int times);
-#define xs_split(str, sep) xs_split_n(str, sep, 0xfffffff)
+#define xs_split(str, sep) xs_split_n(str, sep, XS_ALL)
 d_char *xs_dict_new(void);
 d_char *xs_dict_append_m(d_char *dict, const char *key, const char *mem, int dsz);
 #define xs_dict_append(dict, key, data) xs_dict_append_m(dict, key, data, xs_size(data))

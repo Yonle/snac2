@@ -5,9 +5,9 @@
 #define _XS_REGEX_H
 
 d_char *xs_regex_split_n(const char *str, const char *rx, int count);
-#define xs_regex_split(str, rx) xs_regex_split_n(str, rx, 0xfffffff)
+#define xs_regex_split(str, rx) xs_regex_split_n(str, rx, XS_ALL)
 d_char *xs_regex_match_n(const char *str, const char *rx, int count);
-#define xs_regex_match(str, rx) xs_regex_match_n(str, rx, 0xfffffff)
+#define xs_regex_match(str, rx) xs_regex_match_n(str, rx, XS_ALL)
 
 #ifdef XS_IMPLEMENTATION
 

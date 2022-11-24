@@ -79,7 +79,7 @@ d_char *xs_read(FILE *f, int *sz)
 d_char *xs_readall(FILE *f)
 /* reads the rest of the file into a string */
 {
-    int size = 0xfffffff;
+    int size = XS_ALL;
 
     return xs_read(f, &size);
 }
