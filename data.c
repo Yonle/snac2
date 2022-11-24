@@ -193,7 +193,7 @@ double mtime(char *fn)
 
 /** database 2.1+ **/
 
-int index_add(const char *fn, const char *md5)
+int index_add_md5(const char *fn, const char *md5)
 /* adds an md5 to an index */
 {
     int status = 200;
@@ -209,6 +209,15 @@ int index_add(const char *fn, const char *md5)
         status = 500;
 
     return status;
+}
+
+
+int index_add(const char *fn, const char *id)
+/* adds an id to an index */
+{
+    xs *md5 = xs_md5_hex(id, strlen(id));
+
+    return index_add_md5(fn, md5);
 }
 
 
@@ -386,6 +395,19 @@ int object_add(const char *id, d_char *obj)
 
         fwrite(j, strlen(j), 1, f);
         fclose(f);
+
+        /* does this object has a parent? */
+        char *in_reply_to = xs_dict_get(obj, "inReplyTo");
+
+        if (!xs_is_null(in_reply_to)) {
+            /* update the children index of the parent */
+            xs *pfn = _object_fn(in_reply_to);
+
+            if (mtime(pfn) > 0.0) {
+                pfn = xs_replace_i(pfn, ".json", "_c.idx");
+                index_add(pfn, id);
+            }
+        }
     }
     else
         status = 500;
