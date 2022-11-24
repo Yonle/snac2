@@ -696,22 +696,11 @@ int _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referre
 
         if (pfn != NULL && (f = fopen(pfn, "r")) != NULL) {
             xs *j;
-            char *v;
 
             j = xs_readall(f);
             fclose(f);
 
             p_msg = xs_json_loads(j);
-
-            if ((v = xs_dict_get(p_msg, "_snac")) != NULL) {
-                /* is parent hidden? */
-                if ((v = xs_dict_get(v, "hidden")) && xs_type(v) == XSTYPE_TRUE) {
-                    snac_debug(snac, 1,
-                        xs_fmt("_timeline_write dropping due to hidden parent %s (%s)", id, parent));
-
-                    return 0;
-                }
-            }
         }
     }
 
