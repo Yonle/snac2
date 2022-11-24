@@ -191,7 +191,123 @@ double mtime(char *fn)
 }
 
 
-/** object database 2.1+ **/
+/** database 2.1+ **/
+
+int index_add(const char *fn, const char *md5)
+/* adds an md5 to an index */
+{
+    int status = 200;
+    FILE *f;
+
+    if ((f = fopen(fn, "a")) != NULL) {
+        flock(fileno(f), LOCK_EX);
+
+        fprintf(f, "%s\n", md5);
+        fclose(f);
+    }
+    else
+        status = 500;
+
+    return status;
+}
+
+
+int index_del(const char *fn, const char *md5)
+/* deletes an md5 from an index */
+{
+    int status = 404;
+    FILE *i, *o;
+
+    if ((i = fopen(fn, "r")) != NULL) {
+        flock(fileno(i), LOCK_EX);
+
+        xs *nfn = xs_fmt("%s.new", fn);
+        char line[256];
+
+        if ((o = fopen(nfn, "w")) != NULL) {
+            while (fgets(line, sizeof(line), i) != NULL) {
+                line[32] = '\0';
+                if (memcmp(line, md5, 32) != 0)
+                    fprintf(o, "%s\n", line);
+            }
+
+            fclose(o);
+
+            xs *ofn = xs_fmt("%s.bak", fn);
+
+            link(fn, ofn);
+            rename(nfn, fn);
+        }
+        else
+            status = 500;
+
+        fclose(i);
+    }
+    else
+        status = 500;
+
+    return status;
+}
+
+
+d_char *index_list(const char *fn, int max)
+/* returns an index as a list */
+{
+    d_char *list = NULL;
+    FILE *f;
+    int n = 0;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        flock(fileno(f), LOCK_SH);
+
+        char line[256];
+        list = xs_list_new();
+
+        while (n < max && fgets(line, sizeof(line), f) != NULL) {
+            line[32] = '\0';
+            list = xs_list_append(list, line);
+            n++;
+        }
+
+        fclose(f);
+    }
+
+    return list;
+}
+
+
+d_char *index_list_desc(const char *fn, int max)
+/* returns an index as a list, in reverse order */
+{
+    d_char *list = NULL;
+    FILE *f;
+    int n = 0;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        flock(fileno(f), LOCK_SH);
+
+        char line[256];
+        list = xs_list_new();
+
+        /* move to the end minus one entry */
+        if (!fseek(f, 0, SEEK_END) && !fseek(f, -33, SEEK_CUR)) {
+            while (n < max && fgets(line, sizeof(line), f) != NULL) {
+                line[32] = '\0';
+                list = xs_list_append(list, line);
+                n++;
+
+                /* move backwards 2 entries */
+                if (fseek(f, -66, SEEK_CUR) == -1)
+                    break;
+            }
+        }
+
+        fclose(f);
+    }
+
+    return list;
+}
+
 
 d_char *_object_fn_by_md5(const char *md5)
 {
@@ -292,122 +408,6 @@ int object_del(const char *id)
     srv_debug(2, xs_fmt("object_del %s %d", id, status));
 
     return status;
-}
-
-
-int listfile_add_md5(const char *fn, const char *md5)
-/* adds an md5 to a list */
-{
-    int status = 200;
-    FILE *f;
-
-    if ((f = fopen(fn, "a")) != NULL) {
-        flock(fileno(f), LOCK_EX);
-
-        fprintf(f, "%s\n", md5);
-        fclose(f);
-    }
-    else
-        status = 500;
-
-    return status;
-}
-
-
-int listfile_del_md5(const char *fn, const char *md5)
-/* deletes an md5 from a list */
-{
-    int status = 404;
-    FILE *i, *o;
-
-    if ((i = fopen(fn, "r")) != NULL) {
-        flock(fileno(i), LOCK_EX);
-
-        xs *nfn = xs_fmt("%s.new", fn);
-        char line[256];
-
-        if ((o = fopen(nfn, "w")) != NULL) {
-            while (fgets(line, sizeof(line), i) != NULL) {
-                line[32] = '\0';
-                if (memcmp(line, md5, 32) != 0)
-                    fprintf(o, "%s\n", line);
-            }
-
-            fclose(o);
-
-            xs *ofn = xs_fmt("%s.bak", fn);
-
-            link(fn, ofn);
-            rename(nfn, fn);
-        }
-        else
-            status = 500;
-
-        fclose(i);
-    }
-    else
-        status = 500;
-
-    return status;
-}
-
-
-d_char *listfile_get_n(const char *fn, int max)
-/* returns a list */
-{
-    d_char *list = NULL;
-    FILE *f;
-    int n = 0;
-
-    if ((f = fopen(fn, "r")) != NULL) {
-        flock(fileno(f), LOCK_SH);
-
-        char line[256];
-        list = xs_list_new();
-
-        while (n < max && fgets(line, sizeof(line), f) != NULL) {
-            line[32] = '\0';
-            list = xs_list_append(list, line);
-            n++;
-        }
-
-        fclose(f);
-    }
-
-    return list;
-}
-
-
-d_char *listfile_get_inv_n(const char *fn, int max)
-/* returns a list, inversely */
-{
-    d_char *list = NULL;
-    FILE *f;
-    int n = 0;
-
-    if ((f = fopen(fn, "r")) != NULL) {
-        flock(fileno(f), LOCK_SH);
-
-        char line[256];
-        list = xs_list_new();
-
-        /* move to the end minus one entry */
-        if (!fseek(f, 0, SEEK_END) && !fseek(f, -33, SEEK_CUR)) {
-            while (n < max && fgets(line, sizeof(line), f) != NULL) {
-                line[32] = '\0';
-                list = xs_list_append(list, line);
-                n++;
-
-                /* move backwards 2 entries */
-                if (fseek(f, -66, SEEK_CUR) == -1)
-                    break;
-            }
-        }
-
-        fclose(f);
-    }
-
-    return list;
 }
 
 
