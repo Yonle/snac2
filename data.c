@@ -1106,6 +1106,37 @@ int is_muted(snac *snac, char *actor)
 }
 
 
+d_char *_hidden_fn(snac *snac, const char *id)
+{
+    xs *md5 = xs_md5_hex(id, strlen(id));
+    return xs_fmt("%s/hidden/%s.json", snac->basedir, md5);
+}
+
+
+void hide(snac *snac, const char *id)
+/* hides a message tree */
+{
+    xs *fn = _hidden_fn(snac, id);
+    FILE *f;
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        fprintf(f, "%s\n", id);
+        fclose(f);
+
+        snac_debug(snac, 2, xs_fmt("hidden %s %s", id, fn));
+    }
+}
+
+
+int is_hidden(snac *snac, const char *id)
+/* check is id is hidden */
+{
+    xs *fn = _hidden_fn(snac, id);
+
+    return !!(mtime(fn) != 0.0);
+}
+
+
 int actor_add(snac *snac, const char *actor, d_char *msg)
 /* adds an actor */
 {

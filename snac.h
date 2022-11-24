@@ -85,6 +85,9 @@ void mute(snac *snac, char *actor);
 void unmute(snac *snac, char *actor);
 int is_muted(snac *snac, char *actor);
 
+void hide(snac *snac, const char *id);
+int is_hidden(snac *snac, const char *id);
+
 int actor_add(snac *snac, const char *actor, d_char *msg);
 int actor_get(snac *snac, const char *actor, d_char **data);
 
