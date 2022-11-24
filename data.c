@@ -409,10 +409,8 @@ int object_add(const char *id, d_char *obj)
             /* update the children index of the parent */
             xs *pfn = _object_fn(in_reply_to);
 
-            if (mtime(pfn) > 0.0) {
-                pfn = xs_replace_i(pfn, ".json", "_c.idx");
-                index_add(pfn, id);
-            }
+            pfn = xs_replace_i(pfn, ".json", "_c.idx");
+            index_add(pfn, id);
         }
     }
     else
