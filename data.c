@@ -388,6 +388,12 @@ int object_add(const char *id, d_char *obj)
     xs *fn     = _object_fn(id);
     FILE *f;
 
+    if (mtime(fn) > 0.0) {
+        /* object already here */
+        srv_debug(0, xs_fmt("object_add object already here %s", id));
+        return 204; /* No content */
+    }
+
     if ((f = fopen(fn, "w")) != NULL) {
         flock(fileno(f), LOCK_EX);
 
