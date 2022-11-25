@@ -185,7 +185,7 @@ d_char *user_list(void)
 }
 
 
-double mtime(char *fn)
+double mtime(const char *fn)
 /* returns the mtime of a file or directory, or 0.0 */
 {
     struct stat st;
@@ -1477,22 +1477,51 @@ d_char *dequeue(snac *snac, char *fn)
 }
 
 
+static void _purge_file(const char *fn, int days)
+{
+    time_t mt = time(NULL) - days * 24 * 3600;
+
+    if (mtime(fn) < mt) {
+        /* older than the minimum time: delete it */
+        unlink(fn);
+        srv_debug(1, xs_fmt("purged %s", fn));
+    }
+}
+
+
 static void _purge_subdir(snac *snac, const char *subdir, int days)
 /* purges all files in subdir older than days */
 {
     if (days) {
-        time_t mt = time(NULL) - days * 24 * 3600;
         xs *spec  = xs_fmt("%s/%s/" "*", snac->basedir, subdir);
         xs *list  = xs_glob(spec, 0, 0);
         char *p, *v;
 
         p = list;
-        while (xs_list_iter(&p, &v)) {
-            if (mtime(v) < mt) {
-                /* older than the minimum time: delete it */
-                unlink(v);
-                snac_debug(snac, 1, xs_fmt("purged %s", v));
-            }
+        while (xs_list_iter(&p, &v))
+            _purge_file(v, days);
+    }
+}
+
+
+void purge_server(void)
+/* purge global server data */
+{
+    int tpd = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
+//    int lpd = xs_number_get(xs_dict_get(srv_config, "local_purge_days"));
+    xs *spec = xs_fmt("%s/object/??", srv_basedir);
+    xs *dirs = xs_glob(spec, 0, 0);
+    char *p, *v;
+
+    p = dirs;
+    while (xs_list_iter(&p, &v)) {
+        xs *spec2 = xs_fmt("%s/" "*", v);
+        xs *files = xs_glob(spec2, 0, 0);
+        char *p2, *v2;
+
+        p2 = files;
+        while (xs_list_iter(&p2, &v2)) {
+            _purge_file(v2, tpd);
         }
     }
 }
@@ -1515,6 +1544,8 @@ void purge_user(snac *snac)
 void purge_all(void)
 /* purge all users */
 {
+    purge_server();
+
     snac snac;
     xs *list = user_list();
     char *p, *uid;
