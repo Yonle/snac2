@@ -433,6 +433,9 @@ int object_add(const char *id, d_char *obj)
         return 204; /* No content */
     }
 
+//    if (xs_dict_get(obj, "suspended") != NULL)
+//        srv_log(xs_fmt("object_add suspended: true %s", id));
+
     if ((f = fopen(fn, "w")) != NULL) {
         flock(fileno(f), LOCK_EX);
 

@@ -917,7 +917,9 @@ int process_message(snac *snac, char *msg, char *req)
     else
     if (strcmp(type, "Update") == 0) {
         if (strcmp(utype, "Person") == 0) {
+            object_del(actor);
             actor_add(snac, actor, xs_dict_get(msg, "object"));
+
             snac_log(snac, xs_fmt("updated actor %s", actor));
         }
         else
