@@ -896,6 +896,21 @@ int _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referre
 }
 
 
+void timeline_object_add(snac *snac, const char *id, char *msg)
+/* adds an object and update the user indexes */
+{
+    object_add(id, msg);
+
+    xs *idx = xs_fmt("%s/timeline.idx", snac->basedir);
+    index_add(idx, id);
+
+    if (xs_startswith(id, snac->actor)) {
+        idx = xs_replace_i(idx, "timeline.", "local.");
+        index_add(idx, id);
+    }
+}
+
+
 int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer)
 /* adds a message to the timeline */
 {
@@ -931,15 +946,7 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
     if ((ret = _timeline_write(snac, id, msg, parent, referrer))) {
         snac_debug(snac, 1, xs_fmt("timeline_add %s", id));
 
-        object_add(id, o_msg);
-
-        xs *idx = xs_fmt("%s/timeline.idx", snac->basedir);
-        index_add(idx, id);
-
-        if (xs_startswith(id, snac->actor)) {
-            idx = xs_replace_i(idx, "timeline.", "local.");
-            index_add(idx, id);
-        }
+        timeline_object_add(snac, id, o_msg);
     }
 
     return ret;
