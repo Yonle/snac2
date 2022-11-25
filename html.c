@@ -1008,7 +1008,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
             status  = 200;
         }
         else {
-            xs *list = local_list(&snac, 0xfffffff);
+            xs *list = local_list(&snac, XS_ALL);
 
             *body   = html_timeline(&snac, list, 1);
             *b_size = strlen(*body);
@@ -1034,7 +1034,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
             else {
                 snac_debug(&snac, 1, xs_fmt("building timeline"));
 
-                xs *list = timeline_list(&snac, 0xfffffff);
+                xs *list = timeline_list(&snac, XS_ALL);
 
                 *body   = html_timeline(&snac, list, 0);
                 *b_size = strlen(*body);

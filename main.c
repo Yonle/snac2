@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
     }
 
     if (strcmp(cmd, "timeline") == 0) {
-        xs *list = local_list(&snac, 0xfffffff);
+        xs *list = local_list(&snac, XS_ALL);
         xs *body = html_timeline(&snac, list, 1);
 
         printf("%s\n", body);

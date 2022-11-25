@@ -433,9 +433,6 @@ int object_add(const char *id, d_char *obj)
         return 204; /* No content */
     }
 
-//    if (xs_dict_get(obj, "suspended") != NULL)
-//        srv_log(xs_fmt("object_add suspended: true %s", id));
-
     if ((f = fopen(fn, "w")) != NULL) {
         flock(fileno(f), LOCK_EX);
 
@@ -1246,7 +1243,7 @@ int static_get(snac *snac, const char *id, d_char **data, int *size)
     FILE *f;
     int status = 404;
 
-    *size = 0xfffffff;
+    *size = XS_ALL;
 
     if ((f = fopen(fn, "rb")) != NULL) {
         *data = xs_read(f, size);
