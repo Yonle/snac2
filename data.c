@@ -1482,7 +1482,7 @@ static void _purge_subdir(snac *snac, const char *subdir, int days)
 {
     if (days) {
         time_t mt = time(NULL) - days * 24 * 3600;
-        xs *spec  = xs_fmt("%s/%s/" "*.json", snac->basedir, subdir);
+        xs *spec  = xs_fmt("%s/%s/" "*", snac->basedir, subdir);
         xs *list  = xs_glob(spec, 0, 0);
         char *p, *v;
 
@@ -1498,13 +1498,14 @@ static void _purge_subdir(snac *snac, const char *subdir, int days)
 }
 
 
-void purge(snac *snac)
-/* do the purge */
+void purge_user(snac *snac)
+/* do the purge for this user */
 {
     int days;
 
     days = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
     _purge_subdir(snac, "timeline", days);
+    _purge_subdir(snac, "hidden", days);
 
     days = xs_number_get(xs_dict_get(srv_config, "local_purge_days"));
     _purge_subdir(snac, "local", days);
@@ -1521,7 +1522,7 @@ void purge_all(void)
     p = list;
     while (xs_list_iter(&p, &uid)) {
         if (user_open(&snac, uid)) {
-            purge(&snac);
+            purge_user(&snac);
             user_free(&snac);
         }
     }
