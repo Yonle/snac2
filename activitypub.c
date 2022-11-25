@@ -65,6 +65,7 @@ int actor_request(snac *snac, char *actor, d_char **data)
 
     if (valid_status(status2)) {
         /* renew data */
+        object_del(actor);
         status = actor_add(snac, actor, payload);
 
         if (data != NULL) {
