@@ -206,6 +206,8 @@ double mtime_nl(const char *fn, int *n_link)
 
 /** database 2.1+ **/
 
+/** indexes **/
+
 int index_add_md5(const char *fn, const char *md5)
 /* adds an md5 to an index */
 {
@@ -362,6 +364,8 @@ d_char *index_list_desc(const char *fn, int max)
     return list;
 }
 
+
+/** objects **/
 
 d_char *_object_fn_by_md5(const char *md5)
 {
@@ -525,6 +529,19 @@ int object_admire(const char *id, const char *actor, int like)
     return status;
 }
 
+
+int object_user_cache(snac *snac, const char *id, const char *cachedir)
+/* caches an object into a user cache */
+{
+    xs *ofn = _object_fn(id);
+    xs *l   = xs_split(ofn, "/");
+    xs *cfn = xs_fmt("%s/%s/%s", snac->basedir, cachedir, xs_list_get(l, -1));
+
+    return link(ofn, cfn);
+}
+
+
+/** specialized functions **/
 
 d_char *_follower_fn(snac *snac, char *actor)
 {
@@ -905,21 +922,14 @@ void timeline_object_add(snac *snac, const char *id, char *msg)
     xs *idx = xs_fmt("%s/private.idx", snac->basedir);
     index_add(idx, id);
 
-    /* build the name for the linked copy in the private cache */
-    xs *ofn = _object_fn(id);
-    xs *l   = xs_split(ofn, "/");
-    xs *cfn = xs_fmt("%s/private/%s", snac->basedir, xs_list_get(l, -1));
-
-    link(ofn, cfn);
+    object_user_cache(snac, id, "private");
 
     if (xs_startswith(id, snac->actor)) {
         /* add to the public index */
         idx = xs_replace_i(idx, "private", "public");
         index_add(idx, id);
 
-        /* add to the public cache */
-        cfn = xs_replace_i(cfn, "private", "public");
-        link(ofn, cfn);
+        object_user_cache(snac, id, "public");
     }
 }
 
