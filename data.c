@@ -913,11 +913,9 @@ int _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referre
 }
 
 
-void timeline_object_add(snac *snac, const char *id, char *msg)
-/* adds an object and update the user indexes */
+void timeline_update_indexes(snac *snac, const char *id)
+/* updates the indexes */
 {
-    object_add(id, msg);
-
     /* add to the private index */
     xs *idx = xs_fmt("%s/private.idx", snac->basedir);
     index_add(idx, id);
@@ -969,7 +967,8 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
     if ((ret = _timeline_write(snac, id, msg, parent, referrer))) {
         snac_debug(snac, 1, xs_fmt("timeline_add %s", id));
 
-        timeline_object_add(snac, id, o_msg);
+        object_add(id, o_msg);
+        timeline_update_indexes(snac, id);
     }
 
     return ret;
@@ -1024,6 +1023,7 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
     else
         snac_log(snac, xs_fmt("timeline_admire ignored for unknown object %s", id));
 
+    timeline_update_indexes(snac, id);
     object_admire(id, admirer, like);
 }
 
