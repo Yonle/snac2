@@ -145,6 +145,11 @@ Initializes the database. This is an interactive command; necessary
 information will be prompted for. The
 .Ar basedir
 directory must not exist.
+.It Cm upgrade Ar basedir
+Upgrades the database disk layout after installing a new version.
+Only necessary if
+.Nm
+complains and demands it.
 .It Cm purge Ar basedir
 Purges old data from the timeline of all users.
 .It Cm adduser Ar basedir Op uid

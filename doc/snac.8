@@ -69,6 +69,15 @@ startup scripts and configuration data in the
 directory.
 For other operating systems, please read the appropriate documentation
 on how to install a daemon as a non-root service.
+.Ss Upgrading to a new version
+Sometimes, the database disk layout changes between versions. If there
+is such a change,
+.Nm
+will refuse to run and require an upgrade. Do this by running
+.Bd -literal -offset indent
+snac upgrade $HOME/snac-data
+.Ed
+.Pp
 .Ss Server Setup
 .Pp
 An http server with TLS and proxying support must already be
