@@ -50,7 +50,8 @@ int check_password(char *uid, char *passwd, char *hash);
 void srv_archive(char *direction, char *req, char *payload, int p_size,
                  int status, char *headers, char *body, int b_size);
 
-double mtime(const char *fn);
+double mtime_nl(const char *fn, int *n_link);
+#define mtime(fn) mtime_nl(fn, NULL)
 
 int index_add(const char *fn, const char *md5);
 int index_del(const char *fn, const char *md5);
