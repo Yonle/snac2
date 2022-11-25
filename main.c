@@ -16,6 +16,7 @@ int usage(void)
     printf("Commands:\n");
     printf("\n");
     printf("init [{basedir}]                 Initializes the database\n");
+    printf("upgrade {basedir}                Upgrade to a new version\n");
     printf("adduser {basedir} [{uid}]        Adds a new user\n");
     printf("httpd {basedir}                  Starts the HTTPD daemon\n");
     printf("purge {basedir}                  Purges old data\n");
@@ -76,6 +77,19 @@ int main(int argc, char *argv[])
         return initdb(basedir);
     }
 
+    if (strcmp(cmd, "upgrade") == 0) {
+        int ret;
+
+        /* database upgrade */
+        if ((basedir = GET_ARGV()) == NULL)
+            return usage();
+
+        if ((ret = srv_open(basedir, 1)) == 1)
+            srv_log(xs_dup("OK"));
+
+        return ret;
+    }
+
     if (strcmp(cmd, "markdown") == 0) {
         /* undocumented, for testing only */
         xs *c = xs_readall(stdin);
@@ -88,7 +102,7 @@ int main(int argc, char *argv[])
     if ((basedir = GET_ARGV()) == NULL)
         return usage();
 
-    if (!srv_open(basedir)) {
+    if (!srv_open(basedir, 0)) {
         srv_log(xs_fmt("error opening database at %s", basedir));
         return 1;
     }

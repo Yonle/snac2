@@ -19,7 +19,7 @@ double db_layout = 2.3;
 
 int db_upgrade(d_char **error);
 
-int srv_open(char *basedir)
+int srv_open(char *basedir, int auto_upgrade)
 /* opens a server */
 {
     int ret = 0;
@@ -69,7 +69,14 @@ int srv_open(char *basedir)
                     error = xs_fmt("DEBUG level set to %d from environment", dbglevel);
                 }
 
-                ret = db_upgrade(&error);
+                if (auto_upgrade)
+                    ret = db_upgrade(&error);
+                else {
+                    if (xs_number_get(xs_dict_get(srv_config, "layout")) < db_layout) {
+                        ret   = 0;
+                        error = xs_fmt("ERROR: db layout changed - execute 'snac upgrade' first");
+                    }
+                }
             }
 
         }

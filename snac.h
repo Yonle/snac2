@@ -24,7 +24,7 @@ double ftime(void);
 void srv_debug(int level, d_char *str);
 #define srv_log(str) srv_debug(0, str)
 
-int srv_open(char *basedir);
+int srv_open(char *basedir, int auto_upgrade);
 void srv_free(void);
 
 typedef struct _snac {
