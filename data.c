@@ -924,7 +924,16 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
 
     if ((ret = _timeline_write(snac, id, msg, parent, referrer))) {
         snac_debug(snac, 1, xs_fmt("timeline_add %s", id));
+
         object_add(id, o_msg);
+
+        xs *idx = xs_fmt("%s/timeline.idx", snac->basedir);
+        index_add(idx, id);
+
+        if (xs_startswith(id, snac->actor)) {
+            idx = xs_replace_i(idx, "timeline.", "local.");
+            index_add(idx, id);
+        }
     }
 
     return ret;
