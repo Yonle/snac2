@@ -106,6 +106,28 @@ int db_upgrade(d_char **error)
 
             nf = 2.3;
         }
+        else
+        if (f < 2.4) {
+            xs *users = user_list();
+            char *p, *v;
+
+            p = users;
+            while (xs_list_iter(&p, &v)) {
+                snac snac;
+
+                if (user_open(&snac, v)) {
+                    xs *dir = xs_fmt("%s/public", snac.basedir);
+                    mkdir(dir, 0755);
+
+                    dir = xs_replace_i(dir, "public", "private");
+                    mkdir(dir, 0755);
+
+                    user_free(&snac);
+                }
+            }
+
+            nf = 2.4;
+        }
 
         if (f < nf) {
             f          = nf;

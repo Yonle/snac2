@@ -14,7 +14,7 @@
 #include <sys/file.h>
 #include <fcntl.h>
 
-double db_layout = 2.3;
+double db_layout = 2.4;
 
 
 int db_upgrade(d_char **error);
@@ -901,12 +901,25 @@ void timeline_object_add(snac *snac, const char *id, char *msg)
 {
     object_add(id, msg);
 
+    /* add to the private index */
     xs *idx = xs_fmt("%s/private.idx", snac->basedir);
     index_add(idx, id);
 
+    /* build the name for the linked copy in the private cache */
+    xs *ofn = _object_fn(id);
+    xs *l   = xs_split(ofn, "/");
+    xs *cfn = xs_fmt("%s/private/%s", snac->basedir, xs_list_get(l, -1));
+
+    link(ofn, cfn);
+
     if (xs_startswith(id, snac->actor)) {
-        idx = xs_replace_i(idx, "private.", "public.");
+        /* add to the public index */
+        idx = xs_replace_i(idx, "private", "public");
         index_add(idx, id);
+
+        /* add to the public cache */
+        cfn = xs_replace_i(cfn, "private", "public");
+        link(ofn, cfn);
     }
 }
 
