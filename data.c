@@ -72,10 +72,10 @@ int srv_open(char *basedir, int auto_upgrade)
                 if (auto_upgrade)
                     ret = db_upgrade(&error);
                 else {
-                    if (xs_number_get(xs_dict_get(srv_config, "layout")) < db_layout) {
-                        ret   = 0;
+                    if (xs_number_get(xs_dict_get(srv_config, "layout")) < db_layout)
                         error = xs_fmt("ERROR: db layout changed - execute 'snac upgrade' first");
-                    }
+                    else
+                        ret = 1;
                 }
             }
 
