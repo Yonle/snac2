@@ -1571,9 +1571,11 @@ void purge_user(snac *snac)
     days = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
     _purge_subdir(snac, "timeline", days);
     _purge_subdir(snac, "hidden", days);
+    _purge_subdir(snac, "private", days);
 
     days = xs_number_get(xs_dict_get(srv_config, "local_purge_days"));
     _purge_subdir(snac, "local", days);
+    _purge_subdir(snac, "public", days);
 }
 
 
