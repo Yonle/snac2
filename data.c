@@ -1492,11 +1492,13 @@ d_char *dequeue(snac *snac, char *fn)
 }
 
 
-static void _purge_file(const char *fn, int days)
+static void _purge_file(const char *fn, int days, int n_link)
+/* purge fn if it's older than days and has less than n_link hard links */
 {
     time_t mt = time(NULL) - days * 24 * 3600;
+    int nl;
 
-    if (mtime(fn) < mt) {
+    if (mtime_nl(fn, &nl) < mt && nl < n_link) {
         /* older than the minimum time: delete it */
         unlink(fn);
         srv_debug(1, xs_fmt("purged %s", fn));
@@ -1514,7 +1516,7 @@ static void _purge_subdir(snac *snac, const char *subdir, int days)
 
         p = list;
         while (xs_list_iter(&p, &v))
-            _purge_file(v, days);
+            _purge_file(v, days, XS_ALL);
     }
 }
 
@@ -1523,7 +1525,6 @@ void purge_server(void)
 /* purge global server data */
 {
     int tpd = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
-//    int lpd = xs_number_get(xs_dict_get(srv_config, "local_purge_days"));
     xs *spec = xs_fmt("%s/object/??", srv_basedir);
     xs *dirs = xs_glob(spec, 0, 0);
     char *p, *v;
@@ -1536,7 +1537,7 @@ void purge_server(void)
 
         p2 = files;
         while (xs_list_iter(&p2, &v2)) {
-            _purge_file(v2, tpd);
+            _purge_file(v2, tpd, 2);
         }
     }
 }
@@ -1559,8 +1560,6 @@ void purge_user(snac *snac)
 void purge_all(void)
 /* purge all users */
 {
-    purge_server();
-
     snac snac;
     xs *list = user_list();
     char *p, *uid;
@@ -1572,4 +1571,6 @@ void purge_all(void)
             user_free(&snac);
         }
     }
+
+    purge_server();
 }
