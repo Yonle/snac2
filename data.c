@@ -901,11 +901,11 @@ void timeline_object_add(snac *snac, const char *id, char *msg)
 {
     object_add(id, msg);
 
-    xs *idx = xs_fmt("%s/timeline.idx", snac->basedir);
+    xs *idx = xs_fmt("%s/private.idx", snac->basedir);
     index_add(idx, id);
 
     if (xs_startswith(id, snac->actor)) {
-        idx = xs_replace_i(idx, "timeline.", "local.");
+        idx = xs_replace_i(idx, "private.", "public.");
         index_add(idx, id);
     }
 }
