@@ -197,7 +197,7 @@ double mtime_nl(const char *fn, int *n_link)
         n = st.st_nlink;
     }
 
-    if (*n_link)
+    if (n_link)
         *n_link = n;
 
     return r;
