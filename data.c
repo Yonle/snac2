@@ -1023,7 +1023,6 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
     else
         snac_log(snac, xs_fmt("timeline_admire ignored for unknown object %s", id));
 
-    timeline_update_indexes(snac, id);
     object_admire(id, admirer, like);
 }
 
