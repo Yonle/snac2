@@ -218,6 +218,9 @@ int index_add_md5(const char *fn, const char *md5)
     if ((f = fopen(fn, "a")) != NULL) {
         flock(fileno(f), LOCK_EX);
 
+        /* ensure the position is at the end after getting the lock */
+        fseek(f, 0, SEEK_END);
+
         fprintf(f, "%s\n", md5);
         fclose(f);
     }
@@ -314,6 +317,8 @@ int index_first(const char *fn, char *line, int size)
     int ret = 0;
 
     if ((f = fopen(fn, "r")) != NULL) {
+        flock(fileno(f), LOCK_SH);
+
         if (fgets(line, size, f) != NULL) {
             line[32] = '\0';
             ret = 1;
@@ -785,6 +790,9 @@ int timeline_del(snac *snac, char *id)
     /* delete from the user's caches */
     object_user_cache_del(snac, id, "public");
     object_user_cache_del(snac, id, "private");
+
+    /* NOTE: this is a good place to count the # of links
+       of the object and object_del() it if it's < 2 */
 
     return ret;
 }
