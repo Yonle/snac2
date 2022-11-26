@@ -306,6 +306,25 @@ int index_in(const char *fn, const char *id)
 }
 
 
+int index_first(const char *fn, char *line, int size)
+/* reads the first entry of an index */
+{
+    FILE *f;
+    int ret = 0;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        if (fgets(line, size, f) != NULL) {
+            line[32] = '\0';
+            ret = 1;
+        }
+
+        fclose(f);
+    }
+
+    return ret;
+}
+
+
 d_char *index_list(const char *fn, int max)
 /* returns an index as a list */
 {
