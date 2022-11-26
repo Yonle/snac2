@@ -222,7 +222,7 @@ static void *queue_thread(void *arg)
     time_t purge_time;
 
     /* first purge time */
-    purge_time = time(NULL) + 15 * 60;
+    purge_time = time(NULL) + 10 * 60;
 
     srv_log(xs_fmt("queue thread start"));
 

@@ -380,7 +380,6 @@ d_char *_object_fn_by_md5(const char *md5)
 d_char *_object_fn(const char *id)
 {
     xs *md5 = xs_md5_hex(id, strlen(id));
-
     return _object_fn_by_md5(md5);
 }
 
@@ -425,7 +424,6 @@ int object_get(const char *id, d_char **obj, const char *type)
 /* returns a stored object, optionally of the requested type */
 {
     xs *md5 = xs_md5_hex(id, strlen(id));
-
     return object_get_by_md5(md5, obj, type);
 }
 
@@ -473,18 +471,18 @@ int object_add(const char *id, d_char *obj)
 }
 
 
-int object_del(const char *id)
-/* deletes an object */
+int object_del_by_md5(const char *md5)
+/* deletes an object by its md5 */
 {
     int status = 404;
-    xs *fn     = _object_fn(id);
+    xs *fn     = _object_fn_by_md5(md5);
 
     if (fn != NULL && unlink(fn) != -1) {
         status = 200;
 
         /* also delete associated indexes */
-        xs *spec = _object_fn(id);
-        spec = xs_replace_i(spec, ".json", "*.idx");
+        xs *spec  = xs_dup(fn);
+        spec      = xs_replace_i(spec, ".json", "*.idx");
         xs *files = xs_glob(spec, 0, 0);
         char *p, *v;
 
@@ -495,9 +493,17 @@ int object_del(const char *id)
         }
     }
 
-    srv_debug(0, xs_fmt("object_del %s %d", id, status));
+    srv_debug(0, xs_fmt("object_del %s %d", fn, status));
 
     return status;
+}
+
+
+int object_del(const char *id)
+/* deletes an object */
+{
+    xs *md5 = xs_md5_hex(id, strlen(id));
+    return object_del_by_md5(md5);
 }
 
 
@@ -1521,13 +1527,12 @@ d_char *dequeue(snac *snac, char *fn)
 }
 
 
-static void _purge_file(const char *fn, int days, int n_link)
-/* purge fn if it's older than days and has less than n_link hard links */
+static void _purge_file(const char *fn, int days)
+/* purge fn if it's older than days */
 {
     time_t mt = time(NULL) - days * 24 * 3600;
-    int nl;
 
-    if (mtime_nl(fn, &nl) < mt && nl < n_link) {
+    if (mtime(fn) < mt) {
         /* older than the minimum time: delete it */
         unlink(fn);
         srv_debug(1, xs_fmt("purged %s", fn));
@@ -1545,7 +1550,7 @@ static void _purge_subdir(snac *snac, const char *subdir, int days)
 
         p = list;
         while (xs_list_iter(&p, &v))
-            _purge_file(v, days, XS_ALL);
+            _purge_file(v, days);
     }
 }
 
@@ -1558,15 +1563,26 @@ void purge_server(void)
     xs *dirs = xs_glob(spec, 0, 0);
     char *p, *v;
 
+    time_t mt = time(NULL) - tpd * 24 * 3600;
+
     p = dirs;
     while (xs_list_iter(&p, &v)) {
-        xs *spec2 = xs_fmt("%s/" "*", v);
+        xs *spec2 = xs_fmt("%s/" "*.json", v);
         xs *files = xs_glob(spec2, 0, 0);
         char *p2, *v2;
 
         p2 = files;
         while (xs_list_iter(&p2, &v2)) {
-            _purge_file(v2, tpd, 2);
+            int n_link;
+
+            /* old and with no hard links? */
+            if (mtime_nl(v2, &n_link) < mt && n_link < 2) {
+                xs *s1    = xs_replace(v2, ".json", "");
+                xs *l     = xs_split(s1, "/");
+                char *md5 = xs_list_get(l, -1);
+
+                object_del_by_md5(md5);
+            }
         }
     }
 }
