@@ -454,12 +454,16 @@ int _object_add(const char *id, d_char *obj, int ow)
 
         if (!xs_is_null(in_reply_to) && *in_reply_to) {
             /* update the children index of the parent */
-            xs *pfn = _object_fn(in_reply_to);
+            xs *c_idx = _object_fn(in_reply_to);
 
-            pfn = xs_replace_i(pfn, ".json", "_c.idx");
-            index_add(pfn, id);
+            c_idx = xs_replace_i(c_idx, ".json", "_c.idx");
+            index_add(c_idx, id);
 
-            srv_debug(0, xs_fmt("object_add added child %s to %s", id, pfn));
+            srv_debug(0, xs_fmt("object_add added child %s to %s", id, c_idx));
+
+            /* create a one-element index with the parent */
+            xs *p_idx = xs_replace(fn, ".json", "_p.idx");
+            index_add(p_idx, in_reply_to);
         }
     }
     else
