@@ -428,14 +428,14 @@ int object_get(const char *id, d_char **obj, const char *type)
 }
 
 
-int object_add(const char *id, d_char *obj)
+int _object_add(const char *id, d_char *obj, int ow)
 /* stores an object */
 {
     int status = 201; /* Created */
     xs *fn     = _object_fn(id);
     FILE *f;
 
-    if (mtime(fn) > 0.0) {
+    if (!ow && mtime(fn) > 0.0) {
         /* object already here */
         srv_debug(0, xs_fmt("object_add object already here %s", id));
         return 204; /* No content */
@@ -468,6 +468,20 @@ int object_add(const char *id, d_char *obj)
     srv_debug(0, xs_fmt("object_add %s %s %d", id, fn, status));
 
     return status;
+}
+
+
+int object_add(const char *id, d_char *obj)
+/* stores an object */
+{
+    return _object_add(id, obj, 0);
+}
+
+
+int object_add_ow(const char *id, d_char *obj)
+/* stores an object (overwriting allowed) */
+{
+    return _object_add(id, obj, 1);
 }
 
 
@@ -1231,7 +1245,7 @@ int is_hidden(snac *snac, const char *id)
 int actor_add(snac *snac, const char *actor, d_char *msg)
 /* adds an actor */
 {
-    return object_add(actor, msg);
+    return object_add_ow(actor, msg);
 }
 
 
@@ -1381,6 +1395,8 @@ d_char *history_list(snac *snac)
 }
 
 
+/** the queue **/
+
 static int _enqueue_put(char *fn, char *msg)
 /* writes safely to the queue */
 {
@@ -1526,6 +1542,8 @@ d_char *dequeue(snac *snac, char *fn)
     return obj;
 }
 
+
+/** the purge **/
 
 static void _purge_file(const char *fn, time_t mt)
 /* purge fn if it's older than days */
