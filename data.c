@@ -1039,12 +1039,10 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
 }
 
 
-d_char *timeline_top_level(snac *snac, const char *index)
-/* returns the top level entries from this index */
+d_char *timeline_top_level(snac *snac, d_char *list)
+/* returns the top level md5 entries from this index */
 {
-    int max  = 256;
-    xs *list = index_list_desc(index, max);
-    xs *tl   = xs_list_new();
+    d_char *tl = xs_list_new();
     xs_set seen;
     char *p, *v;
 
@@ -1061,15 +1059,13 @@ d_char *timeline_top_level(snac *snac, const char *index)
             xs *fn = _object_fn_by_md5(line);
             fn     = xs_replace_i(fn, ".json", "_p.idx");
 
-            /* if it doesn't have a parent, we got it */
-            if (index_first(fn, line2, strlen(line2)) == 0) {
-                strcpy(line, line2);
+            /* if it doesn't have a parent, use this */
+            if (index_first(fn, line2, sizeof(line2)) == 0)
                 break;
-            }
 
             xs *pfn = _object_fn_by_md5(line2);
 
-            /* well, there is a parent... if it's not here, we're done */
+            /* well, there is a parent... but if it's not there, use this */
             if (mtime(pfn) == 0.0)
                 break;
 
@@ -1077,12 +1073,8 @@ d_char *timeline_top_level(snac *snac, const char *index)
             strcpy(line, line2);
         }
 
-        if (xs_set_add(&seen, line) == 1) {
-            xs *obj = NULL;
-
-            if (valid_status(object_get(line, &obj, NULL)))
-                tl = xs_list_append(tl, obj);
-        }
+        if (xs_set_add(&seen, line) == 1)
+            tl = xs_list_append(tl, line);
     }
 
     xs_set_free(&seen);

@@ -156,12 +156,21 @@ int main(int argc, char *argv[])
     }
 
     if (strcmp(cmd, "timeline") == 0) {
+#if 0
         xs *list = local_list(&snac, XS_ALL);
         xs *body = html_timeline(&snac, list, 1);
 
         printf("%s\n", body);
         user_free(&snac);
         srv_free();
+#endif
+
+        xs *idx  = xs_fmt("%s/private.idx", snac.basedir);
+        xs *list = index_list_desc(idx, 256);
+        xs *tl   = timeline_top_level(&snac, list);
+
+        xs *j    = xs_json_dumps_pp(tl, 4);
+        printf("%s\n", j);
 
         return 0;
     }
