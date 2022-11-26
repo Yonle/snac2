@@ -556,14 +556,28 @@ int object_admire(const char *id, const char *actor, int like)
 }
 
 
-int object_user_cache_add(snac *snac, const char *id, const char *cachedir)
-/* caches an object into a user cache */
+int _object_user_cache(snac *snac, const char *id, const char *cachedir, int del)
+/* adds or deletes from a user cache */
 {
     xs *ofn = _object_fn(id);
     xs *l   = xs_split(ofn, "/");
     xs *cfn = xs_fmt("%s/%s/%s", snac->basedir, cachedir, xs_list_get(l, -1));
 
-    return link(ofn, cfn);
+    return del ? unlink(cfn) : link(ofn, cfn);
+}
+
+
+int object_user_cache_add(snac *snac, const char *id, const char *cachedir)
+/* caches an object into a user cache */
+{
+    return _object_user_cache(snac, id, cachedir, 0);
+}
+
+
+int object_user_cache_del(snac *snac, const char *id, const char *cachedir)
+/* deletes an object from a user cache */
+{
+    return _object_user_cache(snac, id, cachedir, 1);
 }
 
 
@@ -737,7 +751,10 @@ int timeline_del(snac *snac, char *id)
         ret = 200;
     }
 
-    object_del(id);
+    if (valid_status(object_del(id))) {
+        object_user_cache_del(snac, id, "public");
+        object_user_cache_del(snac, id, "private");
+    }
 
     return ret;
 }
