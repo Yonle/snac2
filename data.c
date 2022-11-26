@@ -1527,11 +1527,9 @@ d_char *dequeue(snac *snac, char *fn)
 }
 
 
-static void _purge_file(const char *fn, int days)
+static void _purge_file(const char *fn, time_t mt)
 /* purge fn if it's older than days */
 {
-    time_t mt = time(NULL) - days * 24 * 3600;
-
     if (mtime(fn) < mt) {
         /* older than the minimum time: delete it */
         unlink(fn);
@@ -1544,13 +1542,14 @@ static void _purge_subdir(snac *snac, const char *subdir, int days)
 /* purges all files in subdir older than days */
 {
     if (days) {
+        time_t mt = time(NULL) - days * 24 * 3600;
         xs *spec  = xs_fmt("%s/%s/" "*", snac->basedir, subdir);
         xs *list  = xs_glob(spec, 0, 0);
         char *p, *v;
 
         p = list;
         while (xs_list_iter(&p, &v))
-            _purge_file(v, days);
+            _purge_file(v, mt);
     }
 }
 
