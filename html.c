@@ -196,14 +196,14 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
                 "<a href=\"%s.rss\">%s</a> - "
                 "<a href=\"%s/admin\" rel=\"nofollow\">%s</a></nav>\n",
                 snac->actor, L("RSS"),
-                snac->actor, L("admin"));
+                snac->actor, L("private"));
         else
             s1 = xs_fmt(
                 "<a href=\"%s\">%s</a> - "
                 "<a href=\"%s/admin\">%s</a> - "
                 "<a href=\"%s/people\">%s</a></nav>\n",
                 snac->actor, L("public"),
-                snac->actor, L("admin"),
+                snac->actor, L("private"),
                 snac->actor, L("people"));
 
         s = xs_str_cat(s, s1);
