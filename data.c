@@ -464,6 +464,8 @@ int _object_add(const char *id, d_char *obj, int ow)
             /* create a one-element index with the parent */
             xs *p_idx = xs_replace(fn, ".json", "_p.idx");
             index_add(p_idx, in_reply_to);
+
+            srv_debug(0, xs_fmt("object_add added parent %s to %s", in_reply_to, p_idx));
         }
     }
     else
@@ -554,7 +556,7 @@ int object_admire(const char *id, const char *actor, int like)
 }
 
 
-int object_user_cache(snac *snac, const char *id, const char *cachedir)
+int object_user_cache_add(snac *snac, const char *id, const char *cachedir)
 /* caches an object into a user cache */
 {
     xs *ofn = _object_fn(id);
@@ -944,14 +946,14 @@ void timeline_update_indexes(snac *snac, const char *id)
     xs *idx = xs_fmt("%s/private.idx", snac->basedir);
     index_add(idx, id);
 
-    object_user_cache(snac, id, "private");
+    object_user_cache_add(snac, id, "private");
 
     if (xs_startswith(id, snac->actor)) {
         /* add to the public index */
         idx = xs_replace_i(idx, "private", "public");
         index_add(idx, id);
 
-        object_user_cache(snac, id, "public");
+        object_user_cache_add(snac, id, "public");
     }
 }
 
