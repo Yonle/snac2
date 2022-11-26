@@ -1341,6 +1341,9 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
                 post(&snac, msg);
 
+                /* FIXME: also post this Tombstone to people
+                   that Announce'd it */
+
                 snac_log(&snac, xs_fmt("posted tombstone for %s", id));
             }
 

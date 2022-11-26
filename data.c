@@ -762,10 +762,9 @@ int timeline_del(snac *snac, char *id)
         ret = 200;
     }
 
-    if (valid_status(object_del(id))) {
-        object_user_cache_del(snac, id, "public");
-        object_user_cache_del(snac, id, "private");
-    }
+    /* delete from the user's caches */
+    object_user_cache_del(snac, id, "public");
+    object_user_cache_del(snac, id, "private");
 
     return ret;
 }
