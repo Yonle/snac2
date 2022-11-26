@@ -566,8 +566,8 @@ int _object_user_cache(snac *snac, const char *id, const char *cachedir, int del
     int ret;
 
     if (del) {
-        index_del(idx, id); // expensive; let it fail on processing?
-        ret = unlink(cfn);
+        if ((ret = unlink(cfn)) != -1)
+            index_del(idx, id);
     }
     else {
         index_add(idx, id);
