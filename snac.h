@@ -76,6 +76,8 @@ d_char *timeline_list(snac *snac, int max);
 int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer);
 void timeline_admire(snac *snac, char *id, char *admirer, int like);
 
+d_char *timeline_top_level(snac *snac, const char *index);
+
 d_char *local_list(snac *snac, int max);
 
 int following_add(snac *snac, char *actor, char *msg);

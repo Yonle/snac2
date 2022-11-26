@@ -6,6 +6,7 @@
 #include "xs_json.h"
 #include "xs_openssl.h"
 #include "xs_glob.h"
+#include "xs_set.h"
 
 #include "snac.h"
 
@@ -1035,6 +1036,58 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
     }
 
     return ret;
+}
+
+
+d_char *timeline_top_level(snac *snac, const char *index)
+/* returns the top level entries from this index */
+{
+    int max  = 256;
+    xs *list = index_list_desc(index, max);
+    xs *tl   = xs_list_new();
+    xs_set seen;
+    char *p, *v;
+
+    xs_set_init(&seen);
+
+    p = list;
+    while (xs_list_iter(&p, &v)) {
+        char line[256] = "";
+
+        strcpy(line, v);
+
+        for (;;) {
+            char line2[256];
+            xs *fn = _object_fn_by_md5(line);
+            fn     = xs_replace_i(fn, ".json", "_p.idx");
+
+            /* if it doesn't have a parent, we got it */
+            if (index_first(fn, line2, strlen(line2)) == 0) {
+                strcpy(line, line2);
+                break;
+            }
+
+            xs *pfn = _object_fn_by_md5(line2);
+
+            /* well, there is a parent... if it's not here, we're done */
+            if (mtime(pfn) == 0.0)
+                break;
+
+            /* it's here! try again with its own parent */
+            strcpy(line, line2);
+        }
+
+        if (xs_set_add(&seen, line) == 1) {
+            xs *obj = NULL;
+
+            if (valid_status(object_get(line, &obj, NULL)))
+                tl = xs_list_append(tl, obj);
+        }
+    }
+
+    xs_set_free(&seen);
+
+    return tl;
 }
 
 
