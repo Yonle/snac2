@@ -562,8 +562,19 @@ int _object_user_cache(snac *snac, const char *id, const char *cachedir, int del
     xs *ofn = _object_fn(id);
     xs *l   = xs_split(ofn, "/");
     xs *cfn = xs_fmt("%s/%s/%s", snac->basedir, cachedir, xs_list_get(l, -1));
+    xs *idx = xs_fmt("%s/%s.idx", snac->basedir, cachedir);
+    int ret;
 
-    return del ? unlink(cfn) : link(ofn, cfn);
+    if (del) {
+        index_del(idx, id);
+        ret = unlink(cfn);
+    }
+    else {
+        index_add(idx, id);
+        ret = link(ofn, cfn);
+    }
+
+    return ret;
 }
 
 
@@ -959,19 +970,10 @@ int _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referre
 void timeline_update_indexes(snac *snac, const char *id)
 /* updates the indexes */
 {
-    /* add to the private index */
-    xs *idx = xs_fmt("%s/private.idx", snac->basedir);
-    index_add(idx, id);
-
     object_user_cache_add(snac, id, "private");
 
-    if (xs_startswith(id, snac->actor)) {
-        /* add to the public index */
-        idx = xs_replace_i(idx, "private", "public");
-        index_add(idx, id);
-
+    if (xs_startswith(id, snac->actor))
         object_user_cache_add(snac, id, "public");
-    }
 }
 
 
