@@ -77,6 +77,10 @@ will refuse to run and require an upgrade. Do this by running
 .Bd -literal -offset indent
 snac upgrade $HOME/snac-data
 .Ed
+Take special care to execute this upgrade operation without any
+.Nm
+processes serving on the same folder. You can break everything. I know
+this because Tyler knows this.
 .Pp
 .Ss Server Setup
 .Pp
