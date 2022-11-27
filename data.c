@@ -552,6 +552,20 @@ int object_del(const char *id)
 }
 
 
+int object_del_if_unref(const char *id)
+/* deletes an object if its n_links < 2 */
+{
+    xs *fn = _object_fn(id);
+    int n_links;
+    int ret = 0;
+
+    if (mtime_nl(fn, &n_links) > 0.0 && n_links < 2)
+        ret = object_del(id);
+
+    return ret;
+}
+
+
 d_char *object_children(const char *id)
 /* returns the list of an object's children */
 {
@@ -791,8 +805,8 @@ int timeline_del(snac *snac, char *id)
     object_user_cache_del(snac, id, "public");
     object_user_cache_del(snac, id, "private");
 
-    /* NOTE: this is a good place to count the # of links
-       of the object and object_del() it if it's < 2 */
+    /* try to delete the object if it's not used elsewhere */
+    object_del_if_unref(id);
 
     return ret;
 }
