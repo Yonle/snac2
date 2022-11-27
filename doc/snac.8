@@ -14,6 +14,19 @@ This is the admin manual. For user operation, see
 .Xr snac 1 .
 For file and data formats, see
 .Xr snac 5 .
+.Ss Special cares about your snac you must know beforehand
+.Nm
+makes heavy use of hard links and link reference counts for its work, so
+don't even think of using it on a filesystem that doesn't support this
+feature. Most UNIX-like operating systems (Linux, the BSDs, the old DEC
+Ultrix machine in your grandfather basement, probably MacOS) support hard
+links on their native filesystems. Don't do fancy things like moving the
+subdirectories to different filesystems. Also, if you move your
+.Nm
+installation to another server, do it with a tool that respect hard
+link counts. Remember:
+.Nm
+is a very UNIXy program that loves hard links.
 .Ss Building and Installation
 A C compiler must be installed in the system, as well as the development
 headers and libraries for OpenSSL and curl. To build
