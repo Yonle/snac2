@@ -1021,7 +1021,7 @@ void process_queue(snac *snac)
             if ((f = popen("/usr/sbin/sendmail -t", "w")) != NULL) {
                 fprintf(f, "%s\n", msg);
 
-                if (fclose(f) != EOF)
+                if (pclose(f) != -1)
                     ok = 1;
             }
 
