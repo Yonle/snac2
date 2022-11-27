@@ -806,6 +806,14 @@ int process_message(snac *snac, char *msg, char *req)
 
     /* check the signature */
     if (!check_signature(snac, req)) {
+        {
+            xs *j = xs_json_dumps_pp(req, 4);
+            FILE *f;
+            if ((f = fopen("/tmp/snac-bad-signature.json", "w")) != NULL) {
+                fwrite(j, strlen(j), 1, f);
+                fclose(f);
+            }
+        }
         snac_log(snac, xs_fmt("bad signature"));
         return 1;
     }
