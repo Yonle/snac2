@@ -32,11 +32,21 @@ void xs_set_init(xs_set *s)
 }
 
 
-void xs_set_free(xs_set *s)
-/* frees a set */
+d_char *xs_set_result(xs_set *s)
+/* returns the set as a list and frees it */
 {
+    d_char *list = s->list;
+    s->list = NULL;
     s->hash = xs_free(s->hash);
-    s->list = xs_free(s->list);
+
+    return list;
+}
+
+
+void xs_set_free(xs_set *s)
+/* frees a set, dropping the list */
+{
+    free(xs_set_result(s));
 }
 
 
