@@ -12,6 +12,7 @@ typedef struct _xs_set {
 } xs_set;
 
 void xs_set_init(xs_set *s);
+d_char *xs_set_result(xs_set *s);
 void xs_set_free(xs_set *s);
 int xs_set_add(xs_set *s, const char *data);
 

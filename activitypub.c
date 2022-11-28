@@ -9,6 +9,7 @@
 #include "xs_openssl.h"
 #include "xs_regex.h"
 #include "xs_time.h"
+#include "xs_set.h"
 
 #include "snac.h"
 
@@ -169,10 +170,12 @@ int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_s
 d_char *recipient_list(snac *snac, char *msg, int expand_public)
 /* returns the list of recipients for a message */
 {
-    d_char *list = xs_list_new();
     char *to = xs_dict_get(msg, "to");
     char *cc = xs_dict_get(msg, "cc");
+    xs_set rcpts;
     int n;
+
+    xs_set_init(&rcpts);
 
     char *lists[] = { to, cc, NULL };
     for (n = 0; lists[n]; n++) {
@@ -195,27 +198,26 @@ d_char *recipient_list(snac *snac, char *msg, int expand_public)
                 char *actor;
 
                 char *p = fwers;
-                while (xs_list_iter(&p, &actor)) {
-                    if (xs_list_in(list, actor) == -1)
-                        list = xs_list_append(list, actor);
-                }
+                while (xs_list_iter(&p, &actor))
+                    xs_set_add(&rcpts, actor);
             }
             else
-            if (xs_list_in(list, v) == -1)
-                list = xs_list_append(list, v);
+                xs_set_add(&rcpts, v);
         }
     }
 
-    return list;
+    return xs_set_result(&rcpts);
 }
 
 
 d_char *inbox_list(snac *snac, char *msg)
 /* returns the list of inboxes that are recipients of this message */
 {
-    d_char *list = xs_list_new();
-    xs *rcpts    = recipient_list(snac, msg, 1);
+    xs *rcpts = recipient_list(snac, msg, 1);
+    xs_set inboxes;
     char *p, *v;
+
+    xs_set_init(&inboxes);
 
     p = rcpts;
     while (xs_list_iter(&p, &v)) {
@@ -223,12 +225,11 @@ d_char *inbox_list(snac *snac, char *msg)
 
         if ((inbox = get_actor_inbox(snac, v)) != NULL) {
             /* add the inbox if it's not already there */
-            if (xs_list_in(list, inbox) == -1)
-                list = xs_list_append(list, inbox);
+            xs_set_add(&inboxes, inbox);
         }
     }
 
-    return list;
+    return xs_set_result(&inboxes);
 }
 
 
