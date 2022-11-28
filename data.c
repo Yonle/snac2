@@ -631,6 +631,16 @@ int object_user_cache_del(snac *snac, const char *id, const char *cachedir)
 }
 
 
+int object_user_cache_in(snac *snac, const char *id, const char *cachedir)
+/* checks if an object is stored in a cache */
+{
+    xs *md5 = xs_md5_hex(id, strlen(id));
+    xs *cfn = xs_fmt("%s/%s/%s.json", snac->basedir, cachedir, md5);
+
+    return !!(mtime(cfn) != 0.0);
+}
+
+
 /** specialized functions **/
 
 d_char *_follower_fn(snac *snac, char *actor)
