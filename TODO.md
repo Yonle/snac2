@@ -2,8 +2,6 @@
 
 ## Open
 
-Dropping on input those messages that have their parent hidden is not a good idea, as children of *these* dropped messages will pass unharmed.
-
 Add support for uploading the avatar, instead of needing an URL to an image. As a kludgy workaround, you can post something with an attached image, copy the auto-generated URL and use it. You can even delete the post, as attached images are never deleted (I said it was kludgy).
 
 Add (back) the possibility to attach an image by URL.
@@ -177,3 +175,5 @@ Add a purge timeout also for the local timeline (2022-11-12T08:32:56+0100).
 Add a switch for sensitive posts (2022-11-16T12:17:50+0100).
 
 Add an RSS to the local timeline (2022-11-18T11:43:54+0100).
+
+Dropping on input those messages that have their parent hidden is not a good idea, as children of *these* dropped messages will pass unharmed (2022-11-28T11:34:56+0100).
