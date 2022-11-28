@@ -134,8 +134,6 @@ int db_upgrade(d_char **error)
             xs *users = user_list();
             char *p, *v;
 
-            xs_debug();
-
             p = users;
             while (xs_list_iter(&p, &v)) {
                 snac snac;
