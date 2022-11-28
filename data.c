@@ -656,22 +656,22 @@ d_char *object_user_cache_list(snac *snac, const char *cachedir, int max)
 int follower_add(snac *snac, const char *actor)
 /* adds a follower */
 {
-    int status = object_user_cache_add(snac, actor, "followers");
+    int ret = object_user_cache_add(snac, actor, "followers");
 
     snac_debug(snac, 2, xs_fmt("follower_add %s %s", actor));
 
-    return status;
+    return ret == -1 ? 500 : 200;
 }
 
 
 int follower_del(snac *snac, const char *actor)
 /* deletes a follower */
 {
-    int status = object_user_cache_del(snac, actor, "followers");
+    int ret = object_user_cache_del(snac, actor, "followers");
 
     snac_debug(snac, 2, xs_fmt("follower_del %s %s", actor));
 
-    return status;
+    return ret == -1 ? 404 : 200;
 }
 
 
