@@ -938,7 +938,7 @@ d_char *html_people(snac *snac)
 
     s = html_user_header(snac, s, 0);
 
-//    s = html_people_list(snac, s, wing, L("People you follow"), "i");
+    s = html_people_list(snac, s, wing, L("People you follow"), "i");
 
     s = html_people_list(snac, s, wers, L("People that follows you"), "e");
 

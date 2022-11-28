@@ -1146,6 +1146,12 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
 }
 
 
+/** following **/
+
+/* this needs special treatment and cannot use the object db as is,
+   with a link to a cached author, because we need the Follow object
+   in case we need to unfollow (Undo + original Follow) */
+
 d_char *_following_fn(snac *snac, char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
@@ -1242,8 +1248,12 @@ d_char *following_list(snac *snac)
                 if (o != NULL) {
                     char *type = xs_dict_get(o, "type");
 
-                    if (!xs_is_null(type) && strcmp(type, "Accept") == 0)
-                        list = xs_list_append(list, o);
+                    if (!xs_is_null(type) && strcmp(type, "Accept") == 0) {
+                        char *actor = xs_dict_get(o, "actor");
+
+                        if (!xs_is_null(actor))
+                            list = xs_list_append(list, actor);
+                    }
                 }
             }
         }
