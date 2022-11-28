@@ -192,12 +192,10 @@ d_char *recipient_list(snac *snac, char *msg, int expand_public)
             if (expand_public && strcmp(v, public_address) == 0) {
                 /* iterate the followers and add them */
                 xs *fwers = follower_list(snac);
-                char *fw;
+                char *actor;
 
                 char *p = fwers;
-                while (xs_list_iter(&p, &fw)) {
-                    char *actor = xs_dict_get(fw, "actor");
-
+                while (xs_list_iter(&p, &actor)) {
                     if (xs_list_in(list, actor) == -1)
                         list = xs_list_append(list, actor);
                 }
@@ -832,7 +830,7 @@ int process_message(snac *snac, char *msg, char *req)
 
         timeline_add(snac, xs_dict_get(f_msg, "id"), f_msg, NULL, NULL);
 
-        follower_add(snac, actor, f_msg);
+        follower_add(snac, actor);
 
         snac_log(snac, xs_fmt("New follower %s", actor));
         do_notify = 1;

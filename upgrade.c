@@ -128,6 +128,51 @@ int db_upgrade(d_char **error)
 
             nf = 2.4;
         }
+        else
+        if (f < 2.5) {
+            /* upgrade followers */
+            xs *users = user_list();
+            char *p, *v;
+
+            xs_debug();
+
+            p = users;
+            while (xs_list_iter(&p, &v)) {
+                snac snac;
+
+                if (user_open(&snac, v)) {
+                    xs *spec = xs_fmt("%s/followers/" "*.json", snac.basedir);
+                    xs *dir  = xs_glob(spec, 0, 0);
+                    char *p, *v;
+
+                    p = dir;
+                    while (xs_list_iter(&p, &v)) {
+                        FILE *f;
+
+                        if ((f = fopen(v, "r")) != NULL) {
+                            xs *s = xs_readall(f);
+                            xs *o = xs_json_loads(s);
+                            fclose(f);
+
+                            char *type = xs_dict_get(o, "type");
+
+                            if (!xs_is_null(type) && strcmp(type, "Follow") == 0) {
+                                unlink(v);
+
+                                char *actor = xs_dict_get(o, "actor");
+
+                                if (!xs_is_null(actor))
+                                    follower_add(&snac, actor);
+                            }
+                        }
+                    }
+
+                    user_free(&snac);
+                }
+            }
+
+            nf = 2.5;
+        }
 
         if (f < nf) {
             f          = nf;

@@ -15,7 +15,7 @@
 #include <sys/file.h>
 #include <fcntl.h>
 
-double db_layout = 2.4;
+double db_layout = 2.5;
 
 
 int db_upgrade(d_char **error);
@@ -641,93 +641,72 @@ int object_user_cache_in(snac *snac, const char *id, const char *cachedir)
 }
 
 
+d_char *object_user_cache_list(snac *snac, const char *cachedir, int max)
+/* returns the objects in a cache as a list */
+{
+    xs *idx = xs_fmt("%s/%s.idx", snac->basedir, cachedir);
+    return index_list(idx, max);
+}
+
+
 /** specialized functions **/
 
-d_char *_follower_fn(snac *snac, char *actor)
-{
-    xs *md5 = xs_md5_hex(actor, strlen(actor));
-    return xs_fmt("%s/followers/%s.json", snac->basedir, md5);
-}
+/** followers **/
 
-
-int follower_add(snac *snac, char *actor, char *msg)
+int follower_add(snac *snac, const char *actor)
 /* adds a follower */
 {
-    int ret = 201; /* created */
-    xs *fn = _follower_fn(snac, actor);
-    FILE *f;
+    int status = object_user_cache_add(snac, actor, "followers");
 
-    if ((f = fopen(fn, "w")) != NULL) {
-        xs *j = xs_json_dumps_pp(msg, 4);
-
-        fwrite(j, 1, strlen(j), f);
-        fclose(f);
-    }
-    else
-        ret = 500;
-
-    snac_debug(snac, 2, xs_fmt("follower_add %s %s", actor, fn));
-
-    return ret;
-}
-
-
-int follower_del(snac *snac, char *actor)
-/* deletes a follower */
-{
-    int status = 200;
-    xs *fn = _follower_fn(snac, actor);
-
-    if (fn != NULL)
-        unlink(fn);
-    else
-        status = 404;
-
-    snac_debug(snac, 2, xs_fmt("follower_del %s %s", actor, fn));
+    snac_debug(snac, 2, xs_fmt("follower_add %s %s", actor));
 
     return status;
 }
 
 
-int follower_check(snac *snac, char *actor)
+int follower_del(snac *snac, const char *actor)
+/* deletes a follower */
+{
+    int status = object_user_cache_del(snac, actor, "followers");
+
+    snac_debug(snac, 2, xs_fmt("follower_del %s %s", actor));
+
+    return status;
+}
+
+
+int follower_check(snac *snac, const char *actor)
 /* checks if someone is a follower */
 {
-    xs *fn = _follower_fn(snac, actor);
-
-    return !!(mtime(fn) != 0.0);
+    return object_user_cache_in(snac, actor, "followers");
 }
 
 
 d_char *follower_list(snac *snac)
 /* returns the list of followers */
 {
-    xs *spec = xs_fmt("%s/followers/" "*.json", snac->basedir);
-    xs *glist = xs_glob(spec, 0, 0);
+    xs *list      = object_user_cache_list(snac, "followers", XS_ALL);
+    d_char *fwers = xs_list_new();
     char *p, *v;
-    d_char *list = xs_list_new();
 
-    /* iterate the list of files */
-    p = glist;
+    /* resolve the list of md5 to be a list of actors */
+    p = list;
     while (xs_list_iter(&p, &v)) {
-        FILE *f;
+        xs *a_obj = NULL;
 
-        /* load the follower data */
-        if ((f = fopen(v, "r")) != NULL) {
-            xs *j = xs_readall(f);
-            fclose(f);
+        if (valid_status(object_get_by_md5(v, &a_obj, NULL))) {
+            char *actor = xs_dict_get(a_obj, "id");
 
-            if (j != NULL) {
-                xs *o = xs_json_loads(j);
-
-                if (o != NULL)
-                    list = xs_list_append(list, o);
-            }
+            if (!xs_is_null(actor))
+                fwers = xs_list_append(fwers, actor);
         }
     }
 
-    return list;
+    return fwers;
 }
 
+
+/** timeline **/
 
 double timeline_mtime(snac *snac)
 {

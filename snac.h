@@ -62,9 +62,9 @@ d_char *index_list_desc(const char *fn, int max);
 int object_del(const char *id);
 int object_del_if_unref(const char *id);
 
-int follower_add(snac *snac, char *actor, char *msg);
-int follower_del(snac *snac, char *actor);
-int follower_check(snac *snac, char *actor);
+int follower_add(snac *snac, const char *actor);
+int follower_del(snac *snac, const char *actor);
+int follower_check(snac *snac, const char *actor);
 d_char *follower_list(snac *snac);
 
 double timeline_mtime(snac *snac);

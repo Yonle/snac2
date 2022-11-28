@@ -840,13 +840,12 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
 {
     xs *s = xs_str_new(NULL);
     xs *h = xs_fmt("<h2>%s</h2>\n", header);
-    char *p, *v;
+    char *p, *actor_id;
 
     s = xs_str_cat(s, h);
 
     p = list;
-    while (xs_list_iter(&p, &v)) {
-        char *actor_id = xs_dict_get(v, "actor");
+    while (xs_list_iter(&p, &actor_id)) {
         xs *md5 = xs_md5_hex(actor_id, strlen(actor_id));
         xs *actor = NULL;
 
@@ -939,7 +938,7 @@ d_char *html_people(snac *snac)
 
     s = html_user_header(snac, s, 0);
 
-    s = html_people_list(snac, s, wing, L("People you follow"), "i");
+//    s = html_people_list(snac, s, wing, L("People you follow"), "i");
 
     s = html_people_list(snac, s, wers, L("People that follows you"), "e");
 
