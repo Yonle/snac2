@@ -812,7 +812,7 @@ d_char *html_timeline(snac *snac, char *list, int local)
         while (xs_list_iter(&p, &v)) {
             xs *fn = xs_replace(v, ".html", "");
             xs *s1 = xs_fmt(
-                        "<li><a href=\"%s/h/%s\">%s</li>\n",
+                        "<li><a href=\"%s/h/%s\">%s</a></li>\n",
                         snac->actor, v, fn);
 
             s = xs_str_cat(s, s1);
