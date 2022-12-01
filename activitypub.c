@@ -1017,10 +1017,10 @@ void process_queue(snac *snac)
             FILE *f;
             int ok = 0;
 
-            if ((f = popen("/usr/sbin/sendmail -t", "w")) != NULL) {
+	    f = popen("/usr/sbin/sendmail -t", "w");
+	    if (f) {
                 fprintf(f, "%s\n", msg);
-
-                if (fclose(f) != EOF)
+                if (pclose(f) != EOF) //this is a pipe stream not just a file
                     ok = 1;
             }
 
