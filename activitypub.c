@@ -1089,7 +1089,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
     if (p_path == NULL) {
         /* if there was no component after the user, it's an actor request */
         msg = msg_actor(&snac);
-        *ctype = "application/ld+json";
+        *ctype = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"";
     }
     else
     if (strcmp(p_path, "outbox") == 0) {
