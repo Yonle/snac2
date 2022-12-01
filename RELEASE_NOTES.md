@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.13
+
+A big disk layout rework, to make it more efficient when timelines get very big. Please take note that you must run `snac upgrade` when you install this version over an already existing one.
+
+Fixed HTML loose close tag.
+
+Fixed bug when closing sendmail pipe.
+
 ## 2.12
 
 Fixed some bugs triggered when a GET query does not have an `Accept:` header.
