@@ -806,7 +806,6 @@ void timeline_admire(snac *snac, char *o_msg, char *id, char *admirer, int like)
 d_char *timeline_top_level(d_char *list)
 /* returns the top level md5 entries from this index */
 {
-    d_char *tl = xs_list_new();
     xs_set seen;
     char *p, *v;
 
@@ -833,13 +832,10 @@ d_char *timeline_top_level(d_char *list)
             strcpy(line, line2);
         }
 
-        if (xs_set_add(&seen, line) == 1)
-            tl = xs_list_append(tl, line);
+        xs_set_add(&seen, line);
     }
 
-    xs_set_free(&seen);
-
-    return tl;
+    return xs_set_result(&seen);
 }
 
 
