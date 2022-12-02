@@ -85,7 +85,7 @@ int timeline_request(snac *snac, char *id, char *referrer)
 
     if (!xs_is_null(id)) {
         /* is the admired object already there? */
-        if (!timeline_here(snac, id)) {
+        if (!object_here(id)) {
             xs *object = NULL;
 
             /* no; download it */

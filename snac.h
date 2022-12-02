@@ -60,6 +60,7 @@ int index_first(const char *fn, char *buf, int size);
 d_char *index_list(const char *fn, int max);
 d_char *index_list_desc(const char *fn, int max);
 
+int object_here(char *id);
 int object_get_by_md5(const char *md5, d_char **obj, const char *type);
 int object_get(const char *id, d_char **obj, const char *type);
 int object_del(const char *id);
@@ -75,7 +76,6 @@ int follower_check(snac *snac, const char *actor);
 d_char *follower_list(snac *snac);
 
 double timeline_mtime(snac *snac);
-int timeline_here(snac *snac, char *id);
 d_char *_timeline_find_fn(snac *snac, char *id);
 d_char *timeline_find(snac *snac, char *id);
 int timeline_del(snac *snac, char *id);

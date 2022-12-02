@@ -411,6 +411,15 @@ d_char *_object_fn(const char *id)
 }
 
 
+int object_here(char *id)
+/* checks if an object is already downloaded */
+{
+    xs *fn = _object_fn(id);
+
+    return mtime(fn) > 0.0;
+}
+
+
 int object_get_by_md5(const char *md5, d_char **obj, const char *type)
 /* returns a stored object, optionally of the requested type */
 {
@@ -755,15 +764,6 @@ d_char *_timeline_find_fn(snac *snac, char *id)
     }
 
     return fn;
-}
-
-
-int timeline_here(snac *snac, char *id)
-/* checks if an object is already downloaded */
-{
-    xs *fn = _timeline_find_fn(snac, id);
-
-    return fn != NULL;
 }
 
 
