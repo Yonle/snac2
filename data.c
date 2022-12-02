@@ -738,53 +738,8 @@ d_char *follower_list(snac *snac)
 
 double timeline_mtime(snac *snac)
 {
-    xs *fn = xs_fmt("%s/timeline", snac->basedir);
+    xs *fn = xs_fmt("%s/private.idx", snac->basedir);
     return mtime(fn);
-}
-
-
-d_char *_timeline_find_fn(snac *snac, char *id)
-/* returns the file name of a timeline entry by its id */
-{
-    xs *md5  = xs_md5_hex(id, strlen(id));
-    xs *spec = xs_fmt("%s/timeline/" "*-%s.json", snac->basedir, md5);
-    xs *list = NULL;
-    d_char *fn = NULL;
-    int l;
-
-    list = xs_glob(spec, 0, 0);
-    l = xs_list_len(list);
-
-    /* if there is something, get the first one */
-    if (l > 0) {
-        fn = xs_str_new(xs_list_get(list, 0));
-
-        if (l > 1)
-            snac_log(snac, xs_fmt("**ALERT** _timeline_find_fn %d > 1", l));
-    }
-
-    return fn;
-}
-
-
-d_char *timeline_find(snac *snac, char *id)
-/* gets a message from the timeline by id */
-{
-    xs *fn      = _timeline_find_fn(snac, id);
-    d_char *msg = NULL;
-
-    if (fn != NULL) {
-        FILE *f;
-
-        if ((f = fopen(fn, "r")) != NULL) {
-            xs *j = xs_readall(f);
-
-            msg = xs_json_loads(j);
-            fclose(f);
-        }
-    }
-
-    return msg;
 }
 
 
@@ -797,16 +752,6 @@ int timeline_del(snac *snac, char *id)
 
     /* try to delete the object if it's not used elsewhere */
     return object_del_if_unref(id);
-}
-
-
-d_char *_timeline_new_fn(snac *snac, char *id)
-/* creates a new filename */
-{
-    xs *ntid = tid(0);
-    xs *md5  = xs_md5_hex(id, strlen(id));
-
-    return xs_fmt("%s/timeline/%s-%s.json", snac->basedir, ntid, md5);
 }
 
 

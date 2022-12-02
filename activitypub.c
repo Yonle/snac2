@@ -399,7 +399,7 @@ d_char *msg_admiration(snac *snac, char *object, char *type)
     /* call the object */
     timeline_request(snac, object, snac->actor);
 
-    if ((a_msg = timeline_find(snac, object)) != NULL) {
+    if (valid_status(object_get(object, &a_msg, NULL))) {
         xs *rcpts = xs_list_new();
 
         msg = msg_base(snac, type, "@dummy", snac->actor, "@now", object);
@@ -592,7 +592,7 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
         /* demand this thing */
         timeline_request(snac, in_reply_to, NULL);
 
-        if ((p_msg = timeline_find(snac, in_reply_to)) != NULL) {
+        if (valid_status(object_get(in_reply_to, &p_msg, NULL))) {
             /* add this author as recipient */
             char *a, *v;
 
@@ -892,7 +892,7 @@ int process_message(snac *snac, char *msg, char *req)
 
         timeline_request(snac, object, actor);
 
-        if ((a_msg = timeline_find(snac, object)) != NULL) {
+        if (valid_status(object_get(object, &a_msg, NULL))) {
             char *who = xs_dict_get(a_msg, "attributedTo");
 
             if (who && !is_muted(snac, who)) {
