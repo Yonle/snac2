@@ -61,6 +61,7 @@ d_char *index_list(const char *fn, int max);
 d_char *index_list_desc(const char *fn, int max);
 
 int object_get_by_md5(const char *md5, d_char **obj, const char *type);
+int object_get(const char *id, d_char **obj, const char *type);
 int object_del(const char *id);
 int object_del_if_unref(const char *id);
 

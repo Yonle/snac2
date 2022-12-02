@@ -1128,10 +1128,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
     if (xs_startswith(p_path, "p/")) {
         xs *id = xs_fmt("%s/%s", snac.actor, p_path);
 
-        if ((msg = timeline_find(&snac, id)) != NULL)
-            msg = xs_dict_del(msg, "_snac");
-        else
-            status = 404;
+        status = object_get(id, &msg, NULL);
     }
     else
         status = 404;
