@@ -1041,8 +1041,6 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
 
                 xs *list = timeline_list(&snac, "private", XS_ALL);
 
-                printf("--> %d\n", xs_list_len(list));
-
                 *body   = html_timeline(&snac, list, 0);
                 *b_size = strlen(*body);
                 status  = 200;

@@ -791,49 +791,12 @@ d_char *timeline_find(snac *snac, char *id)
 int timeline_del(snac *snac, char *id)
 /* deletes a message from the timeline */
 {
-    int ret = 404;
-    xs *fn  = _timeline_find_fn(snac, id);
-
-    if (fn != NULL) {
-        xs *lfn = NULL;
-
-        unlink(fn);
-        snac_debug(snac, 1, xs_fmt("timeline_del %s", id));
-
-        /* try to delete also from the local timeline */
-        lfn = xs_replace(fn, "/timeline/", "/local/");
-
-        if (unlink(lfn) != -1)
-            snac_debug(snac, 1, xs_fmt("timeline_del (local) %s", id));
-
-        ret = 200;
-    }
-
     /* delete from the user's caches */
     object_user_cache_del(snac, id, "public");
     object_user_cache_del(snac, id, "private");
 
     /* try to delete the object if it's not used elsewhere */
-    object_del_if_unref(id);
-
-    return ret;
-}
-
-
-d_char *timeline_get(snac *snac, char *fn)
-/* gets a timeline entry by file name */
-{
-    d_char *d = NULL;
-    FILE *f;
-
-    if ((f = fopen(fn, "r")) != NULL) {
-        xs *j = xs_readall(f);
-
-        d = xs_json_loads(j);
-        fclose(f);
-    }
-
-    return d;
+    return object_del_if_unref(id);
 }
 
 
