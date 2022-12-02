@@ -116,6 +116,7 @@ void user_free(snac *snac)
     xs_free(snac->config);
     xs_free(snac->key);
     xs_free(snac->actor);
+    xs_free(snac->md5);
 }
 
 
@@ -154,6 +155,7 @@ int user_open(snac *snac, char *uid)
 
                     if ((snac->key = xs_json_loads(key_data)) != NULL) {
                         snac->actor = xs_fmt("%s/%s", srv_baseurl, uid);
+                        snac->md5   = xs_md5_hex(snac->actor, strlen(snac->actor));
                         ret = 1;
                     }
                     else
@@ -566,14 +568,31 @@ int object_del_if_unref(const char *id)
 }
 
 
+d_char *_object_metadata(const char *id, const char *idxsfx)
+/* returns the content of a metadata index */
+{
+    xs *fn = _object_fn(id);
+    fn = xs_replace_i(fn, ".json", idxsfx);
+    return index_list(fn, XS_ALL);
+}
+
+
 d_char *object_children(const char *id)
 /* returns the list of an object's children */
 {
-    xs *fn = _object_fn(id);
+    return _object_metadata(id, "_c.idx");
+}
 
-    fn = xs_replace_i(fn, ".json", "_c.idx");
 
-    return index_list(fn, XS_ALL);
+d_char *object_likes(const char *id)
+{
+    return _object_metadata(id, "_l.idx");
+}
+
+
+d_char *object_announces(const char *id)
+{
+    return _object_metadata(id, "_a.idx");
 }
 
 
@@ -818,35 +837,6 @@ d_char *timeline_get(snac *snac, char *fn)
 }
 
 
-d_char *_timeline_list(snac *snac, char *directory, int max)
-/* returns a list of the timeline filenames */
-{
-    xs *spec = xs_fmt("%s/%s/" "*.json", snac->basedir, directory);
-    int c_max;
-
-    /* maximum number of items in the timeline */
-    c_max = xs_number_get(xs_dict_get(srv_config, "max_timeline_entries"));
-
-    /* never more timeline entries than the configured maximum */
-    if (max > c_max)
-        max = c_max;
-
-    return xs_glob_n(spec, 0, 1, max);
-}
-
-
-d_char *timeline_list(snac *snac, int max)
-{
-    return _timeline_list(snac, "timeline", max);
-}
-
-
-d_char *local_list(snac *snac, int max)
-{
-    return _timeline_list(snac, "local", max);
-}
-
-
 d_char *_timeline_new_fn(snac *snac, char *id)
 /* creates a new filename */
 {
@@ -1050,7 +1040,7 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
 }
 
 
-d_char *timeline_top_level(snac *snac, d_char *list)
+d_char *timeline_top_level(d_char *list)
 /* returns the top level md5 entries from this index */
 {
     d_char *tl = xs_list_new();
@@ -1094,7 +1084,26 @@ d_char *timeline_top_level(snac *snac, d_char *list)
 }
 
 
-void timeline_admire(snac *snac, char *id, char *admirer, int like)
+d_char *timeline_list(snac *snac, const char *idx_name, int max)
+/* returns a timeline */
+{
+    int c_max;
+
+    /* maximum number of items in the timeline */
+    c_max = xs_number_get(xs_dict_get(srv_config, "max_timeline_entries"));
+
+    /* never more timeline entries than the configured maximum */
+    if (max > c_max)
+        max = c_max;
+
+    xs *idx  = xs_fmt("%s/%s.idx", snac->basedir, idx_name);
+    xs *list = index_list_desc(idx, max);
+
+    return timeline_top_level(list);
+}
+
+
+void timeline_admire(snac *snac, char *o_msg, char *id, char *admirer, int like)
 /* updates a timeline entry with a new admiration */
 {
     xs *ofn = _timeline_find_fn(snac, id);

@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 
         xs *idx  = xs_fmt("%s/private.idx", snac.basedir);
         xs *list = index_list_desc(idx, 256);
-        xs *tl   = timeline_top_level(&snac, list);
+        xs *tl   = timeline_top_level(list);
 
         xs *j    = xs_json_dumps_pp(tl, 4);
         printf("%s\n", j);

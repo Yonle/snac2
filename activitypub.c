@@ -879,7 +879,7 @@ int process_message(snac *snac, char *msg, char *req)
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
 
-        timeline_admire(snac, object, actor, 1);
+        timeline_admire(snac, msg, object, actor, 1);
         snac_log(snac, xs_fmt("new 'Like' %s %s", actor, object));
         do_notify = 1;
     }
@@ -900,7 +900,7 @@ int process_message(snac *snac, char *msg, char *req)
                 xs *who_o = NULL;
 
                 if (valid_status(actor_request(snac, who, &who_o))) {
-                    timeline_admire(snac, object, actor, 0);
+                    timeline_admire(snac, msg, object, actor, 0);
                     snac_log(snac, xs_fmt("new 'Announce' %s %s", actor, object));
                     do_notify = 1;
                 }
@@ -1094,7 +1094,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
     else
     if (strcmp(p_path, "outbox") == 0) {
         xs *id = xs_fmt("%s/outbox", snac.actor);
-        xs *elems = local_list(&snac, 20);
+        xs *elems = timeline_list(&snac, "public", 20);
         xs *list = xs_list_new();
         msg = msg_collection(&snac, id);
         char *p, *v;

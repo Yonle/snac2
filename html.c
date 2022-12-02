@@ -386,7 +386,8 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
 {
     char *id    = xs_dict_get(msg, "id");
     char *actor = xs_dict_get(msg, "attributedTo");
-    char *meta  = xs_dict_get(msg, "_snac");
+    xs *likes   = object_likes(id);
+    xs *boosts  = object_announces(id);
 
     xs *s   = xs_str_new(NULL);
     xs *md5 = xs_md5_hex(id, strlen(id));
@@ -407,20 +408,14 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
         s = xs_str_cat(s, s1);
     }
 
-    {
-        char *l;
+    if (xs_list_in(likes, snac->md5) == -1) {
+        /* not already liked; add button */
+        s = html_button(s, "like", L("Like"));
+    }
 
-        l = xs_dict_get(meta, "liked_by");
-        if (xs_list_in(l, snac->actor) == -1) {
-            /* not already liked; add button */
-            s = html_button(s, "like", L("Like"));
-        }
-
-        l = xs_dict_get(meta, "announced_by");
-        if (strcmp(actor, snac->actor) == 0 || xs_list_in(l, snac->actor) == -1) {
-            /* not already boosted or us; add button */
-            s = html_button(s, "boost", L("Boost"));
-        }
+    if (strcmp(actor, snac->actor) == 0 || xs_list_in(boosts, snac->md5) == -1) {
+        /* not already boosted or us; add button */
+        s = html_button(s, "boost", L("Boost"));
     }
 
     if (strcmp(actor, snac->actor) != 0) {
@@ -477,21 +472,18 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
 }
 
 
-d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, int level, int *num)
+d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int *num)
 {
     char *id    = xs_dict_get(msg, "id");
     char *type  = xs_dict_get(msg, "type");
-    char *meta  = xs_dict_get(msg, "_snac");
     char *actor;
     int sensitive = 0;
     char *v;
+    xs *likes  = NULL;
+    xs *boosts = NULL;
 
     /* do not show non-public messages in the public timeline */
     if (local && !is_msg_public(snac, msg))
-        return os;
-
-    /* return if already seen */
-    if (xs_set_add(seen, id) == 0)
         return os;
 
     xs *s = xs_str_new(NULL);
@@ -522,6 +514,14 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
 
         return xs_str_cat(os, s);
     }
+    else
+    if (strcmp(type, "Note") != 0) {
+        s = xs_str_cat(s, "<div class=\"snac-post\">\n");
+
+        xs *s1 = xs_fmt("<p>%s</p>\n", type);
+
+        return xs_str_cat(os, s);
+    }
 
     /* bring the main actor */
     if ((actor = xs_dict_get(msg, "attributedTo")) == NULL)
@@ -536,14 +536,14 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
 
     /* if this is our post, add the score */
     if (xs_startswith(id, snac->actor)) {
-        int likes  = xs_list_len(xs_dict_get(meta, "liked_by"));
-        int boosts = xs_list_len(xs_dict_get(meta, "announced_by"));
+        likes  = object_likes(id);
+        boosts = object_announces(id);
 
         /* alternate emojis: %d &#128077; %d &#128257; */
 
         xs *s1 = xs_fmt(
             "<div class=\"snac-score\">%d &#9733; %d &#8634;</div>\n",
-            likes, boosts);
+            xs_list_len(likes), xs_list_len(boosts));
 
         s = xs_str_cat(s, s1);
     }
@@ -553,46 +553,52 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
 
         s = xs_str_cat(s, "<div class=\"snac-post\">\n");
 
-        /* print the origin of the post, if any */
-        if (!xs_is_null(p = xs_dict_get(meta, "referrer"))) {
+        if (boosts == NULL)
+            boosts = object_announces(id);
+
+        if (xs_list_len(boosts)) {
+            /* if somebody boosted this, show as origin */
+            p = xs_list_get(boosts, 0);
             xs *actor_r = NULL;
 
-            if (valid_status(actor_get(snac, p, &actor_r))) {
+            if (xs_list_in(boosts, snac->md5) != -1) {
+                /* we boosted this */
+                xs *s1 = xs_fmt(
+                    "<div class=\"snac-origin\">"
+                    "<a href=\"%s\">%s</a> %s</a></div>",
+                    snac->actor, xs_dict_get(snac->config, "name"), L("boosted")
+                );
+
+                s = xs_str_cat(s, s1);
+            }
+            else
+            if (valid_status(object_get_by_md5(p, &actor_r, NULL))) {
                 char *name;
 
                 if ((name = xs_dict_get(actor_r, "name")) == NULL)
                     name = xs_dict_get(actor_r, "preferredUsername");
 
-                xs *s1 = xs_fmt(
-                    "<div class=\"snac-origin\">"
-                    "<a href=\"%s\">%s</a> %s</div>\n",
-                    xs_dict_get(actor_r, "id"),
-                    name,
-                    L("boosted")
-                );
+                if (!xs_is_null(name)) {
+                    xs *s1 = xs_fmt(
+                        "<div class=\"snac-origin\">"
+                        "<a href=\"%s\">%s</a> %s</div>\n",
+                        xs_dict_get(actor_r, "id"),
+                        name,
+                        L("boosted")
+                    );
 
-                s = xs_str_cat(s, s1);
+                    s = xs_str_cat(s, s1);
+                }
             }
         }
-        else
+
+#if 0
         if (!xs_is_null((p = xs_dict_get(meta, "parent"))) && *p) {
             /* this may happen if any of the autor or the parent aren't here */
             xs *s1 = xs_fmt(
                 "<div class=\"snac-origin\">%s "
                 "<a href=\"%s\">»</a></div>\n",
                 L("in reply to"), p
-            );
-
-            s = xs_str_cat(s, s1);
-        }
-        else
-        if (!xs_is_null((p = xs_dict_get(meta, "announced_by"))) &&
-            xs_list_in(p, snac->actor) != -1) {
-            /* we boosted this */
-            xs *s1 = xs_fmt(
-                "<div class=\"snac-origin\">"
-                "<a href=\"%s\">%s</a> %s</a></div>",
-                snac->actor, xs_dict_get(snac->config, "name"), L("boosted")
             );
 
             s = xs_str_cat(s, s1);
@@ -609,6 +615,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
 
             s = xs_str_cat(s, s1);
         }
+#endif
     }
     else
         s = xs_str_cat(s, "<div class=\"snac-child\">\n");
@@ -717,12 +724,11 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
         s = html_entry_controls(snac, s, msg, *num);
 
     /** children **/
-
-    char *children = xs_dict_get(meta, "children");
-    int left       = xs_list_len(children);
+    xs *children = object_children(id);
+    int left     = xs_list_len(children);
 
     if (left) {
-        char *id;
+        char *p, *cmd5;
 
         if (level < 4)
             s = xs_str_cat(s, "<div class=\"snac-children\">\n");
@@ -732,16 +738,18 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, xs_set *seen, int local, i
         if (left > 3)
             s = xs_str_cat(s, "<details><summary>...</summary>\n");
 
-        while (xs_list_iter(&children, &id)) {
-            xs *chd = timeline_find(snac, id);
+        p = children;
+        while (xs_list_iter(&p, &cmd5)) {
+            xs *chd = NULL;
+            object_get_by_md5(cmd5, &chd, NULL);
 
             if (left == 3)
                 s = xs_str_cat(s, "</details>\n");
 
             if (chd != NULL)
-                s = html_entry(snac, s, chd, seen, local, level + 1, num);
+                s = html_entry(snac, s, chd, local, level + 1, num);
             else
-                snac_debug(snac, 2, xs_fmt("cannot read from timeline child %s", id));
+                snac_debug(snac, 2, xs_fmt("cannot read from timeline child %s", cmd5));
 
             left--;
         }
@@ -773,12 +781,9 @@ d_char *html_timeline(snac *snac, char *list, int local)
 /* returns the HTML for the timeline */
 {
     d_char *s = xs_str_new(NULL);
-    xs_set seen;
     char *v;
     double t = ftime();
     int num = 0;
-
-    xs_set_init(&seen);
 
     s = html_user_header(snac, s, local);
 
@@ -789,9 +794,12 @@ d_char *html_timeline(snac *snac, char *list, int local)
     s = xs_str_cat(s, "<div class=\"snac-posts\">\n");
 
     while (xs_list_iter(&list, &v)) {
-        xs *msg = timeline_get(snac, v);
+        xs *msg = NULL;
 
-        s = html_entry(snac, s, msg, &seen, local, 0, &num);
+        if (!valid_status(object_get_by_md5(v, &msg, NULL)))
+            continue;
+
+        s = html_entry(snac, s, msg, local, 0, &num);
     }
 
     s = xs_str_cat(s, "</div>\n");
@@ -829,8 +837,6 @@ d_char *html_timeline(snac *snac, char *list, int local)
     }
 
     s = xs_str_cat(s, "</body>\n</html>\n");
-
-    xs_set_free(&seen);
 
     return s;
 }
@@ -1007,7 +1013,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
             status  = 200;
         }
         else {
-            xs *list = local_list(&snac, XS_ALL);
+            xs *list = timeline_list(&snac, "public", XS_ALL);
 
             *body   = html_timeline(&snac, list, 1);
             *b_size = strlen(*body);
@@ -1033,7 +1039,9 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
             else {
                 snac_debug(&snac, 1, xs_fmt("building timeline"));
 
-                xs *list = timeline_list(&snac, XS_ALL);
+                xs *list = timeline_list(&snac, "private", XS_ALL);
+
+                printf("--> %d\n", xs_list_len(list));
 
                 *body   = html_timeline(&snac, list, 0);
                 *b_size = strlen(*body);
@@ -1098,7 +1106,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
     if (strcmp(p_path, ".rss") == 0) {
         /* public timeline in RSS format */
         d_char *rss;
-        xs *elems = local_list(&snac, 20);
+        xs *elems = timeline_list(&snac, "public", 20);
         xs *bio   = not_really_markdown(xs_dict_get(snac.config, "bio"));
         char *p, *v;
 
@@ -1281,13 +1289,13 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         if (strcmp(action, L("Like")) == 0) {
             xs *msg = msg_admiration(&snac, id, "Like");
             post(&snac, msg);
-            timeline_admire(&snac, id, snac.actor, 1);
+            timeline_admire(&snac, msg, id, snac.actor, 1);
         }
         else
         if (strcmp(action, L("Boost")) == 0) {
             xs *msg = msg_admiration(&snac, id, "Announce");
             post(&snac, msg);
-            timeline_admire(&snac, id, snac.actor, 0);
+            timeline_admire(&snac, msg, id, snac.actor, 0);
         }
         else
         if (strcmp(action, L("MUTE")) == 0) {

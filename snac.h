@@ -33,6 +33,7 @@ typedef struct _snac {
     d_char *config;     /* user configuration */
     d_char *key;        /* keypair */
     d_char *actor;      /* actor url */
+    d_char *md5;        /* actor url md5 */
 } snac;
 
 int user_open(snac *snac, char *uid);
@@ -59,8 +60,13 @@ int index_first(const char *fn, char *buf, int size);
 d_char *index_list(const char *fn, int max);
 d_char *index_list_desc(const char *fn, int max);
 
+int object_get_by_md5(const char *md5, d_char **obj, const char *type);
 int object_del(const char *id);
 int object_del_if_unref(const char *id);
+
+d_char *object_children(const char *id);
+d_char *object_likes(const char *id);
+d_char *object_announces(const char *id);
 
 int follower_add(snac *snac, const char *actor);
 int follower_del(snac *snac, const char *actor);
@@ -73,11 +79,11 @@ d_char *_timeline_find_fn(snac *snac, char *id);
 d_char *timeline_find(snac *snac, char *id);
 int timeline_del(snac *snac, char *id);
 d_char *timeline_get(snac *snac, char *fn);
-d_char *timeline_list(snac *snac, int max);
+d_char *timeline_list(snac *snac, const char *idx_name, int max);
 int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer);
-void timeline_admire(snac *snac, char *id, char *admirer, int like);
+void timeline_admire(snac *snac, char *o_msg, char *id, char *admirer, int like);
 
-d_char *timeline_top_level(snac *snac, d_char *list);
+d_char *timeline_top_level(d_char *list);
 
 d_char *local_list(snac *snac, int max);
 
