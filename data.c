@@ -847,146 +847,6 @@ d_char *_timeline_new_fn(snac *snac, char *id)
 }
 
 
-int _timeline_write(snac *snac, char *id, char *msg, char *parent, char *referrer)
-/* writes a timeline entry and refreshes the ancestors */
-{
-    xs *fn    = _timeline_new_fn(snac, id);
-    xs *pfn   = NULL;
-    xs *p_msg = NULL;
-    FILE *f;
-
-    if (!xs_is_null(parent)) {
-        /* get the parent */
-        pfn = _timeline_find_fn(snac, parent);
-
-        if (pfn != NULL && (f = fopen(pfn, "r")) != NULL) {
-            xs *j;
-
-            j = xs_readall(f);
-            fclose(f);
-
-            p_msg = xs_json_loads(j);
-        }
-    }
-
-    /* write the message */
-    if ((f = fopen(fn, "w")) != NULL) {
-        xs *j = xs_json_dumps_pp(msg, 4);
-
-        fwrite(j, strlen(j), 1, f);
-        fclose(f);
-
-        snac_debug(snac, 1, xs_fmt("_timeline_write %s %s", id, fn));
-    }
-
-    /* related to this user? link to local timeline */
-    if (xs_startswith(id, snac->actor) ||
-        (!xs_is_null(parent) && xs_startswith(parent, snac->actor)) ||
-        (!xs_is_null(referrer) && xs_startswith(referrer, snac->actor))) {
-        xs *lfn = xs_replace(fn, "/timeline/", "/local/");
-        link(fn, lfn);
-
-        snac_debug(snac, 1, xs_fmt("_timeline_write (local) %s %s", id, lfn));
-    }
-
-    if (p_msg != NULL) {
-        /* update the parent, adding this id to its children list */
-        xs *meta     = xs_dup(xs_dict_get(p_msg, "_snac"));
-        xs *children = xs_dup(xs_dict_get(meta,  "children"));
-
-        /* add the child if it's not already there */
-        if (xs_list_in(children, id) == -1)
-            children = xs_list_append(children, id);
-
-        /* re-store */
-        meta  = xs_dict_set(meta,  "children", children);
-        p_msg = xs_dict_set(p_msg, "_snac",    meta);
-
-        xs *nfn = _timeline_new_fn(snac, parent);
-
-        if ((f = fopen(nfn, "w")) != NULL) {
-            xs *j = xs_json_dumps_pp(p_msg, 4);
-
-            fwrite(j, strlen(j), 1, f);
-            fclose(f);
-
-            unlink(pfn);
-
-            snac_debug(snac, 1,
-                xs_fmt("_timeline_write updated parent %s %s", parent, nfn));
-
-            /* try to do the same with the local */
-            xs *olfn = xs_replace(pfn, "/timeline/", "/local/");
-
-            if (unlink(olfn) != -1 || xs_startswith(id, snac->actor)) {
-                xs *nlfn = xs_replace(nfn, "/timeline/", "/local/");
-
-                link(nfn, nlfn);
-
-                snac_debug(snac, 1,
-                    xs_fmt("_timeline_write updated parent (local) %s %s", parent, nlfn));
-            }
-        }
-        else
-            return 0;
-
-        /* now iterate all parents up, just renaming the files */
-        xs *grampa = xs_dup(xs_dict_get(meta, "parent"));
-
-        int max_levels = 20;
-
-        while (!xs_is_null(grampa)) {
-            xs *gofn = _timeline_find_fn(snac, grampa);
-
-            if (gofn == NULL)
-                break;
-
-            /* create the new filename */
-            xs *gnfn = _timeline_new_fn(snac, grampa);
-
-            rename(gofn, gnfn);
-
-            snac_debug(snac, 1,
-                xs_fmt("_timeline_write updated grampa %s %s", grampa, gnfn));
-
-            /* try to do the same with the local */
-            xs *golfn = xs_replace(gofn, "/timeline/", "/local/");
-
-            if (unlink(golfn) != -1) {
-                xs *gnlfn = xs_replace(gnfn, "/timeline/", "/local/");
-
-                link(gnfn, gnlfn);
-
-                snac_debug(snac, 1,
-                    xs_fmt("_timeline_write updated grampa (local) %s %s", parent, gnlfn));
-            }
-
-            /* now open it and get its own parent */
-            if ((f = fopen(gnfn, "r")) != NULL) {
-                xs *j = xs_readall(f);
-                fclose(f);
-
-                xs *g_msg    = xs_json_loads(j);
-                char *meta   = xs_dict_get(g_msg, "_snac");
-                char *p      = xs_dict_get(meta,  "parent");
-
-                xs_free(grampa);
-                grampa = xs_dup(p);
-            }
-            else
-                break;
-
-            if (--max_levels == 0) {
-                snac_debug(snac, 1, xs_dup("_timeline_write maximum grampa levels reached"));
-                break;
-            }
-        }
-    }
-
-    return 1;
-}
-
-
 void timeline_update_indexes(snac *snac, const char *id)
 /* updates the indexes */
 {
@@ -1000,43 +860,22 @@ void timeline_update_indexes(snac *snac, const char *id)
 int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer)
 /* adds a message to the timeline */
 {
-    xs *pfn = _timeline_find_fn(snac, id);
-    int ret = 0;
+    int ret = object_add(id, o_msg);
+    timeline_update_indexes(snac, id);
 
-    if (pfn != NULL) {
-        snac_log(snac, xs_fmt("timeline_add refusing rewrite %s %s", id, pfn));
-        return 0;
-    }
-
-    xs *msg = xs_dup(o_msg);
-    xs *md;
-
-    /* add new metadata */
-    md = xs_json_loads("{"
-        "\"children\":     [],"
-        "\"liked_by\":     [],"
-        "\"announced_by\": [],"
-        "\"version\":      \"" USER_AGENT "\","
-        "\"referrer\":     null,"
-        "\"parent\":       null"
-    "}");
-
-    if (!xs_is_null(parent))
-        md = xs_dict_set(md, "parent", parent);
-
-    if (!xs_is_null(referrer))
-        md = xs_dict_set(md, "referrer", referrer);
-
-    msg = xs_dict_set(msg, "_snac", md);
-
-    if ((ret = _timeline_write(snac, id, msg, parent, referrer))) {
-        snac_debug(snac, 1, xs_fmt("timeline_add %s", id));
-
-        object_add(id, o_msg);
-        timeline_update_indexes(snac, id);
-    }
+    snac_debug(snac, 1, xs_fmt("timeline_add %s", id));
 
     return ret;
+}
+
+
+void timeline_admire(snac *snac, char *o_msg, char *id, char *admirer, int like)
+/* updates a timeline entry with a new admiration */
+{
+    object_admire(id, admirer, like);
+
+    snac_debug(snac, 1, xs_fmt("timeline_admire (%s) %s %s",
+            like ? "Like" : "Announce", id, admirer));
 }
 
 
@@ -1100,58 +939,6 @@ d_char *timeline_list(snac *snac, const char *idx_name, int max)
     xs *list = index_list_desc(idx, max);
 
     return timeline_top_level(list);
-}
-
-
-void timeline_admire(snac *snac, char *o_msg, char *id, char *admirer, int like)
-/* updates a timeline entry with a new admiration */
-{
-    xs *ofn = _timeline_find_fn(snac, id);
-    FILE *f;
-
-    if (ofn != NULL && (f = fopen(ofn, "r")) != NULL) {
-        xs *j1 = xs_readall(f);
-        fclose(f);
-
-        xs *msg  = xs_json_loads(j1);
-        xs *meta = xs_dup(xs_dict_get(msg, "_snac"));
-        xs *list;
-
-        if (like)
-            list = xs_dup(xs_dict_get(meta, "liked_by"));
-        else
-            list = xs_dup(xs_dict_get(meta, "announced_by"));
-
-        /* add the admirer if it's not already there */
-        if (xs_list_in(list, admirer) == -1)
-            list = xs_list_append(list, admirer);
-
-        /* set the admirer as the referrer (if not already set or it's us) */
-        if (!like && (xs_is_null(xs_dict_get(meta, "referrer")) ||
-                      strcmp(admirer, snac->actor) == 0))
-            meta = xs_dict_set(meta, "referrer", admirer);
-
-        /* re-store */
-        if (like)
-            meta = xs_dict_set(meta, "liked_by", list);
-        else
-            meta = xs_dict_set(meta, "announced_by", list);
-
-        msg = xs_dict_set(msg, "_snac", meta);
-
-        unlink(ofn);
-        ofn = xs_replace_i(ofn, "/timeline/", "/local/");
-        unlink(ofn);
-
-        _timeline_write(snac, id, msg, xs_dict_get(meta, "parent"), like ? NULL : admirer);
-
-        snac_debug(snac, 1, xs_fmt("timeline_admire (%s) %s %s",
-            like ? "Like" : "Announce", id, admirer));
-    }
-    else
-        snac_log(snac, xs_fmt("timeline_admire ignored for unknown object %s", id));
-
-    object_admire(id, admirer, like);
 }
 
 
