@@ -605,6 +605,15 @@ d_char *object_announces(const char *id)
 }
 
 
+int object_parent(const char *id, char *buf, int size)
+/* returns the object parent, if any */
+{
+    xs *fn = _object_fn_by_md5(id);
+    fn = xs_replace_i(fn, ".json", "_p.idx");
+    return index_first(fn, buf, size);
+}
+
+
 int object_admire(const char *id, const char *actor, int like)
 /* actor likes or announces this object */
 {
@@ -804,11 +813,9 @@ d_char *timeline_top_level(d_char *list)
 
         for (;;) {
             char line2[256];
-            xs *fn = _object_fn_by_md5(line);
-            fn     = xs_replace_i(fn, ".json", "_p.idx");
 
             /* if it doesn't have a parent, use this */
-            if (index_first(fn, line2, sizeof(line2)) == 0)
+            if (!object_parent(line, line2, sizeof(line2)))
                 break;
 
             xs *pfn = _object_fn_by_md5(line2);
