@@ -411,11 +411,18 @@ d_char *_object_fn(const char *id)
 }
 
 
+int object_here_by_md5(char *id)
+/* checks if an object is already downloaded */
+{
+    xs *fn = _object_fn_by_md5(id);
+    return mtime(fn) > 0.0;
+}
+
+
 int object_here(char *id)
 /* checks if an object is already downloaded */
 {
     xs *fn = _object_fn(id);
-
     return mtime(fn) > 0.0;
 }
 
@@ -818,10 +825,8 @@ d_char *timeline_top_level(d_char *list)
             if (!object_parent(line, line2, sizeof(line2)))
                 break;
 
-            xs *pfn = _object_fn_by_md5(line2);
-
             /* well, there is a parent... but if it's not there, use this */
-            if (mtime(pfn) == 0.0)
+            if (!object_here_by_md5(line2))
                 break;
 
             /* it's here! try again with its own parent */
