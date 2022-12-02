@@ -60,6 +60,7 @@ int index_first(const char *fn, char *buf, int size);
 d_char *index_list(const char *fn, int max);
 d_char *index_list_desc(const char *fn, int max);
 
+int object_here_by_md5(char *id);
 int object_here(char *id);
 int object_get_by_md5(const char *md5, d_char **obj, const char *type);
 int object_get(const char *id, d_char **obj, const char *type);
@@ -69,6 +70,7 @@ int object_del_if_unref(const char *id);
 d_char *object_children(const char *id);
 d_char *object_likes(const char *id);
 d_char *object_announces(const char *id);
+int object_parent(const char *id, char *buf, int size);
 
 int follower_add(snac *snac, const char *actor);
 int follower_del(snac *snac, const char *actor);

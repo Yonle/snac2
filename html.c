@@ -591,31 +591,21 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
                 }
             }
         }
-
-#if 0
-        if (!xs_is_null((p = xs_dict_get(meta, "parent"))) && *p) {
-            /* this may happen if any of the autor or the parent aren't here */
-            xs *s1 = xs_fmt(
-                "<div class=\"snac-origin\">%s "
-                "<a href=\"%s\">»</a></div>\n",
-                L("in reply to"), p
-            );
-
-            s = xs_str_cat(s, s1);
-        }
         else
-        if (!xs_is_null((p = xs_dict_get(meta, "liked_by"))) &&
-            xs_list_in(p, snac->actor) != -1) {
-            /* we liked this */
-            xs *s1 = xs_fmt(
-                "<div class=\"snac-origin\">"
-                "<a href=\"%s\">%s</a> %s</a></div>",
-                snac->actor, xs_dict_get(snac->config, "name"), L("liked")
-            );
+        if (strcmp(type, "Note") == 0) {
+            /* is the parent not here? */
+            char *parent = xs_dict_get(msg, "inReplyTo");
 
-            s = xs_str_cat(s, s1);
+            if (!xs_is_null(parent) && !object_here(parent)) {
+                xs *s1 = xs_fmt(
+                    "<div class=\"snac-origin\">%s "
+                    "<a href=\"%s\">»</a></div>\n",
+                    L("in reply to"), parent
+                );
+
+                s = xs_str_cat(s, s1);
+            }
         }
-#endif
     }
     else
         s = xs_str_cat(s, "<div class=\"snac-child\">\n");
