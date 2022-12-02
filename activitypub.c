@@ -1101,13 +1101,16 @@ int activitypub_get_handler(d_char *req, char *q_path,
 
         p = elems;
         while (xs_list_iter(&p, &v)) {
-            xs *i = timeline_get(&snac, v);
-            char *type = xs_dict_get(i, "type");
-            char *id   = xs_dict_get(i, "id");
+            xs *i = NULL;
 
-            if (type && id && strcmp(type, "Note") == 0 && xs_startswith(id, snac.actor)) {
-                i = xs_dict_del(i, "_snac");
-                list = xs_list_append(list, i);
+            if (valid_status(object_get_by_md5(v, &i, NULL))) {
+                char *type = xs_dict_get(i, "type");
+                char *id   = xs_dict_get(i, "id");
+
+                if (type && id && strcmp(type, "Note") == 0 && xs_startswith(id, snac.actor)) {
+                    i = xs_dict_del(i, "_snac");
+                    list = xs_list_append(list, i);
+                }
             }
         }
 

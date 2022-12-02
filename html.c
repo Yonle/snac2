@@ -1131,7 +1131,11 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
 
         p = elems;
         while (xs_list_iter(&p, &v)) {
-            xs *msg  = timeline_get(&snac, v);
+            xs *msg  = NULL;
+
+            if (!valid_status(object_get_by_md5(v, &msg, NULL)))
+                continue;
+
             char *id = xs_dict_get(msg, "id");
 
             if (!xs_startswith(id, snac.actor))
