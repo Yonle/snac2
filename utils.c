@@ -226,6 +226,7 @@ int adduser(char *uid)
     config = xs_dict_append(config, "name",      uid);
     config = xs_dict_append(config, "avatar",    "");
     config = xs_dict_append(config, "bio",       "");
+    config = xs_dict_append(config, "cw",        "");
     config = xs_dict_append(config, "published", date);
     config = xs_dict_append(config, "passwd",    pwd_f);
 
