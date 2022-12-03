@@ -15,7 +15,7 @@
 #include <sys/file.h>
 #include <fcntl.h>
 
-double db_layout = 2.6;
+double db_layout = 2.7;
 
 
 int db_upgrade(d_char **error);

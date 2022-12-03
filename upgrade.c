@@ -230,6 +230,64 @@ int db_upgrade(d_char **error)
 
             nf = 2.6;
         }
+        else
+        if (f < 2.7) {
+            /* upgrade timeline/ to private/ */
+            xs *users = user_list();
+            char *p, *v;
+
+            p = users;
+            while (xs_list_iter(&p, &v)) {
+                snac snac;
+
+                if (user_open(&snac, v)) {
+                    xs *spec = xs_fmt("%s/timeline/" "*.json", snac.basedir);
+                    xs *dir  = xs_glob(spec, 0, 0);
+                    char *p, *v;
+
+                    p = dir;
+                    while (xs_list_iter(&p, &v)) {
+                        FILE *f;
+
+                        if ((f = fopen(v, "r")) != NULL) {
+                            xs *s = xs_readall(f);
+                            xs *o = xs_json_loads(s);
+                            fclose(f);
+
+                            xs *meta = xs_dup(xs_dict_get(o, "_snac"));
+                            o = xs_dict_del(o, "_snac");
+
+                            char *id = xs_dict_get(o, "id");
+
+                            /* store object */
+                            object_add_ow(id, o);
+
+                            {
+                                char *p, *v;
+
+                                object_user_cache_add(&snac, id, "private");
+
+                                p = xs_dict_get(meta, "announced_by");
+                                while (xs_list_iter(&p, &v))
+                                    object_admire(id, v, 0);
+                                p = xs_dict_get(meta, "liked_by");
+                                while (xs_list_iter(&p, &v))
+                                    object_admire(id, v, 1);
+                            }
+
+                            unlink(v);
+                        }
+                    }
+
+                    xs *od = xs_fmt("%s/timeline", snac.basedir);
+                    rmdir(od);
+
+                    user_free(&snac);
+                }
+            }
+
+            nf = 2.7;
+        }
 
         if (f < nf) {
             f          = nf;
