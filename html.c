@@ -518,7 +518,10 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
     if (strcmp(type, "Note") != 0) {
         s = xs_str_cat(s, "<div class=\"snac-post\">\n");
 
-        xs *s1 = xs_fmt("<p>%s</p>\n", type);
+        xs *s1 = xs_fmt("<p>%s ?</p>\n", type);
+        s = xs_str_cat(s, s1);
+
+        s = xs_str_cat(s, "</div>\n");
 
         return xs_str_cat(os, s);
     }
