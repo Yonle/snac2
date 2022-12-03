@@ -79,6 +79,7 @@ d_char *follower_list(snac *snac);
 
 double timeline_mtime(snac *snac);
 int timeline_del(snac *snac, char *id);
+d_char *timeline_simple_list(snac *snac, const char *idx_name, int max);
 d_char *timeline_list(snac *snac, const char *idx_name, int max);
 int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer);
 void timeline_admire(snac *snac, char *o_msg, char *id, char *admirer, int like);

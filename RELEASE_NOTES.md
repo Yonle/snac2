@@ -4,7 +4,7 @@
 
 A big disk layout rework, to make it more efficient when timelines get very big. Please take note that you must run `snac upgrade` when you install this version over an already existing one.
 
-Fixed HTML loose close tag (contributed by kensata).
+Fixed HTML loose close tag (contributed by kensanata).
 
 Fixed bug when closing sendmail pipe (contributed by jpgarcia and themusicgod1).
 

@@ -549,8 +549,6 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
     }
 
     if (level == 0) {
-        char *p;
-
         s = xs_str_cat(s, "<div class=\"snac-post\">\n");
 
         if (boosts == NULL)
@@ -558,7 +556,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
 
         if (xs_list_len(boosts)) {
             /* if somebody boosted this, show as origin */
-            p = xs_list_get(boosts, 0);
+            char *p = xs_list_get(boosts, -1);
             xs *actor_r = NULL;
 
             if (xs_list_in(boosts, snac->md5) != -1) {
@@ -1096,7 +1094,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
     if (strcmp(p_path, ".rss") == 0) {
         /* public timeline in RSS format */
         d_char *rss;
-        xs *elems = timeline_list(&snac, "public", 20);
+        xs *elems = timeline_simple_list(&snac, "public", 20);
         xs *bio   = not_really_markdown(xs_dict_get(snac.config, "bio"));
         char *p, *v;
 

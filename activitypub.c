@@ -1094,7 +1094,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
     else
     if (strcmp(p_path, "outbox") == 0) {
         xs *id = xs_fmt("%s/outbox", snac.actor);
-        xs *elems = timeline_list(&snac, "public", 20);
+        xs *elems = timeline_simple_list(&snac, "public", 20);
         xs *list = xs_list_new();
         msg = msg_collection(&snac, id);
         char *p, *v;

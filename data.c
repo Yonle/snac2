@@ -839,8 +839,8 @@ d_char *timeline_top_level(d_char *list)
 }
 
 
-d_char *timeline_list(snac *snac, const char *idx_name, int max)
-/* returns a timeline */
+d_char *timeline_simple_list(snac *snac, const char *idx_name, int max)
+/* returns a timeline (with all entries) */
 {
     int c_max;
 
@@ -851,8 +851,16 @@ d_char *timeline_list(snac *snac, const char *idx_name, int max)
     if (max > c_max)
         max = c_max;
 
-    xs *idx  = xs_fmt("%s/%s.idx", snac->basedir, idx_name);
-    xs *list = index_list_desc(idx, max);
+    xs *idx = xs_fmt("%s/%s.idx", snac->basedir, idx_name);
+
+    return index_list_desc(idx, max);
+}
+
+
+d_char *timeline_list(snac *snac, const char *idx_name, int max)
+/* returns a timeline (only top level entries) */
+{
+    xs *list = timeline_simple_list(snac, idx_name, max);
 
     return timeline_top_level(list);
 }
