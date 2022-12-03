@@ -548,57 +548,43 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
         s = xs_str_cat(s, s1);
     }
 
-    if (level == 0) {
+    if (level == 0)
         s = xs_str_cat(s, "<div class=\"snac-post\">\n");
+    else
+        s = xs_str_cat(s, "<div class=\"snac-child\">\n");
 
-        if (boosts == NULL)
-            boosts = object_announces(id);
+    if (boosts == NULL)
+        boosts = object_announces(id);
 
-        if (xs_list_len(boosts)) {
-            /* if somebody boosted this, show as origin */
-            char *p = xs_list_get(boosts, -1);
-            xs *actor_r = NULL;
+    if (xs_list_len(boosts)) {
+        /* if somebody boosted this, show as origin */
+        char *p = xs_list_get(boosts, -1);
+        xs *actor_r = NULL;
 
-            if (xs_list_in(boosts, snac->md5) != -1) {
-                /* we boosted this */
-                xs *s1 = xs_fmt(
-                    "<div class=\"snac-origin\">"
-                    "<a href=\"%s\">%s</a> %s</a></div>",
-                    snac->actor, xs_dict_get(snac->config, "name"), L("boosted")
-                );
+        if (xs_list_in(boosts, snac->md5) != -1) {
+            /* we boosted this */
+            xs *s1 = xs_fmt(
+                "<div class=\"snac-origin\">"
+                "<a href=\"%s\">%s</a> %s</a></div>",
+                snac->actor, xs_dict_get(snac->config, "name"), L("boosted")
+            );
 
-                s = xs_str_cat(s, s1);
-            }
-            else
-            if (valid_status(object_get_by_md5(p, &actor_r, NULL))) {
-                char *name;
-
-                if ((name = xs_dict_get(actor_r, "name")) == NULL)
-                    name = xs_dict_get(actor_r, "preferredUsername");
-
-                if (!xs_is_null(name)) {
-                    xs *s1 = xs_fmt(
-                        "<div class=\"snac-origin\">"
-                        "<a href=\"%s\">%s</a> %s</div>\n",
-                        xs_dict_get(actor_r, "id"),
-                        name,
-                        L("boosted")
-                    );
-
-                    s = xs_str_cat(s, s1);
-                }
-            }
+            s = xs_str_cat(s, s1);
         }
         else
-        if (strcmp(type, "Note") == 0) {
-            /* is the parent not here? */
-            char *parent = xs_dict_get(msg, "inReplyTo");
+        if (valid_status(object_get_by_md5(p, &actor_r, NULL))) {
+            char *name;
 
-            if (!xs_is_null(parent) && *parent && !object_here(parent)) {
+            if ((name = xs_dict_get(actor_r, "name")) == NULL)
+                name = xs_dict_get(actor_r, "preferredUsername");
+
+            if (!xs_is_null(name)) {
                 xs *s1 = xs_fmt(
-                    "<div class=\"snac-origin\">%s "
-                    "<a href=\"%s\">»</a></div>\n",
-                    L("in reply to"), parent
+                    "<div class=\"snac-origin\">"
+                    "<a href=\"%s\">%s</a> %s</div>\n",
+                    xs_dict_get(actor_r, "id"),
+                    name,
+                    L("boosted")
                 );
 
                 s = xs_str_cat(s, s1);
@@ -606,7 +592,20 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
         }
     }
     else
-        s = xs_str_cat(s, "<div class=\"snac-child\">\n");
+    if (strcmp(type, "Note") == 0) {
+        /* is the parent not here? */
+        char *parent = xs_dict_get(msg, "inReplyTo");
+
+        if (!xs_is_null(parent) && *parent && !object_here(parent)) {
+            xs *s1 = xs_fmt(
+                "<div class=\"snac-origin\">%s "
+                "<a href=\"%s\">»</a></div>\n",
+                L("in reply to"), parent
+            );
+
+            s = xs_str_cat(s, s1);
+        }
+    }
 
     s = html_msg_icon(snac, s, msg);
 
