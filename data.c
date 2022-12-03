@@ -657,8 +657,8 @@ int _object_user_cache(snac *snac, const char *id, const char *cachedir, int del
             index_del(idx, id);
     }
     else {
-        index_add(idx, id);
-        ret = link(ofn, cfn);
+        if ((ret = link(ofn, cfn)) != -1)
+            index_add(idx, id);
     }
 
     return ret;
