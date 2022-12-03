@@ -780,8 +780,15 @@ void timeline_update_indexes(snac *snac, const char *id)
 {
     object_user_cache_add(snac, id, "private");
 
-    if (xs_startswith(id, snac->actor))
-        object_user_cache_add(snac, id, "public");
+    if (xs_startswith(id, snac->actor)) {
+        xs *msg = NULL;
+
+        if (valid_status(object_get(id, &msg, NULL))) {
+            /* if its ours and is public, also store in public */
+            if (is_msg_public(snac, msg))
+                object_user_cache_add(snac, id, "public");
+        }
+    }
 }
 
 
