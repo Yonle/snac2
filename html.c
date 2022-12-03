@@ -618,17 +618,13 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
     if (!xs_is_null(v = xs_dict_get(msg, "sensitive")) && xs_type(v) == XSTYPE_TRUE) {
         if (xs_is_null(v = xs_dict_get(msg, "summary")) || *v == '\0')
             v = "...";
+        /* only show it when not in the public timeline and the config setting is "open" */
         char *cw = xs_dict_get(snac->config, "cw");
-        if (xs_is_null(cw))
+        if (xs_is_null(cw) || local)
             cw = "";
-        if (strcmp(cw, "checked") == 0) {
-            xs *s1 = xs_fmt("<h3>%s</h3>", v);
-            s = xs_str_cat(s, s1);
-        } else {
-            xs *s1 = xs_fmt("<details><summary>%s [%s]</summary>\n", v, L("SENSITIVE CONTENT"));
-            s = xs_str_cat(s, s1);
-            sensitive = 1;
-        }
+        xs *s1 = xs_fmt("<details %s><summary>%s [%s]</summary>\n", cw, v, L("SENSITIVE CONTENT"));
+        s = xs_str_cat(s, s1);
+        sensitive = 1;
     }
 
 #if 0
@@ -1392,7 +1388,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
             snac.config = xs_dict_set(snac.config, "bio", v);
         if ((v = xs_dict_get(p_vars, "cw")) != NULL &&
             strcmp(v, "on") == 0) {
-            snac.config = xs_dict_set(snac.config, "cw", "checked");
+            snac.config = xs_dict_set(snac.config, "cw", "open");
         } else { /* if the checkbox is not set, the parameter is missing */
             snac.config = xs_dict_set(snac.config, "cw", "");
         }
