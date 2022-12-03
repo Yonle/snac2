@@ -800,6 +800,10 @@ int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer
 void timeline_admire(snac *snac, char *o_msg, char *id, char *admirer, int like)
 /* updates a timeline entry with a new admiration */
 {
+    /* if we are admiring this, add to the public timeline */
+    if (!like && strcmp(admirer, snac->actor) == 0)
+        object_user_cache_add(snac, id, "public");
+
     object_admire(id, admirer, like);
 
     snac_debug(snac, 1, xs_fmt("timeline_admire (%s) %s %s",
