@@ -4,9 +4,11 @@
 
 Add an ?skip=NNN parameter to the admin page, to see older timeline.
 
-Add support for Edit + Note.
+Add support for Edit + Note on input.
 
 Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac2/issues/3
+
+Add this pull request https://codeberg.org/grunfink/snac2/pulls/9
 
 Add support for uploading the avatar, instead of needing an URL to an image. As a kludgy workaround, you can post something with an attached image, copy the auto-generated URL and use it. You can even delete the post, as attached images are never deleted (I said it was kludgy).
 
