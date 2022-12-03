@@ -23,7 +23,7 @@ const char *default_srv_config = "{"
     "\"queue_retry_minutes\":  2,"
     "\"queue_retry_max\":      10,"
     "\"cssurls\":              [\"\"],"
-    "\"max_timeline_entries\": 256,"
+    "\"max_timeline_entries\": 128,"
     "\"timeline_purge_days\":  120,"
     "\"local_purge_days\":     0"
     "}";
