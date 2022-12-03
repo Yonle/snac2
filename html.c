@@ -594,7 +594,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
             /* is the parent not here? */
             char *parent = xs_dict_get(msg, "inReplyTo");
 
-            if (!xs_is_null(parent) && !object_here(parent)) {
+            if (!xs_is_null(parent) && *parent && !object_here(parent)) {
                 xs *s1 = xs_fmt(
                     "<div class=\"snac-origin\">%s "
                     "<a href=\"%s\">»</a></div>\n",
@@ -622,6 +622,12 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
         s = xs_str_cat(s, s1);
 
         sensitive = 1;
+    }
+
+    {
+        xs *md5 = xs_md5_hex(id, strlen(id));
+        xs *s1  = xs_fmt("<p><code>%s</code></p>\n", md5);
+        s = xs_str_cat(s, s1);
     }
 
     {

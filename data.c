@@ -15,7 +15,7 @@
 #include <sys/file.h>
 #include <fcntl.h>
 
-double db_layout = 2.5;
+double db_layout = 2.6;
 
 
 int db_upgrade(d_char **error);
@@ -500,9 +500,13 @@ int _object_add(const char *id, d_char *obj, int ow)
             xs *c_idx = _object_fn(in_reply_to);
 
             c_idx = xs_replace_i(c_idx, ".json", "_c.idx");
-            index_add(c_idx, id);
 
-            srv_debug(0, xs_fmt("object_add added child %s to %s", id, c_idx));
+            if (!index_in(c_idx, id)) {
+                index_add(c_idx, id);
+                srv_debug(0, xs_fmt("object_add added child %s to %s", id, c_idx));
+            }
+            else
+                srv_debug(0, xs_fmt("object_add %s child already in %s", id, c_idx));
 
             /* create a one-element index with the parent */
             xs *p_idx = xs_replace(fn, ".json", "_p.idx");
