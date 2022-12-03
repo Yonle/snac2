@@ -1288,14 +1288,20 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
         if (strcmp(action, L("Like")) == 0) {
             xs *msg = msg_admiration(&snac, id, "Like");
-            post(&snac, msg);
-            timeline_admire(&snac, msg, id, snac.actor, 1);
+
+            if (msg != NULL) {
+                post(&snac, msg);
+                timeline_admire(&snac, msg, id, snac.actor, 1);
+            }
         }
         else
         if (strcmp(action, L("Boost")) == 0) {
             xs *msg = msg_admiration(&snac, id, "Announce");
-            post(&snac, msg);
-            timeline_admire(&snac, msg, id, snac.actor, 0);
+
+            if (msg != NULL) {
+                post(&snac, msg);
+                timeline_admire(&snac, msg, id, snac.actor, 0);
+            }
         }
         else
         if (strcmp(action, L("MUTE")) == 0) {
