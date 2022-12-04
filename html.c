@@ -323,7 +323,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         xs_dict_get(snac->config, "avatar"),
         L("Bio"),
         xs_dict_get(snac->config, "bio"),
-        xs_dict_get(snac->config, "cw"),
+        strcmp(xs_dict_get(snac->config, "cw"), "open") == 0 ? "checked" : "",
         L("Always show sensitive content"),
         L("Email address for notifications"),
         email,
