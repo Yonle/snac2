@@ -302,6 +302,10 @@ d_char *html_top_controls(snac *snac, d_char *s)
     if (xs_is_null(email))
         email = "";
 
+    char *cw = xs_dict_get(snac->config, "cw");
+    if (xs_is_null(cw))
+        cw = "";
+
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
         L("Sensitive content"),
@@ -323,7 +327,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         xs_dict_get(snac->config, "avatar"),
         L("Bio"),
         xs_dict_get(snac->config, "bio"),
-        strcmp(xs_dict_get(snac->config, "cw"), "open") == 0 ? "checked" : "",
+        strcmp(cw, "open") == 0 ? "checked" : "",
         L("Always show sensitive content"),
         L("Email address for notifications"),
         email,
