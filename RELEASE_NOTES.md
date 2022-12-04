@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2.14
+
+Fixed crash when debug level >= 2 (contributed by kensanata).
+
+Log message improvements for excelence (contributed by kensanata).
+
 ## 2.13
 
 A big disk layout rework, to make it more efficient when timelines get very big. Please take note that you must run `snac upgrade` when you install this version over an already existing one.
