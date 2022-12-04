@@ -2,6 +2,8 @@
 
 ## 2.14
 
+New command-line operation, `resetpwd`, to reset a user's password to a new, random one.
+
 Added a user setup option to toggle if sensitive content is shown or not by default (contributed by kensanata).
 
 Fixed crash when debug level >= 2 (contributed by kensanata).
