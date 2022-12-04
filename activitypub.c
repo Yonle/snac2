@@ -825,7 +825,7 @@ int process_message(snac *snac, char *msg, char *req)
 
         follower_add(snac, actor);
 
-        snac_log(snac, xs_fmt("New follower %s", actor));
+        snac_log(snac, xs_fmt("new follower %s", actor));
         do_notify = 1;
     }
     else
@@ -929,7 +929,7 @@ int process_message(snac *snac, char *msg, char *req)
             object = xs_dict_get(object, "id");
 
         if (valid_status(timeline_del(snac, object)))
-            snac_log(snac, xs_fmt("New 'Delete' %s %s", actor, object));
+            snac_log(snac, xs_fmt("new 'Delete' %s %s", actor, object));
         else
             snac_debug(snac, 1, xs_fmt("ignored 'Delete' for unknown object %s", object));
     }
