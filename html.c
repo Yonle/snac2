@@ -626,11 +626,13 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
         sensitive = 1;
     }
 
+#if 0
     {
         xs *md5 = xs_md5_hex(id, strlen(id));
         xs *s1  = xs_fmt("<p><code>%s</code></p>\n", md5);
         s = xs_str_cat(s, s1);
     }
+#endif
 
     {
         xs *c  = sanitize(xs_dict_get(msg, "content"));
