@@ -480,7 +480,7 @@ int _object_add(const char *id, d_char *obj, int ow)
 
     if (!ow && mtime(fn) > 0.0) {
         /* object already here */
-        srv_debug(0, xs_fmt("object_add object already here %s", id));
+        srv_debug(1, xs_fmt("object_add object already here %s", id));
         return 204; /* No content */
     }
 
@@ -503,22 +503,22 @@ int _object_add(const char *id, d_char *obj, int ow)
 
             if (!index_in(c_idx, id)) {
                 index_add(c_idx, id);
-                srv_debug(0, xs_fmt("object_add added child %s to %s", id, c_idx));
+                srv_debug(1, xs_fmt("object_add added child %s to %s", id, c_idx));
             }
             else
-                srv_debug(0, xs_fmt("object_add %s child already in %s", id, c_idx));
+                srv_debug(1, xs_fmt("object_add %s child already in %s", id, c_idx));
 
             /* create a one-element index with the parent */
             xs *p_idx = xs_replace(fn, ".json", "_p.idx");
             index_add(p_idx, in_reply_to);
 
-            srv_debug(0, xs_fmt("object_add added parent %s to %s", in_reply_to, p_idx));
+            srv_debug(1, xs_fmt("object_add added parent %s to %s", in_reply_to, p_idx));
         }
     }
     else
         status = 500;
 
-    srv_debug(0, xs_fmt("object_add %s %s %d", id, fn, status));
+    srv_debug(1, xs_fmt("object_add %s %s %d", id, fn, status));
 
     return status;
 }
@@ -555,12 +555,12 @@ int object_del_by_md5(const char *md5)
 
         p = files;
         while (xs_list_iter(&p, &v)) {
-            srv_debug(0, xs_fmt("object_del index %s", v));
+            srv_debug(1, xs_fmt("object_del index %s", v));
             unlink(v);
         }
     }
 
-    srv_debug(0, xs_fmt("object_del %s %d", fn, status));
+    srv_debug(1, xs_fmt("object_del %s %d", fn, status));
 
     return status;
 }
@@ -636,7 +636,7 @@ int object_admire(const char *id, const char *actor, int like)
     if (!index_in(fn, actor)) {
         status = index_add(fn, actor);
 
-        srv_debug(0, xs_fmt("object_admire (%s) %s %s", like ? "Like" : "Announce", actor, fn));
+        srv_debug(1, xs_fmt("object_admire (%s) %s %s", like ? "Like" : "Announce", actor, fn));
     }
 
     return status;
