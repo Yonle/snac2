@@ -2,6 +2,8 @@
 
 ## 2.14
 
+Added a user setup option to toggle if sensitive content is shown or not by default (contributed by kensanata).
+
 Fixed crash when debug level >= 2 (contributed by kensanata).
 
 Log message improvements for excelence (contributed by kensanata).
