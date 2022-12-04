@@ -76,7 +76,7 @@ int server_get_handler(d_char *req, char *q_path,
         }
     }
     else
-    if (strcmp(q_path, "/susie.png") == 0) {
+    if (strcmp(q_path, "/susie.png") == 0 || strcmp(q_path, "/favicon.ico") == 0 ) {
         status = 200;
         *body  = xs_base64_dec(susie, b_size);
         *ctype = "image/png";
