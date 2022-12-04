@@ -237,9 +237,9 @@ int adduser(char *uid)
     }
 
     const char *dirs[] = {
-        "followers", "following", "local", "muted", "hidden",
+        "followers", "following", "muted", "hidden",
         "public", "private", "queue", "history",
-        "static", "timeline", NULL };
+        "static", NULL };
     int n;
 
     for (n = 0; dirs[n]; n++) {
