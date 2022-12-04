@@ -24,8 +24,6 @@ Implement hashtags. They are not very useful, as they can only be implemented as
 
 Implement bulleted lists. Mastodon is crap and won't show them, but other implementations (Friendica, Pleroma) will do.
 
-Idea for a new disk layout: timelines stored like in git (2 character directories and then the md5.json inside); one append-only index with entry ids, read backwards (easy because md5 binary ids have a constant size); children lists as append-only files stored inside the timeline directories with almost the same names as the parent entry; liked-by and announced-by lists as append-only files of actor ids. No _snac metadata inside the message (But, what about the referrer? With this layout, do I need it?). The instance storage may even be global, not per user; this could help in very big instances (but will this be a use-case for snac? not probably).
-
 ## Closed
 
 Start a TODO file (2022-08-25T10:07:44+0200).
@@ -185,3 +183,5 @@ Add a switch for sensitive posts (2022-11-16T12:17:50+0100).
 Add an RSS to the local timeline (2022-11-18T11:43:54+0100).
 
 Dropping on input those messages that have their parent hidden is not a good idea, as children of *these* dropped messages will pass unharmed (2022-11-28T11:34:56+0100).
+
+Idea for a new disk layout: timelines stored like in git (2 character directories and then the md5.json inside); one append-only index with entry ids, read backwards (easy because md5 binary ids have a constant size); children lists as append-only files stored inside the timeline directories with almost the same names as the parent entry; liked-by and announced-by lists as append-only files of actor ids. No _snac metadata inside the message (But, what about the referrer? With this layout, do I need it?). The instance storage may even be global, not per user; this could help in very big instances (but will this be a use-case for snac? not probably) (2022-12-04T06:49:55+0100).
