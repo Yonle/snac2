@@ -2,6 +2,8 @@
 
 ## Open
 
+Add (back) the `passwd` command line option.
+
 Add an ?skip=NNN parameter to the admin page, to see older timeline.
 
 Add support for Edit + Note on input.
