@@ -150,6 +150,8 @@ Upgrades the data storage after installing a new version.
 Only necessary if
 .Nm
 complains and demands it.
+.It Cm httpd Ar basedir
+Starts the daemon.
 .It Cm purge Ar basedir
 Purges old data from the timeline of all users.
 .It Cm adduser Ar basedir Op uid
@@ -160,8 +162,8 @@ the server
 is installed in the user's
 .Pa static/
 directory.
-.It Cm httpd Ar basedir
-Starts the daemon.
+.It Cm resetpwd Ar basedir Ar uid
+Resets a user's password to a new, random one.
 .It Cm queue Ar basedir Ar uid
 Processes the output queue of the specied user, sending all
 enqueued messages and re-enqueing the failing ones. This command
