@@ -706,7 +706,7 @@ int follower_add(snac *snac, const char *actor)
 {
     int ret = object_user_cache_add(snac, actor, "followers");
 
-    snac_debug(snac, 2, xs_fmt("follower_add %s %s", actor));
+    snac_debug(snac, 2, xs_fmt("follower_add %s", actor));
 
     return ret == -1 ? 500 : 200;
 }
