@@ -36,17 +36,17 @@ typedef struct _snac {
     d_char *md5;        /* actor url md5 */
 } snac;
 
-int user_open(snac *snac, char *uid);
+int user_open(snac *snac, const char *uid);
 void user_free(snac *snac);
 d_char *user_list(void);
 
 void snac_debug(snac *snac, int level, d_char *str);
 #define snac_log(snac, str) snac_debug(snac, 0, str)
 
-int validate_uid(char *uid);
+int validate_uid(const char *uid);
 
-d_char *hash_password(char *uid, char *passwd, char *nonce);
-int check_password(char *uid, char *passwd, char *hash);
+d_char *hash_password(const char *uid, const char *passwd, const char *nonce);
+int check_password(const char *uid, const char *passwd, const char *hash);
 
 void srv_archive(char *direction, char *req, char *payload, int p_size,
                  int status, char *headers, char *body, int b_size);
@@ -173,4 +173,4 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
                       char **body, int *b_size, char **ctype);
 
 int initdb(const char *_basedir);
-int adduser(char *uid);
+int adduser(const char *uid);

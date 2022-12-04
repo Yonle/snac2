@@ -57,7 +57,7 @@ double ftime(void)
 }
 
 
-int validate_uid(char *uid)
+int validate_uid(const char *uid)
 /* returns if uid is a valid identifier */
 {
     while (*uid) {
@@ -103,7 +103,7 @@ void snac_debug(snac *snac, int level, d_char *str)
 }
 
 
-d_char *hash_password(char *uid, char *passwd, char *nonce)
+d_char *hash_password(const char *uid, const char *passwd, const char *nonce)
 /* hashes a password */
 {
     xs *d_nonce = NULL;
@@ -120,7 +120,7 @@ d_char *hash_password(char *uid, char *passwd, char *nonce)
 }
 
 
-int check_password(char *uid, char *passwd, char *hash)
+int check_password(const char *uid, const char *passwd, const char *hash)
 /* checks a password */
 {
     int ret = 0;

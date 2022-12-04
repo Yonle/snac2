@@ -187,13 +187,27 @@ int initdb(const char *basedir)
 }
 
 
-int adduser(char *uid)
+void new_password(const char *uid, d_char **clear_pwd, d_char **hashed_pwd)
+/* creates a random password */
+{
+    int rndbuf[3];
+
+    srandom(time(NULL) ^ getpid());
+    rndbuf[0] = random() & 0xffffffff;
+    rndbuf[1] = random() & 0xffffffff;
+    rndbuf[2] = random() & 0xffffffff;
+
+    *clear_pwd  = xs_base64_enc((char *)rndbuf, sizeof(rndbuf));
+    *hashed_pwd = hash_password(uid, *clear_pwd, NULL);
+}
+
+
+int adduser(const char *uid)
 /* creates a new user */
 {
     snac snac;
     xs *config = xs_dict_new();
     xs *date = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
-    int rndbuf[3];
     xs *pwd = NULL;
     xs *pwd_f = NULL;
     xs *key = NULL;
@@ -214,13 +228,7 @@ int adduser(char *uid)
         return 1;
     }
 
-    srandom(time(NULL) ^ getpid());
-    rndbuf[0] = random() & 0xffffffff;
-    rndbuf[1] = random() & 0xffffffff;
-    rndbuf[2] = random() & 0xffffffff;
-
-    pwd = xs_base64_enc((char *)rndbuf, sizeof(rndbuf));
-    pwd_f = hash_password(uid, pwd, NULL);
+    new_password(uid, &pwd, &pwd_f);
 
     config = xs_dict_append(config, "uid",       uid);
     config = xs_dict_append(config, "name",      uid);

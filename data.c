@@ -120,7 +120,7 @@ void user_free(snac *snac)
 }
 
 
-int user_open(snac *snac, char *uid)
+int user_open(snac *snac, const char *uid)
 /* opens a user */
 {
     int ret = 0;
