@@ -3,7 +3,7 @@ Messages in `snac` allow a special subset of Markdown, that includes *emphasized
 Line breaks are output as you write it.
 
 
-Prepending a less-than in a line makes it a quote:
+Prepending a greater-than symbol in a line makes it a quote:
 
 > This is quoted text
 >
