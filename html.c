@@ -277,6 +277,9 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<p>%s:<br>\n"
         "<textarea name=\"bio\" cols=\"40\" rows=\"4\">%s</textarea></p>\n"
 
+        "<p><input type=\"checkbox\" name=\"cw\" id=\"cw\" %s>\n"
+        "<label for=\"cw\">%s</label></p>\n"
+
         "<p>%s:<br>\n"
         "<input type=\"text\" name=\"email\" value=\"%s\"></p>\n"
 
@@ -320,6 +323,8 @@ d_char *html_top_controls(snac *snac, d_char *s)
         xs_dict_get(snac->config, "avatar"),
         L("Bio"),
         xs_dict_get(snac->config, "bio"),
+        xs_dict_get(snac->config, "cw"),
+        L("Always show sensitive content"),
         L("Email address for notifications"),
         email,
         L("Password (only to change it)"),
@@ -613,10 +618,12 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
     if (!xs_is_null(v = xs_dict_get(msg, "sensitive")) && xs_type(v) == XSTYPE_TRUE) {
         if (xs_is_null(v = xs_dict_get(msg, "summary")) || *v == '\0')
             v = "...";
-
-        xs *s1 = xs_fmt("<details><summary>%s [%s]</summary>\n", v, L("SENSITIVE CONTENT"));
+        /* only show it when not in the public timeline and the config setting is "open" */
+        char *cw = xs_dict_get(snac->config, "cw");
+        if (xs_is_null(cw) || local)
+            cw = "";
+        xs *s1 = xs_fmt("<details %s><summary>%s [%s]</summary>\n", cw, v, L("SENSITIVE CONTENT"));
         s = xs_str_cat(s, s1);
-
         sensitive = 1;
     }
 
@@ -1379,6 +1386,12 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
             snac.config = xs_dict_set(snac.config, "avatar", v);
         if ((v = xs_dict_get(p_vars, "bio")) != NULL)
             snac.config = xs_dict_set(snac.config, "bio", v);
+        if ((v = xs_dict_get(p_vars, "cw")) != NULL &&
+            strcmp(v, "on") == 0) {
+            snac.config = xs_dict_set(snac.config, "cw", "open");
+        } else { /* if the checkbox is not set, the parameter is missing */
+            snac.config = xs_dict_set(snac.config, "cw", "");
+        }
         if ((v = xs_dict_get(p_vars, "email")) != NULL)
             snac.config = xs_dict_set(snac.config, "email", v);
 
@@ -1428,4 +1441,3 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
     return status;
 }
-
