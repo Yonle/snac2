@@ -967,6 +967,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
     xs *uid = NULL;
     char *p_path;
     int cache = 1;
+    int save = 1;
     char *v;
 
     xs *l = xs_split_n(q_path, "/", 2);
@@ -1004,6 +1005,14 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
     if ((v = xs_dict_get(srv_config, "disable_cache")) && xs_type(v) == XSTYPE_TRUE)
         cache = 0;
 
+    int skip = 0;
+    int show = 50;
+    char *q_vars = xs_dict_get(req, "q_vars");
+    if ((v = xs_dict_get(q_vars, "skip")) != NULL)
+        skip = atoi(v), cache = 0, save = 0;
+    if ((v = xs_dict_get(q_vars, "show")) != NULL)
+        show = atoi(v), cache = 0, save = 0;
+
     if (p_path == NULL) {
         /* public timeline */
         xs *h = xs_str_localtime(0, "%Y-%m.html");
@@ -1016,13 +1025,20 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
             status  = 200;
         }
         else {
-            xs *list = timeline_list(&snac, "public", XS_ALL);
+            xs *list = timeline_list(&snac, "public", skip, show);
 
-            *body   = html_timeline(&snac, list, 1);
+            *body = html_timeline(&snac, list, 1);
+            if (xs_list_len(list) == show)
+                *body = xs_str_cat(
+                    *body, xs_fmt(
+                        "<p>"
+                        "<a href=\"%s?skip=%d&show=%d\" name=\"snac-more\">More…</a>"
+                        "</p>\n", snac.actor, skip + show, show));
             *b_size = strlen(*body);
             status  = 200;
 
-            history_add(&snac, h, *body, *b_size);
+            if (save)
+                history_add(&snac, h, *body, *b_size);
         }
     }
     else
@@ -1042,13 +1058,20 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
             else {
                 snac_debug(&snac, 1, xs_fmt("building timeline"));
 
-                xs *list = timeline_list(&snac, "private", XS_ALL);
+                xs *list = timeline_list(&snac, "private", skip, show);
 
                 *body   = html_timeline(&snac, list, 0);
+                if (xs_list_len(list) == show)
+                    *body = xs_str_cat(
+                        *body, xs_fmt(
+                            "<p>"
+                            "<a href=\"%s/admin?skip=%d&show=%d\" name=\"snac-more\">More…</a>"
+                            "</p>\n", snac.actor, skip + show, show));
                 *b_size = strlen(*body);
                 status  = 200;
 
-                history_add(&snac, "timeline.html_", *body, *b_size);
+                if (save)
+                    history_add(&snac, "timeline.html_", *body, *b_size);
             }
         }
     }
@@ -1109,7 +1132,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
     if (strcmp(p_path, ".rss") == 0) {
         /* public timeline in RSS format */
         d_char *rss;
-        xs *elems = timeline_simple_list(&snac, "public", 20);
+        xs *elems = timeline_simple_list(&snac, "public", 0, 20);
         xs *bio   = not_really_markdown(xs_dict_get(snac.config, "bio"));
         char *p, *v;
 
@@ -1202,7 +1225,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
     uid = xs_list_get(l, 1);
     if (!uid || !user_open(&snac, uid)) {
         /* invalid user */
-        srv_log(xs_fmt("html_get_handler bad user %s", uid));
+        srv_log(xs_fmt("html_post_handler bad user %s", uid));
         return 404;
     }
 

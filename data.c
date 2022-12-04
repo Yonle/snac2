@@ -359,7 +359,7 @@ d_char *index_list(const char *fn, int max)
 }
 
 
-d_char *index_list_desc(const char *fn, int max)
+d_char *index_list_desc(const char *fn, int skip, int show)
 /* returns an index as a list, in reverse order */
 {
     d_char *list = NULL;
@@ -372,9 +372,9 @@ d_char *index_list_desc(const char *fn, int max)
         char line[256];
         list = xs_list_new();
 
-        /* move to the end minus one entry */
-        if (!fseek(f, 0, SEEK_END) && !fseek(f, -33, SEEK_CUR)) {
-            while (n < max && fgets(line, sizeof(line), f) != NULL) {
+        /* move to the end minus one entry (or more, if skipping entries) */
+        if (!fseek(f, 0, SEEK_END) && !fseek(f, (skip + 1) * -33, SEEK_CUR)) {
+            while (n < show && fgets(line, sizeof(line), f) != NULL) {
                 line[32] = '\0';
                 list = xs_list_append(list, line);
                 n++;
@@ -856,7 +856,7 @@ d_char *timeline_top_level(d_char *list)
 }
 
 
-d_char *timeline_simple_list(snac *snac, const char *idx_name, int max)
+d_char *timeline_simple_list(snac *snac, const char *idx_name, int skip, int show)
 /* returns a timeline (with all entries) */
 {
     int c_max;
@@ -865,19 +865,19 @@ d_char *timeline_simple_list(snac *snac, const char *idx_name, int max)
     c_max = xs_number_get(xs_dict_get(srv_config, "max_timeline_entries"));
 
     /* never more timeline entries than the configured maximum */
-    if (max > c_max)
-        max = c_max;
+    if (show > c_max)
+        show = c_max;
 
     xs *idx = xs_fmt("%s/%s.idx", snac->basedir, idx_name);
 
-    return index_list_desc(idx, max);
+    return index_list_desc(idx, skip, show);
 }
 
 
-d_char *timeline_list(snac *snac, const char *idx_name, int max)
+d_char *timeline_list(snac *snac, const char *idx_name, int skip, int show)
 /* returns a timeline (only top level entries) */
 {
-    xs *list = timeline_simple_list(snac, idx_name, max);
+    xs *list = timeline_simple_list(snac, idx_name, skip, show);
 
     return timeline_top_level(list);
 }

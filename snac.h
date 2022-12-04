@@ -58,7 +58,7 @@ int index_add(const char *fn, const char *md5);
 int index_del(const char *fn, const char *md5);
 int index_first(const char *fn, char *buf, int size);
 d_char *index_list(const char *fn, int max);
-d_char *index_list_desc(const char *fn, int max);
+d_char *index_list_desc(const char *fn, int skip, int show);
 
 int object_add(const char *id, d_char *obj);
 int object_add_ow(const char *id, d_char *obj);
@@ -85,8 +85,8 @@ d_char *follower_list(snac *snac);
 
 double timeline_mtime(snac *snac);
 int timeline_del(snac *snac, char *id);
-d_char *timeline_simple_list(snac *snac, const char *idx_name, int max);
-d_char *timeline_list(snac *snac, const char *idx_name, int max);
+d_char *timeline_simple_list(snac *snac, const char *idx_name, int skip, int show);
+d_char *timeline_list(snac *snac, const char *idx_name, int skip, int show);
 int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer);
 void timeline_admire(snac *snac, char *o_msg, char *id, char *admirer, int like);
 
