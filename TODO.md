@@ -14,6 +14,8 @@ Add support for uploading the avatar, instead of needing an URL to an image. As 
 
 Add (back) the possibility to attach an image by URL.
 
+With this new disk layout, hidden posts (and their children) can be directly skipped (are there any other implications?).
+
 ## Wishlist
 
 Implement HTTP caches (If-None-Match / ETag).
