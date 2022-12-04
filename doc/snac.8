@@ -29,7 +29,7 @@ link counts. Remember:
 is a very UNIXy program that loves hard links.
 .Ss Building and Installation
 A C compiler must be installed in the system, as well as the development
-headers and libraries for OpenSSL and curl. To build
+headers and libraries for OpenSSL (or compatible) and curl. To build
 .Nm ,
 run
 .Bd -literal -offset indent
@@ -40,7 +40,7 @@ And, after that, run as root
 .Bd -literal -offset indent
 make install
 .Ed
-.Ss Database Initialization
+.Ss Data storage Initialization
 Once
 .Nm
 is properly installed on the system, designate a directory where
@@ -48,7 +48,7 @@ the server and user data are to be stored. This directory
 must not exist yet.
 .Nm
 must always be run as a regular user; you can create one for
-it or use your own. To initialize the database, execute
+it or use your own. To initialize the data storage, execute
 .Bd -literal -offset indent
 snac init $HOME/snac-data
 .Ed
@@ -83,13 +83,14 @@ directory.
 For other operating systems, please read the appropriate documentation
 on how to install a daemon as a non-root service.
 .Ss Upgrading to a new version
-Sometimes, the database disk layout changes between versions. If there
+Sometimes, the data storage disk layout changes between versions. If there
 is such a change,
 .Nm
 will refuse to run and require an upgrade. Do this by running
 .Bd -literal -offset indent
 snac upgrade $HOME/snac-data
 .Ed
+.Pp
 Take special care to execute this upgrade operation without any
 .Nm
 processes serving on the same folder. You can break everything. I know
@@ -195,10 +196,7 @@ supports:
 Complete support, on input and output.
 .It Vt Undo
 For
-.Vt Follow ,
-.Vt Like
-and
-.Vt Announce
+.Vt Follow
 objects, on input and output.
 .It Vt Create
 For
@@ -265,7 +263,7 @@ bloated and filled with redundant information. Using a filesystem with
 file compression enabled (like btrfs or zfs) will probably be a good
 choice to store the
 .Nm
-database into.
+data storage into.
 .Sh ENVIRONMENT
 .Bl -tag -width Ds
 .It Ev DEBUG

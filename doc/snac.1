@@ -141,12 +141,12 @@ the post and its children anymore.
 The command-line tool provide the following commands:
 .Bl -tag -offset indent
 .It Cm init Op basedir
-Initializes the database. This is an interactive command; necessary
+Initializes the data storage. This is an interactive command; necessary
 information will be prompted for. The
 .Ar basedir
 directory must not exist.
 .It Cm upgrade Ar basedir
-Upgrades the database disk layout after installing a new version.
+Upgrades the data storage after installing a new version.
 Only necessary if
 .Nm
 complains and demands it.
@@ -166,8 +166,6 @@ Starts the daemon.
 Processes the output queue of the specied user, sending all
 enqueued messages and re-enqueing the failing ones. This command
 must not be executed if the server is running.
-.It Cm passwd Ar basedir Ar uid
-Changes the password for a user (interactive).
 .It Cm follow Ar basedir Ar uid Ar actor
 Sends a Follow message for the specified actor URL.
 .It Cm request Ar basedir Ar uid Ar url
