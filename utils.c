@@ -310,3 +310,32 @@ int adduser(const char *uid)
 
     return 0;
 }
+
+
+int resetpwd(snac *snac)
+/* creates a new password for the user */
+{
+    xs *clear_pwd  = NULL;
+    xs *hashed_pwd = NULL;
+    xs *fn         = xs_fmt("%s/user.json", snac->basedir);
+    FILE *f;
+    int ret = 0;
+
+    new_password(snac->uid, &clear_pwd, &hashed_pwd);
+
+    snac->config = xs_dict_set(snac->config, "passwd", hashed_pwd);
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        xs *j = xs_json_dumps_pp(snac->config, 4);
+        fwrite(j, strlen(j), 1, f);
+        fclose(f);
+
+        printf("New password for user %s is %s\n", snac->uid, clear_pwd);
+    }
+    else {
+        printf("ERROR: cannot write to %s\n", fn);
+        ret = 1;
+    }
+
+    return ret;
+}

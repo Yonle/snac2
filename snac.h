@@ -174,3 +174,4 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
 int initdb(const char *_basedir);
 int adduser(const char *uid);
+int resetpwd(snac *snac);

@@ -24,21 +24,10 @@ int usage(void)
     printf("queue {basedir} {uid}            Processes a user queue\n");
     printf("follow {basedir} {uid} {actor}   Follows an actor\n");
     printf("unfollow {basedir} {uid} {actor} Unfollows an actor\n");
-
-//    printf("check {basedir} [{uid}]          Checks the database\n");
-
-//    printf("update {basedir} {uid}           Sends a user update to followers\n");
-//    printf("passwd {basedir} {uid}           Sets the password for {uid}\n");
-//    printf("unfollow {basedir} {uid} {actor} Unfollows an actor\n");
-//    printf("mute {basedir} {uid} {actor}     Mutes an actor\n");
-//    printf("unmute {basedir} {uid} {actor}   Unmutes an actor\n");
-//    printf("like {basedir} {uid} {url}       Likes an url\n");
-//    printf("announce {basedir} {uid} {url}   Announces (boosts) an url\n");
-//    printf("note {basedir} {uid} {'text'}    Sends a note to followers\n");
-
     printf("request {basedir} {uid} {url}    Requests an object\n");
     printf("actor {basedir} {uid} {url}      Requests an actor\n");
     printf("note {basedir} {uid} {'text'}    Sends a note to followers\n");
+    printf("resetpwd {basedir} {uid}         Resets the password of a user\n");
 
     return 1;
 }
@@ -148,6 +137,10 @@ int main(int argc, char *argv[])
     if (!user_open(&snac, user)) {
         printf("error in user '%s'\n", user);
         return 1;
+    }
+
+    if (strcmp(cmd, "resetpwd") == 0) {
+        return resetpwd(&snac);
     }
 
     if (strcmp(cmd, "queue") == 0) {
