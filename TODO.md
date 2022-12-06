@@ -4,7 +4,11 @@
 
 Add an ?skip=NNN parameter to the admin page, to see older timeline.
 
-Add support for Edit + Note on input.
+Add support for Update + Note on input.
+
+Now that we have the 2.7 layout and Likes and Announces don't move the conversations up, finally fix the ugly # positioning.
+
+Disable the 'Boost' button for non-public messages (technically they can be Announced, but shouldn't).
 
 Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac2/issues/3
 
