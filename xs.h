@@ -200,11 +200,30 @@ xstype xs_type(const char *data)
 }
 
 
+void _xs_put_24b(char *ptr, int i)
+/* writes i as a 24 bit value */
+{
+    unsigned char *p = (unsigned char *)ptr;
+
+    p[0] = (i >> 16) & 0xff;
+    p[1] = (i >> 8) & 0xff;
+    p[2] = i & 0xff;
+}
+
+
+int _xs_get_24b(const char *ptr)
+/* reads a 24 bit value */
+{
+    unsigned char *p = (unsigned char *)ptr;
+
+    return (p[0] << 16) | (p[1] << 8) | p[2];
+}
+
+
 int xs_size(const char *data)
 /* returns the size of data in bytes */
 {
     int len = 0;
-    int c = 0;
     const char *p;
 
     if (data == NULL)
@@ -216,20 +235,12 @@ int xs_size(const char *data)
         break;
 
     case XSTYPE_LIST:
-        /* look for a balanced EOL */
-        do {
-            c += data[len] == XSTYPE_LIST ? 1 : data[len] == XSTYPE_EOL ? -1 : 0;
-            len++;
-        } while (c);
+        len = _xs_get_24b(data + 1);
 
         break;
 
     case XSTYPE_DICT:
-        /* look for a balanced EOD */
-        do {
-            c += data[len] == XSTYPE_DICT ? 1 : data[len] == XSTYPE_EOD ? -1 : 0;
-            len++;
-        } while (c);
+        len = _xs_get_24b(data + 1);
 
         break;
 
@@ -297,6 +308,9 @@ d_char *xs_expand(d_char *data, int offset, int size)
     if (data != NULL)
         memmove(data + offset + size, data + offset, sz - offset);
 
+    if (xs_type(data) == XSTYPE_LIST || xs_type(data) == XSTYPE_DICT)
+        _xs_put_24b(data + 1, sz + size);
+
     return data;
 }
 
@@ -316,6 +330,9 @@ d_char *xs_collapse(d_char *data, int offset, int size)
 
     for (n = offset; n < sz; n++)
         data[n] = data[n + size];
+
+    if (xs_type(data) == XSTYPE_LIST || xs_type(data) == XSTYPE_DICT)
+        _xs_put_24b(data + 1, sz);
 
     return xs_realloc(data, _xs_blk_size(sz));
 }
@@ -464,9 +481,11 @@ d_char *xs_list_new(void)
 {
     d_char *list;
 
-    list = xs_realloc(NULL, _xs_blk_size(2));
+    list = xs_realloc(NULL, _xs_blk_size(5));
     list[0] = XSTYPE_LIST;
-    list[1] = XSTYPE_EOL;
+    list[4] = XSTYPE_EOL;
+
+    _xs_put_24b(list + 1, 5);
 
     return list;
 }
@@ -502,9 +521,9 @@ int xs_list_iter(char **list, char **value)
 
     p = *list;
 
-    /* skip a possible start of the list */
+    /* skip the start of the list */
     if (*p == XSTYPE_LIST)
-        p++;
+        p += 4;
 
     /* an element? */
     if (*p == XSTYPE_LITEM) {
@@ -709,9 +728,11 @@ d_char *xs_dict_new(void)
 {
     d_char *dict;
 
-    dict = xs_realloc(NULL, _xs_blk_size(2));
+    dict = xs_realloc(NULL, _xs_blk_size(5));
     dict[0] = XSTYPE_DICT;
-    dict[1] = XSTYPE_EOD;
+    dict[4] = XSTYPE_EOD;
+
+    _xs_put_24b(dict + 1, 5);
 
     return dict;
 }
@@ -743,9 +764,9 @@ int xs_dict_iter(char **dict, char **key, char **value)
 
     p = *dict;
 
-    /* skip a possible start of the list */
+    /* skip the start of the list */
     if (*p == XSTYPE_DICT)
-        p++;
+        p += 4;
 
     /* an element? */
     if (*p == XSTYPE_DITEM) {
