@@ -1099,7 +1099,7 @@ int actor_get(snac *snac, const char *actor, d_char **data)
 /* returns an already downloaded actor */
 {
     int status = 200;
-    char *d;
+    d_char *d;
 
     if (strcmp(actor, snac->actor) == 0) {
         /* this actor */
@@ -1115,6 +1115,8 @@ int actor_get(snac *snac, const char *actor, d_char **data)
 
     if (data)
         *data = d;
+    else
+        d = xs_free(d);
 
     xs *fn = _object_fn(actor);
     double max_time;
