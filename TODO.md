@@ -20,6 +20,8 @@ With this new disk layout, hidden posts (and their children) can be directly ski
 
 ## Wishlist
 
+Implement the ActivityPub C2S (Client to Server) API: (https://www.w3.org/TR/activitypub/#client-to-server-interactions).
+
 Implement HTTP caches (If-None-Match / ETag).
 
 The 'history' pages are just monthly HTML snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you e.g. intentionally delete a post because it will remain there in the history forever. If you activate local timeline purging, purged entries will remain in the history as 'ghosts', which may or may not be what the user wants.
