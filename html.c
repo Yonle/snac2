@@ -66,7 +66,7 @@ d_char *html_actor_icon(snac *snac, d_char *os, char *actor, char *date, char *u
 
                 if (n && i) {
                     char *u = xs_dict_get(i, "url");
-                    xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\"/>", u);
+                    xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\" loading=\"lazy\"/>", u);
 
                     name = xs_replace_i(name, n, img);
                 }
@@ -84,7 +84,7 @@ d_char *html_actor_icon(snac *snac, d_char *os, char *actor, char *date, char *u
         avatar = xs_fmt("data:image/png;base64, %s", susie);
 
     {
-        xs *s1 = xs_fmt("<p><img class=\"snac-avatar\" src=\"%s\" alt=\"\"/>\n", avatar);
+        xs *s1 = xs_fmt("<p><img class=\"snac-avatar\" src=\"%s\" alt=\"\" loading=\"lazy\"/>\n", avatar);
         s = xs_str_cat(s, s1);
     }
 
@@ -668,7 +668,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
 
                     if (n && i) {
                         char *u = xs_dict_get(i, "url");
-                        xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\"/>", u);
+                        xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\" loading=\"lazy\"/>", u);
 
                         c = xs_replace_i(c, n, img);
                     }
@@ -697,7 +697,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
                 char *name = xs_dict_get(v, "name");
 
                 if (url != NULL) {
-                    xs *s1 = xs_fmt("<p><img src=\"%s\" alt=\"%s\"/></p>\n",
+                    xs *s1 = xs_fmt("<p><img src=\"%s\" alt=\"%s\" loading=\"lazy\"/></p>\n",
                         url, xs_is_null(name) ? "" : name);
 
                     s = xs_str_cat(s, s1);
