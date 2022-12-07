@@ -843,7 +843,7 @@ d_char *html_timeline(snac *snac, char *list, int local, int skip, int show, int
         xs *s1 = xs_fmt(
             "<p>"
             "<a href=\"%s%s?skip=%d&show=%d\" name=\"snac-more\">%s</a>"
-            "</p>\n", local ? "" : "/admin", snac->actor, skip + show, show, L("More..."));
+            "</p>\n", snac->actor, local ? "" : "/admin", skip + show, show, L("More..."));
 
         s = xs_str_cat(s, s1);
     }
