@@ -780,7 +780,7 @@ d_char *html_user_footer(snac *snac, d_char *s)
 }
 
 
-d_char *html_timeline(snac *snac, char *list, int local)
+d_char *html_timeline(snac *snac, char *list, int local, int skip, int show, int show_more)
 /* returns the HTML for the timeline */
 {
     d_char *s = xs_str_new(NULL);
@@ -836,6 +836,15 @@ d_char *html_timeline(snac *snac, char *list, int local)
 
     {
         xs *s1 = xs_fmt("<!-- %lf seconds -->\n", ftime() - t);
+        s = xs_str_cat(s, s1);
+    }
+
+    if (show_more) {
+        xs *s1 = xs_fmt(
+            "<p>"
+            "<a href=\"%s%s?skip=%d&show=%d\" name=\"snac-more\">%s</a>"
+            "</p>\n", local ? "" : "/admin", snac->actor, skip + show, show, L("More..."));
+
         s = xs_str_cat(s, s1);
     }
 
@@ -1006,7 +1015,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         cache = 0;
 
     int skip = 0;
-    int show = 50;
+    int show = xs_number_get(xs_dict_get(srv_config, "max_timeline_entries"));
     char *q_vars = xs_dict_get(req, "q_vars");
     if ((v = xs_dict_get(q_vars, "skip")) != NULL)
         skip = atoi(v), cache = 0, save = 0;
@@ -1026,14 +1035,10 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         }
         else {
             xs *list = timeline_list(&snac, "public", skip, show);
+            xs *next = timeline_list(&snac, "public", skip + show, show);
 
-            *body = html_timeline(&snac, list, 1);
-            if (xs_list_len(list) == show)
-                *body = xs_str_cat(
-                    *body, xs_fmt(
-                        "<p>"
-                        "<a href=\"%s?skip=%d&show=%d\" name=\"snac-more\">More…</a>"
-                        "</p>\n", snac.actor, skip + show, show));
+            *body = html_timeline(&snac, list, 1, skip, show, xs_list_len(next));
+
             *b_size = strlen(*body);
             status  = 200;
 
@@ -1059,14 +1064,10 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
                 snac_debug(&snac, 1, xs_fmt("building timeline"));
 
                 xs *list = timeline_list(&snac, "private", skip, show);
+                xs *next = timeline_list(&snac, "private", skip + show, show);
 
-                *body   = html_timeline(&snac, list, 0);
-                if (xs_list_len(list) == show)
-                    *body = xs_str_cat(
-                        *body, xs_fmt(
-                            "<p>"
-                            "<a href=\"%s/admin?skip=%d&show=%d\" name=\"snac-more\">More…</a>"
-                            "</p>\n", snac.actor, skip + show, show));
+                *body   = html_timeline(&snac, list, 0, skip, show, xs_list_len(next));
+
                 *b_size = strlen(*body);
                 status  = 200;
 
@@ -1099,7 +1100,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
 
             list = xs_list_append(list, md5);
 
-            *body   = html_timeline(&snac, list, 1);
+            *body   = html_timeline(&snac, list, 1, 0, 0, 0);
             *b_size = strlen(*body);
             status  = 200;
         }
