@@ -1035,7 +1035,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         }
         else {
             xs *list = timeline_list(&snac, "public", skip, show);
-            xs *next = timeline_list(&snac, "public", skip + show, show);
+            xs *next = timeline_list(&snac, "public", skip + show, 1);
 
             *body = html_timeline(&snac, list, 1, skip, show, xs_list_len(next));
 
@@ -1064,7 +1064,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
                 snac_debug(&snac, 1, xs_fmt("building timeline"));
 
                 xs *list = timeline_list(&snac, "private", skip, show);
-                xs *next = timeline_list(&snac, "private", skip + show, show);
+                xs *next = timeline_list(&snac, "private", skip + show, 1);
 
                 *body   = html_timeline(&snac, list, 0, skip, show, xs_list_len(next));
 
