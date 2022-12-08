@@ -317,6 +317,12 @@ location /.well-known/webfinger {
     proxy_set_header Host $http_host;
 }
 
+# optional
+location /.well-known/nodeinfo {
+    proxy_pass http://localhost:8001;
+    proxy_set_header Host $http_host;
+}
+
 location /fedi {
     proxy_pass http://localhost:8001;
     proxy_set_header Host $http_host;
