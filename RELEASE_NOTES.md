@@ -4,7 +4,7 @@
 
 Previous posts in the public and private timelines can be reached by a "More..." post at the end (contributed by kensanata).
 
-Liking and boosting posts don't move the full conversation up; after that, the page is reloaded to a more precise position. Still not perfect, but on the way.
+Clicking the 'Like' and 'Boost' buttons don't move the full conversation up; after that, the page is reloaded to a more precise position. Still not perfect, but on the way.
 
 New command-line operation, `resetpwd`, to reset a user's password to a new, random one.
 
@@ -12,7 +12,7 @@ Added a user setup option to toggle if sensitive content is shown or not by defa
 
 All images are loaded in lazy mode for a snappier feel (contributed by kensanata).
 
-Fixed crash when debug level >= 2 (contributed by kensanata).
+Fixed crash in the data storage upgrade process when debug level >= 2 (contributed by kensanata).
 
 Log message improvements for excelence (contributed by kensanata).
 
