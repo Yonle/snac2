@@ -20,7 +20,7 @@ The logging of "new 'Delete'..." messages has been moved to debug level 1, becau
 
 Don't show the 'Boost' button for private messages.
 
-Added (partial) support for /.well-known/nodeinfo site information.
+Added (partial) support for /.well-known/nodeinfo site information. This is not mandatory at all, but if you want to serve it, remember that you need to proxy this address from your web server to the `snac` server.
 
 Some internal structure improvements.
 
