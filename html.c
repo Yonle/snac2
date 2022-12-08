@@ -429,9 +429,11 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
         s = html_button(s, "like", L("Like"));
     }
 
-    if (strcmp(actor, snac->actor) == 0 || xs_list_in(boosts, snac->md5) == -1) {
-        /* not already boosted or us; add button */
-        s = html_button(s, "boost", L("Boost"));
+    if (is_msg_public(snac, msg)) {
+        if (strcmp(actor, snac->actor) == 0 || xs_list_in(boosts, snac->md5) == -1) {
+            /* not already boosted or us; add button */
+            s = html_button(s, "boost", L("Boost"));
+        }
     }
 
     if (strcmp(actor, snac->actor) != 0) {
