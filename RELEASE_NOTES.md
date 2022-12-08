@@ -18,6 +18,8 @@ Log message improvements for excelence (contributed by kensanata).
 
 The logging of "new 'Delete'..." messages has been moved to debug level 1, because I'm fed up of seeing my logs swamped with needless cruft.
 
+Don't show the 'Boost' button for private messages.
+
 Some internal structure improvements.
 
 ## 2.13
