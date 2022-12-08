@@ -4,8 +4,6 @@
 
 Add support for Update + Note on input.
 
-Disable the 'Boost' button for non-public messages (technically they can be Announced, but shouldn't).
-
 Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac2/issues/3
 
 Add support for uploading the avatar, instead of needing an URL to an image. As a kludgy workaround, you can post something with an attached image, copy the auto-generated URL and use it. You can even delete the post, as attached images are never deleted (I said it was kludgy).
@@ -193,3 +191,5 @@ Add this pull request https://codeberg.org/grunfink/snac2/pulls/9 (2022-12-05T12
 Add an ?skip=NNN parameter to the admin page, to see older timeline (2022-12-08T08:41:11+0100).
 
 Now that we have the 2.7 layout and Likes and Announces don't move the conversations up, finally fix the ugly # positioning (2022-12-08T08:41:27+0100).
+
+Disable the 'Boost' button for non-public messages (technically they can be Announced, but shouldn't) (2022-12-08T08:46:24+0100).
