@@ -14,6 +14,8 @@ Fixed crash when debug level >= 2 (contributed by kensanata).
 
 Log message improvements for excelence (contributed by kensanata).
 
+The logging of "new 'Delete'..." messages has been moved to debug level 1, because I'm fed up of seeing my logs swamped with needless cruft.
+
 Some internal structure improvements.
 
 ## 2.13
