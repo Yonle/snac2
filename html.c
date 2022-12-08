@@ -367,6 +367,7 @@ d_char *build_mentions(snac *snac, char *msg)
 
         if (type && strcmp(type, "Mention") == 0 &&
             href && strcmp(href, snac->actor) != 0 && name) {
+            if (name[0] != '@') name = xs_str_cat(xs_str_new("@"), name);
             xs *l = xs_split(name, "@");
 
             /* is it a name without a host? */
