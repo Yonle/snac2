@@ -2,11 +2,7 @@
 
 ## Open
 
-Add an ?skip=NNN parameter to the admin page, to see older timeline.
-
 Add support for Update + Note on input.
-
-Now that we have the 2.7 layout and Likes and Announces don't move the conversations up, finally fix the ugly # positioning.
 
 Disable the 'Boost' button for non-public messages (technically they can be Announced, but shouldn't).
 
@@ -193,3 +189,7 @@ Dropping on input those messages that have their parent hidden is not a good ide
 Idea for a new disk layout: timelines stored like in git (2 character directories and then the md5.json inside); one append-only index with entry ids, read backwards (easy because md5 binary ids have a constant size); children lists as append-only files stored inside the timeline directories with almost the same names as the parent entry; liked-by and announced-by lists as append-only files of actor ids. No _snac metadata inside the message (But, what about the referrer? With this layout, do I need it?). The instance storage may even be global, not per user; this could help in very big instances (but will this be a use-case for snac? not probably) (2022-12-04T06:49:55+0100).
 
 Add this pull request https://codeberg.org/grunfink/snac2/pulls/9 (2022-12-05T12:12:19+0100).
+
+Add an ?skip=NNN parameter to the admin page, to see older timeline (2022-12-08T08:41:11+0100).
+
+Now that we have the 2.7 layout and Likes and Announces don't move the conversations up, finally fix the ugly # positioning (2022-12-08T08:41:27+0100).
