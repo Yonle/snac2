@@ -465,6 +465,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
             "<input type=\"hidden\" name=\"in_reply_to\" value=\"%s\">\n"
             "<p><input type=\"checkbox\" name=\"sensitive\"> %s\n"
             "<p><input type=\"file\" name=\"attach\">\n"
+            "<input type=\"hidden\" name=\"redir\" value=\"%s_entry\">\n"
             "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
             "</form><p></div>\n"
             "</details><p>"
@@ -476,6 +477,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
             ct,
             id,
             L("Sensitive content"),
+            md5,
             L("Post")
         );
 
