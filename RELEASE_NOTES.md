@@ -20,6 +20,8 @@ The logging of "new 'Delete'..." messages has been moved to debug level 1, becau
 
 Don't show the 'Boost' button for private messages.
 
+Added (partial) support for /.well-known/nodeinfo site information.
+
 Some internal structure improvements.
 
 ## 2.13
