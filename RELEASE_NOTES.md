@@ -2,13 +2,19 @@
 
 ## 2.14
 
+Previous posts in the public and private timelines can be reached by a "More..." post at the end (contributed by kensanata).
+
 New command-line operation, `resetpwd`, to reset a user's password to a new, random one.
 
 Added a user setup option to toggle if sensitive content is shown or not by default (contributed by kensanata).
 
+All images are loaded in lazy mode for a snappier feel (contributed by kensanata).
+
 Fixed crash when debug level >= 2 (contributed by kensanata).
 
 Log message improvements for excelence (contributed by kensanata).
+
+Some internal structure improvements.
 
 ## 2.13
 
