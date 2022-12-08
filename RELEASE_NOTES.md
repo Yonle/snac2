@@ -4,6 +4,8 @@
 
 Previous posts in the public and private timelines can be reached by a "More..." post at the end (contributed by kensanata).
 
+Liking and boosting posts don't move the full conversation up; after that, the page is reloaded to a more precise position. Still not perfect, but on the way.
+
 New command-line operation, `resetpwd`, to reset a user's password to a new, random one.
 
 Added a user setup option to toggle if sensitive content is shown or not by default (contributed by kensanata).
