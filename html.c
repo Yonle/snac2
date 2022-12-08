@@ -399,7 +399,7 @@ d_char *build_mentions(snac *snac, char *msg)
 }
 
 
-d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
+d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
 {
     char *id    = xs_dict_get(msg, "id");
     char *actor = xs_dict_get(msg, "attributedTo");
@@ -407,7 +407,6 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
     xs *boosts  = object_announces(id);
 
     xs *s   = xs_str_new(NULL);
-    xs *md5 = xs_md5_hex(id, strlen(id));
 
     s = xs_str_cat(s, "<div class=\"snac-controls\">\n");
 
@@ -416,10 +415,10 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
             "<form method=\"post\" action=\"%s/admin/action\">\n"
             "<input type=\"hidden\" name=\"id\" value=\"%s\">\n"
             "<input type=\"hidden\" name=\"actor\" value=\"%s\">\n"
-            "<input type=\"hidden\" name=\"redir\" value=\"%d_entry\">\n"
+            "<input type=\"hidden\" name=\"redir\" value=\"%s_entry\">\n"
             "\n",
 
-            snac->actor, id, actor, num
+            snac->actor, id, actor, md5
         );
 
         s = xs_str_cat(s, s1);
@@ -489,7 +488,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, int num)
 }
 
 
-d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int *num)
+d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, const char *md5)
 {
     char *id    = xs_dict_get(msg, "id");
     char *type  = xs_dict_get(msg, "type");
@@ -511,10 +510,8 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
     else
         s = xs_str_cat(s, "<div>\n");
 
-    if (level == 0) {
-        xs *s1 = xs_fmt("<a name=\"%d_entry\"></a>\n", *num);
-
-        *num = *num + 1;
+    {
+        xs *s1 = xs_fmt("<a name=\"%s_entry\"></a>\n", md5);
 
         s = xs_str_cat(s, s1);
     }
@@ -733,7 +730,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
     /** controls **/
 
     if (!local)
-        s = html_entry_controls(snac, s, msg, *num);
+        s = html_entry_controls(snac, s, msg, md5);
 
     /** children **/
     xs *children = object_children(id);
@@ -759,7 +756,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, int 
                 s = xs_str_cat(s, "</details>\n");
 
             if (chd != NULL)
-                s = html_entry(snac, s, chd, local, level + 1, num);
+                s = html_entry(snac, s, chd, local, level + 1, cmd5);
             else
                 snac_debug(snac, 2, xs_fmt("cannot read from timeline child %s", cmd5));
 
@@ -795,7 +792,6 @@ d_char *html_timeline(snac *snac, char *list, int local, int skip, int show, int
     d_char *s = xs_str_new(NULL);
     char *v;
     double t = ftime();
-    int num = 0;
 
     s = html_user_header(snac, s, local);
 
@@ -811,7 +807,7 @@ d_char *html_timeline(snac *snac, char *list, int local, int skip, int show, int
         if (!valid_status(object_get_by_md5(v, &msg, NULL)))
             continue;
 
-        s = html_entry(snac, s, msg, local, 0, &num);
+        s = html_entry(snac, s, msg, local, 0, v);
     }
 
     s = xs_str_cat(s, "</div>\n");
