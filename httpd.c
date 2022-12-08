@@ -23,6 +23,27 @@ const char *susie =
     "AYTtEsDU9F34AAAAAElFTkSuQmCC";
 
 
+/* nodeinfo 2.0 template */
+const char *nodeinfo_2_0_template = ""
+    "{\"version\":\"2.0\","
+    "\"software\":{\"name\":\"snac\",\"version\":\"" VERSION "\"},"
+    "\"protocols\":[\"activitypub\"],"
+    "\"services\":{\"outbound\":[],\"inbound\":[]},"
+    "\"usage\":{\"users\":{\"total\":%d,\"activeMonth\":%d,\"activeHalfyear\":%d},"
+    "\"localPosts\":%d},"
+    "\"openRegistrations\":false,\"metadata\":{}}";
+
+d_char *nodeinfo_2_0(void)
+/* builds a nodeinfo json object */
+{
+    xs *users   = user_list();
+    int n_users = xs_list_len(users);
+    int n_posts = 0; /* to be implemented someday */
+
+    return xs_fmt(nodeinfo_2_0_template, n_users, n_users, n_users, n_posts);
+}
+
+
 int server_get_handler(d_char *req, char *q_path,
                        char **body, int *b_size, char **ctype)
 /* basic server services */
@@ -80,6 +101,21 @@ int server_get_handler(d_char *req, char *q_path,
         status = 200;
         *body  = xs_base64_dec(susie, b_size);
         *ctype = "image/png";
+    }
+    else
+    if (strcmp(q_path, "/.well-known/nodeinfo") == 0) {
+        status = 200;
+        *ctype = "application/json; charset=utf-8";
+        *body  = xs_fmt("{\"links\":["
+            "{\"rel\":\"http:/" "/nodeinfo.diaspora.software/ns/schema/2.0\","
+            "\"href\":\"%s/nodeinfo_2_0\"}]}",
+            srv_baseurl);
+    }
+    else
+    if (strcmp(q_path, "/nodeinfo_2_0") == 0) {
+        status = 200;
+        *ctype = "application/json; charset=utf-8";
+        *body  = nodeinfo_2_0();
     }
 
     if (status != 0)
