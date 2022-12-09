@@ -1,15 +1,15 @@
 PREFIX=/usr/local
 PREFIX_MAN=$(PREFIX)/man
-CFLAGS=-g -Wall
+CFLAGS?=-g -Wall
 
 all: snac
 
 snac: snac.o main.o data.o http.o httpd.o webfinger.o \
     activitypub.o html.o utils.o format.o upgrade.o
-	$(CC) $(CFLAGS) -L/usr/local/lib *.o -lcurl -lcrypto -pthread -o $@
+	$(CC) $(CFLAGS) -L/usr/local/lib *.o -lcurl -lcrypto -pthread $(LDFLAGS) -o $@
 
 .c.o:
-	$(CC) $(CFLAGS) -I/usr/local/include -c $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I/usr/local/include -c $<
 
 clean:
 	rm -rf *.o *.core snac makefile.depend
@@ -18,6 +18,7 @@ dep:
 	$(CC) -I/usr/local/include -MM *.c > makefile.depend
 
 install:
+	mkdir -p -m 755 $(PREFIX)/bin
 	install -m 755 snac $(PREFIX)/bin/snac
 	mkdir -p -m 755 $(PREFIX_MAN)/man1
 	install -m 644 doc/snac.1 $(PREFIX_MAN)/man1/snac.1
