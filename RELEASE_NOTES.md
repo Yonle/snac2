@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.15
+
+Fixed bug in message posting that may result in 400 Bad Request errors (contributed by tobyjaffey).
+
 ## 2.14
 
 Previous posts in the public and private timelines can be reached by a "More..." post at the end (contributed by kensanata).

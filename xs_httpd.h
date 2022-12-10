@@ -74,7 +74,6 @@ void *memmem(const void *, size_t, const void *, size_t);
 d_char *_xs_multipart_form_data(char *payload, int p_size, char *header)
 /* parses a multipart/form-data payload */
 {
-    d_char *p_vars = xs_dict_new();
     xs *boundary = NULL;
     int offset = 0;
     int bsz;
@@ -91,6 +90,8 @@ d_char *_xs_multipart_form_data(char *payload, int p_size, char *header)
     }
 
     bsz = strlen(boundary);
+
+    d_char *p_vars = xs_dict_new();
 
     /* iterate searching the boundaries */
     while ((p = memmem(payload + offset, p_size - offset, boundary, bsz)) != NULL) {
