@@ -333,6 +333,19 @@ int index_first(const char *fn, char *line, int size)
 }
 
 
+int index_len(const char *fn)
+/* returns the number of elements in an index */
+{
+    struct stat st;
+    int len = 0;
+
+    if (stat(fn, &st) != -1)
+        len = st.st_size / 33;
+
+    return len;
+}
+
+
 d_char *index_list(const char *fn, int max)
 /* returns an index as a list */
 {
@@ -588,31 +601,49 @@ int object_del_if_unref(const char *id)
 }
 
 
-d_char *_object_metadata(const char *id, const char *idxsfx)
-/* returns the content of a metadata index */
+d_char *_object_index_fn(const char *id, const char *idxsfx)
+/* returns the filename of an object's index */
 {
-    xs *fn = _object_fn(id);
-    fn = xs_replace_i(fn, ".json", idxsfx);
-    return index_list(fn, XS_ALL);
+    d_char *fn = _object_fn(id);
+    return xs_replace_i(fn, ".json", idxsfx);
+}
+
+
+int object_likes_len(const char *id)
+/* returns the number of likes (without reading the index) */
+{
+    xs *fn = _object_index_fn(id, "_l.idx");
+    return index_len(fn);
+}
+
+
+int object_announces_len(const char *id)
+/* returns the number of announces (without reading the index) */
+{
+    xs *fn = _object_index_fn(id, "_a.idx");
+    return index_len(fn);
 }
 
 
 d_char *object_children(const char *id)
 /* returns the list of an object's children */
 {
-    return _object_metadata(id, "_c.idx");
+    xs *fn = _object_index_fn(id, "_c.idx");
+    return index_list(fn, XS_ALL);
 }
 
 
 d_char *object_likes(const char *id)
 {
-    return _object_metadata(id, "_l.idx");
+    xs *fn = _object_index_fn(id, "_l.idx");
+    return index_list(fn, XS_ALL);
 }
 
 
 d_char *object_announces(const char *id)
 {
-    return _object_metadata(id, "_a.idx");
+    xs *fn = _object_index_fn(id, "_a.idx");
+    return index_list(fn, XS_ALL);
 }
 
 

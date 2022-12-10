@@ -57,6 +57,7 @@ double mtime_nl(const char *fn, int *n_link);
 int index_add(const char *fn, const char *md5);
 int index_del(const char *fn, const char *md5);
 int index_first(const char *fn, char *buf, int size);
+int index_len(const char *fn);
 d_char *index_list(const char *fn, int max);
 d_char *index_list_desc(const char *fn, int skip, int show);
 
@@ -69,6 +70,9 @@ int object_get(const char *id, d_char **obj, const char *type);
 int object_del(const char *id);
 int object_del_if_unref(const char *id);
 int object_admire(const char *id, const char *actor, int like);
+
+int object_likes_len(const char *id);
+int object_announces_len(const char *id);
 
 d_char *object_children(const char *id);
 d_char *object_likes(const char *id);
