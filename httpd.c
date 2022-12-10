@@ -286,6 +286,7 @@ static void *queue_thread(void *arg)
             pthread_t pth;
 
             pthread_create(&pth, NULL, purge_thread, NULL);
+            pthread_detach(pth);
 
             /* next purge time is tomorrow */
             purge_time = t + 24 * 60 * 60;
