@@ -93,6 +93,7 @@ d_char *xs_http_request(char *method, char *url, d_char *headers,
     struct curl_slist *list = NULL;
     char *k, *v, *p;
     long lstatus;
+    struct _payload_data pd;
 
     response = xs_dict_new();
 
@@ -128,7 +129,9 @@ d_char *xs_http_request(char *method, char *url, d_char *headers,
             sprintf(tmp, "content-length: %d", b_size);
             list = curl_slist_append(list, tmp);
 
-            struct _payload_data pd = { body, b_size, 0 };
+            pd.data = body;
+            pd.size = b_size;
+            pd.offset = 0;
 
             curl_easy_setopt(curl, CURLOPT_READDATA,     &pd);
             curl_easy_setopt(curl, CURLOPT_READFUNCTION, _post_callback);
