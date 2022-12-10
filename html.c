@@ -551,14 +551,14 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
 
     /* if this is our post, add the score */
     if (xs_startswith(id, snac->actor)) {
-        likes  = object_likes(id);
-        boosts = object_announces(id);
+        int n_likes  = object_likes_len(id);
+        int n_boosts = object_announces_len(id);
 
         /* alternate emojis: %d &#128077; %d &#128257; */
 
         xs *s1 = xs_fmt(
             "<div class=\"snac-score\">%d &#9733; %d &#8634;</div>\n",
-            xs_list_len(likes), xs_list_len(boosts));
+            n_likes, n_boosts);
 
         s = xs_str_cat(s, s1);
     }
