@@ -983,6 +983,10 @@ void process_queue(snac *snac)
 
             if (!valid_status(status)) {
                 /* error sending; requeue? */
+                if (status == 404 || status == 410)
+                    /* explicit error: discard */
+                    snac_log(snac, xs_fmt("process_queue error %s %d", inbox, status));
+                else
                 if (retries > queue_retry_max)
                     snac_log(snac, xs_fmt("process_queue giving up %s %d", inbox, status));
                 else {
