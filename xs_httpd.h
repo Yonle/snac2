@@ -131,13 +131,13 @@ d_char *_xs_multipart_form_data(char *payload, int p_size, char *header)
         }
 
         /* find the start of the part content */
-        if ((p = xs_memmem(p, p_size - offset, "\r\n\r\n", 4)) == NULL)
+        if ((p = xs_memmem(p, p_size - (p - payload), "\r\n\r\n", 4)) == NULL)
             break;
 
         p += 4;
 
         /* find the next boundary */
-        if ((q = xs_memmem(p, p_size - offset, boundary, bsz)) == NULL)
+        if ((q = xs_memmem(p, p_size - (p - payload), boundary, bsz)) == NULL)
             break;
 
         po = p - payload;

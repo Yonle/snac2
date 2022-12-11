@@ -914,7 +914,8 @@ void *xs_memmem(const char *haystack, int h_size, const char *needle, int n_size
     char *p, *r = NULL;
     int offset = 0;
 
-    while (!r && h_size - offset > n_size && (p = strchr(haystack + offset, *needle))) {
+    while (!r && h_size - offset > n_size &&
+           (p = memchr(haystack + offset, *needle, h_size - offset))) {
         if (memcmp(p, needle, n_size) == 0)
             r = p;
         else
