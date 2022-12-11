@@ -69,8 +69,6 @@ d_char *xs_url_vars(char *str)
 }
 
 
-void *memmem(const void *, size_t, const void *, size_t);
-
 d_char *_xs_multipart_form_data(char *payload, int p_size, char *header)
 /* parses a multipart/form-data payload */
 {
@@ -94,7 +92,7 @@ d_char *_xs_multipart_form_data(char *payload, int p_size, char *header)
     d_char *p_vars = xs_dict_new();
 
     /* iterate searching the boundaries */
-    while ((p = memmem(payload + offset, p_size - offset, boundary, bsz)) != NULL) {
+    while ((p = xs_memmem(payload + offset, p_size - offset, boundary, bsz)) != NULL) {
         xs *s1 = NULL;
         xs *l1 = NULL;
         char *vn = NULL;
@@ -133,13 +131,13 @@ d_char *_xs_multipart_form_data(char *payload, int p_size, char *header)
         }
 
         /* find the start of the part content */
-        if ((p = memmem(p, p_size - offset, "\r\n\r\n", 4)) == NULL)
+        if ((p = xs_memmem(p, p_size - offset, "\r\n\r\n", 4)) == NULL)
             break;
 
         p += 4;
 
         /* find the next boundary */
-        if ((q = memmem(p, p_size - offset, boundary, bsz)) == NULL)
+        if ((q = xs_memmem(p, p_size - offset, boundary, bsz)) == NULL)
             break;
 
         po = p - payload;

@@ -90,6 +90,7 @@ d_char *xs_number_new(double f);
 double xs_number_get(const char *v);
 const char *xs_number_str(const char *v);
 
+void *xs_memmem(const char *haystack, int h_size, const char *needle, int n_size);
 
 #ifdef XS_IMPLEMENTATION
 
@@ -904,6 +905,23 @@ const char *xs_number_str(const char *v)
         p = &v[1];
 
     return p;
+}
+
+
+void *xs_memmem(const char *haystack, int h_size, const char *needle, int n_size)
+/* clone of memmem */
+{
+    char *p, *r = NULL;
+    int offset = 0;
+
+    while (!r && h_size - offset > n_size && (p = strchr(haystack + offset, *needle))) {
+        if (memcmp(p, needle, n_size) == 0)
+            r = p;
+        else
+            offset = p - haystack + 1;
+    }
+
+    return r;
 }
 
 
