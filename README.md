@@ -43,6 +43,19 @@ Run `make` and then `make install` as root.
 
 See the administrator manual on how to proceed from here.
 
+# Testing via Docker
+
+A `docker-compose` file is provided for development and testing. To start snac with an nginx HTTPS frontend, run:
+
+    docker-compose build && docker-compose up
+
+This will:
+
+- Start snac, storing data in `data/`
+- Configure snac to listen on port 8001 with a server name of `localhost` (see `examples/docker-entrypoint.sh`)
+- Create a new user `testuser` and print the user's generated password on the console (see `examples/docker-entrypoint.sh`)
+- Start nginx to handle HTTPS, using the certificate pair from `nginx-alpine-ssl/nginx-selfsigned.*` (see `examples/nginx-alpine-ssl/entrypoint.sh`)
+
 # License
 
 See the LICENSE file for details.
