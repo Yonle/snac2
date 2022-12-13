@@ -748,7 +748,7 @@ int follower_del(snac *snac, const char *actor)
 {
     int ret = object_user_cache_del(snac, actor, "followers");
 
-    snac_debug(snac, 2, xs_fmt("follower_del %s %s", actor));
+    snac_debug(snac, 2, xs_fmt("follower_del %s", actor));
 
     return ret == -1 ? 404 : 200;
 }
