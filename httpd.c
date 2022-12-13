@@ -117,6 +117,13 @@ int server_get_handler(d_char *req, char *q_path,
         *ctype = "application/json; charset=utf-8";
         *body  = nodeinfo_2_0();
     }
+    else
+    if (strcmp(q_path, "/robots.txt") == 0) {
+        status = 200;
+        *ctype = "text/plain";
+        *body  = "User-agent: *\n"
+			"Disallow: /\n";
+    }
 
     if (status != 0)
         srv_debug(1, xs_fmt("server_get_handler serving '%s' %d", q_path, status));
