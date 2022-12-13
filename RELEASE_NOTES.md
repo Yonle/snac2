@@ -6,6 +6,8 @@ Fixed bug in message posting that may result in 400 Bad Request errors (contribu
 
 Added configuration files and examples for running snac with docker (contributed by tobyjaffey).
 
+Serve /robots.txt (contributed by kensanata).
+
 ## 2.14
 
 Previous posts in the public and private timelines can be reached by a "More..." post at the end (contributed by kensanata).
