@@ -1,0 +1,27 @@
+---
+version: '3'
+
+services:
+    snac:
+        build: .
+        image: snac
+        container_name: snac
+        restart: unless-stopped
+        security_opt:
+            - no-new-privileges:true
+        volumes:
+            - ./data:/data
+        ports:
+            - "8001:8001"
+
+    nginx-alpine-ssl:
+        build: examples/nginx-alpine-ssl
+        image: examples/nginx-alpine-ssl
+        container_name: nginx-alpine-ssl
+        restart: unless-stopped
+        security_opt:
+            - no-new-privileges:true
+        ports:
+            - "443:443"
+            - "80:80"
+
