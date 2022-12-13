@@ -2,6 +2,8 @@
 
 ## Open
 
+There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where's the problem.
+
 Add support for Update + Note on input.
 
 Add a user option to ignore all Announces from everybody.
