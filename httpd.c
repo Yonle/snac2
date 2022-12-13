@@ -121,8 +121,8 @@ int server_get_handler(d_char *req, char *q_path,
     if (strcmp(q_path, "/robots.txt") == 0) {
         status = 200;
         *ctype = "text/plain";
-        *body  = "User-agent: *\n"
-			"Disallow: /\n";
+        *body  = xs_str_new("User-agent: *\n"
+                            "Disallow: /\n");
     }
 
     if (status != 0)
