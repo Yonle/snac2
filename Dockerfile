@@ -1,12 +1,16 @@
-FROM alpine
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
-RUN apk add --no-cache curl-dev build-base
+ARG ALPINE_VERSION=latest
+
+FROM alpine:${ALPINE_VERSION} AS builder
 COPY . /build
-WORKDIR /build
-RUN make
-COPY examples/docker-entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-ENTRYPOINT ["/bin/sh", "/usr/local/bin/entrypoint.sh"]
-EXPOSE 8001
-CMD /build/snac
+RUN apk -U --no-progress --no-cache add curl-dev build-base && \
+  cd /build && make && \
+  make PREFIX="/build/out/usr/local" PREFIX_MAN="/build/out/usr/local/share/man" install && \
+  chmod +x examples/docker-entrypoint.sh && \
+  cp examples/docker-entrypoint.sh /build/out/usr/local/bin/entrypoint.sh
+
+FROM alpine:${ALPINE_VERSION}
+RUN apk -U --no-progress --no-cache add libcurl
+COPY --from=builder /build/out /
+EXPOSE 5050
+VOLUME [ "/data" ]
+ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
