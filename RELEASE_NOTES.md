@@ -10,6 +10,8 @@ Added configuration files and examples for running snac with docker (contributed
 
 Serve /robots.txt (contributed by kensanata).
 
+Fixed a deletion error.
+
 ## 2.14
 
 Previous posts in the public and private timelines can be reached by a "More..." post at the end (contributed by kensanata).
