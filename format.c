@@ -98,8 +98,9 @@ d_char *not_really_markdown(const char *content)
     char *p, *v;
 
     /* work by lines */
-    p = list = xs_split(content, "\n");
+    list = xs_split(content, "\n");
 
+    p = list;
     while (xs_list_iter(&p, &v)) {
         xs *ss = NULL;
 

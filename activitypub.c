@@ -264,7 +264,9 @@ void process_tags(const char *content, d_char **n_content, d_char **tag)
     char *p, *v;
     int n = 0;
 
-    p = split = xs_regex_split(content, "(@[A-Za-z0-9_]+@[A-Za-z0-9\\.-]+|#[^ ,\\.:;]+)");
+    split = xs_regex_split(content, "(@[A-Za-z0-9_]+@[A-Za-z0-9\\.-]+|#[^ ,\\.:;]+)");
+
+    p = split;
     while (xs_list_iter(&p, &v)) {
         if ((n & 0x1)) {
             if (*v == '@') {
@@ -320,18 +322,24 @@ d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date, char
     xs *published = NULL;
 
     /* generated values */
-    if (date && strcmp(date, "@now") == 0)
-        date = published = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
+    if (date && strcmp(date, "@now") == 0) {
+        published = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
+        date = published;
+    }
 
     if (id != NULL) {
         if (strcmp(id, "@dummy") == 0) {
             xs *ntid = tid(0);
-            id = did = xs_fmt("%s/d/%s/%s", snac->actor, ntid, type);
+            did = xs_fmt("%s/d/%s/%s", snac->actor, ntid, type);
+
+            id = did;
         }
         else
         if (strcmp(id, "@object") == 0) {
-            if (object != NULL)
-                id = did = xs_fmt("%s/%s", xs_dict_get(object, "id"), type);
+            if (object != NULL) {
+                did = xs_fmt("%s/%s", xs_dict_get(object, "id"), type);
+                id = did;
+            }
             else
                 id = NULL;
         }

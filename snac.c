@@ -74,17 +74,17 @@ int validate_uid(const char *uid)
 void srv_debug(int level, d_char *str)
 /* logs a debug message */
 {
-    xs *msg = str;
-
-    if (xs_str_in(msg, srv_basedir) != -1) {
+    if (xs_str_in(str, srv_basedir) != -1) {
         /* replace basedir with ~ */
-        msg = xs_replace_i(msg, srv_basedir, "~");
+        str = xs_replace_i(str, srv_basedir, "~");
     }
 
     if (dbglevel >= level) {
         xs *tm = xs_str_localtime(0, "%H:%M:%S");
-        fprintf(stderr, "%s %s\n", tm, msg);
+        fprintf(stderr, "%s %s\n", tm, str);
     }
+
+    xs_free(str);
 }
 
 
@@ -110,8 +110,10 @@ d_char *hash_password(const char *uid, const char *passwd, const char *nonce)
     xs *combi;
     xs *hash;
 
-    if (nonce == NULL)
-        nonce = d_nonce = xs_fmt("%08x", random());
+    if (nonce == NULL) {
+        d_nonce = xs_fmt("%08x", random());
+        nonce = d_nonce;
+    }
 
     combi = xs_fmt("%s:%s:%s", nonce, uid, passwd);
     hash  = xs_sha1_hex(combi, strlen(combi));
