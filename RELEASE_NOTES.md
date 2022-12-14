@@ -4,13 +4,11 @@
 
 Fixed bug in message posting that may result in 400 Bad Request errors (contributed by tobyjaffey).
 
-Fixed crash in the unfollow code.
+Fixed crash and a deletion error in the unfollow code.
 
 Added configuration files and examples for running snac with docker (contributed by tobyjaffey).
 
 Serve /robots.txt (contributed by kensanata).
-
-Fixed a deletion error.
 
 ## 2.14
 
