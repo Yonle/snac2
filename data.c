@@ -241,7 +241,7 @@ int index_add(const char *fn, const char *id)
 }
 
 
-int index_del(const char *fn, const char *md5)
+int index_del_md5(const char *fn, const char *md5)
 /* deletes an md5 from an index */
 {
     int status = 404;
@@ -276,6 +276,14 @@ int index_del(const char *fn, const char *md5)
         status = 500;
 
     return status;
+}
+
+
+int index_del(const char *fn, const char *id)
+/* deletes an id from an index */
+{
+    xs *md5 = xs_md5_hex(id, strlen(id));
+    return index_del_md5(fn, md5);
 }
 
 
