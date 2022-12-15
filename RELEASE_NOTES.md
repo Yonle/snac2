@@ -2,6 +2,8 @@
 
 ## 2.16
 
+Added support for edited posts on input.
+
 Some tweaks to the docker configuration to generate a smaller image (contributed by ogarcia).
 
 ## 2.15
