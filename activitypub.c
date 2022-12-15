@@ -934,6 +934,14 @@ int process_message(snac *snac, char *msg, char *req)
             snac_log(snac, xs_fmt("updated actor %s", actor));
         }
         else
+        if (strcmp(utype, "Note") == 0) {
+            char *id = xs_dict_get(object, "id");
+
+            object_add_ow(id, object);
+
+            snac_log(snac, xs_fmt("updated post %s", id));
+        }
+        else
             snac_log(snac, xs_fmt("ignored 'Update' for object type '%s'", utype));
     }
     else
