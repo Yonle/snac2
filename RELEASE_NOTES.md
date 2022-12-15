@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.16
+
+Some tweaks to the docker configuration to generate a smaller image (contributed by ogarcia).
+
 ## 2.15
 
 Fixed bug in message posting that may result in 400 Bad Request errors (contributed by tobyjaffey).
