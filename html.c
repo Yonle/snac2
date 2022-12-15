@@ -37,7 +37,8 @@ int login(snac *snac, char *headers)
 }
 
 
-d_char *html_actor_icon(snac *snac, d_char *os, char *actor, char *date, char *url, int priv)
+d_char *html_actor_icon(snac *snac, d_char *os, char *actor,
+    const char *date, const char *udate, const char *url, int priv)
 {
     xs *s = xs_str_new(NULL);
 
@@ -107,10 +108,22 @@ d_char *html_actor_icon(snac *snac, d_char *os, char *actor, char *date, char *u
         s = xs_str_cat(s, "<br>\n&nbsp;\n");
     }
     else {
-        xs *sd = xs_crop(xs_dup(date), 0, 10);
+        xs *date_label = xs_crop(xs_dup(date), 0, 10);
+        xs *date_title = xs_dup(date);
+
+        if (!xs_is_null(udate)) {
+            xs *sd = xs_crop(xs_dup(udate), 0, 10);
+
+            date_label = xs_str_cat(date_label, " / ");
+            date_label = xs_str_cat(date_label, sd);
+
+            date_title = xs_str_cat(date_title, " / ");
+            date_title = xs_str_cat(date_title, udate);
+        }
+
         xs *s1 = xs_fmt(
             "<br>\n<time class=\"dt-published snac-pubdate\" title=\"%s\">%s</time>\n",
-                date, sd);
+                date_title, date_label);
 
         s = xs_str_cat(s, s1);
     }
@@ -128,18 +141,20 @@ d_char *html_msg_icon(snac *snac, d_char *os, char *msg)
         actor_id = xs_dict_get(msg, "actor");
 
     if (actor_id && valid_status(actor_get(snac, actor_id, &actor))) {
-        char *date = NULL;
-        char *url = NULL;
-        int priv = 0;
+        char *date  = NULL;
+        char *udate = NULL;
+        char *url   = NULL;
+        int priv    = 0;
 
         if (strcmp(xs_dict_get(msg, "type"), "Note") == 0)
             url = xs_dict_get(msg, "id");
 
         priv = !is_msg_public(snac, msg);
 
-        date = xs_dict_get(msg, "published");
+        date  = xs_dict_get(msg, "published");
+        udate = xs_dict_get(msg, "updated");
 
-        os = html_actor_icon(snac, os, actor, date, url, priv);
+        os = html_actor_icon(snac, os, actor, date, udate, url, priv);
     }
 
     return os;
@@ -879,7 +894,7 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
         if (valid_status(actor_get(snac, actor_id, &actor))) {
             s = xs_str_cat(s, "<div class=\"snac-post\">\n");
 
-            s = html_actor_icon(snac, s, actor, xs_dict_get(actor, "published"), NULL, 0);
+            s = html_actor_icon(snac, s, actor, xs_dict_get(actor, "published"), NULL, NULL, 0);
 
 
             /* content (user bio) */
