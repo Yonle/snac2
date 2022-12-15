@@ -843,7 +843,7 @@ int process_message(snac *snac, char *msg, char *req)
             do_notify = 1;
         }
         else
-            snac_debug(snac, 1, xs_fmt("repeated 'Follow' from %s", actor));
+            snac_log(snac, xs_fmt("repeated 'Follow' from %s", actor));
     }
     else
     if (strcmp(type, "Undo") == 0) {
