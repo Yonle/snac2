@@ -531,9 +531,11 @@ int _object_add(const char *id, d_char *obj, int ow)
 
             /* create a one-element index with the parent */
             xs *p_idx = xs_replace(fn, ".json", "_p.idx");
-            index_add(p_idx, in_reply_to);
 
-            srv_debug(1, xs_fmt("object_add added parent %s to %s", in_reply_to, p_idx));
+            if (mtime(p_idx) == 0.0) {
+                index_add(p_idx, in_reply_to);
+                srv_debug(1, xs_fmt("object_add added parent %s to %s", in_reply_to, p_idx));
+            }
         }
     }
     else
