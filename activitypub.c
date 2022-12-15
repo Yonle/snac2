@@ -823,23 +823,27 @@ int process_message(snac *snac, char *msg, char *req)
     }
 
     if (strcmp(type, "Follow") == 0) {
-        xs *f_msg = xs_dup(msg);
-        xs *reply = msg_accept(snac, f_msg, actor);
+        if (!follower_check(snac, actor)) {
+            xs *f_msg = xs_dup(msg);
+            xs *reply = msg_accept(snac, f_msg, actor);
 
-        post(snac, reply);
+            post(snac, reply);
 
-        if (xs_is_null(xs_dict_get(f_msg, "published"))) {
-            /* add a date if it doesn't include one (Mastodon) */
-            xs *date = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
-            f_msg = xs_dict_set(f_msg, "published", date);
+            if (xs_is_null(xs_dict_get(f_msg, "published"))) {
+                /* add a date if it doesn't include one (Mastodon) */
+                xs *date = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
+                f_msg = xs_dict_set(f_msg, "published", date);
+            }
+
+            timeline_add(snac, xs_dict_get(f_msg, "id"), f_msg, NULL, NULL);
+
+            follower_add(snac, actor);
+
+            snac_log(snac, xs_fmt("new follower %s", actor));
+            do_notify = 1;
         }
-
-        timeline_add(snac, xs_dict_get(f_msg, "id"), f_msg, NULL, NULL);
-
-        follower_add(snac, actor);
-
-        snac_log(snac, xs_fmt("new follower %s", actor));
-        do_notify = 1;
+        else
+            snac_debug(snac, 1, xs_fmt("repeated 'Follow' from %s", actor));
     }
     else
     if (strcmp(type, "Undo") == 0) {
