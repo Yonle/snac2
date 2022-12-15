@@ -4,8 +4,6 @@
 
 There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where's the problem.
 
-Add support for Update + Note on input.
-
 Add a user option to ignore all Announces from everybody.
 
 Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac2/issues/3
@@ -197,3 +195,5 @@ Add an ?skip=NNN parameter to the admin page, to see older timeline (2022-12-08T
 Now that we have the 2.7 layout and Likes and Announces don't move the conversations up, finally fix the ugly # positioning (2022-12-08T08:41:27+0100).
 
 Disable the 'Boost' button for non-public messages (technically they can be Announced, but shouldn't) (2022-12-08T08:46:24+0100).
+
+Add support for Update + Note on input (2022-12-15T11:06:59+0100).
