@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
         xs *msg = msg_admiration(&snac, url, "Announce");
 
         if (msg != NULL) {
-            post(&snac, msg);
+            enqueue_message(&snac, msg);
 
             if (dbglevel) {
                 xs *j = xs_json_dumps_pp(msg, 4);
@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
             printf("%s\n", j);
         }
 
-        post(&snac, c_msg);
+        enqueue_message(&snac, c_msg);
 
         timeline_add(&snac, xs_dict_get(msg, "id"), msg, in_reply_to, NULL);
 

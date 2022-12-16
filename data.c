@@ -1397,7 +1397,7 @@ void enqueue_message(snac *snac, char *msg)
 
     _enqueue_put(fn, qmsg);
 
-    snac_debug(snac, 1, xs_fmt("enqueue_message %s", id));
+    snac_debug(snac, 0, xs_fmt("enqueue_message %s", id));
 }
 
 

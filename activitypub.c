@@ -827,7 +827,7 @@ int process_message(snac *snac, char *msg, char *req)
             xs *f_msg = xs_dup(msg);
             xs *reply = msg_accept(snac, f_msg, actor);
 
-            post(snac, reply);
+            enqueue_message(snac, reply);
 
             if (xs_is_null(xs_dict_get(f_msg, "published"))) {
                 /* add a date if it doesn't include one (Mastodon) */

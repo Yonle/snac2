@@ -1320,7 +1320,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
             c_msg = msg_create(&snac, msg);
 
-            post(&snac, c_msg);
+            enqueue_message(&snac, c_msg);
 
             timeline_add(&snac, xs_dict_get(msg, "id"), msg, in_reply_to, NULL);
         }
@@ -1345,7 +1345,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
             xs *msg = msg_admiration(&snac, id, "Like");
 
             if (msg != NULL) {
-                post(&snac, msg);
+                enqueue_message(&snac, msg);
                 timeline_admire(&snac, msg, id, snac.actor, 1);
             }
         }
@@ -1354,7 +1354,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
             xs *msg = msg_admiration(&snac, id, "Announce");
 
             if (msg != NULL) {
-                post(&snac, msg);
+                enqueue_message(&snac, msg);
                 timeline_admire(&snac, msg, id, snac.actor, 0);
             }
         }
@@ -1407,7 +1407,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
                 /* it's a post by us: generate a delete */
                 xs *msg = msg_delete(&snac, id);
 
-                post(&snac, msg);
+                enqueue_message(&snac, msg);
 
                 /* FIXME: also post this Tombstone to people
                    that Announce'd it */
@@ -1474,7 +1474,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         xs *a_msg = msg_actor(&snac);
         xs *u_msg = msg_update(&snac, a_msg);
 
-        post(&snac, u_msg);
+        enqueue_message(&snac, u_msg);
 
         status = 303;
     }
