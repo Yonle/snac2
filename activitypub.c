@@ -685,6 +685,15 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
     if (xs_list_len(to) == 0)
         to = xs_list_append(to, public_address);
 
+    /* delete all cc recipients that also are in the to */
+    p = to;
+    while (xs_list_iter(&p, &v)) {
+        int i;
+
+        if ((i = xs_list_in(cc, v)) != -1)
+            cc = xs_list_del(cc, i);
+    }
+
     msg = xs_dict_append(msg, "attributedTo", snac->actor);
     msg = xs_dict_append(msg, "summary",      "");
     msg = xs_dict_append(msg, "content",      fc1);
