@@ -103,8 +103,10 @@ d_char *xs_http_request(char *method, char *url, d_char *headers,
 
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
 
+#ifdef FORCE_HTTP_1_1
     /* force HTTP/1.1 */
     curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+#endif
 
     /* obey redirections */
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
