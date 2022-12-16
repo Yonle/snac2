@@ -1384,6 +1384,23 @@ void enqueue_email(snac *snac, char *msg, int retries)
 }
 
 
+void enqueue_message(snac *snac, char *msg)
+/* enqueues an output message */
+{
+    char *id = xs_dict_get(msg, "id");
+    xs *ntid = tid(0);
+    xs *fn   = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
+    xs *qmsg = xs_dict_new();
+
+    qmsg = xs_dict_append(qmsg, "type",    "message");
+    qmsg = xs_dict_append(qmsg, "message", msg);
+
+    _enqueue_put(fn, qmsg);
+
+    snac_debug(snac, 1, xs_fmt("enqueue_message %s", id));
+}
+
+
 d_char *queue(snac *snac)
 /* returns a list with filenames that can be dequeued */
 {

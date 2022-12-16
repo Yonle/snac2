@@ -990,6 +990,17 @@ void process_queue(snac *snac)
         if ((type = xs_dict_get(q_item, "type")) == NULL)
             type = "output";
 
+        if (strcmp(type, "message") == 0) {
+            char *msg   = xs_dict_get(q_item, "message");
+            xs *inboxes = inbox_list(snac, msg);
+            char *p, *v;
+
+            p = inboxes;
+            while (xs_list_iter(&p, &v)) {
+                enqueue_output(snac, msg, v, 0);
+            }
+        }
+        else
         if (strcmp(type, "output") == 0) {
             int status;
             char *inbox = xs_dict_get(q_item, "inbox");
