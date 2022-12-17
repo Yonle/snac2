@@ -8,6 +8,8 @@ Some tweaks to the docker configuration to generate a smaller image (contributed
 
 Don't force outgoing connections to HTTP/1.1.
 
+Don't set aggressive timeouts on outgoing connections.
+
 ## 2.15
 
 Fixed bug in message posting that may result in 400 Bad Request errors (contributed by tobyjaffey).
