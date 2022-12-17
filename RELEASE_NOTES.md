@@ -6,6 +6,8 @@ Added support for edited posts on input.
 
 Some tweaks to the docker configuration to generate a smaller image (contributed by ogarcia).
 
+Don't force outgoing connections to HTTP/1.1.
+
 ## 2.15
 
 Fixed bug in message posting that may result in 400 Bad Request errors (contributed by tobyjaffey).
