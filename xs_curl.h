@@ -101,7 +101,9 @@ d_char *xs_http_request(char *method, char *url, d_char *headers,
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
 
+#ifdef FORCE_TIMEOUT
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+#endif
 
 #ifdef FORCE_HTTP_1_1
     /* force HTTP/1.1 */
