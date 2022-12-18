@@ -758,13 +758,17 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
     if (left) {
         char *p, *cmd5;
 
+        s = xs_str_cat(s, "<details open><summary>...</summary><p>\n");
+
         if (level < 4)
             s = xs_str_cat(s, "<div class=\"snac-children\">\n");
         else
             s = xs_str_cat(s, "<div>\n");
 
-        if (left > 3)
-            s = xs_str_cat(s, "<details><summary>...</summary>\n");
+        if (left > 3) {
+            xs *s1 = xs_fmt("<details><summary>%s</summary>\n", L("Older..."));
+            s = xs_str_cat(s, s1);
+        }
 
         p = children;
         while (xs_list_iter(&p, &cmd5)) {
@@ -783,6 +787,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
         }
 
         s = xs_str_cat(s, "</div>\n");
+        s = xs_str_cat(s, "</details>\n");
     }
 
     s = xs_str_cat(s, "</div>\n</div>\n");
