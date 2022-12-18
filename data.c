@@ -538,8 +538,10 @@ int _object_add(const char *id, d_char *obj, int ow)
             }
         }
     }
-    else
+    else {
+        srv_log(xs_fmt("object_add error writing %s (errno: %d)", fn, errno));
         status = 500;
+    }
 
     srv_debug(1, xs_fmt("object_add %s %s %d", id, fn, status));
 
