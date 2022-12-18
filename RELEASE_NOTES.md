@@ -6,9 +6,7 @@ Added support for edited posts on input.
 
 Some tweaks to the docker configuration to generate a smaller image (contributed by ogarcia).
 
-Don't force outgoing connections to HTTP/1.1.
-
-Don't set aggressive timeouts on outgoing connections.
+Some outgoing connection tweaks: the protocol is no longer forced to be HTTP/1.1 and timeouts are less restrictive.
 
 ## 2.15
 
