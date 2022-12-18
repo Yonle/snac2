@@ -2,13 +2,13 @@
 
 ## 2.16
 
+Some outgoing connection tweaks: the protocol is no longer forced to be HTTP/1.1 and timeouts are less restrictive. This has proven useful for some unreachable instances.
+
 Conversations can be collapsed.
 
 Added support for edited posts on input.
 
 Some tweaks to the docker configuration to generate a smaller image (contributed by ogarcia).
-
-Some outgoing connection tweaks: the protocol is no longer forced to be HTTP/1.1 and timeouts are less restrictive.
 
 ## 2.15
 
