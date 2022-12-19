@@ -753,9 +753,11 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
 
     /** children **/
     xs *children = object_children(id);
+    int left     = xs_list_len(children);
 
-    if (xs_list_len(children)) {
+    if (left) {
         char *p, *cmd5;
+        int older_open = 0;
 
         s = xs_str_cat(s, "<details open><summary>...</summary><p>\n");
 
@@ -764,16 +766,32 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
         else
             s = xs_str_cat(s, "<div>\n");
 
+        if (left > 3) {
+            xs *s1 = xs_fmt("<details><summary>%s</summary>\n", L("Older..."));
+            s = xs_str_cat(s, s1);
+            older_open = 1;
+        }
+
         p = children;
         while (xs_list_iter(&p, &cmd5)) {
             xs *chd = NULL;
             object_get_by_md5(cmd5, &chd, NULL);
 
+            if (older_open && left <= 3) {
+                s = xs_str_cat(s, "</details>\n");
+                older_open = 0;
+            }
+
             if (chd != NULL)
                 s = html_entry(snac, s, chd, local, level + 1, cmd5);
             else
                 snac_debug(snac, 2, xs_fmt("cannot read from timeline child %s", cmd5));
+
+            left--;
         }
+
+        if (older_open)
+            s = xs_str_cat(s, "</details>\n");
 
         s = xs_str_cat(s, "</div>\n");
         s = xs_str_cat(s, "</details>\n");
