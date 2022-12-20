@@ -6,7 +6,7 @@ Some outgoing connection tweaks: the protocol is no longer forced to be HTTP/1.1
 
 Conversations can be collapsed.
 
-Added support for edited posts on input.
+Added support for edited posts on input. These updated messages will be marked by two dates (creation and last update).
 
 Some tweaks to the docker configuration to generate a smaller image (contributed by ogarcia).
 
