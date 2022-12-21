@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.17
+
+Fixed a header bug (contributed by alderwick).
+
 ## 2.16
 
 Some outgoing connection tweaks: the protocol is no longer forced to be HTTP/1.1 and timeouts are less restrictive. This has proven useful for some unreachable instances.
