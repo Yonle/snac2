@@ -599,7 +599,7 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
     if (tag == NULL)
         tag = xs_list_new();
 
-    if (in_reply_to != NULL) {
+    if (in_reply_to != NULL && *in_reply_to) {
         xs *p_msg = NULL;
 
         /* demand this thing */
