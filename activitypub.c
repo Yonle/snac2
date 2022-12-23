@@ -92,15 +92,18 @@ int timeline_request(snac *snac, char **id, char *referrer)
             status = activitypub_request(snac, *id, &object);
 
             if (valid_status(status)) {
-                char *oid  = *id;
                 char *type = xs_dict_get(object, "type");
 
                 /* get the id again from the object, as it may be different */
-                *id = xs_dict_get(object, "id");
+                char *nid = xs_dict_get(object, "id");
 
-                if (strcmp(*id, oid) != 0)
+                if (strcmp(nid, *id) != 0) {
                     snac_debug(snac, 1,
-                        xs_fmt("timeline_request canonical id for %s is %s", oid, *id));
+                        xs_fmt("timeline_request canonical id for %s is %s", *id, nid));
+
+                    /* FIXME: nid points inside a dynamic block */
+                    *id = nid;
+                }
 
                 if (!xs_is_null(type) && strcmp(type, "Note") == 0) {
                     char *actor = xs_dict_get(object, "attributedTo");
