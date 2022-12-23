@@ -620,8 +620,8 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
                 to = xs_list_append(to, a);
 
             /* add this author to the tag list as a mention */
-            xs *t_href;
-            xs *t_name;
+            xs *t_href = NULL;
+            xs *t_name = NULL;
 
             if (!xs_is_null(a) && valid_status(webfinger_request(a, &t_href, &t_name))) {
                 xs *t = xs_dict_new();
