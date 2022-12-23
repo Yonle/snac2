@@ -6,6 +6,8 @@ Fixed a header bug (contributed by alderwick).
 
 Fixed a bug in the Boost by URL option when the URL of the boosted message is not the canonical id for the message (e.g. Mastodon's host/@user/NNN vs. host/users/user/statuses/NNN).
 
+Fixed crash on a corner case regarding failed webfinger requests.
+
 ## 2.16
 
 Some outgoing connection tweaks: the protocol is no longer forced to be HTTP/1.1 and timeouts are less restrictive. This has proven useful for some unreachable instances.
