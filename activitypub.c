@@ -78,21 +78,28 @@ int actor_request(snac *snac, char *actor, d_char **data)
 }
 
 
-int timeline_request(snac *snac, char *id, char *referrer)
+int timeline_request(snac *snac, char **id, char *referrer)
 /* ensures that an entry and its ancestors are in the timeline */
 {
     int status = 0;
 
-    if (!xs_is_null(id)) {
+    if (!xs_is_null(*id)) {
         /* is the admired object already there? */
-        if (!object_here(id)) {
+        if (!object_here(*id)) {
             xs *object = NULL;
 
             /* no; download it */
-            status = activitypub_request(snac, id, &object);
+            status = activitypub_request(snac, *id, &object);
 
             if (valid_status(status)) {
+                char *oid  = *id;
                 char *type = xs_dict_get(object, "type");
+
+                /* get the id again from the object, as it may be different */
+                *id = xs_dict_get(object, "id");
+
+                if (strcmp(*id, oid) != 0)
+                    snac_debug(snac, 0, xs_fmt("canonic id for %s is %s", oid, *id));
 
                 if (!xs_is_null(type) && strcmp(type, "Note") == 0) {
                     char *actor = xs_dict_get(object, "attributedTo");
@@ -105,10 +112,10 @@ int timeline_request(snac *snac, char *id, char *referrer)
                     char *in_reply_to = xs_dict_get(object, "inReplyTo");
 
                     /* recurse! */
-                    timeline_request(snac, in_reply_to, referrer);
+                    timeline_request(snac, &in_reply_to, referrer);
 
                     /* finally store */
-                    timeline_add(snac, id, object, in_reply_to, referrer);
+                    timeline_add(snac, *id, object, in_reply_to, referrer);
                 }
             }
         }
@@ -410,7 +417,7 @@ d_char *msg_admiration(snac *snac, char *object, char *type)
     d_char *msg = NULL;
 
     /* call the object */
-    timeline_request(snac, object, snac->actor);
+    timeline_request(snac, &object, snac->actor);
 
     if (valid_status(object_get(object, &a_msg, NULL))) {
         xs *rcpts = xs_list_new();
@@ -420,7 +427,7 @@ d_char *msg_admiration(snac *snac, char *object, char *type)
         rcpts = xs_list_append(rcpts, public_address);
         rcpts = xs_list_append(rcpts, xs_dict_get(a_msg, "attributedTo"));
 
-        msg = xs_dict_append(msg, "to",     rcpts);
+        msg = xs_dict_append(msg, "to", rcpts);
     }
     else
         snac_log(snac, xs_fmt("msg_admiration cannot retrieve object %s", object));
@@ -603,7 +610,7 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
         xs *p_msg = NULL;
 
         /* demand this thing */
-        timeline_request(snac, in_reply_to, NULL);
+        timeline_request(snac, &in_reply_to, NULL);
 
         if (valid_status(object_get(in_reply_to, &p_msg, NULL))) {
             /* add this author as recipient */
@@ -876,7 +883,7 @@ int process_message(snac *snac, char *msg, char *req)
                 char *id          = xs_dict_get(object, "id");
                 char *in_reply_to = xs_dict_get(object, "inReplyTo");
 
-                timeline_request(snac, in_reply_to, NULL);
+                timeline_request(snac, &in_reply_to, NULL);
 
                 if (timeline_add(snac, id, object, in_reply_to, NULL)) {
                     snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
@@ -916,7 +923,7 @@ int process_message(snac *snac, char *msg, char *req)
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
 
-        timeline_request(snac, object, actor);
+        timeline_request(snac, &object, actor);
 
         if (valid_status(object_get(object, &a_msg, NULL))) {
             char *who = xs_dict_get(a_msg, "attributedTo");
