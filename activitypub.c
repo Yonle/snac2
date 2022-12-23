@@ -78,7 +78,7 @@ int actor_request(snac *snac, char *actor, d_char **data)
 }
 
 
-int timeline_request(snac *snac, char **id, char *referrer)
+int timeline_request(snac *snac, char **id, char *referrer, d_char **wrk)
 /* ensures that an entry and its ancestors are in the timeline */
 {
     int status = 0;
@@ -97,12 +97,12 @@ int timeline_request(snac *snac, char **id, char *referrer)
                 /* get the id again from the object, as it may be different */
                 char *nid = xs_dict_get(object, "id");
 
-                if (strcmp(nid, *id) != 0) {
+                if (wrk && strcmp(nid, *id) != 0) {
                     snac_debug(snac, 1,
                         xs_fmt("timeline_request canonical id for %s is %s", *id, nid));
 
-                    /* FIXME: nid points inside a dynamic block */
-                    *id = nid;
+                    *wrk = xs_dup(nid);
+                    *id  = *wrk;
                 }
 
                 if (!xs_is_null(type) && strcmp(type, "Note") == 0) {
@@ -116,7 +116,7 @@ int timeline_request(snac *snac, char **id, char *referrer)
                     char *in_reply_to = xs_dict_get(object, "inReplyTo");
 
                     /* recurse! */
-                    timeline_request(snac, &in_reply_to, referrer);
+                    timeline_request(snac, &in_reply_to, referrer, NULL);
 
                     /* finally store */
                     timeline_add(snac, *id, object, in_reply_to, referrer);
@@ -419,9 +419,10 @@ d_char *msg_admiration(snac *snac, char *object, char *type)
 {
     xs *a_msg   = NULL;
     d_char *msg = NULL;
+    xs *wrk     = NULL;
 
     /* call the object */
-    timeline_request(snac, &object, snac->actor);
+    timeline_request(snac, &object, snac->actor, &wrk);
 
     if (valid_status(object_get(object, &a_msg, NULL))) {
         xs *rcpts = xs_list_new();
@@ -612,9 +613,10 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
 
     if (in_reply_to != NULL && *in_reply_to) {
         xs *p_msg = NULL;
+        xs *wrk   = NULL;
 
         /* demand this thing */
-        timeline_request(snac, &in_reply_to, NULL);
+        timeline_request(snac, &in_reply_to, NULL, &wrk);
 
         if (valid_status(object_get(in_reply_to, &p_msg, NULL))) {
             /* add this author as recipient */
@@ -886,8 +888,9 @@ int process_message(snac *snac, char *msg, char *req)
             else {
                 char *id          = xs_dict_get(object, "id");
                 char *in_reply_to = xs_dict_get(object, "inReplyTo");
+                xs *wrk           = NULL;
 
-                timeline_request(snac, &in_reply_to, NULL);
+                timeline_request(snac, &in_reply_to, NULL, &wrk);
 
                 if (timeline_add(snac, id, object, in_reply_to, NULL)) {
                     snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
@@ -923,11 +926,12 @@ int process_message(snac *snac, char *msg, char *req)
     else
     if (strcmp(type, "Announce") == 0) {
         xs *a_msg = NULL;
+        xs *wrk   = NULL;
 
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
 
-        timeline_request(snac, &object, actor);
+        timeline_request(snac, &object, actor, &wrk);
 
         if (valid_status(object_get(object, &a_msg, NULL))) {
             char *who = xs_dict_get(a_msg, "attributedTo");
