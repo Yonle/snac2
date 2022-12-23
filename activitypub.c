@@ -99,7 +99,8 @@ int timeline_request(snac *snac, char **id, char *referrer)
                 *id = xs_dict_get(object, "id");
 
                 if (strcmp(*id, oid) != 0)
-                    snac_debug(snac, 0, xs_fmt("canonic id for %s is %s", oid, *id));
+                    snac_debug(snac, 1,
+                        xs_fmt("timeline_request canonical id for %s is %s", oid, *id));
 
                 if (!xs_is_null(type) && strcmp(type, "Note") == 0) {
                     char *actor = xs_dict_get(object, "attributedTo");
