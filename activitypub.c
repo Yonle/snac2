@@ -1155,7 +1155,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
         msg = msg_actor(&snac);
         *ctype = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"";
 
-        snac_debug(&snac, 0, xs_fmt("actor requested"));
+        snac_debug(&snac, 1, xs_fmt("serving actor"));
     }
     else
     if (strcmp(p_path, "outbox") == 0) {
