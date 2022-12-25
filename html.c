@@ -199,6 +199,12 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
         s = xs_str_cat(s, s1);
     }
 
+    {
+        xs *s1 = xs_fmt("<link rel=\"alternate\" type=\"application/rss+xml\" "
+                        "title=\"RSS\" href=\"%s.rss\" />\n", snac->actor);
+        s = xs_str_cat(s, s1);
+    }
+
     s = xs_str_cat(s, "</head>\n<body>\n");
 
     /* top nav */
