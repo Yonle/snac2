@@ -16,7 +16,7 @@ With this new disk layout, hidden posts (and their children) can be directly ski
 
 ## Wishlist
 
-Implement the ActivityPub C2S (Client to Server) API: (https://www.w3.org/TR/activitypub/#client-to-server-interactions).
+Implement the ActivityPub C2S (Client to Server) API: (https://www.w3.org/TR/activitypub/#client-to-server-interactions). The client at http://andstatus.org/ implements it.
 
 Implement HTTP caches (If-None-Match / ETag).
 
