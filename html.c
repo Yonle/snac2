@@ -764,17 +764,19 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
     if (left) {
         char *p, *cmd5;
         int older_open = 0;
+        xs *ss = xs_str_new(NULL);
+        int n_children = 0;
 
-        s = xs_str_cat(s, "<details open><summary>...</summary><p>\n");
+        ss = xs_str_cat(ss, "<details open><summary>...</summary><p>\n");
 
         if (level < 4)
-            s = xs_str_cat(s, "<div class=\"snac-children\">\n");
+            ss = xs_str_cat(ss, "<div class=\"snac-children\">\n");
         else
-            s = xs_str_cat(s, "<div>\n");
+            ss = xs_str_cat(ss, "<div>\n");
 
         if (left > 3) {
             xs *s1 = xs_fmt("<details><summary>%s</summary>\n", L("Older..."));
-            s = xs_str_cat(s, s1);
+            ss = xs_str_cat(ss, s1);
             older_open = 1;
         }
 
@@ -784,12 +786,14 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
             object_get_by_md5(cmd5, &chd, NULL);
 
             if (older_open && left <= 3) {
-                s = xs_str_cat(s, "</details>\n");
+                ss = xs_str_cat(ss, "</details>\n");
                 older_open = 0;
             }
 
-            if (chd != NULL)
-                s = html_entry(snac, s, chd, local, level + 1, cmd5);
+            if (chd != NULL) {
+                ss = html_entry(snac, ss, chd, local, level + 1, cmd5);
+                n_children++;
+            }
             else
                 snac_debug(snac, 2, xs_fmt("cannot read from timeline child %s", cmd5));
 
@@ -797,10 +801,13 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
         }
 
         if (older_open)
-            s = xs_str_cat(s, "</details>\n");
+            ss = xs_str_cat(ss, "</details>\n");
 
-        s = xs_str_cat(s, "</div>\n");
-        s = xs_str_cat(s, "</details>\n");
+        ss = xs_str_cat(ss, "</div>\n");
+        ss = xs_str_cat(ss, "</details>\n");
+
+        if (n_children)
+            s = xs_str_cat(s, ss);
     }
 
     s = xs_str_cat(s, "</div>\n</div>\n");
