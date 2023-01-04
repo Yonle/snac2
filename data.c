@@ -1483,12 +1483,11 @@ static void _purge_subdir(snac *snac, const char *subdir, int days)
 void purge_server(void)
 /* purge global server data */
 {
-    int tpd = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
     xs *spec = xs_fmt("%s/object/??", srv_basedir);
     xs *dirs = xs_glob(spec, 0, 0);
     char *p, *v;
 
-    time_t mt = time(NULL) - tpd * 24 * 3600;
+    time_t mt = time(NULL) - 7 * 24 * 3600;
 
     p = dirs;
     while (xs_list_iter(&p, &v)) {
