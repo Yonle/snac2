@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2.18
+
+The purge ttl for stray global objects has been shortened.
+
+Don't show the collapse widget for non-existent children.
+
 ## 2.17
 
 Fixed a header bug (contributed by alderwick).
