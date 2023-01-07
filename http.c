@@ -109,6 +109,8 @@ int check_signature(snac *snac, char *req)
     xs *keyId = NULL;
     xs *headers = NULL;
     xs *signature = NULL;
+    xs *created = NULL;
+    xs *expires = NULL;
     char *pubkey;
     char *p;
 
@@ -127,6 +129,12 @@ int check_signature(snac *snac, char *req)
             else
             if (xs_startswith(v, "signature"))
                 signature = xs_crop(xs_dup(v), 11, -1);
+            else
+            if (xs_startswith(v, "created"))
+                created = xs_crop(xs_dup(v), 9, -1);
+            else
+            if (xs_startswith(v, "expires"))
+                expires = xs_crop(xs_dup(v), 9, -1);
         }
     }
 
@@ -170,6 +178,14 @@ int check_signature(snac *snac, char *req)
             if (strcmp(v, "(request-target)") == 0) {
                 ss = xs_fmt("%s: post %s", v, xs_dict_get(req, "path"));
             }
+            else
+            if (strcmp(v, "(created)") == 0) {
+                ss = xs_fmt("%s: %s", v, created);
+            }
+            else
+            if (strcmp(v, "(expires)") == 0) {
+                ss = xs_fmt("%s: %s", v, expires);
+            }
             else {
                 /* add the header */
                 if ((hc = xs_dict_get(req, v)) == NULL) {
@@ -187,7 +203,8 @@ int check_signature(snac *snac, char *req)
     }
 
     if (xs_evp_verify(pubkey, sig_str, strlen(sig_str), signature) != 1) {
-        snac_debug(snac, 1, xs_fmt("rsa verify error %s", keyId));
+        snac_debug(snac, 0, xs_fmt("rsa verify error %s", keyId));
+        return 0;
     }
 
     return 1;
