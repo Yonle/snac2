@@ -21,7 +21,7 @@ d_char *xs_glob_n(const char *spec, int basename, int reverse, int max)
     if (glob(spec, 0, NULL, &globbuf) == 0) {
         int n;
 
-        if (max > globbuf.gl_pathc)
+        if (max > (int) globbuf.gl_pathc)
             max = globbuf.gl_pathc;
 
         for (n = 0; n < max; n++) {

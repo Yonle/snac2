@@ -71,7 +71,7 @@ static int _post_callback(char *buffer, size_t size,
     int sz = pd->size - pd->offset;
 
     /* if it's still bigger than the provided space, trim */
-    if (sz > size * nitems)
+    if (sz > (int) (size * nitems))
         sz = size * nitems;
 
     memcpy(buffer, pd->data + pd->offset, sz);

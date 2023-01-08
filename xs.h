@@ -128,6 +128,10 @@ void *_xs_realloc(void *ptr, size_t size, const char *file, int line, const char
 
         fclose(f);
     }
+#else
+    (void)file;
+    (void)line;
+    (void)func;
 #endif
 
     return ndata;
@@ -669,25 +673,37 @@ int xs_list_in(char *list, const char *val)
 d_char *xs_join(char *list, const char *sep)
 /* joins a list into a string */
 {
-    d_char *s;
+    d_char *s = NULL;
     char *v;
     int c = 0;
-
-    s = xs_str_new(NULL);
+    int offset = 0;
+    int ssz = strlen(sep);
 
     while (xs_list_iter(&list, &v)) {
         /* refuse to join non-string values */
         if (xs_type(v) == XSTYPE_STRING) {
+            int sz;
+
             /* add the separator */
-            if (c != 0)
-                s = xs_str_cat(s, sep);
+            if (c != 0) {
+                s = xs_realloc(s, offset + ssz);
+                memcpy(s + offset, sep, ssz);
+                offset += ssz;
+            }
 
             /* add the element */
-            s = xs_str_cat(s, v);
+            sz = strlen(v);
+            s = xs_realloc(s, offset + sz);
+            memcpy(s + offset, v, sz);
+            offset += sz;
 
             c++;
         }
     }
+
+    /* null-terminate */
+    s = xs_realloc(s, _xs_blk_size(offset + 1));
+    s[offset] = '\0';
 
     return s;
 }
