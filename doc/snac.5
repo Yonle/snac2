@@ -63,8 +63,7 @@ span i b pre code em strong
 .Ed
 .Pp
 .Ss Disk Layout
-This section documents version 1 of the disk storage layout. It's still
-subject to change.
+This section documents version 2.7 of the disk storage layout.
 .Pp
 The base directory contains the following files and folders:
 .Bl -tag -width tenletters
@@ -79,6 +78,9 @@ of the hash.
 .It Pa archive/
 If this directory exists, all input and output messages are logged inside it,
 including HTTP headers. Only useful for debugging. May grow to enormous sizes.
+.It Pa error/
+If this directory exists, HTTP signature check error headers are logged here.
+Only useful for debugging.
 .El
 .Pp
 Each user directory is a subdirectory of 
@@ -88,7 +90,7 @@ has the user id as name and contains the following subdirectories and files:
 .It Pa user.json
 User configuration file.
 .It Pa key.json
-SHA-1 secret/public key PEM data.
+Secret/public key PEM data.
 .It Pa followers.idx
 This file contains the list of followers as a list of hashed object identifiers.
 .It Pa followers/
