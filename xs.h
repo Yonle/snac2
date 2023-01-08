@@ -61,7 +61,8 @@ int xs_str_in(const char *haystack, const char *needle);
 int xs_startswith(const char *str, const char *prefix);
 int xs_endswith(const char *str, const char *postfix);
 d_char *xs_crop(d_char *str, int start, int end);
-d_char *xs_strip(d_char *str);
+d_char *xs_strip_chars(d_char *str, const char *chars);
+#define xs_strip(str) xs_strip_chars(str, " \r\n\t\v\f")
 d_char *xs_tolower(d_char *str);
 d_char *xs_list_new(void);
 d_char *xs_list_append_m(d_char *list, const char *mem, int dsz);
@@ -455,15 +456,16 @@ d_char *xs_crop(d_char *str, int start, int end)
 }
 
 
-d_char *xs_strip(d_char *str)
-/* strips the string of blanks from the start and the end */
+d_char *xs_strip_chars(d_char *str, const char *chars)
+/* strips the string of chars from the start and the end */
 {
     int s, e;
 
-    for (s = 0; isspace(str[s]); s++);
-    for (e = strlen(str); e > 0 && isspace(str[e - 1]); e--);
+    for (s = 0; strchr(chars, str[s]); s++);
+    for (e = strlen(str); e > 0 && strchr(chars, str[e - 1]); e--);
 
-    return xs_crop(str, s, e);
+    str[e] = '\0';
+    return xs_collapse(str, 0, s);
 }
 
 
