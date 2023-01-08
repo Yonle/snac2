@@ -213,7 +213,7 @@ int check_signature(snac *snac, char *req)
 error:
     {
         xs *ntid = tid(0);
-        xs *fn   = xs_fmt("%s/error/check_signature_%s.json", snac->basedir, ntid);
+        xs *fn   = xs_fmt("%s/error/check_signature_%s.json", srv_basedir, ntid);
         FILE *f;
 
         if ((f = fopen(fn, "w")) != NULL) {
