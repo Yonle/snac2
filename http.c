@@ -103,7 +103,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
 }
 
 
-int check_signature(snac *snac, char *req)
+static int _check_signature(snac *snac, char *req)
 /* check the signature */
 {
     char *sig_hdr = xs_dict_get(req, "signature");
@@ -141,7 +141,7 @@ int check_signature(snac *snac, char *req)
 
     if (keyId == NULL || headers == NULL || signature == NULL) {
         snac_debug(snac, 0, xs_fmt("check_signature bad signature header"));
-        goto error;
+        return 0;
     }
 
     /* strip the # from the keyId */
@@ -152,13 +152,13 @@ int check_signature(snac *snac, char *req)
     xs *actor = NULL;
     if (!valid_status(actor_get(snac, keyId, &actor))) {
         snac_debug(snac, 0, xs_fmt("check_signature unknown actor %s", keyId));
-        goto error;
+        return 0;
     }
 
     if ((p = xs_dict_get(actor, "publicKey")) == NULL ||
         ((pubkey = xs_dict_get(p, "publicKeyPem")) == NULL)) {
         snac_debug(snac, 0, xs_fmt("check_signature cannot get pubkey from %s", keyId));
-        goto error;
+        return 0;
     }
 
     /* now build the string to be signed */
@@ -193,7 +193,7 @@ int check_signature(snac *snac, char *req)
                     snac_debug(snac, 0,
                         xs_fmt("check_signature cannot find header %s", v));
 
-                    goto error;
+                    return 0;
                 }
 
                 ss = xs_fmt("%s: %s", v, hc);
@@ -205,13 +205,19 @@ int check_signature(snac *snac, char *req)
 
     if (xs_evp_verify(pubkey, sig_str, strlen(sig_str), signature) != 1) {
         snac_debug(snac, 0, xs_fmt("check_signature rsa verify error %s", keyId));
-        goto error;
+        return 0;
     }
 
     return 1;
+}
 
-error:
-    {
+
+int check_signature(snac *snac, char *req)
+/* checks the signature and archives the error */
+{
+    int ret;
+
+    if ((ret = _check_signature(snac, req)) == 0) {
         xs *ntid = tid(0);
         xs *fn   = xs_fmt("%s/error/check_signature_%s.json", srv_basedir, ntid);
         FILE *f;
@@ -224,5 +230,5 @@ error:
         }
     }
 
-    return 0;
+    return ret;
 }
