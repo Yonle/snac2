@@ -7,6 +7,7 @@
 #include "xs_openssl.h"
 #include "xs_curl.h"
 #include "xs_time.h"
+#include "xs_json.h"
 
 #include "snac.h"
 
@@ -210,5 +211,18 @@ int check_signature(snac *snac, char *req)
     return 1;
 
 error:
+    {
+        xs *ntid = tid(0);
+        xs *fn   = xs_fmt("%s/error/check_signature_%s.json", snac->basedir, ntid);
+        FILE *f;
+
+        if ((f = fopen(fn, "w")) != NULL) {
+            xs *j = xs_json_dumps_pp(req, 4);
+
+            fwrite(j, strlen(j), 1, f);
+            fclose(f);
+        }
+    }
+
     return 0;
 }
