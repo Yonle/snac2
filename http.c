@@ -103,7 +103,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
 }
 
 
-static int _check_signature(snac *snac, char *req)
+static int _check_signature(snac *snac, char *req, char **err)
 /* check the signature */
 {
     char *sig_hdr = xs_dict_get(req, "signature");
@@ -140,7 +140,7 @@ static int _check_signature(snac *snac, char *req)
     }
 
     if (keyId == NULL || headers == NULL || signature == NULL) {
-        snac_debug(snac, 0, xs_fmt("check_signature bad signature header"));
+        *err = xs_fmt("bad signature header");
         return 0;
     }
 
@@ -151,13 +151,13 @@ static int _check_signature(snac *snac, char *req)
     /* the actor must already be here */
     xs *actor = NULL;
     if (!valid_status(actor_get(snac, keyId, &actor))) {
-        snac_debug(snac, 0, xs_fmt("check_signature unknown actor %s", keyId));
+        *err = xs_fmt("unknown actor %s", keyId);
         return 0;
     }
 
     if ((p = xs_dict_get(actor, "publicKey")) == NULL ||
         ((pubkey = xs_dict_get(p, "publicKeyPem")) == NULL)) {
-        snac_debug(snac, 0, xs_fmt("check_signature cannot get pubkey from %s", keyId));
+        *err = xs_fmt("cannot get pubkey from %s", keyId);
         return 0;
     }
 
@@ -190,9 +190,7 @@ static int _check_signature(snac *snac, char *req)
             else {
                 /* add the header */
                 if ((hc = xs_dict_get(req, v)) == NULL) {
-                    snac_debug(snac, 0,
-                        xs_fmt("check_signature cannot find header %s", v));
-
+                    *err = xs_fmt("cannot find header '%s'", v);
                     return 0;
                 }
 
@@ -204,7 +202,7 @@ static int _check_signature(snac *snac, char *req)
     }
 
     if (xs_evp_verify(pubkey, sig_str, strlen(sig_str), signature) != 1) {
-        snac_debug(snac, 0, xs_fmt("check_signature rsa verify error %s", keyId));
+        *err = xs_fmt("RSA verify error %s", keyId);
         return 0;
     }
 
@@ -216,13 +214,16 @@ int check_signature(snac *snac, char *req)
 /* checks the signature and archives the error */
 {
     int ret;
+    xs *err = NULL;
 
-    if ((ret = _check_signature(snac, req)) == 0) {
+    if ((ret = _check_signature(snac, req, &err)) == 0) {
         xs *ntid = tid(0);
-        xs *fn   = xs_fmt("%s/error/check_signature_%s.json", srv_basedir, ntid);
+        xs *fn   = xs_fmt("%s/error/check_signature_%s", srv_basedir, ntid);
         FILE *f;
 
         if ((f = fopen(fn, "w")) != NULL) {
+            fprintf(f, "Error: %s\nRequest headers:\n", err);
+
             xs *j = xs_json_dumps_pp(req, 4);
 
             fwrite(j, strlen(j), 1, f);
