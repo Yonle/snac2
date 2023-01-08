@@ -6,6 +6,8 @@ The purge ttl for stray global objects has been shortened.
 
 Don't show the collapse widget for non-existent children.
 
+Added support for HTTP signature pseudo-headers `(created)` and `(expires)`, that are used by some ActivityPub implementations (e.g. Lemmy).
+
 ## 2.17
 
 Fixed a header bug (contributed by alderwick).
