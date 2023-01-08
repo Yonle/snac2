@@ -139,8 +139,8 @@ int check_signature(snac *snac, char *req)
     }
 
     if (keyId == NULL || headers == NULL || signature == NULL) {
-        snac_debug(snac, 1, xs_fmt("bad signature header"));
-        return 0;
+        snac_debug(snac, 0, xs_fmt("check_signature bad signature header"));
+        goto error;
     }
 
     /* strip the # from the keyId */
@@ -150,14 +150,14 @@ int check_signature(snac *snac, char *req)
     /* the actor must already be here */
     xs *actor = NULL;
     if (!valid_status(actor_get(snac, keyId, &actor))) {
-        snac_debug(snac, 1, xs_fmt("check_signature unknown actor %s", keyId));
-        return 0;
+        snac_debug(snac, 0, xs_fmt("check_signature unknown actor %s", keyId));
+        goto error;
     }
 
     if ((p = xs_dict_get(actor, "publicKey")) == NULL ||
         ((pubkey = xs_dict_get(p, "publicKeyPem")) == NULL)) {
-        snac_debug(snac, 1, xs_fmt("cannot get pubkey from actor %s", keyId));
-        return 0;
+        snac_debug(snac, 0, xs_fmt("check_signature cannot get pubkey from %s", keyId));
+        goto error;
     }
 
     /* now build the string to be signed */
@@ -189,10 +189,10 @@ int check_signature(snac *snac, char *req)
             else {
                 /* add the header */
                 if ((hc = xs_dict_get(req, v)) == NULL) {
-                    snac_debug(snac, 1,
+                    snac_debug(snac, 0,
                         xs_fmt("check_signature cannot find header %s", v));
 
-                    return 0;
+                    goto error;
                 }
 
                 ss = xs_fmt("%s: %s", v, hc);
@@ -203,9 +203,12 @@ int check_signature(snac *snac, char *req)
     }
 
     if (xs_evp_verify(pubkey, sig_str, strlen(sig_str), signature) != 1) {
-        snac_debug(snac, 0, xs_fmt("rsa verify error %s", keyId));
-        return 0;
+        snac_debug(snac, 0, xs_fmt("check_signature rsa verify error %s", keyId));
+        goto error;
     }
 
     return 1;
+
+error:
+    return 0;
 }
