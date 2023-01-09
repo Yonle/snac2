@@ -416,6 +416,11 @@ d_char *build_mentions(snac *snac, char *msg)
         }
     }
 
+    if (*s) {
+        xs *s1 = s;
+        s = xs_fmt("\n\n\nCC: %s", s1);
+    }
+
     return s;
 }
 
