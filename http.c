@@ -217,6 +217,8 @@ int check_signature(snac *snac, char *req)
     xs *err = NULL;
 
     if ((ret = _check_signature(snac, req, &err)) == 0) {
+        snac_debug(snac, 1, xs_fmt("check_signature %s", err));
+
         xs *ntid = tid(0);
         xs *fn   = xs_fmt("%s/error/check_signature_%s", srv_basedir, ntid);
         FILE *f;
