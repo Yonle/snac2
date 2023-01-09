@@ -8,6 +8,8 @@ Don't show the collapse widget for non-existent children.
 
 Added support for HTTP signature pseudo-headers `(created)` and `(expires)`, that are used by some ActivityPub implementations (e.g. Lemmy).
 
+When replying, the mentioned people inherited from the original post will be clearly labelled with a CC: prefix string instead of just being dropped out there like noise like Mastodon and others do. (I hope) this will help you realise that you are involving other people in the conversation.
+
 ## 2.17
 
 Fixed a header bug (contributed by alderwick).
