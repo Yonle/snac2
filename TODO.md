@@ -4,6 +4,8 @@
 
 There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where's the problem.
 
+Add a list of hashtags to drop.
+
 Add a user option to ignore all Announces from everybody.
 
 Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac2/issues/3
