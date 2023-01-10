@@ -840,7 +840,7 @@ int process_message(snac *snac, char *msg, char *req)
 
     /* check the signature */
     if (!check_signature(snac, req, actor_o)) {
-        snac_log(snac, xs_fmt("bad signature"));
+        snac_log(snac, xs_fmt("bad signature %s", actor));
         return 1;
     }
 
