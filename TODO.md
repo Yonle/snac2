@@ -6,7 +6,7 @@ There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hac
 
 Add a list of hashtags to drop.
 
-Add a user option to ignore all Announces from everybody.
+Add a per-account toggle to [un]mute their Announces.
 
 Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac2/issues/3
 
