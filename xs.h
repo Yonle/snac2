@@ -64,6 +64,7 @@ d_char *xs_crop(d_char *str, int start, int end);
 d_char *xs_strip_chars(d_char *str, const char *chars);
 #define xs_strip(str) xs_strip_chars(str, " \r\n\t\v\f")
 d_char *xs_tolower(d_char *str);
+d_char *xs_str_prepend(d_char *str, const char *prefix);
 d_char *xs_list_new(void);
 d_char *xs_list_append_m(d_char *list, const char *mem, int dsz);
 #define xs_list_append(list, data) xs_list_append_m(list, data, xs_size(data))
@@ -484,6 +485,18 @@ d_char *xs_tolower(d_char *str)
 
     for (n = 0; str[n]; n++)
         str[n] = tolower(str[n]);
+
+    return str;
+}
+
+
+d_char *xs_str_prepend(d_char *str, const char *prefix)
+/* prepends prefix into string */
+{
+    int sz = strlen(prefix);
+
+    str = xs_expand(str, 0, sz);
+    memcpy(str, prefix, sz);
 
     return str;
 }
