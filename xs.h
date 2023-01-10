@@ -459,13 +459,21 @@ d_char *xs_crop(d_char *str, int start, int end)
 d_char *xs_strip_chars(d_char *str, const char *chars)
 /* strips the string of chars from the start and the end */
 {
-    int s, e;
+    int n;
 
-    for (s = 0; strchr(chars, str[s]); s++);
-    for (e = strlen(str); e > 0 && strchr(chars, str[e - 1]); e--);
+    /* strip first from the end */
+    for (n = strlen(str); n > 0 && strchr(chars, str[n - 1]); n--);
+    str[n] = '\0';
 
-    str[e] = '\0';
-    return xs_collapse(str, 0, s);
+    if (str[0]) {
+        /* now strip from the beginning */
+        for (n = 0; str[n] && strchr(chars, str[n]); n++);
+
+        if (n)
+            str = xs_collapse(str, 0, n);
+    }
+
+    return str;
 }
 
 
