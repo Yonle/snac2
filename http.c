@@ -103,7 +103,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
 }
 
 
-static int _check_signature(snac *snac, char *req, char **err)
+static int _check_signature(snac *snac, char *req, char *actor, char **err)
 /* check the signature */
 {
     char *sig_hdr = xs_dict_get(req, "signature");
@@ -144,6 +144,7 @@ static int _check_signature(snac *snac, char *req, char **err)
         return 0;
     }
 
+#if 0
     /* strip the # from the keyId */
     if ((p = strchr(keyId, '#')) != NULL)
         *p = '\0';
@@ -154,6 +155,7 @@ static int _check_signature(snac *snac, char *req, char **err)
         *err = xs_fmt("unknown actor %s", keyId);
         return 0;
     }
+#endif
 
     if ((p = xs_dict_get(actor, "publicKey")) == NULL ||
         ((pubkey = xs_dict_get(p, "publicKeyPem")) == NULL)) {
@@ -210,13 +212,13 @@ static int _check_signature(snac *snac, char *req, char **err)
 }
 
 
-int check_signature(snac *snac, char *req)
+int check_signature(snac *snac, char *req, char *actor)
 /* checks the signature and archives the error */
 {
     int ret;
     xs *err = NULL;
 
-    if ((ret = _check_signature(snac, req, &err)) == 0) {
+    if ((ret = _check_signature(snac, req, actor, &err)) == 0) {
         snac_debug(snac, 1, xs_fmt("check_signature %s", err));
 
         xs *ntid = tid(0);
