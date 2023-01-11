@@ -78,7 +78,7 @@ int actor_request(snac *snac, char *actor, d_char **data)
 }
 
 
-int timeline_request(snac *snac, char **id, char *referrer, d_char **wrk)
+int timeline_request(snac *snac, char **id, d_char **wrk)
 /* ensures that an entry and its ancestors are in the timeline */
 {
     int status = 0;
@@ -116,7 +116,7 @@ int timeline_request(snac *snac, char **id, char *referrer, d_char **wrk)
                     char *in_reply_to = xs_dict_get(object, "inReplyTo");
 
                     /* recurse! */
-                    timeline_request(snac, &in_reply_to, referrer, NULL);
+                    timeline_request(snac, &in_reply_to, NULL);
 
                     /* finally store */
                     timeline_add(snac, *id, object);
@@ -417,7 +417,7 @@ d_char *msg_admiration(snac *snac, char *object, char *type)
     xs *wrk     = NULL;
 
     /* call the object */
-    timeline_request(snac, &object, snac->actor, &wrk);
+    timeline_request(snac, &object, &wrk);
 
     if (valid_status(object_get(object, &a_msg, NULL))) {
         xs *rcpts = xs_list_new();
@@ -611,7 +611,7 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
         xs *wrk   = NULL;
 
         /* demand this thing */
-        timeline_request(snac, &in_reply_to, NULL, &wrk);
+        timeline_request(snac, &in_reply_to, &wrk);
 
         if (valid_status(object_get(in_reply_to, &p_msg, NULL))) {
             /* add this author as recipient */
@@ -885,7 +885,7 @@ int process_message(snac *snac, char *msg, char *req)
                 char *in_reply_to = xs_dict_get(object, "inReplyTo");
                 xs *wrk           = NULL;
 
-                timeline_request(snac, &in_reply_to, NULL, &wrk);
+                timeline_request(snac, &in_reply_to, &wrk);
 
                 if (timeline_add(snac, id, object)) {
                     snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
@@ -926,7 +926,7 @@ int process_message(snac *snac, char *msg, char *req)
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
 
-        timeline_request(snac, &object, actor, &wrk);
+        timeline_request(snac, &object, &wrk);
 
         if (valid_status(object_get(object, &a_msg, NULL))) {
             char *who = xs_dict_get(a_msg, "attributedTo");
