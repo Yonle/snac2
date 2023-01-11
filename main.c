@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
 
         enqueue_message(&snac, c_msg);
 
-        timeline_add(&snac, xs_dict_get(msg, "id"), msg, in_reply_to, NULL);
+        timeline_add(&snac, xs_dict_get(msg, "id"), msg);
 
         return 0;
     }

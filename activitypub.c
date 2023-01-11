@@ -119,7 +119,7 @@ int timeline_request(snac *snac, char **id, char *referrer, d_char **wrk)
                     timeline_request(snac, &in_reply_to, referrer, NULL);
 
                     /* finally store */
-                    timeline_add(snac, *id, object, in_reply_to, referrer);
+                    timeline_add(snac, *id, object);
                 }
             }
         }
@@ -852,7 +852,7 @@ int process_message(snac *snac, char *msg, char *req)
                 f_msg = xs_dict_set(f_msg, "published", date);
             }
 
-            timeline_add(snac, xs_dict_get(f_msg, "id"), f_msg, NULL, NULL);
+            timeline_add(snac, xs_dict_get(f_msg, "id"), f_msg);
 
             follower_add(snac, actor);
 
@@ -887,7 +887,7 @@ int process_message(snac *snac, char *msg, char *req)
 
                 timeline_request(snac, &in_reply_to, NULL, &wrk);
 
-                if (timeline_add(snac, id, object, in_reply_to, NULL)) {
+                if (timeline_add(snac, id, object)) {
                     snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
                     do_notify = 1;
                 }

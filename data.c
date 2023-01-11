@@ -835,7 +835,7 @@ void timeline_update_indexes(snac *snac, const char *id)
 }
 
 
-int timeline_add(snac *snac, char *id, char *o_msg, char *parent, char *referrer)
+int timeline_add(snac *snac, char *id, char *o_msg)
 /* adds a message to the timeline */
 {
     int ret = object_add(id, o_msg);
