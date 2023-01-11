@@ -139,11 +139,6 @@ int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_s
     response = http_signed_request(snac, "POST", inbox,
         NULL, j_msg, strlen(j_msg), &status, payload, p_size);
 
-    if (status == 400) {
-        snac_debug(snac, 0, xs_fmt("send_to_inbox error %d (response date: '%s')",
-            status, xs_dict_get(response, "date")));
-    }
-
     xs_free(response);
 
     return status;
@@ -839,7 +834,7 @@ int process_message(snac *snac, char *msg, char *req)
     }
 
     /* check the signature */
-    if (!check_signature(snac, req, actor_o)) {
+    if (!check_signature(snac, req)) {
         snac_log(snac, xs_fmt("bad signature %s", actor));
         return 1;
     }
