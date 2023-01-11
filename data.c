@@ -847,7 +847,7 @@ int timeline_add(snac *snac, char *id, char *o_msg)
 }
 
 
-void timeline_admire(snac *snac, char *o_msg, char *id, char *admirer, int like)
+void timeline_admire(snac *snac, char *id, char *admirer, int like)
 /* updates a timeline entry with a new admiration */
 {
     /* if we are admiring this, add to both timelines */

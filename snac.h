@@ -92,7 +92,7 @@ int timeline_del(snac *snac, char *id);
 d_char *timeline_simple_list(snac *snac, const char *idx_name, int skip, int show);
 d_char *timeline_list(snac *snac, const char *idx_name, int skip, int show);
 int timeline_add(snac *snac, char *id, char *o_msg);
-void timeline_admire(snac *snac, char *o_msg, char *id, char *admirer, int like);
+void timeline_admire(snac *snac, char *id, char *admirer, int like);
 
 d_char *timeline_top_level(d_char *list);
 

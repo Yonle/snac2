@@ -1376,7 +1376,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
             if (msg != NULL) {
                 enqueue_message(&snac, msg);
-                timeline_admire(&snac, msg, xs_dict_get(msg, "object"), snac.actor, 1);
+                timeline_admire(&snac, xs_dict_get(msg, "object"), snac.actor, 1);
             }
         }
         else
@@ -1385,7 +1385,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
             if (msg != NULL) {
                 enqueue_message(&snac, msg);
-                timeline_admire(&snac, msg, xs_dict_get(msg, "object"), snac.actor, 0);
+                timeline_admire(&snac, xs_dict_get(msg, "object"), snac.actor, 0);
             }
         }
         else

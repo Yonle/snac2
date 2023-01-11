@@ -914,7 +914,7 @@ int process_message(snac *snac, char *msg, char *req)
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
 
-        timeline_admire(snac, msg, object, actor, 1);
+        timeline_admire(snac, object, actor, 1);
         snac_log(snac, xs_fmt("new 'Like' %s %s", actor, object));
         do_notify = 1;
     }
@@ -936,7 +936,7 @@ int process_message(snac *snac, char *msg, char *req)
                 xs *who_o = NULL;
 
                 if (valid_status(actor_request(snac, who, &who_o))) {
-                    timeline_admire(snac, msg, object, actor, 0);
+                    timeline_admire(snac, object, actor, 0);
                     snac_log(snac, xs_fmt("new 'Announce' %s %s", actor, object));
                     do_notify = 1;
                 }
