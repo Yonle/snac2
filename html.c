@@ -886,8 +886,6 @@ d_char *html_timeline(snac *snac, char *list, int local, int skip, int show, int
         s = xs_str_cat(s, "</ul></div>\n");
     }
 
-    s = html_user_footer(snac, s);
-
     {
         xs *s1 = xs_fmt("<!-- %lf seconds -->\n", ftime() - t);
         s = xs_str_cat(s, s1);
@@ -901,6 +899,8 @@ d_char *html_timeline(snac *snac, char *list, int local, int skip, int show, int
 
         s = xs_str_cat(s, s1);
     }
+
+    s = html_user_footer(snac, s);
 
     s = xs_str_cat(s, "</body>\n</html>\n");
 
