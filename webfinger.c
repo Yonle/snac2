@@ -33,7 +33,7 @@ int webfinger_request(char *qs, char **actor, char **user)
         xs *s = xs_dup(qs);
 
         if (xs_startswith(s, "@"))
-            s = xs_crop(s, 1, 0);
+            s = xs_crop_i(s, 1, 0);
 
         l = xs_split_n(s, "@", 1);
 
@@ -141,7 +141,7 @@ int webfinger_get_handler(d_char *req, char *q_path,
 
         /* strip a possible leading @ */
         if (xs_startswith(an, "@"))
-            an = xs_crop(an, 1, 0);
+            an = xs_crop_i(an, 1, 0);
 
         l = xs_split_n(an, "@", 1);
 

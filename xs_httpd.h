@@ -185,7 +185,7 @@ d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
     xs_socket_timeout(fileno(f), 2.0, 0.0);
 
     /* read the first line and split it */
-    l1 = xs_strip(xs_readline(f));
+    l1 = xs_strip_i(xs_readline(f));
     l2 = xs_split(l1, " ");
 
     if (xs_list_len(l2) != 3) {
@@ -214,7 +214,7 @@ d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
     for (;;) {
         xs *l, *p = NULL;
 
-        l = xs_strip(xs_readline(f));
+        l = xs_strip_i(xs_readline(f));
 
         /* done with the header? */
         if (strcmp(l, "") == 0)
@@ -224,7 +224,7 @@ d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
         p = xs_split_n(l, ": ", 1);
 
         if (xs_list_len(p) == 2)
-            req = xs_dict_append(req, xs_tolower(xs_list_get(p, 0)), xs_list_get(p, 1));
+            req = xs_dict_append(req, xs_tolower_i(xs_list_get(p, 0)), xs_list_get(p, 1));
     }
 
     xs_socket_timeout(fileno(f), 5.0, 0.0);

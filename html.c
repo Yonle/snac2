@@ -21,7 +21,7 @@ int login(snac *snac, char *headers)
 
     if (auth && xs_startswith(auth, "Basic ")) {
         int sz;
-        xs *s1 = xs_crop(xs_dup(auth), 6, 0);
+        xs *s1 = xs_crop_i(xs_dup(auth), 6, 0);
         xs *s2 = xs_base64_dec(s1, &sz);
 
         xs *l1 = xs_split_n(s2, ":", 1);
@@ -108,11 +108,11 @@ d_char *html_actor_icon(snac *snac, d_char *os, char *actor,
         s = xs_str_cat(s, "<br>\n&nbsp;\n");
     }
     else {
-        xs *date_label = xs_crop(xs_dup(date), 0, 10);
+        xs *date_label = xs_crop_i(xs_dup(date), 0, 10);
         xs *date_title = xs_dup(date);
 
         if (!xs_is_null(udate)) {
-            xs *sd = xs_crop(xs_dup(udate), 0, 10);
+            xs *sd = xs_crop_i(xs_dup(udate), 0, 10);
 
             date_label = xs_str_cat(date_label, " / ");
             date_label = xs_str_cat(date_label, sd);
@@ -682,7 +682,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
         c = xs_replace_i(c, "\r", "");
 
         while (xs_endswith(c, "<br><br>"))
-            c = xs_crop(c, 0, -4);
+            c = xs_crop_i(c, 0, -4);
 
         c = xs_replace_i(c, "<br><br>", "<p>");
 
@@ -1045,7 +1045,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
 
     /* rss extension? */
     if (xs_endswith(uid, ".rss")) {
-        uid = xs_crop(uid, 0, -4);
+        uid = xs_crop_i(uid, 0, -4);
         p_path = ".rss";
     }
     else

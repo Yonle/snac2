@@ -53,19 +53,19 @@ static d_char *format_line(const char *line)
         if ((n & 0x1)) {
             /* markup */
             if (xs_startswith(v, "`")) {
-                xs *s1 = xs_crop(xs_dup(v), 1, -1);
+                xs *s1 = xs_crop_i(xs_dup(v), 1, -1);
                 xs *s2 = xs_fmt("<code>%s</code>", s1);
                 s = xs_str_cat(s, s2);
             }
             else
             if (xs_startswith(v, "**")) {
-                xs *s1 = xs_crop(xs_dup(v), 2, -2);
+                xs *s1 = xs_crop_i(xs_dup(v), 2, -2);
                 xs *s2 = xs_fmt("<b>%s</b>", s1);
                 s = xs_str_cat(s, s2);
             }
             else
             if (xs_startswith(v, "*")) {
-                xs *s1 = xs_crop(xs_dup(v), 1, -1);
+                xs *s1 = xs_crop_i(xs_dup(v), 1, -1);
                 xs *s2 = xs_fmt("<i>%s</i>", s1);
                 s = xs_str_cat(s, s2);
             }
@@ -117,11 +117,11 @@ d_char *not_really_markdown(const char *content)
         if (in_pre)
             ss = xs_dup(v);
         else
-            ss = xs_strip(format_line(v));
+            ss = xs_strip_i(format_line(v));
 
         if (xs_startswith(ss, ">")) {
             /* delete the > and subsequent spaces */
-            ss = xs_strip(xs_crop(ss, 1, 0));
+            ss = xs_strip_i(xs_crop_i(ss, 1, 0));
 
             if (!in_blq) {
                 s = xs_str_cat(s, "<blockquote>");
@@ -184,9 +184,9 @@ d_char *sanitize(const char *content)
 
     while (xs_list_iter(&p, &v)) {
         if (n & 0x1) {
-            xs *s1  = xs_strip(xs_crop(xs_dup(v), v[1] == '/' ? 2 : 1, -1));
+            xs *s1  = xs_strip_i(xs_crop_i(xs_dup(v), v[1] == '/' ? 2 : 1, -1));
             xs *l1  = xs_split_n(s1, " ", 1);
-            xs *tag = xs_tolower(xs_dup(xs_list_get(l1, 0)));
+            xs *tag = xs_tolower_i(xs_dup(xs_list_get(l1, 0)));
             xs *s2  = NULL;
             int i;
 

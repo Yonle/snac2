@@ -31,7 +31,7 @@ int srv_open(char *basedir, int auto_upgrade)
     srv_basedir = xs_str_new(basedir);
 
     if (xs_endswith(srv_basedir, "/"))
-        srv_basedir = xs_crop(srv_basedir, 0, -1);
+        srv_basedir = xs_crop_i(srv_basedir, 0, -1);
 
     cfg_file = xs_fmt("%s/server.json", basedir);
 

@@ -123,19 +123,19 @@ static int _check_signature(snac *snac, char *req, char **err)
         p = l;
         while (xs_list_iter(&p, &v)) {
             if (xs_startswith(v, "keyId"))
-                keyId = xs_crop(xs_dup(v), 7, -1);
+                keyId = xs_crop_i(xs_dup(v), 7, -1);
             else
             if (xs_startswith(v, "headers"))
-                headers = xs_crop(xs_dup(v), 9, -1);
+                headers = xs_crop_i(xs_dup(v), 9, -1);
             else
             if (xs_startswith(v, "signature"))
-                signature = xs_crop(xs_dup(v), 11, -1);
+                signature = xs_crop_i(xs_dup(v), 11, -1);
             else
             if (xs_startswith(v, "created"))
-                created = xs_crop(xs_dup(v), 9, -1);
+                created = xs_crop_i(xs_dup(v), 9, -1);
             else
             if (xs_startswith(v, "expires"))
-                expires = xs_crop(xs_dup(v), 9, -1);
+                expires = xs_crop_i(xs_dup(v), 9, -1);
         }
     }
 

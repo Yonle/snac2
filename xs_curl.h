@@ -21,13 +21,13 @@ static size_t _header_callback(char *buffer, size_t size,
     /* get the line */
     l = xs_str_new(NULL);
     l = xs_append_m(l, buffer, size * nitems);
-    l = xs_strip(l);
+    l = xs_strip_i(l);
 
     /* only the HTTP/x 200 line and the last one doesn't have ': ' */
     if (xs_str_in(l, ": ") != -1) {
         xs *knv = xs_split_n(l, ": ", 1);
 
-        xs_tolower(xs_list_get(knv, 0));
+        xs_tolower_i(xs_list_get(knv, 0));
 
         headers = xs_dict_set(headers, xs_list_get(knv, 0), xs_list_get(knv, 1));
     }

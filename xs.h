@@ -60,11 +60,11 @@ d_char *xs_fmt(const char *fmt, ...);
 int xs_str_in(const char *haystack, const char *needle);
 int xs_startswith(const char *str, const char *prefix);
 int xs_endswith(const char *str, const char *postfix);
-d_char *xs_crop(d_char *str, int start, int end);
-d_char *xs_strip_chars(d_char *str, const char *chars);
-#define xs_strip(str) xs_strip_chars(str, " \r\n\t\v\f")
-d_char *xs_tolower(d_char *str);
-d_char *xs_str_prepend(d_char *str, const char *prefix);
+d_char *xs_crop_i(d_char *str, int start, int end);
+d_char *xs_strip_chars_i(d_char *str, const char *chars);
+#define xs_strip_i(str) xs_strip_chars_i(str, " \r\n\t\v\f")
+d_char *xs_tolower_i(d_char *str);
+d_char *xs_str_prepend_i(d_char *str, const char *prefix);
 d_char *xs_list_new(void);
 d_char *xs_list_append_m(d_char *list, const char *mem, int dsz);
 #define xs_list_append(list, data) xs_list_append_m(list, data, xs_size(data))
@@ -439,7 +439,7 @@ int xs_endswith(const char *str, const char *postfix)
 }
 
 
-d_char *xs_crop(d_char *str, int start, int end)
+d_char *xs_crop_i(d_char *str, int start, int end)
 /* crops the d_char to be only from start to end */
 {
     int sz = strlen(str);
@@ -457,7 +457,7 @@ d_char *xs_crop(d_char *str, int start, int end)
 }
 
 
-d_char *xs_strip_chars(d_char *str, const char *chars)
+d_char *xs_strip_chars_i(d_char *str, const char *chars)
 /* strips the string of chars from the start and the end */
 {
     int n;
@@ -478,7 +478,7 @@ d_char *xs_strip_chars(d_char *str, const char *chars)
 }
 
 
-d_char *xs_tolower(d_char *str)
+d_char *xs_tolower_i(d_char *str)
 /* convert to lowercase */
 {
     int n;
@@ -490,7 +490,7 @@ d_char *xs_tolower(d_char *str)
 }
 
 
-d_char *xs_str_prepend(d_char *str, const char *prefix)
+d_char *xs_str_prepend_i(d_char *str, const char *prefix)
 /* prepends prefix into string */
 {
     int sz = strlen(prefix);

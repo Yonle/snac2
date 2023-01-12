@@ -85,7 +85,7 @@ int initdb(const char *basedir)
 
     if (basedir == NULL) {
         printf("Base directory:\n");
-        srv_basedir = xs_strip(xs_readline(stdin));
+        srv_basedir = xs_strip_i(xs_readline(stdin));
     }
     else
         srv_basedir = xs_str_new(basedir);
@@ -94,7 +94,7 @@ int initdb(const char *basedir)
         return 1;
 
     if (xs_endswith(srv_basedir, "/"))
-        srv_basedir = xs_crop(srv_basedir, 0, -1);
+        srv_basedir = xs_crop_i(srv_basedir, 0, -1);
 
     if (mtime(srv_basedir) != 0.0) {
         printf("ERROR: directory '%s' must not exist\n", srv_basedir);
@@ -108,14 +108,14 @@ int initdb(const char *basedir)
 
     printf("Network address [%s]:\n", xs_dict_get(srv_config, "address"));
     {
-        xs *i = xs_strip(xs_readline(stdin));
+        xs *i = xs_strip_i(xs_readline(stdin));
         if (*i)
             srv_config = xs_dict_set(srv_config, "address", i);
     }
 
     printf("Network port [%d]:\n", (int)xs_number_get(xs_dict_get(srv_config, "port")));
     {
-        xs *i = xs_strip(xs_readline(stdin));
+        xs *i = xs_strip_i(xs_readline(stdin));
         if (*i) {
             xs *n = xs_number_new(atoi(i));
             srv_config = xs_dict_set(srv_config, "port", n);
@@ -124,7 +124,7 @@ int initdb(const char *basedir)
 
     printf("Host name:\n");
     {
-        xs *i = xs_strip(xs_readline(stdin));
+        xs *i = xs_strip_i(xs_readline(stdin));
         if (*i == '\0')
             return 1;
 
@@ -133,11 +133,11 @@ int initdb(const char *basedir)
 
     printf("URL prefix:\n");
     {
-        xs *i = xs_strip(xs_readline(stdin));
+        xs *i = xs_strip_i(xs_readline(stdin));
 
         if (*i) {
             if (xs_endswith(i, "/"))
-                i = xs_crop(i, 0, -1);
+                i = xs_crop_i(i, 0, -1);
 
             srv_config = xs_dict_set(srv_config, "prefix", i);
         }
@@ -215,7 +215,7 @@ int adduser(const char *uid)
 
     if (uid == NULL) {
         printf("User id:\n");
-        uid = xs_strip(xs_readline(stdin));
+        uid = xs_strip_i(xs_readline(stdin));
     }
 
     if (!validate_uid(uid)) {

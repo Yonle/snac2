@@ -160,11 +160,11 @@ void httpd_connection(FILE *f)
 
     /* crop the q_path from leading / and the prefix */
     if (xs_endswith(q_path, "/"))
-        q_path = xs_crop(q_path, 0, -1);
+        q_path = xs_crop_i(q_path, 0, -1);
 
     p = xs_dict_get(srv_config, "prefix");
     if (xs_startswith(q_path, p))
-        q_path = xs_crop(q_path, strlen(p), 0);
+        q_path = xs_crop_i(q_path, strlen(p), 0);
 
     if (strcmp(method, "GET") == 0 || strcmp(method, "HEAD") == 0) {
         /* cascade through */
