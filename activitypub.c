@@ -261,7 +261,7 @@ int is_msg_public(snac *snac, char *msg)
 }
 
 
-void process_tags(const char *content, d_char **n_content, d_char **tag)
+void process_tags(snac *snac, const char *content, d_char **n_content, d_char **tag)
 /* parses mentions and tags from content */
 {
     d_char *nc = xs_str_new(NULL);
@@ -270,7 +270,7 @@ void process_tags(const char *content, d_char **n_content, d_char **tag)
     char *p, *v;
     int n = 0;
 
-    split = xs_regex_split(content, "(@[A-Za-z0-9_]+@[A-Za-z0-9\\.-]+|#[^ ,\\.:;]+)");
+    split = xs_regex_split(content, "(@[A-Za-z0-9_]+@[A-Za-z0-9\\.-]+|#[^ ,\\.:;<]+)");
 
     p = split;
     while (xs_list_iter(&p, &v)) {
@@ -304,8 +304,19 @@ void process_tags(const char *content, d_char **n_content, d_char **tag)
             else
             if (*v == '#') {
                 /* hashtag */
-                /* store as is by now */
-                nc = xs_str_cat(nc, v);
+                xs *d = xs_dict_new();
+                xs *n = xs_tolower_i(xs_dup(v));
+                xs *h = xs_fmt("%s%s", snac->actor, n);
+                xs *l = xs_fmt("<a href=\"%s\" class=\"mention hashtag\" rel=\"tag\">%s</a>", h, v);
+
+                d = xs_dict_append(d, "type",   "Hashtag");
+                d = xs_dict_append(d, "href",   h);
+                d = xs_dict_append(d, "name",   n);
+
+                tl = xs_list_append(tl, d);
+
+                /* add the code */
+                nc = xs_str_cat(nc, l);
             }
         }
         else
@@ -601,7 +612,7 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
     fc2 = not_really_markdown(content);
 
     /* extract the tags */
-    process_tags(fc2, &fc1, &tag);
+    process_tags(snac, fc2, &fc1, &tag);
 
     if (tag == NULL)
         tag = xs_list_new();
