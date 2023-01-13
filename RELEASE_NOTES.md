@@ -2,6 +2,8 @@
 
 ## 2.18
 
+Added support for #HashTags (they are not internally indexed yet, only propagated to other instances).
+
 The purge ttl for stray global objects has been shortened.
 
 Don't show the collapse widget for non-existent children.
