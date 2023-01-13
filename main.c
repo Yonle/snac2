@@ -15,7 +15,7 @@ int usage(void)
     printf("\n");
     printf("Commands:\n");
     printf("\n");
-    printf("init [{basedir}]                 Initializes the database\n");
+    printf("init [{basedir}]                 Initializes the data storage\n");
     printf("upgrade {basedir}                Upgrade to a new version\n");
     printf("adduser {basedir} [{uid}]        Adds a new user\n");
     printf("httpd {basedir}                  Starts the HTTPD daemon\n");
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
         return usage();
 
     if (strcmp(cmd, "init") == 0) {
-        /* initialize the database */
+        /* initialize the data storage */
         /* ... */
         basedir = GET_ARGV();
 
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     if (strcmp(cmd, "upgrade") == 0) {
         int ret;
 
-        /* database upgrade */
+        /* upgrade */
         if ((basedir = GET_ARGV()) == NULL)
             return usage();
 
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
         return usage();
 
     if (!srv_open(basedir, 0)) {
-        srv_log(xs_fmt("error opening database at %s", basedir));
+        srv_log(xs_fmt("error opening data storage at %s", basedir));
         return 1;
     }
 
