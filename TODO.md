@@ -16,6 +16,8 @@ Add (back) the possibility to attach an image by URL.
 
 With this new disk layout, hidden posts (and their children) can be directly skipped (are there any other implications?).
 
+Integrate https://codeberg.org/alderwick/snac2/commit/a33686992747f6cbd35420d23ff22717938b6228
+
 ## Wishlist
 
 Implement the ActivityPub C2S (Client to Server) API: (https://www.w3.org/TR/activitypub/#client-to-server-interactions). The client at http://andstatus.org/ implements it.
