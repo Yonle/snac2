@@ -13,6 +13,8 @@
 
 #include "snac.h"
 
+#include <sys/wait.h>
+
 const char *public_address = "https:/" "/www.w3.org/ns/activitystreams#Public";
 
 int activitypub_request(snac *snac, char *url, d_char **data)
@@ -999,6 +1001,35 @@ int process_message(snac *snac, char *msg, char *req)
 }
 
 
+int send_email(char *msg)
+/* invoke sendmail with email headers and body in msg */
+{
+    FILE *f;
+    int status;
+    int fds[2];
+    pid_t pid;
+    if (pipe(fds) == -1) return -1;
+    pid = vfork();
+    if (pid == -1) return -1;
+    else if (pid == 0) {
+        dup2(fds[0], 0);
+        close(fds[0]);
+        close(fds[1]);
+        execl("/usr/sbin/sendmail", "sendmail", "-t", (char *) NULL);
+        _exit(1);
+    }
+    close(fds[0]);
+    if ((f = fdopen(fds[1], "w")) == NULL) {
+        close(fds[1]);
+        return -1;
+    }
+    fprintf(f, "%s\n", msg);
+    fclose(f);
+    if (waitpid(pid, &status, 0) == -1) return -1;
+    return status;
+}
+
+
 void process_queue(snac *snac)
 /* processes the queue */
 {
@@ -1085,17 +1116,8 @@ void process_queue(snac *snac)
             /* send this email */
             char *msg   = xs_dict_get(q_item, "message");
             int retries = xs_number_get(xs_dict_get(q_item, "retries"));
-            FILE *f;
-            int ok = 0;
 
-            if ((f = popen("/usr/sbin/sendmail -t", "w")) != NULL) {
-                fprintf(f, "%s\n", msg);
-
-                if (pclose(f) != -1)
-                    ok = 1;
-            }
-
-            if (ok)
+            if (!send_email(msg))
                 snac_debug(snac, 1, xs_fmt("email message sent"));
             else {
                 if (retries > queue_retry_max)
