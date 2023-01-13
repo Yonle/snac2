@@ -4,9 +4,11 @@
 
 Added support for #HashTags (they are not internally indexed yet, only propagated to other instances).
 
+Added support for OpenBSD enhanced security functions `unveil()` and `pledge()` (contributed by alderwick).
+
 The purge ttl for stray global objects has been shortened.
 
-Don't show the collapse widget for non-existent children.
+In the HTML interface, don't show the collapse widget for non-existent children.
 
 Added support for HTTP signature pseudo-headers `(created)` and `(expires)`, that are used by some ActivityPub implementations (e.g. Lemmy).
 
