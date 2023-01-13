@@ -87,17 +87,24 @@ int srv_open(char *basedir, int auto_upgrade)
         srv_log(error);
 
 #ifdef __OpenBSD__
-    srv_debug(2, xs_fmt("Calling unveil()"));
-    unveil(basedir,                "rwc");
-    unveil("/usr/sbin/sendmail",   "x");
-    unveil("/etc/resolv.conf",     "r");
-    unveil("/etc/hosts",           "r");
-    unveil("/etc/ssl/openssl.cnf", "r");
-    unveil("/etc/ssl/cert.pem",    "r");
-    unveil("/usr/share/zoneinfo",  "r");
-    unveil(NULL,                   NULL);
-    srv_debug(2, xs_fmt("Calling pledge()"));
-    pledge("stdio rpath wpath cpath flock inet proc exec dns", NULL);
+    char *v = xs_dict_get(srv_config, "disable_openbsd_security");
+
+    if (v && xs_type(v) == XSTYPE_TRUE) {
+        srv_debug(1, xs_dup("OpenBSD security disabled by admin"));
+    }
+    else {
+        srv_debug(1, xs_fmt("Calling unveil()"));
+        unveil(basedir,                "rwc");
+        unveil("/usr/sbin/sendmail",   "x");
+        unveil("/etc/resolv.conf",     "r");
+        unveil("/etc/hosts",           "r");
+        unveil("/etc/ssl/openssl.cnf", "r");
+        unveil("/etc/ssl/cert.pem",    "r");
+        unveil("/usr/share/zoneinfo",  "r");
+        unveil(NULL,                   NULL);
+        srv_debug(1, xs_fmt("Calling pledge()"));
+        pledge("stdio rpath wpath cpath flock inet proc exec dns", NULL);
+    }
 #endif /* __OpenBSD__ */
 
     return ret;
