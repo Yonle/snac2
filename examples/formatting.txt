@@ -21,6 +21,6 @@ It also allows preformatted text using three backquotes in a single line:
 
 ```
 
-URLs like https://en.wikipedia.org/wiki/Main_Page are made clickable.
+URLs like https://en.wikipedia.org/wiki/Main_Page are made clickable, https://codeberg.org/grunfink/snac2.
 
 Some emojis: X-D <3 :beer: :shrug: :shrug2:

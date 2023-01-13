@@ -71,7 +71,8 @@ static d_char *format_line(const char *line)
             }
             else
             if (xs_startswith(v, "http")) {
-                xs *s1 = xs_fmt("<a href=\"%s\" target=\"_blank\">%s</a>", v, v);
+                xs *v2 = xs_strip_chars_i(xs_dup(v), ".");
+                xs *s1 = xs_fmt("<a href=\"%s\" target=\"_blank\">%s</a>", v2, v);
                 s = xs_str_cat(s, s1);
             }
             else
