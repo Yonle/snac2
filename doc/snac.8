@@ -160,6 +160,16 @@ site layout.
 If set to true, timeline caching is not done. This is only useful for
 debugging purposes; don't enable it unless you know what do you want, as
 it makes everything slower.
+.It Ic disable_openbsd_security
+If running under OpenBSD,
+.Nm
+makes use of the enhanced security functions
+.Xr unveil 2
+and
+.Xr pledge 2 .
+Setting this to true disables their usage. These functions limit severely
+what an intruder can do in case of a security vulnerability, so only enable
+this option if something is very broken.
 .El
 .Pp
 You must restart the server to make effective these changes.
