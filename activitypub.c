@@ -277,11 +277,12 @@ void process_tags(snac *snac, const char *content, d_char **n_content, d_char **
         if ((n & 0x1)) {
             if (*v == '@') {
                 /* query the webfinger about this fellow */
+                xs *v2    = xs_strip_chars_i(xs_dup(v), "@.");
                 xs *actor = NULL;
                 xs *uid   = NULL;
                 int status;
 
-                status = webfinger_request(v + 1, &actor, &uid);
+                status = webfinger_request(v2, &actor, &uid);
 
                 if (valid_status(status)) {
                     xs *d = xs_dict_new();
