@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.19
+
+Fixed the breakage of Emojis I introduced when implementing HashTags because I am a moron.
+
 ## 2.18
 
 Added support for #HashTags (they are not internally indexed yet, only propagated to other instances).
