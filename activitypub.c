@@ -272,7 +272,7 @@ void process_tags(snac *snac, const char *content, d_char **n_content, d_char **
     char *p, *v;
     int n = 0;
 
-    split = xs_regex_split(content, "(@[A-Za-z0-9_]+@[A-Za-z0-9\\.-]+|#[^ ,\\.:;<]+)");
+    split = xs_regex_split(content, "(@[A-Za-z0-9_]+@[A-Za-z0-9\\.-]+|&#[0-9]+;|#[^ ,\\.:;<]+)");
 
     p = split;
     while (xs_list_iter(&p, &v)) {
@@ -320,6 +320,13 @@ void process_tags(snac *snac, const char *content, d_char **n_content, d_char **
 
                 /* add the code */
                 nc = xs_str_cat(nc, l);
+            }
+            else
+            if (*v == '&') {
+                /* HTML Unicode entity, probably part of an emoji */
+
+                /* write as is */
+                nc = xs_str_cat(nc, v);
             }
         }
         else
