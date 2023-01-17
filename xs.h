@@ -1,4 +1,4 @@
-/* copyright (c) 2022 grunfink - MIT license */
+/* copyright (c) 2022 - 2023 grunfink / MIT license */
 
 #ifndef _XS_H
 
@@ -53,7 +53,9 @@ d_char *xs_insert_m(d_char *data, int offset, const char *mem, int size);
 #define xs_insert(data, offset, data2) xs_insert_m(data, offset, data2, xs_size(data2))
 #define xs_append_m(data, mem, size) xs_insert_m(data, xs_size(data) - 1, mem, size)
 d_char *xs_str_new(const char *str);
-#define xs_str_cat(str1, str2) xs_insert(str1, xs_size(str1) - 1, str2)
+d_char *xs_str_wrap_i(const char *prefix, d_char *str, const char *suffix);
+#define xs_str_prepend_i(str, prefix) xs_str_wrap_i(prefix, str, NULL)
+#define xs_str_cat(str, suffix) xs_str_wrap_i(NULL, str, suffix)
 d_char *xs_replace_i(d_char *str, const char *sfrom, const char *sto);
 #define xs_replace(str, sfrom, sto) xs_replace_i(xs_dup(str), sfrom, sto)
 d_char *xs_fmt(const char *fmt, ...);
@@ -64,7 +66,6 @@ d_char *xs_crop_i(d_char *str, int start, int end);
 d_char *xs_strip_chars_i(d_char *str, const char *chars);
 #define xs_strip_i(str) xs_strip_chars_i(str, " \r\n\t\v\f")
 d_char *xs_tolower_i(d_char *str);
-d_char *xs_str_prepend_i(d_char *str, const char *prefix);
 d_char *xs_list_new(void);
 d_char *xs_list_append_m(d_char *list, const char *mem, int dsz);
 #define xs_list_append(list, data) xs_list_append_m(list, data, xs_size(data))
@@ -364,6 +365,19 @@ d_char *xs_str_new(const char *str)
 }
 
 
+d_char *xs_str_wrap_i(const char *prefix, d_char *str, const char *suffix)
+/* wraps str with prefix and suffix */
+{
+    if (prefix)
+        str = xs_insert_m(str, 0, prefix, strlen(prefix));
+
+    if (suffix)
+        str = xs_insert_m(str, xs_size(str) - 1, suffix, xs_size(suffix));
+
+    return str;
+}
+
+
 d_char *xs_replace_i(d_char *str, const char *sfrom, const char *sto)
 /* replaces inline all sfrom with sto */
 {
@@ -485,18 +499,6 @@ d_char *xs_tolower_i(d_char *str)
 
     for (n = 0; str[n]; n++)
         str[n] = tolower(str[n]);
-
-    return str;
-}
-
-
-d_char *xs_str_prepend_i(d_char *str, const char *prefix)
-/* prepends prefix into string */
-{
-    int sz = strlen(prefix);
-
-    str = xs_expand(str, 0, sz);
-    memcpy(str, prefix, sz);
 
     return str;
 }
@@ -666,9 +668,16 @@ d_char *xs_list_set(d_char *list, int num, const char *data)
 d_char *xs_list_pop(d_char *list, char **data)
 /* pops the last element from the list */
 {
-    if ((*data = xs_list_get(list, -1)) != NULL) {
-        *data = xs_dup(*data);
-        list = xs_list_del(list, -1);
+    char *p = list, *v = NULL;
+
+    /* iterate to the end */
+    while (xs_list_iter(&p, &v));
+
+    if (v != NULL) {
+        *data = xs_dup(v);
+
+        /* collapse from the address of the element */
+        list = xs_collapse(list, v - 1 - list, xs_size(v - 1));
     }
 
     return list;

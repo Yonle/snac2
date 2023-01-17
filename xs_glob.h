@@ -1,4 +1,4 @@
-/* copyright (c) 2022 grunfink - MIT license */
+/* copyright (c) 2022 - 2023 grunfink / MIT license */
 
 #ifndef _XS_GLOB_H
 
