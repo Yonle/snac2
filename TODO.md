@@ -2,6 +2,8 @@
 
 ## Open
 
+Hashtags have broken the Emojis; fix this.
+
 There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where's the problem.
 
 Add a list of hashtags to drop.
