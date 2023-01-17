@@ -2,8 +2,6 @@
 
 ## Open
 
-Hashtags have broken the Emojis; fix this.
-
 There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where's the problem.
 
 Add a list of hashtags to drop.
@@ -203,3 +201,5 @@ Now that we have the 2.7 layout and Likes and Announces don't move the conversat
 Disable the 'Boost' button for non-public messages (technically they can be Announced, but shouldn't) (2022-12-08T08:46:24+0100).
 
 Add support for Update + Note on input (2022-12-15T11:06:59+0100).
+
+Hashtags have broken the Emojis; fix this (2023-01-17T09:42:17+0100).
