@@ -733,6 +733,8 @@ d_char *msg_note(snac *snac, char *content, char *rcpts, char *in_reply_to, char
     msg = xs_dict_append(msg, "inReplyTo",    irt);
     msg = xs_dict_append(msg, "tag",          tag);
 
+    msg = xs_dict_append(msg, "sourceContent", content);
+
     if (atls != NULL)
         msg = xs_dict_append(msg, "attachment", atls);
 
