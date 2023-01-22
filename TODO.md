@@ -2,6 +2,8 @@
 
 ## Open
 
+Add support for editing our own messages.
+
 There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where's the problem.
 
 Add a list of hashtags to drop.
@@ -15,8 +17,6 @@ Add support for uploading the avatar, instead of needing an URL to an image. As 
 Add (back) the possibility to attach an image by URL.
 
 With this new disk layout, hidden posts (and their children) can be directly skipped (are there any other implications?).
-
-Integrate https://codeberg.org/alderwick/snac2/commit/a33686992747f6cbd35420d23ff22717938b6228
 
 ## Wishlist
 
@@ -203,3 +203,5 @@ Disable the 'Boost' button for non-public messages (technically they can be Anno
 Add support for Update + Note on input (2022-12-15T11:06:59+0100).
 
 Hashtags have broken the Emojis; fix this (2023-01-17T09:42:17+0100).
+
+Integrate https://codeberg.org/alderwick/snac2/commit/a33686992747f6cbd35420d23ff22717938b622 (2023-01-22T20:28:52+0100).
