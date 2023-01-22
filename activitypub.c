@@ -347,6 +347,7 @@ d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date, char
 {
     xs *did       = NULL;
     xs *published = NULL;
+    xs *ntid      = tid(0);
 
     /* generated values */
     if (date && strcmp(date, "@now") == 0) {
@@ -356,7 +357,6 @@ d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date, char
 
     if (id != NULL) {
         if (strcmp(id, "@dummy") == 0) {
-            xs *ntid = tid(0);
             did = xs_fmt("%s/d/%s/%s", snac->actor, ntid, type);
 
             id = did;
@@ -364,7 +364,7 @@ d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date, char
         else
         if (strcmp(id, "@object") == 0) {
             if (object != NULL) {
-                did = xs_fmt("%s/%s", xs_dict_get(object, "id"), type);
+                did = xs_fmt("%s/%s_%s", xs_dict_get(object, "id"), type, ntid);
                 id = did;
             }
             else
