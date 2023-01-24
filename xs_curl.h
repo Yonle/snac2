@@ -5,8 +5,8 @@
 #define _XS_CURL_H
 
 d_char *xs_http_request(char *method, char *url, d_char *headers,
-                        d_char *body, int b_size,
-                        int *status, d_char **payload, int *p_size);
+                        d_char *body, int b_size, int *status,
+                        d_char **payload, int *p_size, int timeout);
 
 #ifdef XS_IMPLEMENTATION
 
@@ -84,8 +84,8 @@ static int _post_callback(char *buffer, size_t size,
 
 
 d_char *xs_http_request(char *method, char *url, d_char *headers,
-                        d_char *body, int b_size,
-                        int *status, d_char **payload, int *p_size)
+                        d_char *body, int b_size, int *status,
+                        d_char **payload, int *p_size, int timeout)
 /* does an HTTP request */
 {
     d_char *response;
@@ -101,7 +101,10 @@ d_char *xs_http_request(char *method, char *url, d_char *headers,
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
 
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 8L);
+    if (timeout <= 0)
+        timeout = 8;
+
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, (long) timeout);
 
 #ifdef FORCE_HTTP_1_1
     /* force HTTP/1.1 */

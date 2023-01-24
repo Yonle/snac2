@@ -138,7 +138,8 @@ void purge_all(void);
 d_char *http_signed_request(snac *snac, char *method, char *url,
                         d_char *headers,
                         d_char *body, int b_size,
-                        int *status, d_char **payload, int *p_size);
+                        int *status, d_char **payload, int *p_size,
+                        int timeout);
 int check_signature(snac *snac, char *req);
 
 void httpd(void);
@@ -158,9 +159,9 @@ d_char *msg_update(snac *snac, char *object);
 
 int activitypub_request(snac *snac, char *url, d_char **data);
 int actor_request(snac *snac, char *actor, d_char **data);
-int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_size);
+int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_size, int timeout);
 d_char *get_actor_inbox(snac *snac, char *actor);
-int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size);
+int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size, int timeout);
 int is_msg_public(snac *snac, char *msg);
 void process_queue(snac *snac);
 void post(snac *snac, char *msg);

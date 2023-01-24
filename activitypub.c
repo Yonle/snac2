@@ -31,7 +31,7 @@ int activitypub_request(snac *snac, char *url, d_char **data)
 
     /* get from the net */
     response = http_signed_request(snac, "GET", url,
-        NULL, NULL, 0, &status, &payload, &p_size);
+        NULL, NULL, 0, &status, &payload, &p_size, 0);
 
     if (valid_status(status)) {
         /* ensure it's ActivityPub data */
@@ -131,7 +131,7 @@ int timeline_request(snac *snac, char **id, d_char **wrk)
 }
 
 
-int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_size)
+int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_size, int timeout)
 /* sends a message to an Inbox */
 {
     int status;
@@ -139,7 +139,7 @@ int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_s
     xs *j_msg = xs_json_dumps_pp(msg, 4);
 
     response = http_signed_request(snac, "POST", inbox,
-        NULL, j_msg, strlen(j_msg), &status, payload, p_size);
+        NULL, j_msg, strlen(j_msg), &status, payload, p_size, timeout);
 
     xs_free(response);
 
@@ -167,14 +167,14 @@ d_char *get_actor_inbox(snac *snac, char *actor)
 }
 
 
-int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size)
+int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size, int timeout)
 /* sends a message to an actor */
 {
     int status = 400;
     xs *inbox = get_actor_inbox(snac, actor);
 
     if (!xs_is_null(inbox))
-        status = send_to_inbox(snac, inbox, msg, payload, p_size);
+        status = send_to_inbox(snac, inbox, msg, payload, p_size, timeout);
 
     return status;
 }
@@ -1084,7 +1084,7 @@ void process_queue(snac *snac)
                 continue;
 
             /* deliver */
-            status = send_to_inbox(snac, inbox, msg, &payload, &p_size);
+            status = send_to_inbox(snac, inbox, msg, &payload, &p_size, retries == 0 ? 3 : 8);
 
             snac_log(snac, xs_fmt("process_queue sent to inbox %s %d", inbox, status));
 

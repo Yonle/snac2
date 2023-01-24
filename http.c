@@ -14,7 +14,8 @@
 d_char *http_signed_request(snac *snac, char *method, char *url,
                             d_char *headers,
                             d_char *body, int b_size,
-                            int *status, d_char **payload, int *p_size)
+                            int *status, d_char **payload, int *p_size,
+                            int timeout)
 /* does a signed HTTP request */
 {
     xs *l1;
@@ -95,7 +96,7 @@ d_char *http_signed_request(snac *snac, char *method, char *url,
     hdrs = xs_dict_append(hdrs, "user-agent",   USER_AGENT);
 
     response = xs_http_request(method, url, hdrs,
-                           body, b_size, status, payload, p_size);
+                           body, b_size, status, payload, p_size, timeout);
 
     srv_archive("SEND", hdrs, body, b_size, *status, response, *payload, *p_size);
 
