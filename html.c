@@ -479,6 +479,39 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
 
     s = xs_str_cat(s, "</form>\n");
 
+    char *prev_src = xs_dict_get(msg, "sourceContent");
+
+    if (!xs_is_null(prev_src) && strcmp(actor, snac->actor) == 0) {
+        /* post can be edited */
+        xs *s1 = xs_fmt(
+            "<p><details><summary>%s</summary>\n"
+            "<p><div class=\"snac-note\" id=\"%s_edit\">\n"
+            "<form method=\"post\" action=\"%s/admin/note\" "
+            "enctype=\"multipart/form-data\" id=\"%s_edit_form\">\n"
+            "<textarea class=\"snac-textarea\" name=\"content\" "
+            "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
+            "<input type=\"hidden\" name=\"edit_id\" value=\"%s\">\n"
+            "<p><input type=\"checkbox\" name=\"sensitive\"> %s\n"
+            "<p><input type=\"file\" name=\"attach\">\n"
+            "<input type=\"hidden\" name=\"redir\" value=\"%s_entry\">\n"
+            "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
+            "</form><p></div>\n"
+            "</details><p>"
+            "\n",
+
+            L("Edit..."),
+            md5,
+            snac->actor, md5,
+            prev_src,
+            id,
+            L("Sensitive content"),
+            md5,
+            L("Post")
+        );
+
+        s = xs_str_cat(s, s1);
+    }
+
     {
         /* the post textarea */
         xs *ct = build_mentions(snac, msg);
@@ -1309,6 +1342,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         char *attach_file = xs_dict_get(p_vars, "attach");
         char *to          = xs_dict_get(p_vars, "to");
         char *sensitive   = xs_dict_get(p_vars, "sensitive");
+        char *edit_id     = xs_dict_get(p_vars, "edit_id");
         xs *attach_list   = xs_list_new();
 
         /* is attach_url set? */
@@ -1348,11 +1382,43 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
                 msg = xs_dict_set(msg, "summary",   "...");
             }
 
-            c_msg = msg_create(&snac, msg);
+            if (xs_is_null(edit_id)) {
+                /* new message */
+                c_msg = msg_create(&snac, msg);
+                timeline_add(&snac, xs_dict_get(msg, "id"), msg);
+            }
+            else {
+                /* an edition of a previous message */
+                xs *p_msg = NULL;
 
-            enqueue_message(&snac, c_msg);
+                if (valid_status(object_get(edit_id, &p_msg, NULL))) {
+                    /* copy relevant fields from previous version */
+                    char *fields[] = { "id", "context", "url", "published",
+                                       "to", "inReplyTo", NULL };
+                    int n;
 
-            timeline_add(&snac, xs_dict_get(msg, "id"), msg);
+                    for (n = 0; fields[n]; n++) {
+                        char *v = xs_dict_get(p_msg, fields[n]);
+                        msg = xs_dict_set(msg, fields[n], v);
+                    }
+
+                    /* set the updated field */
+                    xs *updated = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
+                    msg = xs_dict_set(msg, "updated", updated);
+
+                    /* overwrite object, not updating the indexes */
+                    object_add_ow(edit_id, msg);
+
+                    /* update message */
+                    c_msg = msg_update(&snac, msg);
+                }
+                else
+                    snac_log(&snac, xs_fmt("cannot get object '%s' for editing", edit_id));
+            }
+
+            if (c_msg != NULL)
+                enqueue_message(&snac, c_msg);
+
         }
 
         status = 303;
