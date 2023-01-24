@@ -76,7 +76,9 @@ d_char *xs_list_del(d_char *list, int num);
 d_char *xs_list_insert(d_char *list, int num, const char *data);
 d_char *xs_list_insert_sorted(d_char *list, const char *str);
 d_char *xs_list_set(d_char *list, int num, const char *data);
-d_char *xs_list_pop(d_char *list, char **data);
+d_char *xs_list_dequeue(d_char *list, char **data, int last);
+#define xs_list_pop(list, data) xs_list_dequeue(list, data, 1)
+#define xs_list_shift(list, data) xs_list_dequeue(list, data, 0)
 int xs_list_in(char *list, const char *val);
 d_char *xs_join(char *list, const char *sep);
 d_char *xs_split_n(const char *str, const char *sep, int times);
@@ -665,13 +667,19 @@ d_char *xs_list_set(d_char *list, int num, const char *data)
 }
 
 
-d_char *xs_list_pop(d_char *list, char **data)
-/* pops the last element from the list */
+d_char *xs_list_dequeue(d_char *list, char **data, int last)
+/* gets a copy of the first or last element of a list, shrinking it */
 {
     char *p = list, *v = NULL;
 
-    /* iterate to the end */
-    while (xs_list_iter(&p, &v));
+    if (!last) {
+        /* get the first */
+        xs_list_iter(&p, &v);
+    }
+    else {
+        /* iterate to the end */
+        while (xs_list_iter(&p, &v));
+    }
 
     if (v != NULL) {
         *data = xs_dup(v);
