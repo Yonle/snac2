@@ -2,6 +2,8 @@
 
 ## 2.19
 
+You can edit your own posts from now on.
+
 Fixed the breakage of Emojis I introduced when implementing HashTags because I am a moron.
 
 ## 2.18
