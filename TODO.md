@@ -2,8 +2,6 @@
 
 ## Open
 
-Add support for editing our own messages.
-
 There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where's the problem.
 
 Add a list of hashtags to drop.
@@ -205,3 +203,5 @@ Add support for Update + Note on input (2022-12-15T11:06:59+0100).
 Hashtags have broken the Emojis; fix this (2023-01-17T09:42:17+0100).
 
 Integrate https://codeberg.org/alderwick/snac2/commit/a33686992747f6cbd35420d23ff22717938b622 (2023-01-22T20:28:52+0100).
+
+Add support for editing our own messages (2023-01-25T18:36:16+0100).
