@@ -6,6 +6,8 @@ You can edit your own posts from now on.
 
 Fixed the breakage of Emojis I introduced when implementing HashTags because I am a moron.
 
+Added adaptative timeouts when sending messages to other instances.
+
 ## 2.18
 
 Added support for #HashTags (they are not internally indexed yet, only propagated to other instances).
