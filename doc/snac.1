@@ -81,6 +81,11 @@ The same markup options available for text notes apply here.
 If this field is not empty, an email message will be sent
 to this address whenever a post written by you is liked,
 boosted or replied to.
+.It Always show sensitive content
+By default,
+.Nm
+hides content marked as sensitive by their publishers.
+If you check this option, sensitive content is always shown.
 .It Password
 Write the same string in these two fields to change your
 password. Don't write anything if you don't want to do this.
@@ -90,7 +95,7 @@ The rest of the page contains your timeline in reverse
 chronological order (i.e., newest interactions first).
 .Nm
 shows the conversations as nested trees, unlike other Fediverse
-software; everytime something new is added to a conversation,
+software; everytime you contribute something to a conversation,
 the full thread is bumped up, so new interactions are shown
 always at the top of the page while the forgotten ones languish
 at the bottom.
@@ -136,6 +141,11 @@ to read crap from this user again in the forseeable future.
 If a conversation is getting long and annoying but not enough
 to MUTE its author forever, click this button to avoid seeing
 the post and its children anymore.
+.It Edit
+Posts written by you on 
+.Nm
+version 2.19 and later can be edited and resent to their
+recipients.
 .El
 .Ss Command-line options
 The command-line tool provide the following commands:

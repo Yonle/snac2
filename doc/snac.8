@@ -130,7 +130,7 @@ The URL path prefix.
 .It Ic address
 The listen network address.
 .It Ic port
-The list network port.
+The listen network port.
 .It Ic dbglevel
 The debug level. An integer value, being 0 the less verbose (the default).
 .It Ic layout
@@ -152,7 +152,7 @@ fill up with old crap and finally burst in flames, you can disable
 purging by setting this to 0.
 .It Ic local_purge_days
 Same as before, but for the user-generated entries in the local timeline.
-.It Ic css_urls
+.It Ic cssurls
 This is a list of URLs to CSS files that will be inserted, in this order,
 in the HTML before the user CSS. Use these files to configure the global
 site layout.
@@ -227,9 +227,9 @@ objects, on input and output.
 .It Vt Update
 For
 .Vt Person
-objects, on input and output. Support for updating
+and
 .Vt Note
-objects will probably be added in the future.
+objects, on input and output.
 .It Vt Delete
 Supported for
 .Vt Note
