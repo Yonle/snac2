@@ -18,13 +18,13 @@ With this new disk layout, hidden posts (and their children) can be directly ski
 
 ## Wishlist
 
+Refactor the queue to be global, not per user.
+
 Implement the ActivityPub C2S (Client to Server) API: (https://www.w3.org/TR/activitypub/#client-to-server-interactions). The client at http://andstatus.org/ implements it.
 
 Implement HTTP caches (If-None-Match / ETag).
 
 The 'history' pages are just monthly HTML snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you e.g. intentionally delete a post because it will remain there in the history forever. If you activate local timeline purging, purged entries will remain in the history as 'ghosts', which may or may not be what the user wants.
-
-Implement hashtags. They are not very useful, as they can only be implemented as instance-only (not propagated), but it may help classifiying your own posts.
 
 Implement bulleted lists. Mastodon is crap and won't show them, but other implementations (Friendica, Pleroma) will do.
 
@@ -205,3 +205,5 @@ Hashtags have broken the Emojis; fix this (2023-01-17T09:42:17+0100).
 Integrate https://codeberg.org/alderwick/snac2/commit/a33686992747f6cbd35420d23ff22717938b622 (2023-01-22T20:28:52+0100).
 
 Add support for editing our own messages (2023-01-25T18:36:16+0100).
+
+Implement hashtags. They are not very useful, as they can only be implemented as instance-only (not propagated), but it may help classifiying your own posts (2023-01-26T14:39:51+0100).
