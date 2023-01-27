@@ -13,8 +13,6 @@ extern int     srv_running;
 
 extern int dbglevel;
 
-extern const char *susie;
-
 #define L(s) (s)
 
 int valid_status(int status);
@@ -147,6 +145,8 @@ void httpd(void);
 int webfinger_request(char *qs, char **actor, char **user);
 int webfinger_get_handler(d_char *req, char *q_path,
                           char **body, int *b_size, char **ctype);
+
+const char *default_avatar_base64(void);
 
 d_char *msg_admiration(snac *snac, char *object, char *type);
 d_char *msg_create(snac *snac, char *object);

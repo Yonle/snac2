@@ -17,6 +17,22 @@
 
 const char *public_address = "https:/" "/www.w3.org/ns/activitystreams#Public";
 
+/* susie.png */
+const char *susie =
+    "iVBORw0KGgoAAAANSUhEUgAAAEAAAABAAQAAAAC"
+    "CEkxzAAAAUUlEQVQoz43R0QkAMQwCUDdw/y3dwE"
+    "vsvzlL4X1IoQkAisKmwfAFT3RgJHbQezpSRoXEq"
+    "eqCL9BJBf7h3QbOCCxV5EVWMEMwG7K1/WODtlvx"
+    "AYTtEsDU9F34AAAAAElFTkSuQmCC";
+
+
+const char *default_avatar_base64(void)
+/* returns the default avatar in base64 */
+{
+    return susie;
+}
+
+
 int activitypub_request(snac *snac, char *url, d_char **data)
 /* request an object */
 {

@@ -14,14 +14,6 @@
 #include <setjmp.h>
 #include <pthread.h>
 
-/* susie.png */
-const char *susie =
-    "iVBORw0KGgoAAAANSUhEUgAAAEAAAABAAQAAAAC"
-    "CEkxzAAAAUUlEQVQoz43R0QkAMQwCUDdw/y3dwE"
-    "vsvzlL4X1IoQkAisKmwfAFT3RgJHbQezpSRoXEq"
-    "eqCL9BJBf7h3QbOCCxV5EVWMEMwG7K1/WODtlvx"
-    "AYTtEsDU9F34AAAAAElFTkSuQmCC";
-
 
 /* nodeinfo 2.0 template */
 const char *nodeinfo_2_0_template = ""
@@ -99,7 +91,7 @@ int server_get_handler(d_char *req, char *q_path,
     else
     if (strcmp(q_path, "/susie.png") == 0 || strcmp(q_path, "/favicon.ico") == 0 ) {
         status = 200;
-        *body  = xs_base64_dec(susie, b_size);
+        *body  = xs_base64_dec(default_avatar_base64(), b_size);
         *ctype = "image/png";
     }
     else

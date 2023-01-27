@@ -82,7 +82,7 @@ d_char *html_actor_icon(snac *snac, d_char *os, char *actor,
     }
 
     if (avatar == NULL)
-        avatar = xs_fmt("data:image/png;base64, %s", susie);
+        avatar = xs_fmt("data:image/png;base64, %s", default_avatar_base64());
 
     {
         xs *s1 = xs_fmt("<p><img class=\"snac-avatar\" src=\"%s\" alt=\"\" "
@@ -558,7 +558,6 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
     char *actor;
     int sensitive = 0;
     char *v;
-    xs *likes  = NULL;
     xs *boosts = NULL;
 
     /* do not show non-public messages in the public timeline */
