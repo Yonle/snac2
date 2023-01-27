@@ -18,12 +18,20 @@
 const char *public_address = "https:/" "/www.w3.org/ns/activitystreams#Public";
 
 /* susie.png */
+
 const char *susie =
     "iVBORw0KGgoAAAANSUhEUgAAAEAAAABAAQAAAAC"
     "CEkxzAAAAUUlEQVQoz43R0QkAMQwCUDdw/y3dwE"
     "vsvzlL4X1IoQkAisKmwfAFT3RgJHbQezpSRoXEq"
     "eqCL9BJBf7h3QbOCCxV5EVWMEMwG7K1/WODtlvx"
     "AYTtEsDU9F34AAAAAElFTkSuQmCC";
+
+const char *susie_cool =
+    "iVBORw0KGgoAAAANSUhEUgAAAEAAAABAAQAAAAC"
+    "CEkxzAAAAV0lEQVQoz43RwQ3AMAwCQDZg/y3ZgN"
+    "qo3+JaedwDOUQBQFHYaTB8wTM6sGl2cMPu+DFzn"
+    "+ZcgN7wF7ZVihXkfSlWIVzIA6dbQzaygllpNuTX"
+    "ZmmFNlvxADX1+o0cUPMbAAAAAElFTkSuQmCC";
 
 
 const char *default_avatar_base64(void)
