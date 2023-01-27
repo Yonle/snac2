@@ -37,7 +37,12 @@ const char *susie_cool =
 const char *default_avatar_base64(void)
 /* returns the default avatar in base64 */
 {
-    return susie;
+    time_t t = time(NULL);
+    struct tm tm;
+
+    gmtime_r(&t, &tm);
+
+    return tm.tm_wday == 0 || tm.tm_wday == 6 ? susie_cool : susie;
 }
 
 
