@@ -267,8 +267,9 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<textarea class=\"snac-textarea\" name=\"content\" "
         "rows=\"8\" wrap=\"virtual\" required=\"required\"></textarea>\n"
         "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
-        "<p><input type=\"checkbox\" name=\"sensitive\"> %s\n"
+        "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
         "<p><input type=\"file\" name=\"attach\">\n"
+        "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
         "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
         "</form><p>\n"
         "</div>\n"
@@ -331,6 +332,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
         L("Sensitive content"),
+        L("Image description"),
         L("Post"),
 
         L("More options..."),
@@ -491,8 +493,11 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
             "<textarea class=\"snac-textarea\" name=\"content\" "
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
             "<input type=\"hidden\" name=\"edit_id\" value=\"%s\">\n"
-            "<p><input type=\"checkbox\" name=\"sensitive\"> %s\n"
+
+            "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
             "<p><input type=\"file\" name=\"attach\">\n"
+            "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
+
             "<input type=\"hidden\" name=\"redir\" value=\"%s_entry\">\n"
             "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
             "</form><p></div>\n"
@@ -505,6 +510,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
             prev_src,
             id,
             L("Sensitive content"),
+            L("Image description"),
             md5,
             L("Post")
         );
@@ -524,8 +530,11 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
             "<textarea class=\"snac-textarea\" name=\"content\" "
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
             "<input type=\"hidden\" name=\"in_reply_to\" value=\"%s\">\n"
-            "<p><input type=\"checkbox\" name=\"sensitive\"> %s\n"
+
+            "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
             "<p><input type=\"file\" name=\"attach\">\n"
+            "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
+
             "<input type=\"hidden\" name=\"redir\" value=\"%s_entry\">\n"
             "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
             "</form><p></div>\n"
@@ -538,6 +547,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
             ct,
             id,
             L("Sensitive content"),
+            L("Image description"),
             md5,
             L("Post")
         );
