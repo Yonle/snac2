@@ -4,18 +4,18 @@
 
 #define _XS_CURL_H
 
-d_char *xs_http_request(char *method, char *url, d_char *headers,
-                        d_char *body, int b_size, int *status,
-                        d_char **payload, int *p_size, int timeout);
+xs_dict *xs_http_request(char *method, char *url, xs_dict *headers,
+                        xs_str *body, int b_size, int *status,
+                        xs_str **payload, int *p_size, int timeout);
 
 #ifdef XS_IMPLEMENTATION
 
 #include <curl/curl.h>
 
 static size_t _header_callback(char *buffer, size_t size,
-                               size_t nitems, d_char **userdata)
+                               size_t nitems, xs_dict **userdata)
 {
-    d_char *headers = *userdata;
+    xs_dict *headers = *userdata;
     xs *l;
 
     /* get the line */
@@ -83,15 +83,17 @@ static int _post_callback(char *buffer, size_t size,
 }
 
 
-d_char *xs_http_request(char *method, char *url, d_char *headers,
-                        d_char *body, int b_size, int *status,
-                        d_char **payload, int *p_size, int timeout)
+xs_dict *xs_http_request(char *method, char *url, xs_dict *headers,
+                        xs_str *body, int b_size, int *status,
+                        xs_str **payload, int *p_size, int timeout)
 /* does an HTTP request */
 {
-    d_char *response;
+    xs_dict *response;
     CURL *curl;
     struct curl_slist *list = NULL;
-    char *k, *v, *p;
+    xs_dict *p;
+    xs_str *k;
+    xs_val *v;
     long lstatus;
     struct _payload_data pd;
 

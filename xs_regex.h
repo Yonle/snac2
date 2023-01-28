@@ -4,22 +4,22 @@
 
 #define _XS_REGEX_H
 
-d_char *xs_regex_split_n(const char *str, const char *rx, int count);
+xs_list *xs_regex_split_n(const char *str, const char *rx, int count);
 #define xs_regex_split(str, rx) xs_regex_split_n(str, rx, XS_ALL)
-d_char *xs_regex_match_n(const char *str, const char *rx, int count);
+xs_list *xs_regex_match_n(const char *str, const char *rx, int count);
 #define xs_regex_match(str, rx) xs_regex_match_n(str, rx, XS_ALL)
 
 #ifdef XS_IMPLEMENTATION
 
 #include <regex.h>
 
-d_char *xs_regex_split_n(const char *str, const char *rx, int count)
+xs_list *xs_regex_split_n(const char *str, const char *rx, int count)
 /* splits str by regex */
 {
     regex_t re;
     regmatch_t rm;
     int offset = 0;
-    d_char *list = NULL;
+    xs_list *list = NULL;
     const char *p;
 
     if (regcomp(&re, rx, REG_EXTENDED))
@@ -30,11 +30,11 @@ d_char *xs_regex_split_n(const char *str, const char *rx, int count)
     while (count > 0 && !regexec(&re, (p = str + offset), 1, &rm, offset > 0 ? REG_NOTBOL : 0)) {
         /* add first the leading part of the string */
         list = xs_list_append_m(list, p, rm.rm_so);
-        list = xs_str_cat(list, "");
+        list = xs_insert_m(list, xs_size(list) - 1, "", 1);
 
         /* add now the matched text as the separator */
         list = xs_list_append_m(list, p + rm.rm_so, rm.rm_eo - rm.rm_so);
-        list = xs_str_cat(list, "");
+        list = xs_insert_m(list, xs_size(list) - 1, "", 1);
 
         /* move forward */
         offset += rm.rm_eo;
@@ -51,12 +51,13 @@ d_char *xs_regex_split_n(const char *str, const char *rx, int count)
 }
 
 
-d_char *xs_regex_match_n(const char *str, const char *rx, int count)
+xs_list *xs_regex_match_n(const char *str, const char *rx, int count)
 /* returns a list with upto count matches */
 {
-    d_char *list = xs_list_new();
+    xs_list *list = xs_list_new();
     xs *split = NULL;
-    char *p, *v;
+    xs_list *p;
+    xs_val *v;
     int n = 0;
 
     /* split */

@@ -4,7 +4,7 @@
 
 #define _XS_GLOB_H
 
-d_char *xs_glob_n(const char *spec, int basename, int reverse, int max);
+xs_list *xs_glob_n(const char *spec, int basename, int reverse, int max);
 #define xs_glob(spec, basename, reverse) xs_glob_n(spec, basename, reverse, XS_ALL)
 
 
@@ -12,11 +12,11 @@ d_char *xs_glob_n(const char *spec, int basename, int reverse, int max);
 
 #include <glob.h>
 
-d_char *xs_glob_n(const char *spec, int basename, int reverse, int max)
+xs_list *xs_glob_n(const char *spec, int basename, int reverse, int max)
 /* does a globbing and returns the found files */
 {
     glob_t globbuf;
-    d_char *list = xs_list_new();
+    xs_list *list = xs_list_new();
 
     if (glob(spec, 0, NULL, &globbuf) == 0) {
         int n;

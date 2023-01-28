@@ -4,14 +4,14 @@
 
 #define _XS_OPENSSL_H
 
-d_char *xs_md5_hex(const void *input, int size);
-d_char *xs_sha1_hex(const void *input, int size);
-d_char *xs_sha256_hex(const void *input, int size);
-d_char *xs_sha256_base64(const void *input, int size);
-d_char *xs_rsa_genkey(int bits);
-d_char *xs_rsa_sign(const char *secret, const char *mem, int size);
+xs_str *xs_md5_hex(const xs_val *input, int size);
+xs_str *xs_sha1_hex(const xs_val *input, int size);
+xs_str *xs_sha256_hex(const xs_val *input, int size);
+xs_str *xs_sha256_base64(const xs_val *input, int size);
+xs_dict *xs_rsa_genkey(int bits);
+xs_str *xs_rsa_sign(const char *secret, const char *mem, int size);
 int xs_rsa_verify(const char *pubkey, const char *mem, int size, const char *b64sig);
-d_char *xs_evp_sign(const char *secret, const char *mem, int size);
+xs_str *xs_evp_sign(const char *secret, const char *mem, int size);
 int xs_evp_verify(const char *pubkey, const char *mem, int size, const char *b64sig);
 
 
@@ -23,7 +23,7 @@ int xs_evp_verify(const char *pubkey, const char *mem, int size, const char *b64
 #include "openssl/pem.h"
 #include "openssl/evp.h"
 
-d_char *xs_md5_hex(const void *input, int size)
+xs_str *xs_md5_hex(const xs_val *input, int size)
 {
     unsigned char md5[16];
     MD5_CTX ctx;
@@ -36,7 +36,7 @@ d_char *xs_md5_hex(const void *input, int size)
 }
 
 
-d_char *xs_sha1_hex(const void *input, int size)
+xs_str *xs_sha1_hex(const xs_val *input, int size)
 {
     unsigned char sha1[20];
     SHA_CTX ctx;
@@ -61,7 +61,7 @@ unsigned char *_xs_sha256(const void *input, int size, unsigned char *sha256)
 }
 
 
-d_char *xs_sha256_hex(const void *input, int size)
+xs_str *xs_sha256_hex(const xs_val *input, int size)
 {
     unsigned char sha256[32];
 
@@ -71,7 +71,7 @@ d_char *xs_sha256_hex(const void *input, int size)
 }
 
 
-d_char *xs_sha256_base64(const void *input, int size)
+xs_str *xs_sha256_base64(const xs_val *input, int size)
 {
     unsigned char sha256[32];
 
@@ -81,12 +81,12 @@ d_char *xs_sha256_base64(const void *input, int size)
 }
 
 
-d_char *xs_rsa_genkey(int bits)
+xs_dict *xs_rsa_genkey(int bits)
 /* generates an RSA keypair */
 {
     BIGNUM *bne;
     RSA *rsa;
-    d_char *keypair = NULL;
+    xs_dict *keypair = NULL;
 
     if ((bne = BN_new()) != NULL) {
         if (BN_set_word(bne, RSA_F4) == 1) {
@@ -119,10 +119,10 @@ d_char *xs_rsa_genkey(int bits)
 }
 
 
-d_char *xs_rsa_sign(const char *secret, const char *mem, int size)
+xs_str *xs_rsa_sign(const char *secret, const char *mem, int size)
 /* signs a memory block (secret is in PEM format) */
 {
-    d_char *signature = NULL;
+    xs_str *signature = NULL;
     BIO *b;
     RSA *rsa;
     unsigned char *sig;
@@ -176,10 +176,10 @@ int xs_rsa_verify(const char *pubkey, const char *mem, int size, const char *b64
 }
 
 
-d_char *xs_evp_sign(const char *secret, const char *mem, int size)
+xs_str *xs_evp_sign(const char *secret, const char *mem, int size)
 /* signs a memory block (secret is in PEM format) */
 {
-    d_char *signature = NULL;
+    xs_str *signature = NULL;
     BIO *b;
     unsigned char *sig;
     unsigned int sig_len;

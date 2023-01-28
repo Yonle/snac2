@@ -8,13 +8,13 @@ typedef struct _xs_set {
     int elems;              /* number of hash entries */
     int used;               /* number of used hash entries */
     int *hash;              /* hashed offsets */
-    d_char *list;           /* list of stored data */
+    xs_list *list;          /* list of stored data */
 } xs_set;
 
 void xs_set_init(xs_set *s);
-d_char *xs_set_result(xs_set *s);
+xs_list *xs_set_result(xs_set *s);
 void xs_set_free(xs_set *s);
-int xs_set_add(xs_set *s, const char *data);
+int xs_set_add(xs_set *s, const xs_val *data);
 
 
 #ifdef XS_IMPLEMENTATION
@@ -33,10 +33,10 @@ void xs_set_init(xs_set *s)
 }
 
 
-d_char *xs_set_result(xs_set *s)
+xs_list *xs_set_result(xs_set *s)
 /* returns the set as a list and frees it */
 {
-    d_char *list = s->list;
+    xs_list *list = s->list;
     s->list = NULL;
     s->hash = xs_free(s->hash);
 
@@ -93,7 +93,7 @@ static int _store_hash(xs_set *s, const char *data, int value)
 }
 
 
-int xs_set_add(xs_set *s, const char *data)
+int xs_set_add(xs_set *s, const xs_val *data)
 /* adds the data to the set */
 /* returns: 1 if added, 0 if already there */
 {

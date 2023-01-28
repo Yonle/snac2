@@ -6,7 +6,7 @@
 
 #include <time.h>
 
-d_char *xs_str_time(time_t t, const char *fmt, int local);
+xs_str *xs_str_time(time_t t, const char *fmt, int local);
 #define xs_str_localtime(t, fmt) xs_str_time(t, fmt, 1)
 #define xs_str_utctime(t, fmt)   xs_str_time(t, fmt, 0)
 time_t xs_parse_time(const char *str, const char *fmt, int local);
@@ -15,8 +15,8 @@ time_t xs_parse_time(const char *str, const char *fmt, int local);
 
 #ifdef XS_IMPLEMENTATION
 
-d_char *xs_str_time(time_t t, const char *fmt, int local)
-/* returns a d_char with a formated time */
+xs_str *xs_str_time(time_t t, const char *fmt, int local)
+/* returns a string with a formated time */
 {
     struct tm tm;
     char tmp[64];

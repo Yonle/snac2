@@ -4,18 +4,18 @@
 
 #define _XS_HTTPD_H
 
-d_char *xs_url_dec(char *str);
-d_char *xs_url_vars(char *str);
-d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size);
-void xs_httpd_response(FILE *f, int status, d_char *headers, char *body, int b_size);
+xs_str *xs_url_dec(char *str);
+xs_dict *xs_url_vars(char *str);
+xs_dict *xs_httpd_request(FILE *f, xs_str **payload, int *p_size);
+void xs_httpd_response(FILE *f, int status, xs_dict *headers, xs_str *body, int b_size);
 
 
 #ifdef XS_IMPLEMENTATION
 
-d_char *xs_url_dec(char *str)
+xs_str *xs_url_dec(char *str)
 /* decodes an URL */
 {
-    d_char *s = xs_str_new(NULL);
+    xs_str *s = xs_str_new(NULL);
 
     while (*str) {
         if (*str == '%') {
@@ -41,19 +41,19 @@ d_char *xs_url_dec(char *str)
 }
 
 
-d_char *xs_url_vars(char *str)
+xs_dict *xs_url_vars(char *str)
 /* parse url variables */
 {
-    d_char *vars;
+    xs_dict *vars;
 
     vars = xs_dict_new();
 
     if (str != NULL) {
-        char *v, *l;
-        xs *args;
-
         /* split by arguments */
-        args = xs_split(str, "&");
+        xs *args = xs_split(str, "&");
+
+        xs_list *l;
+        xs_val *v;
 
         l = args;
         while (xs_list_iter(&l, &v)) {
@@ -69,7 +69,7 @@ d_char *xs_url_vars(char *str)
 }
 
 
-d_char *_xs_multipart_form_data(char *payload, int p_size, char *header)
+xs_dict *_xs_multipart_form_data(xs_str *payload, int p_size, char *header)
 /* parses a multipart/form-data payload */
 {
     xs *boundary = NULL;
@@ -89,7 +89,7 @@ d_char *_xs_multipart_form_data(char *payload, int p_size, char *header)
 
     bsz = strlen(boundary);
 
-    d_char *p_vars = xs_dict_new();
+    xs_dict *p_vars = xs_dict_new();
 
     /* iterate searching the boundaries */
     while ((p = xs_memmem(payload + offset, p_size - offset, boundary, bsz)) != NULL) {
@@ -173,12 +173,11 @@ d_char *_xs_multipart_form_data(char *payload, int p_size, char *header)
 }
 
 
-d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
+xs_dict *xs_httpd_request(FILE *f, xs_str **payload, int *p_size)
 /* processes an httpd connection */
 {
-    d_char *req = NULL;
-    xs *q_vars  = NULL;
-    xs *p_vars  = NULL;
+    xs *q_vars = NULL;
+    xs *p_vars = NULL;
     xs *l1, *l2;
     char *v;
 
@@ -193,7 +192,7 @@ d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
         return NULL;
     }
 
-    req = xs_dict_new();
+    xs_dict *req = xs_dict_new();
 
     req = xs_dict_append(req, "method", xs_list_get(l2, 0));
     req = xs_dict_append(req, "proto",  xs_list_get(l2, 2));
@@ -258,11 +257,13 @@ d_char *xs_httpd_request(FILE *f, d_char **payload, int *p_size)
 }
 
 
-void xs_httpd_response(FILE *f, int status, d_char *headers, char *body, int b_size)
+void xs_httpd_response(FILE *f, int status, xs_dict *headers, xs_str *body, int b_size)
 /* sends an httpd response */
 {
     xs *proto;
-    char *p, *k, *v;
+    xs_dict *p;
+    xs_str *k;
+    xs_val *v;
 
     proto = xs_fmt("HTTP/1.1 %d ", status);
     fprintf(f, "%s\r\n", proto);

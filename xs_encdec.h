@@ -4,19 +4,19 @@
 
 #define _XS_ENCDEC_H
 
- d_char *xs_hex_enc(const char *data, int size);
- d_char *xs_hex_dec(const char *hex, int *size);
- d_char *xs_base64_enc(const char *data, int sz);
- d_char *xs_base64_dec(const char *data, int *size);
- d_char *xs_utf8_enc(d_char *str, unsigned int cpoint);
+ xs_str *xs_hex_enc(const xs_val *data, int size);
+ xs_val *xs_hex_dec(const xs_str *hex, int *size);
+ xs_str *xs_base64_enc(const xs_val *data, int sz);
+ xs_val *xs_base64_dec(const xs_str *data, int *size);
+ xs_str *xs_utf8_enc(xs_str *str, unsigned int cpoint);
 
 
 #ifdef XS_IMPLEMENTATION
 
-d_char *xs_hex_enc(const char *data, int size)
+xs_str *xs_hex_enc(const xs_val *data, int size)
 /* returns an hexdump of data */
 {
-    d_char *s;
+    xs_str *s;
     char *p;
     int n;
 
@@ -33,11 +33,11 @@ d_char *xs_hex_enc(const char *data, int size)
 }
 
 
-d_char *xs_hex_dec(const char *hex, int *size)
+xs_val *xs_hex_dec(const xs_str *hex, int *size)
 /* decodes an hexdump into data */
 {
     int sz = strlen(hex);
-    d_char *s = NULL;
+    xs_val *s = NULL;
     char *p;
     int n;
 
@@ -65,10 +65,10 @@ d_char *xs_hex_dec(const char *hex, int *size)
 }
 
 
-d_char *xs_base64_enc(const char *data, int sz)
+xs_str *xs_base64_enc(const xs_val *data, int sz)
 /* encodes data to base64 */
 {
-    d_char *s;
+    xs_str *s;
     unsigned char *p;
     char *i;
     int bsz, n;
@@ -110,10 +110,10 @@ d_char *xs_base64_enc(const char *data, int sz)
 }
 
 
-d_char *xs_base64_dec(const char *data, int *size)
+xs_val *xs_base64_dec(const xs_str *data, int *size)
 /* decodes data from base64 */
 {
-    d_char *s = NULL;
+    xs_val *s = NULL;
     int sz = 0;
     char *p;
     static char *b64_tbl = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -171,7 +171,7 @@ d_char *xs_base64_dec(const char *data, int *size)
 }
 
 
-d_char *xs_utf8_enc(d_char *str, unsigned int cpoint)
+xs_str *xs_utf8_enc(xs_str *str, unsigned int cpoint)
 /* encodes an Unicode codepoint to utf8 */
 {
     unsigned char tmp[4];

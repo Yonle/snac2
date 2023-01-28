@@ -4,17 +4,17 @@
 
 #define _XS_IO_H
 
-d_char *xs_readline(FILE *f);
-d_char *xs_read(FILE *f, int *size);
-d_char *xs_readall(FILE *f);
+xs_str *xs_readline(FILE *f);
+xs_val *xs_read(FILE *f, int *size);
+xs_val *xs_readall(FILE *f);
 
 
 #ifdef XS_IMPLEMENTATION
 
-d_char *xs_readline(FILE *f)
+xs_str *xs_readline(FILE *f)
 /* reads a line from a file */
 {
-    d_char *s = NULL;
+    xs_str *s = NULL;
 
     errno = 0;
 
@@ -38,10 +38,10 @@ d_char *xs_readline(FILE *f)
 }
 
 
-d_char *xs_read(FILE *f, int *sz)
+xs_val *xs_read(FILE *f, int *sz)
 /* reads up to size bytes from f */
 {
-    d_char *s  = NULL;
+    xs_val *s  = NULL;
     int size   = *sz;
     int rdsz   = 0;
 
@@ -76,7 +76,7 @@ d_char *xs_read(FILE *f, int *sz)
 }
 
 
-d_char *xs_readall(FILE *f)
+xs_val *xs_readall(FILE *f)
 /* reads the rest of the file into a string */
 {
     int size = XS_ALL;

@@ -4,9 +4,9 @@
 
 #define _XS_JSON_H
 
-d_char *xs_json_dumps_pp(char *data, int indent);
+xs_str *xs_json_dumps_pp(xs_val *data, int indent);
 #define xs_json_dumps(data) xs_json_dumps_pp(data, 0)
-d_char *xs_json_loads(const char *json);
+xs_val *xs_json_loads(const xs_str *json);
 
 
 #ifdef XS_IMPLEMENTATION
@@ -148,11 +148,11 @@ d_char *_xs_json_dumps(d_char *s, char *data, int level, int indent)
 }
 
 
-d_char *xs_json_dumps_pp(char *data, int indent)
+xs_str *xs_json_dumps_pp(xs_val *data, int indent)
 /* dumps a piece of data as JSON */
 {
     xstype t = xs_type(data);
-    d_char *s = NULL;
+    xs_str *s = NULL;
 
     if (t == XSTYPE_LIST || t == XSTYPE_DICT) {
         s = xs_str_new(NULL);
@@ -481,10 +481,10 @@ d_char *_xs_json_loads_object(const char **json, js_type *t)
 }
 
 
-d_char *xs_json_loads(const char *json)
+xs_val *xs_json_loads(const xs_str *json)
 /* loads a string in JSON format and converts to a multiple data */
 {
-    d_char *v = NULL;
+    xs_val *v = NULL;
     js_type t;
 
     xs_free(_xs_json_loads_lexer(&json, &t));
