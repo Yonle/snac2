@@ -1352,11 +1352,22 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         char *to          = xs_dict_get(p_vars, "to");
         char *sensitive   = xs_dict_get(p_vars, "sensitive");
         char *edit_id     = xs_dict_get(p_vars, "edit_id");
+        char *alt_text    = xs_dict_get(p_vars, "alt_text");
         xs *attach_list   = xs_list_new();
 
+        /* default alt text */
+        if (xs_is_null(alt_text))
+            alt_text = "";
+
         /* is attach_url set? */
-        if (!xs_is_null(attach_url) && *attach_url != '\0')
-            attach_list = xs_list_append(attach_list, attach_url);
+        if (!xs_is_null(attach_url) && *attach_url != '\0') {
+            xs *l = xs_list_new();
+
+            l = xs_list_append(l, attach_url);
+            l = xs_list_append(l, alt_text);
+
+            attach_list = xs_list_append(attach_list, l);
+        }
 
         /* is attach_file set? */
         if (!xs_is_null(attach_file) && xs_type(attach_file) == XSTYPE_LIST) {
@@ -1373,7 +1384,12 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
                 /* store */
                 static_put(&snac, id, payload + fo, fs);
 
-                attach_list = xs_list_append(attach_list, url);
+                xs *l = xs_list_new();
+
+                l = xs_list_append(l, url);
+                l = xs_list_append(l, alt_text);
+
+                attach_list = xs_list_append(attach_list, l);
             }
         }
 
