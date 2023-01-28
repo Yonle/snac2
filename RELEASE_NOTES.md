@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.20
+
+Image attachments in posts can now have a description (a.k.a. "alt text").
+
 ## 2.19
 
 You can edit your own posts from now on.
