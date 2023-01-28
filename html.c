@@ -1375,8 +1375,8 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
             if (*fn != '\0') {
                 char *ext = strrchr(fn, '.');
-                xs *ntid  = tid(0);
-                xs *id    = xs_fmt("%s%s", ntid, ext);
+                xs *hash  = xs_md5_hex(fn, strlen(fn));
+                xs *id    = xs_fmt("%s%s", hash, ext);
                 xs *url   = xs_fmt("%s/s/%s", snac.actor, id);
                 int fo    = xs_number_get(xs_list_get(attach_file, 1));
                 int fs    = xs_number_get(xs_list_get(attach_file, 2));
