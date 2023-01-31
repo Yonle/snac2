@@ -1318,19 +1318,32 @@ static xs_dict *_enqueue_put(const char *fn, xs_dict *msg)
 }
 
 
-void enqueue_input(snac *snac, char *msg, char *req, int retries)
-/* enqueues an input message */
+static xs_dict *_new_qmsg(const char *type, const xs_dict *msg, int retries)
+/* creates a queue message */
 {
     int qrt  = xs_number_get(xs_dict_get(srv_config, "queue_retry_minutes"));
     xs *ntid = tid(retries * 60 * qrt);
-    xs *fn   = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
-    xs *qmsg = xs_dict_new();
     xs *rn   = xs_number_new(retries);
 
-    qmsg = xs_dict_append(qmsg, "type",    "input");
+    xs_dict *qmsg = xs_dict_new();
+
+    qmsg = xs_dict_append(qmsg, "type",    type);
     qmsg = xs_dict_append(qmsg, "message", msg);
-    qmsg = xs_dict_append(qmsg, "req",     req);
     qmsg = xs_dict_append(qmsg, "retries", rn);
+    qmsg = xs_dict_append(qmsg, "ntid",    ntid);
+
+    return qmsg;
+}
+
+
+void enqueue_input(snac *snac, char *msg, char *req, int retries)
+/* enqueues an input message */
+{
+    xs *qmsg   = _new_qmsg("input", msg, retries);
+    char *ntid = xs_dict_get(qmsg, "ntid");
+    xs *fn     = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
+
+    qmsg = xs_dict_append(qmsg, "req", req);
 
     qmsg = _enqueue_put(fn, qmsg);
 
