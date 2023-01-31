@@ -1299,10 +1299,9 @@ d_char *history_list(snac *snac)
 
 /** the queue **/
 
-static int _enqueue_put(char *fn, char *msg)
+static xs_dict *_enqueue_put(const char *fn, xs_dict *msg)
 /* writes safely to the queue */
 {
-    int ret = 1;
     xs *tfn = xs_fmt("%s.tmp", fn);
     FILE *f;
 
@@ -1314,10 +1313,8 @@ static int _enqueue_put(char *fn, char *msg)
 
         rename(tfn, fn);
     }
-    else
-        ret = 0;
 
-    return ret;
+    return msg;
 }
 
 
@@ -1331,11 +1328,11 @@ void enqueue_input(snac *snac, char *msg, char *req, int retries)
     xs *rn   = xs_number_new(retries);
 
     qmsg = xs_dict_append(qmsg, "type",    "input");
-    qmsg = xs_dict_append(qmsg, "object",  msg);
+    qmsg = xs_dict_append(qmsg, "message", msg);
     qmsg = xs_dict_append(qmsg, "req",     req);
     qmsg = xs_dict_append(qmsg, "retries", rn);
 
-    _enqueue_put(fn, qmsg);
+    qmsg = _enqueue_put(fn, qmsg);
 
     snac_debug(snac, 1, xs_fmt("enqueue_input %s", fn));
 }
@@ -1357,10 +1354,10 @@ void enqueue_output(snac *snac, char *msg, char *inbox, int retries)
 
     qmsg = xs_dict_append(qmsg, "type",    "output");
     qmsg = xs_dict_append(qmsg, "inbox",   inbox);
-    qmsg = xs_dict_append(qmsg, "object",  msg);
+    qmsg = xs_dict_append(qmsg, "message", msg);
     qmsg = xs_dict_append(qmsg, "retries", rn);
 
-    _enqueue_put(fn, qmsg);
+    qmsg = _enqueue_put(fn, qmsg);
 
     snac_debug(snac, 1, xs_fmt("enqueue_output %s %s %d", inbox, fn, retries));
 }
@@ -1391,7 +1388,7 @@ void enqueue_email(snac *snac, char *msg, int retries)
     qmsg = xs_dict_append(qmsg, "message", msg);
     qmsg = xs_dict_append(qmsg, "retries", rn);
 
-    _enqueue_put(fn, qmsg);
+    qmsg = _enqueue_put(fn, qmsg);
 
     snac_debug(snac, 1, xs_fmt("enqueue_email %d", retries));
 }
@@ -1408,7 +1405,7 @@ void enqueue_message(snac *snac, char *msg)
     qmsg = xs_dict_append(qmsg, "type",    "message");
     qmsg = xs_dict_append(qmsg, "message", msg);
 
-    _enqueue_put(fn, qmsg);
+    qmsg = _enqueue_put(fn, qmsg);
 
     snac_debug(snac, 0, xs_fmt("enqueue_message %s", id));
 }

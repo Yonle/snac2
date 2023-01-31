@@ -1101,7 +1101,7 @@ void process_queue(snac *snac)
         if (strcmp(type, "output") == 0) {
             int status;
             char *inbox = xs_dict_get(q_item, "inbox");
-            char *msg   = xs_dict_get(q_item, "object");
+            char *msg   = xs_dict_get(q_item, "message");
             int retries = xs_number_get(xs_dict_get(q_item, "retries"));
             xs *payload = NULL;
             int p_size = 0;
@@ -1132,9 +1132,12 @@ void process_queue(snac *snac)
         else
         if (strcmp(type, "input") == 0) {
             /* process the message */
-            char *msg = xs_dict_get(q_item, "object");
+            char *msg = xs_dict_get(q_item, "message");
             char *req = xs_dict_get(q_item, "req");
             int retries = xs_number_get(xs_dict_get(q_item, "retries"));
+
+            if (xs_is_null(msg))
+                continue;
 
             if (!process_message(snac, msg, req)) {
                 if (retries > queue_retry_max)
