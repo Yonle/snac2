@@ -79,7 +79,7 @@ const char *greeting_html =
     "<p>This site is powered by <abbr title=\"Social Networks Are Crap\">snac</abbr>.</p>\n"
     "</body></html>\n";
 
-int initdb(const char *basedir)
+int snac_init(const char *basedir)
 {
     FILE *f;
 
@@ -153,6 +153,9 @@ int initdb(const char *basedir)
 
     xs *odir = xs_fmt("%s/object", srv_basedir);
     mkdir(odir, 0755);
+
+    xs *qdir = xs_fmt("%s/queue", srv_basedir);
+    mkdir(qdir, 0755);
 
     xs *gfn = xs_fmt("%s/greeting.html", srv_basedir);
     if ((f = fopen(gfn, "w")) == NULL) {

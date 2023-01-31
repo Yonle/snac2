@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
         /* ... */
         basedir = GET_ARGV();
 
-        return initdb(basedir);
+        return snac_init(basedir);
     }
 
     if (strcmp(cmd, "upgrade") == 0) {
