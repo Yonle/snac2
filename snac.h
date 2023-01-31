@@ -123,8 +123,8 @@ d_char *history_list(snac *snac);
 
 void enqueue_input(snac *snac, xs_dict *msg, xs_dict *req, int retries);
 void enqueue_output(snac *snac, xs_dict *msg, xs_str *inbox, int retries);
-void enqueue_output_by_actor(snac *snac, char *msg, char *actor, int retries);
-void enqueue_email(snac *snac, char *msg, int retries);
+void enqueue_output_by_actor(snac *snac, xs_dict *msg, xs_str *actor, int retries);
+void enqueue_email(snac *snac, xs_str *msg, int retries);
 void enqueue_message(snac *snac, char *msg);
 
 d_char *queue(snac *snac);
