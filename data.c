@@ -1336,7 +1336,7 @@ static xs_dict *_new_qmsg(const char *type, const xs_dict *msg, int retries)
 }
 
 
-void enqueue_input(snac *snac, char *msg, char *req, int retries)
+void enqueue_input(snac *snac, xs_dict *msg, xs_dict *req, int retries)
 /* enqueues an input message */
 {
     xs *qmsg   = _new_qmsg("input", msg, retries);
@@ -1351,7 +1351,7 @@ void enqueue_input(snac *snac, char *msg, char *req, int retries)
 }
 
 
-void enqueue_output(snac *snac, char *msg, char *inbox, int retries)
+void enqueue_output(snac *snac, xs_dict *msg, xs_str *inbox, int retries)
 /* enqueues an output message to an inbox */
 {
     if (xs_startswith(inbox, snac->actor)) {
@@ -1359,16 +1359,11 @@ void enqueue_output(snac *snac, char *msg, char *inbox, int retries)
         return;
     }
 
-    int qrt  = xs_number_get(xs_dict_get(srv_config, "queue_retry_minutes"));
-    xs *ntid = tid(retries * 60 * qrt);
-    xs *fn   = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
-    xs *qmsg = xs_dict_new();
-    xs *rn   = xs_number_new(retries);
+    xs *qmsg   = _new_qmsg("output", msg, retries);
+    char *ntid = xs_dict_get(qmsg, "ntid");
+    xs *fn     = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
 
-    qmsg = xs_dict_append(qmsg, "type",    "output");
-    qmsg = xs_dict_append(qmsg, "inbox",   inbox);
-    qmsg = xs_dict_append(qmsg, "message", msg);
-    qmsg = xs_dict_append(qmsg, "retries", rn);
+    qmsg = xs_dict_append(qmsg, "inbox", inbox);
 
     qmsg = _enqueue_put(fn, qmsg);
 
