@@ -15,10 +15,10 @@
 #include <sys/file.h>
 #include <fcntl.h>
 
-double db_layout = 2.7;
+double disk_layout = 2.7;
 
 
-int db_upgrade(d_char **error);
+int snac_upgrade(d_char **error);
 
 int srv_open(char *basedir, int auto_upgrade)
 /* opens a server */
@@ -71,9 +71,9 @@ int srv_open(char *basedir, int auto_upgrade)
                 }
 
                 if (auto_upgrade)
-                    ret = db_upgrade(&error);
+                    ret = snac_upgrade(&error);
                 else {
-                    if (xs_number_get(xs_dict_get(srv_config, "layout")) < db_layout)
+                    if (xs_number_get(xs_dict_get(srv_config, "layout")) < disk_layout)
                         error = xs_fmt("ERROR: disk layout changed - execute 'snac upgrade' first");
                     else
                         ret = 1;

@@ -103,7 +103,7 @@ int initdb(const char *basedir)
 
     srv_config = xs_json_loads(default_srv_config);
 
-    xs *layout = xs_number_new(db_layout);
+    xs *layout = xs_number_new(disk_layout);
     srv_config = xs_dict_set(srv_config, "layout", layout);
 
     printf("Network address [%s]:\n", xs_dict_get(srv_config, "address"));

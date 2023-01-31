@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 
 
-int db_upgrade(d_char **error)
+int snac_upgrade(xs_str **error)
 {
     int ret = 1;
     int changed = 0;
@@ -23,10 +23,10 @@ int db_upgrade(d_char **error)
 
         f = nf = xs_number_get(layout);
 
-        if (!(f < db_layout))
+        if (!(f < disk_layout))
             break;
 
-        srv_log(xs_fmt("db_upgrade %1.1lf < %1.1lf", f, db_layout));
+        srv_log(xs_fmt("disk layout upgrade needed (%1.1lf < %1.1lf)", f, disk_layout));
 
         if (f < 2.0) {
             *error = xs_fmt("ERROR: unsupported old disk layout %1.1lf\n", f);
@@ -294,14 +294,14 @@ int db_upgrade(d_char **error)
             xs *nv     = xs_number_new(f);
             srv_config = xs_dict_set(srv_config, "layout", nv);
 
-            srv_log(xs_fmt("db_upgrade converted to version %1.1lf", f));
+            srv_log(xs_fmt("disk layout upgraded to version %1.1lf", f));
             changed++;
         }
         else
             break;
     }
 
-    if (f > db_layout) {
+    if (f > disk_layout) {
         *error = xs_fmt("ERROR: unknown future version %lf\n", f);
         ret    = 0;
     }
@@ -316,7 +316,7 @@ int db_upgrade(d_char **error)
             fwrite(j, strlen(j), 1, f);
             fclose(f);
 
-            srv_log(xs_fmt("upgraded db %s after %d changes", fn, changed));
+            srv_log(xs_fmt("disk layout upgraded %s after %d changes", fn, changed));
         }
         else
             ret = 0;
