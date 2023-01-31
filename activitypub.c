@@ -1173,19 +1173,6 @@ void process_queue(snac *snac)
 }
 
 
-void post(snac *snac, char *msg)
-/* enqueues a message to all its recipients */
-{
-    xs *inboxes = inbox_list(snac, msg);
-    char *p, *v;
-
-    p = inboxes;
-    while (xs_list_iter(&p, &v)) {
-        enqueue_output(snac, msg, v, 0);
-    }
-}
-
-
 /** HTTP handlers */
 
 int activitypub_get_handler(d_char *req, char *q_path,
