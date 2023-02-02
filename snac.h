@@ -46,8 +46,10 @@ int validate_uid(const char *uid);
 d_char *hash_password(const char *uid, const char *passwd, const char *nonce);
 int check_password(const char *uid, const char *passwd, const char *hash);
 
-void srv_archive(char *direction, char *req, char *payload, int p_size,
-                 int status, char *headers, char *body, int b_size);
+void srv_archive(const char *direction, xs_dict *req,
+                 const char *payload, int p_size,
+                 int status, xs_dict *headers,
+                 const char *body, int b_size);
 
 double mtime_nl(const char *fn, int *n_link);
 #define mtime(fn) mtime_nl(fn, NULL)
@@ -133,11 +135,11 @@ d_char *dequeue(snac *snac, char *fn);
 void purge(snac *snac);
 void purge_all(void);
 
-d_char *http_signed_request(snac *snac, char *method, char *url,
-                        d_char *headers,
-                        d_char *body, int b_size,
-                        int *status, d_char **payload, int *p_size,
-                        int timeout);
+xs_dict *http_signed_request(snac *snac, const char *method, const char *url,
+                            xs_dict *headers,
+                            const char *body, int b_size,
+                            int *status, xs_str **payload, int *p_size,
+                            int timeout);
 int check_signature(snac *snac, char *req);
 
 void httpd(void);

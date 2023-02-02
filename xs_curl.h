@@ -4,8 +4,9 @@
 
 #define _XS_CURL_H
 
-xs_dict *xs_http_request(char *method, char *url, xs_dict *headers,
-                        xs_str *body, int b_size, int *status,
+xs_dict *xs_http_request(const char *method, const char *url,
+                        const xs_dict *headers,
+                        const xs_str *body, int b_size, int *status,
                         xs_str **payload, int *p_size, int timeout);
 
 #ifdef XS_IMPLEMENTATION
@@ -83,8 +84,9 @@ static int _post_callback(char *buffer, size_t size,
 }
 
 
-xs_dict *xs_http_request(char *method, char *url, xs_dict *headers,
-                        xs_str *body, int b_size, int *status,
+xs_dict *xs_http_request(const char *method, const char *url,
+                        const xs_dict *headers,
+                        const xs_str *body, int b_size, int *status,
                         xs_str **payload, int *p_size, int timeout)
 /* does an HTTP request */
 {
@@ -136,7 +138,7 @@ xs_dict *xs_http_request(char *method, char *url, xs_dict *headers,
             sprintf(tmp, "content-length: %d", b_size);
             list = curl_slist_append(list, tmp);
 
-            pd.data = body;
+            pd.data = (char *)body;
             pd.size = b_size;
             pd.offset = 0;
 
@@ -146,7 +148,7 @@ xs_dict *xs_http_request(char *method, char *url, xs_dict *headers,
     }
 
     /* fill the request headers */
-    p = headers;
+    p = (xs_dict *)headers;
     while (xs_dict_iter(&p, &k, &v)) {
         xs *h = xs_fmt("%s: %s", k, v);
 

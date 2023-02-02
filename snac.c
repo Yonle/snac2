@@ -138,8 +138,10 @@ int check_password(const char *uid, const char *passwd, const char *hash)
 }
 
 
-void srv_archive(char *direction, char *req, char *payload, int p_size,
-                 int status, char *headers, char *body, int b_size)
+void srv_archive(const char *direction, xs_dict *req,
+                 const char *payload, int p_size,
+                 int status, xs_dict *headers,
+                 const char *body, int b_size)
 /* archives a connection */
 {
     /* obsessive archiving */

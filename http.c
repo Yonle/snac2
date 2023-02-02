@@ -11,19 +11,19 @@
 
 #include "snac.h"
 
-d_char *http_signed_request(snac *snac, char *method, char *url,
-                            d_char *headers,
-                            d_char *body, int b_size,
-                            int *status, d_char **payload, int *p_size,
+xs_dict *http_signed_request(snac *snac, const char *method, const char *url,
+                            xs_dict *headers,
+                            const char *body, int b_size,
+                            int *status, xs_str **payload, int *p_size,
                             int timeout)
 /* does a signed HTTP request */
 {
-    xs *l1;
-    xs *date;
-    xs *digest;
-    xs *s64;
-    xs *signature;
-    xs *hdrs;
+    xs *l1 = NULL;
+    xs *date = NULL;
+    xs *digest = NULL;
+    xs *s64 = NULL;
+    xs *signature = NULL;
+    xs *hdrs = NULL;
     char *host;
     char *target;
     char *seckey;
