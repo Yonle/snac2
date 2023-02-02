@@ -1411,13 +1411,14 @@ void enqueue_message(snac *snac, xs_dict *msg)
 }
 
 
-d_char *queue(snac *snac)
+xs_list *user_queue(snac *snac)
 /* returns a list with filenames that can be dequeued */
 {
-    xs *spec     = xs_fmt("%s/queue/" "*.json", snac->basedir);
-    d_char *list = xs_list_new();
-    time_t t     = time(NULL);
-    char *p, *v;
+    xs *spec      = xs_fmt("%s/queue/" "*.json", snac->basedir);
+    xs_list *list = xs_list_new();
+    time_t t      = time(NULL);
+    xs_list *p;
+    xs_val *v;
 
     xs *fns = xs_glob(spec, 0, 0);
 

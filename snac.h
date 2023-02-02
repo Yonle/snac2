@@ -129,7 +129,7 @@ void enqueue_output_by_actor(snac *snac, xs_dict *msg, xs_str *actor, int retrie
 void enqueue_email(snac *snac, xs_str *msg, int retries);
 void enqueue_message(snac *snac, char *msg);
 
-d_char *queue(snac *snac);
+xs_list *user_queue(snac *snac);
 xs_dict *dequeue(const char *fn);
 
 void purge(snac *snac);
