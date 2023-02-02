@@ -1065,7 +1065,7 @@ int send_email(char *msg)
 }
 
 
-void process_queue_item(snac *snac, xs_dict *q_item)
+void process_user_queue_item(snac *snac, xs_dict *q_item)
 /* processes an item from the queue */
 {
     char *type;
@@ -1176,7 +1176,7 @@ void process_user_queue(snac *snac)
             continue;
         }
 
-        process_queue_item(snac, q_item);
+        process_user_queue_item(snac, q_item);
     }
 }
 
