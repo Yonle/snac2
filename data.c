@@ -1439,11 +1439,11 @@ d_char *queue(snac *snac)
 }
 
 
-d_char *dequeue(snac *snac, char *fn)
+xs_dict *dequeue(const char *fn)
 /* dequeues a message */
 {
     FILE *f;
-    d_char *obj = NULL;
+    xs_dict *obj = NULL;
 
     if ((f = fopen(fn, "r")) != NULL) {
         /* delete right now */

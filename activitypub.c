@@ -1169,7 +1169,7 @@ void process_queue(snac *snac)
     xs_str *fn;
 
     while (xs_list_iter(&p, &fn)) {
-        xs *q_item = dequeue(snac, fn);
+        xs *q_item = dequeue(fn);
 
         if (q_item == NULL) {
             snac_log(snac, xs_fmt("process_queue q_item error"));

@@ -130,7 +130,7 @@ void enqueue_email(snac *snac, xs_str *msg, int retries);
 void enqueue_message(snac *snac, char *msg);
 
 d_char *queue(snac *snac);
-d_char *dequeue(snac *snac, char *fn);
+xs_dict *dequeue(const char *fn);
 
 void purge(snac *snac);
 void purge_all(void);
