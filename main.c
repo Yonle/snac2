@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
     }
 
     if (strcmp(cmd, "queue") == 0) {
-        process_queue(&snac);
+        process_user_queue(&snac);
         return 0;
     }
 

@@ -274,7 +274,7 @@ static void *queue_thread(void *arg)
                 snac snac;
 
                 if (user_open(&snac, uid)) {
-                    process_queue(&snac);
+                    process_user_queue(&snac);
                     user_free(&snac);
                 }
             }

@@ -1160,8 +1160,8 @@ void process_queue_item(snac *snac, xs_dict *q_item)
 }
 
 
-void process_queue(snac *snac)
-/* processes the queue */
+void process_user_queue(snac *snac)
+/* processes a user's queue */
 {
     xs *list = user_queue(snac);
 
