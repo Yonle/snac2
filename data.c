@@ -86,6 +86,10 @@ int srv_open(char *basedir, int auto_upgrade)
     if (error != NULL)
         srv_log(error);
 
+    /* create the queue/ subdir, just in case */
+    xs *qdir = xs_fmt("%s/queue", srv_basedir);
+    mkdir(qdir, 0755);
+
 #ifdef __OpenBSD__
     char *v = xs_dict_get(srv_config, "disable_openbsd_security");
 
@@ -1429,10 +1433,39 @@ xs_list *user_queue(snac *snac)
         time_t t2 = atol(bn + 1);
 
         if (t2 > t)
-            snac_debug(snac, 2, xs_fmt("queue not yet time for %s [%ld]", v, t));
+            snac_debug(snac, 2, xs_fmt("user_queue not yet time for %s [%ld]", v, t));
         else {
             list = xs_list_append(list, v);
-            snac_debug(snac, 2, xs_fmt("queue ready for %s", v));
+            snac_debug(snac, 2, xs_fmt("user_queue ready for %s", v));
+        }
+    }
+
+    return list;
+}
+
+
+xs_list *queue(void)
+/* returns a list with filenames that can be dequeued */
+{
+    xs *spec      = xs_fmt("%s/queue/" "*.json", srv_basedir);
+    xs_list *list = xs_list_new();
+    time_t t      = time(NULL);
+    xs_list *p;
+    xs_val *v;
+
+    xs *fns = xs_glob(spec, 0, 0);
+
+    p = fns;
+    while (xs_list_iter(&p, &v)) {
+        /* get the retry time from the basename */
+        char *bn  = strrchr(v, '/');
+        time_t t2 = atol(bn + 1);
+
+        if (t2 > t)
+            srv_debug(2, xs_fmt("queue not yet time for %s [%ld]", v, t));
+        else {
+            list = xs_list_append(list, v);
+            srv_debug(2, xs_fmt("queue ready for %s", v));
         }
     }
 

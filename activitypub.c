@@ -1066,7 +1066,7 @@ int send_email(char *msg)
 
 
 void process_user_queue_item(snac *snac, xs_dict *q_item)
-/* processes an item from the queue */
+/* processes an item from the user queue */
 {
     char *type;
     int queue_retry_max = xs_number_get(xs_dict_get(srv_config, "queue_retry_max"));
@@ -1172,11 +1172,38 @@ void process_user_queue(snac *snac)
         xs *q_item = dequeue(fn);
 
         if (q_item == NULL) {
-            snac_log(snac, xs_fmt("process_queue q_item error"));
+            snac_log(snac, xs_fmt("process_user_queue q_item error"));
             continue;
         }
 
         process_user_queue_item(snac, q_item);
+    }
+}
+
+
+void process_queue_item(xs_dict *q_item)
+/* processes an item from the global queue */
+{
+}
+
+
+void process_queue(void)
+/* processes the global queue */
+{
+    xs *list = queue();
+
+    xs_list *p = list;
+    xs_str *fn;
+
+    while (xs_list_iter(&p, &fn)) {
+        xs *q_item = dequeue(fn);
+
+        if (q_item == NULL) {
+            srv_log(xs_fmt("process_queue q_item error"));
+            continue;
+        }
+
+        process_queue_item(q_item);
     }
 }
 
