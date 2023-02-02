@@ -126,10 +126,11 @@ d_char *history_list(snac *snac);
 void enqueue_input(snac *snac, xs_dict *msg, xs_dict *req, int retries);
 void enqueue_output(snac *snac, xs_dict *msg, xs_str *inbox, int retries);
 void enqueue_output_by_actor(snac *snac, xs_dict *msg, xs_str *actor, int retries);
-void enqueue_email(snac *snac, xs_str *msg, int retries);
+void enqueue_email(xs_str *msg, int retries);
 void enqueue_message(snac *snac, char *msg);
 
 xs_list *user_queue(snac *snac);
+xs_list *queue(void);
 xs_dict *dequeue(const char *fn);
 
 void purge(snac *snac);
@@ -165,7 +166,11 @@ int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_s
 d_char *get_actor_inbox(snac *snac, char *actor);
 int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size, int timeout);
 int is_msg_public(snac *snac, char *msg);
+
 void process_user_queue(snac *snac);
+
+void process_queue(void);
+
 void post(snac *snac, char *msg);
 int activitypub_get_handler(d_char *req, char *q_path,
                             char **body, int *b_size, char **ctype);

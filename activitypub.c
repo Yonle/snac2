@@ -839,7 +839,7 @@ void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
         body = xs_str_cat(body, s1);
     }
 
-    enqueue_email(snac, body, 0);
+    enqueue_email(body, 0);
 }
 
 
@@ -1137,26 +1137,6 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
             }
         }
     }
-    else
-    if (strcmp(type, "email") == 0) {
-        /* send this email */
-        xs_str *msg = xs_dict_get(q_item, "message");
-        int retries = xs_number_get(xs_dict_get(q_item, "retries"));
-
-        if (!send_email(msg))
-            snac_debug(snac, 1, xs_fmt("email message sent"));
-        else {
-            if (retries > queue_retry_max)
-                snac_log(snac, xs_fmt("process_queue email giving up (errno: %d)", errno));
-            else {
-                /* requeue */
-                snac_log(snac, xs_fmt(
-                    "process_queue email requeue #%d (errno: %d)", retries + 1, errno));
-
-                enqueue_email(snac, msg, retries + 1);
-            }
-        }
-    }
 }
 
 
@@ -1184,6 +1164,30 @@ void process_user_queue(snac *snac)
 void process_queue_item(xs_dict *q_item)
 /* processes an item from the global queue */
 {
+    char *type = xs_dict_get(q_item, "type");
+    int queue_retry_max = xs_number_get(xs_dict_get(srv_config, "queue_retry_max"));
+
+    if (strcmp(type, "email") == 0) {
+        /* send this email */
+        xs_str *msg = xs_dict_get(q_item, "message");
+        int retries = xs_number_get(xs_dict_get(q_item, "retries"));
+
+        if (!send_email(msg))
+            srv_debug(1, xs_fmt("email message sent"));
+        else {
+            retries++;
+
+            if (retries > queue_retry_max)
+                srv_log(xs_fmt("process_queue email giving up (errno: %d)", errno));
+            else {
+                /* requeue */
+                srv_log(xs_fmt(
+                    "process_queue email requeue #%d (errno: %d)", retries, errno));
+
+                enqueue_email(msg, retries);
+            }
+        }
+    }
 }
 
 

@@ -1389,16 +1389,16 @@ void enqueue_output_by_actor(snac *snac, xs_dict *msg, xs_str *actor, int retrie
 }
 
 
-void enqueue_email(snac *snac, xs_str *msg, int retries)
+void enqueue_email(xs_str *msg, int retries)
 /* enqueues an email message to be sent */
 {
     xs *qmsg   = _new_qmsg("email", msg, retries);
     char *ntid = xs_dict_get(qmsg, "ntid");
-    xs *fn     = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
+    xs *fn     = xs_fmt("%s/queue/%s.json", srv_basedir, ntid);
 
     qmsg = _enqueue_put(fn, qmsg);
 
-    snac_debug(snac, 1, xs_fmt("enqueue_email %d", retries));
+    srv_debug(1, xs_fmt("enqueue_email %d", retries));
 }
 
 

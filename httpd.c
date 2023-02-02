@@ -280,6 +280,9 @@ static void *queue_thread(void *arg)
             }
         }
 
+        /* global queue */
+        process_queue();
+
         /* time to purge? */
         if ((t = time(NULL)) > purge_time) {
             pthread_t pth;
