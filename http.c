@@ -11,7 +11,8 @@
 
 #include "snac.h"
 
-xs_dict *http_signed_request(snac *snac, const char *method, const char *url,
+xs_dict *http_signed_request_raw(const char *keyid, const char *seckey,
+                            const char *method, const char *url,
                             xs_dict *headers,
                             const char *body, int b_size,
                             int *status, xs_str **payload, int *p_size,
@@ -26,9 +27,8 @@ xs_dict *http_signed_request(snac *snac, const char *method, const char *url,
     xs *hdrs = NULL;
     char *host;
     char *target;
-    char *seckey;
     char *k, *v;
-    d_char *response;
+    xs_dict *response;
 
     date = xs_str_utctime(0, "%a, %d %b %Y %H:%M:%S GMT");
 
@@ -57,8 +57,6 @@ xs_dict *http_signed_request(snac *snac, const char *method, const char *url,
         digest = xs_fmt("SHA-256=%s", s);
     }
 
-    seckey = xs_dict_get(snac->key, "secret");
-
     {
         /* build the string to be signed */
         xs *s = xs_fmt("(request-target): %s /%s\n"
@@ -72,11 +70,11 @@ xs_dict *http_signed_request(snac *snac, const char *method, const char *url,
     }
 
     /* build now the signature header */
-    signature = xs_fmt("keyId=\"%s#main-key\","
+    signature = xs_fmt("keyId=\"%s\","
                        "algorithm=\"rsa-sha256\","
                        "headers=\"(request-target) host digest date\","
                        "signature=\"%s\"",
-                        snac->actor, s64);
+                        keyid, s64);
 
     /* transfer the original headers */
     hdrs = xs_dict_new();
@@ -99,6 +97,24 @@ xs_dict *http_signed_request(snac *snac, const char *method, const char *url,
                            body, b_size, status, payload, p_size, timeout);
 
     srv_archive("SEND", hdrs, body, b_size, *status, response, *payload, *p_size);
+
+    return response;
+}
+
+
+xs_dict *http_signed_request(snac *snac, const char *method, const char *url,
+                            xs_dict *headers,
+                            const char *body, int b_size,
+                            int *status, xs_str **payload, int *p_size,
+                            int timeout)
+/* does a signed HTTP request */
+{
+    xs *keyid    = xs_fmt("%s#main-key", snac->actor);
+    char *seckey = xs_dict_get(snac->key, "secret");
+    xs_dict *response;
+
+    response = http_signed_request_raw(keyid, seckey, method, url,
+                headers, body, b_size, status, payload, p_size, timeout);
 
     return response;
 }
