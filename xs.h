@@ -78,8 +78,8 @@ xs_list *xs_list_new(void);
 xs_list *xs_list_append_m(xs_list *list, const char *mem, int dsz);
 #define xs_list_append(list, data) xs_list_append_m(list, data, xs_size(data))
 int xs_list_iter(xs_list **list, xs_val **value);
-int xs_list_len(xs_list *list);
-char *xs_list_get(xs_list *list, int num);
+int xs_list_len(const xs_list *list);
+char *xs_list_get(const xs_list *list, int num);
 xs_list *xs_list_del(xs_list *list, int num);
 xs_list *xs_list_insert(xs_list *list, int num, const xs_val *data);
 xs_list *xs_list_insert_sorted(xs_list *list, const char *str);
@@ -87,8 +87,8 @@ xs_list *xs_list_set(xs_list *list, int num, const xs_val *data);
 xs_list *xs_list_dequeue(xs_list *list, xs_val **data, int last);
 #define xs_list_pop(list, data) xs_list_dequeue(list, data, 1)
 #define xs_list_shift(list, data) xs_list_dequeue(list, data, 0)
-int xs_list_in(xs_list *list, const xs_val *val);
-xs_str *xs_join(xs_list *list, const char *sep);
+int xs_list_in(const xs_list *list, const xs_val *val);
+xs_str *xs_join(const xs_list *list, const char *sep);
 xs_list *xs_split_n(const char *str, const char *sep, int times);
 #define xs_split(str, sep) xs_split_n(str, sep, XS_ALL)
 
@@ -96,7 +96,7 @@ xs_dict *xs_dict_new(void);
 xs_dict *xs_dict_append_m(xs_dict *dict, const xs_str *key, const xs_val *mem, int dsz);
 #define xs_dict_append(dict, key, data) xs_dict_append_m(dict, key, data, xs_size(data))
 int xs_dict_iter(xs_dict **dict, xs_str **key, xs_val **value);
-xs_dict *xs_dict_get(xs_dict *dict, const xs_str *key);
+xs_dict *xs_dict_get(const xs_dict *dict, const xs_str *key);
 xs_dict *xs_dict_del(xs_dict *dict, const xs_str *key);
 xs_dict *xs_dict_set(xs_dict *dict, const xs_str *key, const xs_val *data);
 
@@ -610,33 +610,35 @@ int xs_list_iter(xs_list **list, xs_val **value)
 }
 
 
-int xs_list_len(xs_list *list)
+int xs_list_len(const xs_list *list)
 /* returns the number of elements in the list */
 {
     XS_ASSERT_TYPE_NULL(list, XSTYPE_LIST);
 
     int c = 0;
+    xs_list *p = (xs_list *)list;
     xs_val *v;
 
-    while (xs_list_iter(&list, &v))
+    while (xs_list_iter(&p, &v))
         c++;
 
     return c;
 }
 
 
-xs_val *xs_list_get(xs_list *list, int num)
+xs_val *xs_list_get(const xs_list *list, int num)
 /* returns the element #num */
 {
     XS_ASSERT_TYPE(list, XSTYPE_LIST);
 
-    int c = 0;
-    xs_val *v;
-
     if (num < 0)
         num = xs_list_len(list) + num;
 
-    while (xs_list_iter(&list, &v)) {
+    int c = 0;
+    xs_list *p = (xs_list *)list;
+    xs_val *v;
+
+    while (xs_list_iter(&p, &v)) {
         if (c == num)
             return v;
 
@@ -740,16 +742,17 @@ xs_list *xs_list_dequeue(xs_list *list, xs_val **data, int last)
 }
 
 
-int xs_list_in(xs_list *list, const xs_val *val)
+int xs_list_in(const xs_list *list, const xs_val *val)
 /* returns the position of val in list or -1 */
 {
     XS_ASSERT_TYPE_NULL(list, XSTYPE_LIST);
 
     int n = 0;
+    xs_list *p = (xs_list *)list;
     xs_val *v;
     int sz = xs_size(val);
 
-    while (xs_list_iter(&list, &v)) {
+    while (xs_list_iter(&p, &v)) {
         if (sz == xs_size(v) && memcmp(val, v, sz) == 0)
             return n;
 
@@ -760,18 +763,19 @@ int xs_list_in(xs_list *list, const xs_val *val)
 }
 
 
-xs_str *xs_join(xs_list *list, const char *sep)
+xs_str *xs_join(const xs_list *list, const char *sep)
 /* joins a list into a string */
 {
     XS_ASSERT_TYPE(list, XSTYPE_LIST);
 
     xs_str *s = NULL;
+    xs_list *p = (xs_list *)list;
     xs_val *v;
     int c = 0;
     int offset = 0;
     int ssz = strlen(sep);
 
-    while (xs_list_iter(&list, &v)) {
+    while (xs_list_iter(&p, &v)) {
         /* refuse to join non-string values */
         if (xs_type(v) == XSTYPE_STRING) {
             int sz;
@@ -898,16 +902,17 @@ int xs_dict_iter(xs_dict **dict, xs_str **key, xs_val **value)
 }
 
 
-xs_val *xs_dict_get(xs_dict *dict, const xs_str *key)
+xs_val *xs_dict_get(const xs_dict *dict, const xs_str *key)
 /* returns the value directed by key */
 {
     XS_ASSERT_TYPE(dict, XSTYPE_DICT);
     XS_ASSERT_TYPE(key, XSTYPE_STRING);
 
+    xs_dict *p = (xs_dict *)dict;
     xs_str *k;
     xs_val *v;
 
-    while (xs_dict_iter(&dict, &k, &v)) {
+    while (xs_dict_iter(&p, &k, &v)) {
         if (strcmp(k, key) == 0)
             return v;
     }

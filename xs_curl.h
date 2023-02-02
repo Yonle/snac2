@@ -124,8 +124,8 @@ xs_dict *xs_http_request(char *method, char *url, xs_dict *headers,
     curl_easy_setopt(curl, CURLOPT_WRITEDATA,      &ipd);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,  _data_callback);
 
-    if (strcmp(method, "POST") == 0) {
-        curl_easy_setopt(curl, CURLOPT_POST, 1L);
+    if (strcmp(method, "POST") == 0 || strcmp(method, "PUT") == 0) {
+        curl_easy_setopt(curl, method[1] == 'O' ? CURLOPT_POST : CURLOPT_PUT, 1L);
 
         if (body != NULL) {
             if (b_size <= 0)
