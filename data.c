@@ -1363,7 +1363,9 @@ void enqueue_output(snac *snac, xs_dict *msg, xs_str *inbox, int retries)
     char *ntid = xs_dict_get(qmsg, "ntid");
     xs *fn     = xs_fmt("%s/queue/%s.json", snac->basedir, ntid);
 
-    qmsg = xs_dict_append(qmsg, "inbox", inbox);
+    qmsg = xs_dict_append(qmsg, "inbox",  inbox);
+    qmsg = xs_dict_append(qmsg, "keyid",  snac->actor);
+    qmsg = xs_dict_append(qmsg, "seckey", xs_dict_get(snac->key, "secret"));
 
     qmsg = _enqueue_put(fn, qmsg);
 
