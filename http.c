@@ -70,7 +70,7 @@ xs_dict *http_signed_request_raw(const char *keyid, const char *seckey,
     }
 
     /* build now the signature header */
-    signature = xs_fmt("keyId=\"%s\","
+    signature = xs_fmt("keyId=\"%s#main-key\","
                        "algorithm=\"rsa-sha256\","
                        "headers=\"(request-target) host digest date\","
                        "signature=\"%s\"",
@@ -109,11 +109,10 @@ xs_dict *http_signed_request(snac *snac, const char *method, const char *url,
                             int timeout)
 /* does a signed HTTP request */
 {
-    xs *keyid    = xs_fmt("%s#main-key", snac->actor);
     char *seckey = xs_dict_get(snac->key, "secret");
     xs_dict *response;
 
-    response = http_signed_request_raw(keyid, seckey, method, url,
+    response = http_signed_request_raw(snac->actor, seckey, method, url,
                 headers, body, b_size, status, payload, p_size, timeout);
 
     return response;
