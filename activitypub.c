@@ -1235,7 +1235,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
     uid = xs_list_get(l, 1);
     if (!user_open(&snac, uid)) {
         /* invalid user */
-        srv_log(xs_fmt("activitypub_get_handler bad user %s", uid));
+        srv_debug(1, xs_fmt("activitypub_get_handler bad user %s", uid));
         return 404;
     }
 

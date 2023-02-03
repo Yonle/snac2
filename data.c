@@ -155,6 +155,9 @@ int user_open(snac *snac, const char *uid)
         if ((f = fopen(cfg_file, "r")) != NULL) {
             xs *cfg_data;
 
+//            if (fileno(f) > 100)
+//                snac_log(snac, xs_fmt("CAUTION: fileno() > 100"));
+
             /* read full config file */
             cfg_data = xs_readall(f);
             fclose(f);
@@ -186,7 +189,7 @@ int user_open(snac *snac, const char *uid)
             srv_debug(2, xs_fmt("error opening '%s'", cfg_file));
     }
     else
-        srv_log(xs_fmt("invalid user '%s'", uid));
+        srv_debug(1, xs_fmt("invalid user '%s'", uid));
 
     if (!ret)
         user_free(snac);
