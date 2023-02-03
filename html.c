@@ -1095,7 +1095,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
 
     if (!uid || !user_open(&snac, uid)) {
         /* invalid user */
-        srv_log(xs_fmt("html_get_handler bad user %s", uid));
+        srv_debug(1, xs_fmt("html_get_handler bad user %s", uid));
         return 404;
     }
 
@@ -1322,7 +1322,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
     uid = xs_list_get(l, 1);
     if (!uid || !user_open(&snac, uid)) {
         /* invalid user */
-        srv_log(xs_fmt("html_post_handler bad user %s", uid));
+        srv_debug(1, xs_fmt("html_post_handler bad user %s", uid));
         return 404;
     }
 
