@@ -466,7 +466,7 @@ int object_here(char *id)
 }
 
 
-int object_get_by_md5(const char *md5, d_char **obj, const char *type)
+int object_get_by_md5(const char *md5, xs_dict **obj)
 /* returns a stored object, optionally of the requested type */
 {
     int status = 404;
@@ -481,19 +481,8 @@ int object_get_by_md5(const char *md5, d_char **obj, const char *type)
 
         *obj = xs_json_loads(j);
 
-        if (*obj) {
+        if (*obj)
             status = 200;
-
-            /* specific type requested? */
-            if (!xs_is_null(type)) {
-                char *v = xs_dict_get(*obj, "type");
-
-                if (xs_is_null(v) || strcmp(v, type) != 0) {
-                    status = 404;
-                    *obj   = xs_free(*obj);
-                }
-            }
-        }
     }
     else
         *obj = NULL;
@@ -502,11 +491,11 @@ int object_get_by_md5(const char *md5, d_char **obj, const char *type)
 }
 
 
-int object_get(const char *id, d_char **obj, const char *type)
+int object_get(const char *id, xs_dict **obj)
 /* returns a stored object, optionally of the requested type */
 {
     xs *md5 = xs_md5_hex(id, strlen(id));
-    return object_get_by_md5(md5, obj, type);
+    return object_get_by_md5(md5, obj);
 }
 
 
@@ -803,7 +792,7 @@ d_char *follower_list(snac *snac)
     while (xs_list_iter(&p, &v)) {
         xs *a_obj = NULL;
 
-        if (valid_status(object_get_by_md5(v, &a_obj, NULL))) {
+        if (valid_status(object_get_by_md5(v, &a_obj))) {
             char *actor = xs_dict_get(a_obj, "id");
 
             if (!xs_is_null(actor))
@@ -827,7 +816,7 @@ double timeline_mtime(snac *snac)
 int timeline_get_by_md5(snac *snac, const char *md5, xs_dict **msg)
 /* gets a message from the timeline */
 {
-    return object_get_by_md5(md5, msg, NULL);
+    return object_get_by_md5(md5, msg);
 }
 
 
@@ -851,7 +840,7 @@ void timeline_update_indexes(snac *snac, const char *id)
     if (xs_startswith(id, snac->actor)) {
         xs *msg = NULL;
 
-        if (valid_status(object_get(id, &msg, NULL))) {
+        if (valid_status(object_get(id, &msg))) {
             /* if its ours and is public, also store in public */
             if (is_msg_public(snac, msg))
                 object_user_cache_add(snac, id, "public");
@@ -1138,7 +1127,7 @@ void hide(snac *snac, const char *id)
             xs *co = NULL;
 
             /* resolve to get the id */
-            if (valid_status(object_get_by_md5(v, &co, NULL))) {
+            if (valid_status(object_get_by_md5(v, &co))) {
                 if ((v = xs_dict_get(co, "id")) != NULL)
                     hide(snac, v);
             }
@@ -1178,7 +1167,7 @@ int actor_get(snac *snac, const char *actor, d_char **data)
     }
 
     /* read the object */
-    if (!valid_status(status = object_get(actor, &d, NULL)))
+    if (!valid_status(status = object_get(actor, &d)))
         return status;
 
     if (data)

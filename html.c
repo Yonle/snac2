@@ -655,7 +655,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
             s = xs_str_cat(s, s1);
         }
         else
-        if (valid_status(object_get_by_md5(p, &actor_r, NULL))) {
+        if (valid_status(object_get_by_md5(p, &actor_r))) {
             char *name;
 
             if ((name = xs_dict_get(actor_r, "name")) == NULL)
@@ -1190,7 +1190,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         xs *id  = xs_fmt("%s/%s", snac.actor, p_path);
         xs *msg = NULL;
 
-        if (valid_status(object_get(id, &msg, NULL))) {
+        if (valid_status(object_get(id, &msg))) {
             xs *md5  = xs_md5_hex(id, strlen(id));
             xs *list = xs_list_new();
 
@@ -1416,7 +1416,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
                 /* an edition of a previous message */
                 xs *p_msg = NULL;
 
-                if (valid_status(object_get(edit_id, &p_msg, NULL))) {
+                if (valid_status(object_get(edit_id, &p_msg))) {
                     /* copy relevant fields from previous version */
                     char *fields[] = { "id", "context", "url", "published",
                                        "to", "inReplyTo", NULL };

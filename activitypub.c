@@ -469,7 +469,7 @@ d_char *msg_admiration(snac *snac, char *object, char *type)
     /* call the object */
     timeline_request(snac, &object, &wrk);
 
-    if (valid_status(object_get(object, &a_msg, NULL))) {
+    if (valid_status(object_get(object, &a_msg))) {
         xs *rcpts = xs_list_new();
 
         msg = msg_base(snac, type, "@dummy", snac->actor, "@now", object);
@@ -664,7 +664,7 @@ xs_dict *msg_note(snac *snac, xs_str *content, xs_val *rcpts, xs_str *in_reply_t
         /* demand this thing */
         timeline_request(snac, &in_reply_to, &wrk);
 
-        if (valid_status(object_get(in_reply_to, &p_msg, NULL))) {
+        if (valid_status(object_get(in_reply_to, &p_msg))) {
             /* add this author as recipient */
             char *a, *v;
 
@@ -977,7 +977,7 @@ int process_input_message(snac *snac, char *msg, char *req)
 
         timeline_request(snac, &object, &wrk);
 
-        if (valid_status(object_get(object, &a_msg, NULL))) {
+        if (valid_status(object_get(object, &a_msg))) {
             char *who = xs_dict_get(a_msg, "attributedTo");
 
             if (who && !is_muted(snac, who)) {
@@ -1262,7 +1262,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
         while (xs_list_iter(&p, &v)) {
             xs *i = NULL;
 
-            if (valid_status(object_get_by_md5(v, &i, NULL))) {
+            if (valid_status(object_get_by_md5(v, &i))) {
                 char *type = xs_dict_get(i, "type");
                 char *id   = xs_dict_get(i, "id");
 
@@ -1287,7 +1287,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
     if (xs_startswith(p_path, "p/")) {
         xs *id = xs_fmt("%s/%s", snac.actor, p_path);
 
-        status = object_get(id, &msg, NULL);
+        status = object_get(id, &msg);
     }
     else
         status = 404;
