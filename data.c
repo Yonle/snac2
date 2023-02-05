@@ -1575,14 +1575,15 @@ void purge_server(void)
 void purge_user(snac *snac)
 /* do the purge for this user */
 {
-    int days;
+    int priv_days, pub_days;
 
-    days = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
-    _purge_subdir(snac, "hidden", days);
-    _purge_subdir(snac, "private", days);
+    priv_days = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
+    pub_days  = xs_number_get(xs_dict_get(srv_config, "local_purge_days"));
 
-    days = xs_number_get(xs_dict_get(srv_config, "local_purge_days"));
-    _purge_subdir(snac, "public", days);
+    _purge_subdir(snac, "hidden",  priv_days);
+    _purge_subdir(snac, "private", priv_days);
+
+    _purge_subdir(snac, "public",  pub_days);
 }
 
 
