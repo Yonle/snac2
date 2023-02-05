@@ -2,7 +2,7 @@
 
 ## 2.21
 
-Users can now set the number of days after which the posts in their timeline will be deleted (this setting applies to both their own posts and those from the rest of the Fediverse). If this value is greater than the limits defined in the server configuration, it will be ignored (as the maximum data retention policy is mandated by the administrator).
+Users can now set the number of days after which the posts in their timeline will be deleted (this setting applies to both their own posts and those from the rest of the Fediverse).
 
 ## 2.20
 
