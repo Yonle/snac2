@@ -194,9 +194,9 @@ level command that is not very useful to you.
 .It Cm note Ar basedir Ar uid Ar text
 Enqueues a Create + Note message to all followers. If the
 .Ar text
-argument is - (a lonely hyphen), the external editor defined
-by the EDITOR environment variable will be invoked to prepare
-a message.
+argument is -e,  the external editor defined by the EDITOR
+environment variable will be invoked to prepare a message; if
+it's - (a lonely hyphen), the post content will be read from stdin.
 .El
 .Ss Migrating from Mastodon
 See 
@@ -221,4 +221,4 @@ See the LICENSE file for details.
 .Sh CAVEATS
 Use the Fediverse sparingly. Don't fear the MUTE button.
 .Sh BUGS
-Plenty. Some issues may be even documented in the TODO.md file.
+Probably plenty. Some issues may be even documented in the TODO.md file.
