@@ -261,10 +261,11 @@ int main(int argc, char *argv[])
         xs *c_msg = NULL;
         char *in_reply_to = GET_ARGV();
 
-        if (strcmp(url, "-") == 0) {
+        if (strcmp(url, "-e") == 0) {
             /* get the content from an editor */
             FILE *f;
 
+            unlink("/tmp/snac-edit.txt");
             system("$EDITOR /tmp/snac-edit.txt");
 
             if ((f = fopen("/tmp/snac-edit.txt", "r")) != NULL) {
@@ -277,6 +278,11 @@ int main(int argc, char *argv[])
                 printf("Nothing to send\n");
                 return 1;
             }
+        }
+        else
+        if (strcmp(url, "-") == 0) {
+            /* get the content from stdin */
+            content = xs_readall(stdin);
         }
         else
             content = xs_dup(url);
