@@ -155,9 +155,6 @@ int user_open(snac *snac, const char *uid)
         if ((f = fopen(cfg_file, "r")) != NULL) {
             xs *cfg_data;
 
-//            if (fileno(f) > 100)
-//                snac_log(snac, xs_fmt("CAUTION: fileno() > 100"));
-
             /* read full config file */
             cfg_data = xs_readall(f);
             fclose(f);
@@ -816,7 +813,29 @@ double timeline_mtime(snac *snac)
 int timeline_get_by_md5(snac *snac, const char *md5, xs_dict **msg)
 /* gets a message from the timeline */
 {
-    return object_get_by_md5(md5, msg);
+    int status = 404;
+    FILE *f    = NULL;
+
+    /* try to open from the private cache first */
+    xs *prfn = xs_fmt("%s/private/%s.json", snac->basedir, md5);
+
+    if ((f = fopen(prfn, "r")) == NULL) {
+        /* try now the public one */
+        xs *pufn = xs_fmt("%s/public/%s.json", snac->basedir, md5);
+        f = fopen(pufn, "r");
+    }
+
+    if (f != NULL) {
+        flock(fileno(f), LOCK_SH);
+
+        xs *j = xs_readall(f);
+        fclose(f);
+
+        if ((*msg = xs_json_loads(j)) != NULL)
+            status = 200;
+    }
+
+    return status;
 }
 
 
