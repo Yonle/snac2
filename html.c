@@ -830,7 +830,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
         p = children;
         while (xs_list_iter(&p, &cmd5)) {
             xs *chd = NULL;
-            object_get_by_md5(cmd5, &chd, NULL);
+            timeline_get_by_md5(snac, cmd5, &chd);
 
             if (older_open && left <= 3) {
                 ss = xs_str_cat(ss, "</details>\n");
@@ -895,7 +895,7 @@ d_char *html_timeline(snac *snac, char *list, int local, int skip, int show, int
     while (xs_list_iter(&list, &v)) {
         xs *msg = NULL;
 
-        if (!valid_status(object_get_by_md5(v, &msg, NULL)))
+        if (!valid_status(timeline_get_by_md5(snac, v, &msg)))
             continue;
 
         s = html_entry(snac, s, msg, local, 0, v);
@@ -1256,7 +1256,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         while (xs_list_iter(&p, &v)) {
             xs *msg  = NULL;
 
-            if (!valid_status(timeline_get(&snac, v, &msg)))
+            if (!valid_status(timeline_get_by_md5(&snac, v, &msg)))
                 continue;
 
             char *id = xs_dict_get(msg, "id");
