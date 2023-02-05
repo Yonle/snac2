@@ -307,6 +307,9 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<input type=\"text\" name=\"email\" value=\"%s\"></p>\n"
 
         "<p>%s:<br>\n"
+        "<input type=\"number\" name=\"purge_days\" value=\"%s\"></p>\n"
+
+        "<p>%s:<br>\n"
         "<input type=\"password\" name=\"passwd1\" value=\"\"></p>\n"
 
         "<p>%s:<br>\n"
@@ -328,6 +331,12 @@ d_char *html_top_controls(snac *snac, d_char *s)
     char *cw = xs_dict_get(snac->config, "cw");
     if (xs_is_null(cw))
         cw = "";
+
+    const char *purge_days = xs_dict_get(snac->config, "purge_days");
+    if (!xs_is_null(purge_days) && xs_type(purge_days) == XSTYPE_NUMBER)
+        purge_days = xs_number_str(purge_days);
+    else
+        purge_days = "0";
 
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
@@ -355,6 +364,8 @@ d_char *html_top_controls(snac *snac, d_char *s)
         L("Always show sensitive content"),
         L("Email address for notifications"),
         email,
+        L("Maximum days to keep posts (0: server settings)"),
+        purge_days,
         L("Password (only to change it)"),
         L("Repeat Password"),
         L("Update user info")
@@ -1567,6 +1578,10 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         }
         if ((v = xs_dict_get(p_vars, "email")) != NULL)
             snac.config = xs_dict_set(snac.config, "email", v);
+        if ((v = xs_dict_get(p_vars, "purge_days")) != NULL) {
+            xs *days    = xs_number_new(atof(v));
+            snac.config = xs_dict_set(snac.config, "purge_days", days);
+        }
 
         /* password change? */
         if ((p1 = xs_dict_get(p_vars, "passwd1")) != NULL &&

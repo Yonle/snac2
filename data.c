@@ -1575,10 +1575,23 @@ void purge_server(void)
 void purge_user(snac *snac)
 /* do the purge for this user */
 {
-    int priv_days, pub_days;
+    int priv_days, pub_days, user_days = 0;
+    char *v;
 
     priv_days = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
     pub_days  = xs_number_get(xs_dict_get(srv_config, "local_purge_days"));
+
+    if ((v = xs_dict_get(snac->config, "purge_days")) != NULL)
+        user_days = xs_number_get(v);
+
+    if (user_days) {
+        /* override admin settings only if they are lesser */
+        if (priv_days == 0 || user_days < priv_days)
+            priv_days = user_days;
+
+        if (pub_days == 0 || user_days < pub_days)
+            pub_days = user_days;
+    }
 
     _purge_subdir(snac, "hidden",  priv_days);
     _purge_subdir(snac, "private", priv_days);
