@@ -1256,7 +1256,7 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
         while (xs_list_iter(&p, &v)) {
             xs *msg  = NULL;
 
-            if (!valid_status(object_get_by_md5(v, &msg, NULL)))
+            if (!valid_status(timeline_get(&snac, v, &msg)))
                 continue;
 
             char *id = xs_dict_get(msg, "id");

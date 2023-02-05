@@ -824,6 +824,13 @@ double timeline_mtime(snac *snac)
 }
 
 
+int timeline_get(snac *snac, const char *id, xs_dict **msg)
+/* gets a message from the timeline */
+{
+    return object_get_by_md5(id, msg, NULL);
+}
+
+
 int timeline_del(snac *snac, char *id)
 /* deletes a message from the timeline */
 {

@@ -88,6 +88,7 @@ int follower_check(snac *snac, const char *actor);
 d_char *follower_list(snac *snac);
 
 double timeline_mtime(snac *snac);
+int timeline_get(snac *snac, const char *id, xs_dict **msg);
 int timeline_del(snac *snac, char *id);
 d_char *timeline_simple_list(snac *snac, const char *idx_name, int skip, int show);
 d_char *timeline_list(snac *snac, const char *idx_name, int skip, int show);
