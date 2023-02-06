@@ -328,27 +328,18 @@ static pthread_mutex_t job_mutex;
 /* semaphre to trigger job processing */
 static sem_t job_sem;
 
-/* list of input sockets */
-xs_list *job_sockets = NULL;
-
-/* list of queue items */
-xs_list *job_qitems = NULL;
+/* fifo of jobs */
+xs_list *job_fifo = NULL;
 
 
-void job_post(FILE *socket, const xs_dict *q_item)
-/* posts a job, being an input connection or another queue item */
+void job_post(const xs_val *job)
+/* posts a job for the threads to process it */
 {
     /* lock the mutex */
     pthread_mutex_lock(&job_mutex);
 
-    /* add to the appropriate fifo */
-    if (socket != NULL) {
-        xs *d = xs_data_new(&socket, sizeof(FILE *));
-        job_sockets = xs_list_append(job_sockets, d);
-    }
-    else
-    if (q_item != NULL)
-        job_qitems = xs_list_append(job_qitems, q_item);
+    /* add to the fifo */
+    job_fifo = xs_list_append(job_fifo, job);
 
     /* unlock the mutex */
     pthread_mutex_unlock(&job_mutex);
@@ -358,39 +349,21 @@ void job_post(FILE *socket, const xs_dict *q_item)
 }
 
 
-int job_wait(FILE **socket, xs_dict **q_item)
-/* waits for an available job; returns 0 if nothing left to do */
+void job_wait(xs_val **job)
+/* waits for an available job */
 {
-    int done = 1;
-
-    *socket = NULL;
-    *q_item = NULL;
+    *job = NULL;
 
     if (sem_wait(&job_sem) == 0) {
         /* lock the mutex */
         pthread_mutex_lock(&job_mutex);
 
-        /* try first to get a socket to process */
-        xs *job_socket = NULL;
-        job_sockets = xs_list_shift(job_sockets, &job_socket);
-
-        /* if empty, try a q_item */
-        if (job_socket == NULL)
-            job_qitems = xs_list_shift(job_qitems, q_item);
+        /* dequeue */
+        job_fifo = xs_list_shift(job_fifo, job);
 
         /* unlock the mutex */
         pthread_mutex_unlock(&job_mutex);
-
-        if (job_socket != NULL) {
-            xs_data_get(job_socket, socket);
-            done = 0;
-        }
-        else
-        if (*q_item != NULL)
-            done = 0;
     }
-
-    return done;
 }
 
 
@@ -426,8 +399,7 @@ void httpd(void)
     /* initialize the job control engine */
     pthread_mutex_init(&job_mutex, NULL);
     sem_init(&job_sem, 0, 0);
-    job_sockets = xs_list_new();
-    job_qitems = xs_list_new();
+    job_fifo = xs_list_new();
 
 #ifdef _SC_NPROCESSORS_ONLN
     /* get number of CPUs on the machine */
@@ -461,8 +433,7 @@ void httpd(void)
     /* wait for the background thread to end */
     pthread_join(threads[0], NULL);
 
-    job_sockets = xs_free(job_sockets);
-    job_qitems  = xs_free(job_qitems);
+    job_fifo = xs_free(job_fifo);
 
     srv_log(xs_fmt("httpd stop %s:%d", address, port));
 }
