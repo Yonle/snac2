@@ -312,14 +312,6 @@ static void *background_thread(void *arg)
 }
 
 
-static void *connection_thread(void *arg)
-/* connection thread */
-{
-    httpd_connection((FILE *)arg);
-    return NULL;
-}
-
-
 /** job control **/
 
 /* mutex to access the lists of jobs */
@@ -376,25 +368,32 @@ void job_wait(xs_val **job)
 static void *job_thread(void *arg)
 /* job thread */
 {
-//    httpd_connection((FILE *)arg);
-    srv_debug(0, xs_fmt("job thread started"));
+    int pid = pthread_self();
+
+    srv_debug(0, xs_fmt("job thread %x started", pid));
 
     for (;;) {
         xs *job = NULL;
 
         job_wait(&job);
 
-        srv_debug(0, xs_fmt("job thread wake up"));
+        srv_debug(0, xs_fmt("job thread %x wake up", pid));
 
         if (job == NULL)
             break;
 
         if (xs_type(job) == XSTYPE_DATA) {
             /* it's a socket */
+            FILE *f = NULL;
+
+            xs_data_get(job, &f);
+
+            if (f != NULL)
+                httpd_connection(f);
         }
     }
 
-    srv_debug(0, xs_fmt("job thread stopped"));
+    srv_debug(0, xs_fmt("job thread %x stopped", pid));
 
     return NULL;
 }
@@ -455,10 +454,9 @@ void httpd(void)
         for (;;) {
             FILE *f = xs_socket_accept(rs);
 
-            pthread_t cth;
+            xs *job = xs_data_new(&f, sizeof(FILE *));
 
-            pthread_create(&cth, NULL, connection_thread, f);
-            pthread_detach(cth);
+            job_post(job);
         }
     }
 
