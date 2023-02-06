@@ -169,7 +169,7 @@ int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_s
 int is_msg_public(snac *snac, char *msg);
 
 void process_user_queue(snac *snac);
-
+void process_queue_item(xs_dict *q_item);
 void process_queue(void);
 
 void post(snac *snac, char *msg);

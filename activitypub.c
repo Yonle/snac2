@@ -1188,6 +1188,14 @@ void process_queue_item(xs_dict *q_item)
             }
         }
     }
+    else
+    if (strcmp(type, "purge") == 0) {
+        srv_log(xs_dup("purge start"));
+
+        purge_all();
+
+        srv_log(xs_dup("purge end"));
+    }
 }
 
 
