@@ -252,8 +252,6 @@ static void *purge_thread(void *arg)
 static void *background_thread(void *arg)
 /* background thread (queue management and other things) */
 {
-    pthread_mutex_t dummy_mutex = PTHREAD_MUTEX_INITIALIZER;
-    pthread_cond_t  dummy_cond  = PTHREAD_COND_INITIALIZER;
     time_t purge_time;
 
     /* first purge time */
@@ -295,7 +293,10 @@ static void *background_thread(void *arg)
         }
 
         /* sleep 3 seconds */
+        pthread_mutex_t dummy_mutex = PTHREAD_MUTEX_INITIALIZER;
+        pthread_cond_t  dummy_cond  = PTHREAD_COND_INITIALIZER;
         struct timespec ts;
+
         clock_gettime(CLOCK_REALTIME, &ts);
         ts.tv_sec += 3;
 
@@ -318,13 +319,18 @@ static void *connection_thread(void *arg)
 }
 
 
+#ifndef MAX_THREADS
+#define MAX_THREADS 256
+#endif
+
 void httpd(void)
 /* starts the server */
 {
     char *address;
     int port;
     int rs;
-    pthread_t htid;
+    pthread_t threads[MAX_THREADS];
+    int n_threads = 0;
 
     address = xs_dict_get(srv_config, "address");
     port    = xs_number_get(xs_dict_get(srv_config, "port"));
@@ -338,11 +344,25 @@ void httpd(void)
 
     signal(SIGPIPE, SIG_IGN);
     signal(SIGTERM, term_handler);
-    signal(SIGINT, term_handler);
+    signal(SIGINT,  term_handler);
 
     srv_log(xs_fmt("httpd start %s:%d %s", address, port, USER_AGENT));
 
-    pthread_create(&htid, NULL, background_thread, NULL);
+    /* thread creation */
+#ifdef _SC_NPROCESSORS_ONLN
+    n_threads = sysconf(_SC_NPROCESSORS_ONLN);
+#endif
+
+    if (n_threads < 4)
+        n_threads = 4;
+
+    if (n_threads > MAX_THREADS)
+        n_threads = MAX_THREADS;
+
+    srv_debug(0, xs_fmt("using %d threads", n_threads));
+
+    /* thread #0 is the background thread */
+    pthread_create(&threads[0], NULL, background_thread, NULL);
 
     if (setjmp(on_break) == 0) {
         for (;;) {
@@ -357,8 +377,8 @@ void httpd(void)
 
     srv_running = 0;
 
-    /* wait for the helper thread to end */
-    pthread_join(htid, NULL);
+    /* wait for the background thread to end */
+    pthread_join(threads[0], NULL);
 
     srv_log(xs_fmt("httpd stop %s:%d", address, port));
 }
