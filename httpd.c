@@ -249,8 +249,8 @@ static void *purge_thread(void *arg)
 }
 
 
-static void *queue_thread(void *arg)
-/* queue thread (queue management) */
+static void *background_thread(void *arg)
+/* background thread (queue management and other things) */
 {
     pthread_mutex_t dummy_mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t  dummy_cond  = PTHREAD_COND_INITIALIZER;
@@ -259,7 +259,7 @@ static void *queue_thread(void *arg)
     /* first purge time */
     purge_time = time(NULL) + 10 * 60;
 
-    srv_log(xs_fmt("queue thread start"));
+    srv_log(xs_fmt("background thread started"));
 
     while (srv_running) {
         time_t t;
@@ -304,7 +304,7 @@ static void *queue_thread(void *arg)
         pthread_mutex_unlock(&dummy_mutex);
     }
 
-    srv_log(xs_fmt("queue thread stop"));
+    srv_log(xs_fmt("background thread stopped"));
 
     return NULL;
 }
@@ -317,8 +317,6 @@ static void *connection_thread(void *arg)
     return NULL;
 }
 
-
-int threaded_connections = 1;
 
 void httpd(void)
 /* starts the server */
@@ -344,20 +342,16 @@ void httpd(void)
 
     srv_log(xs_fmt("httpd start %s:%d %s", address, port, USER_AGENT));
 
-    pthread_create(&htid, NULL, queue_thread, NULL);
+    pthread_create(&htid, NULL, background_thread, NULL);
 
     if (setjmp(on_break) == 0) {
         for (;;) {
             FILE *f = xs_socket_accept(rs);
 
-            if (threaded_connections) {
-                pthread_t cth;
+            pthread_t cth;
 
-                pthread_create(&cth, NULL, connection_thread, f);
-                pthread_detach(cth);
-            }
-            else
-                httpd_connection(f);
+            pthread_create(&cth, NULL, connection_thread, f);
+            pthread_detach(cth);
         }
     }
 
