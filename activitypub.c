@@ -1215,7 +1215,7 @@ void process_queue(void)
             continue;
         }
 
-        process_queue_item(q_item);
+        job_post(q_item);
     }
 }
 

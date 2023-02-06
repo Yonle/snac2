@@ -172,7 +172,6 @@ void process_user_queue(snac *snac);
 void process_queue_item(xs_dict *q_item);
 void process_queue(void);
 
-void post(snac *snac, char *msg);
 int activitypub_get_handler(d_char *req, char *q_path,
                             char **body, int *b_size, char **ctype);
 int activitypub_post_handler(d_char *req, char *q_path,
@@ -189,3 +188,6 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 int snac_init(const char *_basedir);
 int adduser(const char *uid);
 int resetpwd(snac *snac);
+
+void job_post(const xs_val *job);
+void job_wait(xs_val **job);
