@@ -335,14 +335,16 @@ xs_list *job_fifo = NULL;
 void job_post(const xs_val *job)
 /* posts a job for the threads to process it */
 {
-    /* lock the mutex */
-    pthread_mutex_lock(&job_mutex);
+    if (job != NULL) {
+        /* lock the mutex */
+        pthread_mutex_lock(&job_mutex);
 
-    /* add to the fifo */
-    job_fifo = xs_list_append(job_fifo, job);
+        /* add to the fifo */
+        job_fifo = xs_list_append(job_fifo, job);
 
-    /* unlock the mutex */
-    pthread_mutex_unlock(&job_mutex);
+        /* unlock the mutex */
+        pthread_mutex_unlock(&job_mutex);
+    }
 
     /* ask for someone to attend it */
     sem_post(&job_sem);
@@ -371,6 +373,33 @@ void job_wait(xs_val **job)
 #define MAX_THREADS 256
 #endif
 
+static void *job_thread(void *arg)
+/* job thread */
+{
+//    httpd_connection((FILE *)arg);
+    srv_debug(0, xs_fmt("job thread started"));
+
+    for (;;) {
+        xs *job = NULL;
+
+        job_wait(&job);
+
+        srv_debug(0, xs_fmt("job thread wake up"));
+
+        if (job == NULL)
+            break;
+
+        if (xs_type(job) == XSTYPE_DATA) {
+            /* it's a socket */
+        }
+    }
+
+    srv_debug(0, xs_fmt("job thread stopped"));
+
+    return NULL;
+}
+
+
 void httpd(void)
 /* starts the server */
 {
@@ -379,6 +408,7 @@ void httpd(void)
     int rs;
     pthread_t threads[MAX_THREADS];
     int n_threads = 0;
+    int n;
 
     address = xs_dict_get(srv_config, "address");
     port    = xs_number_get(xs_dict_get(srv_config, "port"));
@@ -417,6 +447,10 @@ void httpd(void)
     /* thread #0 is the background thread */
     pthread_create(&threads[0], NULL, background_thread, NULL);
 
+    /* the rest of threads are for job processing */
+    for (n = 1; n < n_threads; n++)
+        pthread_create(&threads[n], NULL, job_thread, NULL);
+
     if (setjmp(on_break) == 0) {
         for (;;) {
             FILE *f = xs_socket_accept(rs);
@@ -430,8 +464,13 @@ void httpd(void)
 
     srv_running = 0;
 
-    /* wait for the background thread to end */
-    pthread_join(threads[0], NULL);
+    /* send as many empty jobs as working threads */
+    for (n = 1; n < n_threads; n++)
+        job_post(NULL);
+
+    /* wait for all the threads to exit */
+    for (n = 0; n < n_threads; n++)
+        pthread_join(threads[n], NULL);
 
     job_fifo = xs_free(job_fifo);
 
