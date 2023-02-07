@@ -143,10 +143,13 @@ int snac_init(const char *basedir)
         }
     }
 
-    if (mkdir(srv_basedir, 0775) == -1) {
+    if (mkdir(srv_basedir, DIR_PERM) == -1) {
         printf("ERROR: cannot create directory '%s'\n", srv_basedir);
         return 1;
     }
+
+    /* force permissions (mkdir also uses 777) */
+    chmod(srv_basedir, DIR_PERM);
 
     xs *udir = xs_fmt("%s/user", srv_basedir);
     mkdir(udir, DIR_PERM);
