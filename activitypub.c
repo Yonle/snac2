@@ -1126,20 +1126,20 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
         /* deliver */
         status = send_to_inbox_raw(keyid, seckey, inbox, msg, &payload, &p_size, retries == 0 ? 3 : 8);
 
-        snac_log(snac, xs_fmt("process_queue sent to inbox %s %d", inbox, status));
+        snac_log(snac, xs_fmt("output sent to inbox %s %d", inbox, status));
 
         if (!valid_status(status)) {
             /* error sending; requeue? */
             if (status == 404 || status == 410)
                 /* explicit error: discard */
-                snac_log(snac, xs_fmt("process_queue error %s %d", inbox, status));
+                snac_log(snac, xs_fmt("output error %s %d", inbox, status));
             else
             if (retries > queue_retry_max)
-                snac_log(snac, xs_fmt("process_queue giving up %s %d", inbox, status));
+                snac_log(snac, xs_fmt("output giving up %s %d", inbox, status));
             else {
                 /* requeue */
                 enqueue_output(snac, msg, inbox, retries + 1);
-                snac_log(snac, xs_fmt("process_queue requeue %s #%d", inbox, retries + 1));
+                snac_log(snac, xs_fmt("output requeue %s #%d", inbox, retries + 1));
             }
         }
     }
@@ -1155,14 +1155,16 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
 
         if (!process_input_message(snac, msg, req)) {
             if (retries > queue_retry_max)
-                snac_log(snac, xs_fmt("process_queue input giving up"));
+                snac_log(snac, xs_fmt("input giving up"));
             else {
                 /* reenqueue */
                 enqueue_input(snac, msg, req, retries + 1);
-                snac_log(snac, xs_fmt("process_queue input requeue #%d", retries + 1));
+                snac_log(snac, xs_fmt("input requeue #%d", retries + 1));
             }
         }
     }
+    else
+        snac_log(snac, xs_fmt("unexpected q_item type '%s'", type));
 }
 
 
@@ -1245,6 +1247,8 @@ void process_queue_item(xs_dict *q_item)
 
         srv_log(xs_dup("purge end"));
     }
+    else
+        srv_log(xs_fmt("unexpected q_item type '%s'", type));
 }
 
 
