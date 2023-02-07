@@ -1108,42 +1108,6 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
         }
     }
     else
-    if (strcmp(type, "output") == 0) {
-        int status;
-        xs_str *inbox  = xs_dict_get(q_item, "inbox");
-        xs_str *keyid  = xs_dict_get(q_item, "keyid");
-        xs_str *seckey = xs_dict_get(q_item, "seckey");
-        xs_dict *msg   = xs_dict_get(q_item, "message");
-        int retries    = xs_number_get(xs_dict_get(q_item, "retries"));
-        xs *payload    = NULL;
-        int p_size     = 0;
-
-        if (xs_is_null(inbox) || xs_is_null(msg) || xs_is_null(keyid) || xs_is_null(seckey)) {
-            srv_log(xs_fmt("incomplete output message"));
-            return;
-        }
-
-        /* deliver */
-        status = send_to_inbox_raw(keyid, seckey, inbox, msg, &payload, &p_size, retries == 0 ? 3 : 8);
-
-        snac_log(snac, xs_fmt("output sent to inbox %s %d", inbox, status));
-
-        if (!valid_status(status)) {
-            /* error sending; requeue? */
-            if (status == 404 || status == 410)
-                /* explicit error: discard */
-                snac_log(snac, xs_fmt("output error %s %d", inbox, status));
-            else
-            if (retries > queue_retry_max)
-                snac_log(snac, xs_fmt("output giving up %s %d", inbox, status));
-            else {
-                /* requeue */
-                enqueue_output(snac, msg, inbox, retries + 1);
-                snac_log(snac, xs_fmt("output requeue %s #%d", inbox, retries + 1));
-            }
-        }
-    }
-    else
     if (strcmp(type, "input") == 0) {
         /* process the message */
         xs_dict *msg = xs_dict_get(q_item, "message");
