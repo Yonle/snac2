@@ -36,7 +36,7 @@ int snac_upgrade(xs_str **error)
         else
         if (f < 2.1) {
             xs *dir = xs_fmt("%s/object", srv_basedir);
-            mkdir(dir, DIR_PERM);
+            mkdirx(dir);
 
             nf = 2.1;
         }
@@ -61,7 +61,7 @@ int snac_upgrade(xs_str **error)
                         xs *dir = xs_fmt("%s/object/%c%c", srv_basedir, b[0], b[1]);
                         xs *nfn = xs_fmt("%s/%s", dir, b);
 
-                        mkdir(dir, DIR_PERM);
+                        mkdirx(dir);
                         rename(fn, nfn);
                     }
 
@@ -88,7 +88,7 @@ int snac_upgrade(xs_str **error)
                     xs *dir = xs_fmt("%s/hidden", snac.basedir);
 
                     /* create the hidden directory */
-                    mkdir(dir, DIR_PERM);
+                    mkdirx(dir);
 
                     /* rename all muted files incorrectly named .json */
                     xs *spec = xs_fmt("%s/muted/" "*.json", snac.basedir);
@@ -117,10 +117,10 @@ int snac_upgrade(xs_str **error)
 
                 if (user_open(&snac, v)) {
                     xs *dir = xs_fmt("%s/public", snac.basedir);
-                    mkdir(dir, DIR_PERM);
+                    mkdirx(dir);
 
                     dir = xs_replace_i(dir, "public", "private");
-                    mkdir(dir, DIR_PERM);
+                    mkdirx(dir);
 
                     user_free(&snac);
                 }

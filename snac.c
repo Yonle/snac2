@@ -30,6 +30,18 @@ int     srv_running = 0;
 int dbglevel = 0;
 
 
+int mkdirx(const char *pathname)
+/* creates a directory with special permissions */
+{
+    int ret;
+
+    if ((ret = mkdir(pathname, DIR_PERM)) != -1)
+        ret = chmod(pathname, DIR_PERM);
+
+    return ret;
+}
+
+
 int valid_status(int status)
 /* is this HTTP status valid? */
 {
@@ -149,7 +161,7 @@ void srv_archive(const char *direction, xs_dict *req,
     xs *dir  = xs_fmt("%s/archive/%s_%s", srv_basedir, date, direction);
     FILE *f;
 
-    if (mkdir(dir, DIR_PERM) != -1) {
+    if (mkdirx(dir) != -1) {
         xs *meta_fn = xs_fmt("%s/_META", dir);
 
         if ((f = fopen(meta_fn, "w")) != NULL) {

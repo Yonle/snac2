@@ -88,7 +88,7 @@ int srv_open(char *basedir, int auto_upgrade)
 
     /* create the queue/ subdir, just in case */
     xs *qdir = xs_fmt("%s/queue", srv_basedir);
-    mkdir(qdir, DIR_PERM);
+    mkdirx(qdir);
 
 #ifdef __OpenBSD__
     char *v = xs_dict_get(srv_config, "disable_openbsd_security");
@@ -434,7 +434,7 @@ d_char *_object_fn_by_md5(const char *md5)
 {
     xs *bfn = xs_fmt("%s/object/%c%c", srv_basedir, md5[0], md5[1]);
 
-    mkdir(bfn, DIR_PERM);
+    mkdirx(bfn);
 
     return xs_fmt("%s/%s.json", bfn, md5);
 }

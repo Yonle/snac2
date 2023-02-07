@@ -17,6 +17,8 @@ extern int dbglevel;
 
 #define L(s) (s)
 
+int mkdirx(const char *pathname);
+
 int valid_status(int status);
 d_char *tid(int offset);
 double ftime(void);
