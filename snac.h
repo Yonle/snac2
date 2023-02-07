@@ -129,6 +129,8 @@ int history_del(snac *snac, char *id);
 d_char *history_list(snac *snac);
 
 void enqueue_input(snac *snac, xs_dict *msg, xs_dict *req, int retries);
+void enqueue_output_raw(const char *keyid, const char *seckey,
+                        xs_dict *msg, xs_str *inbox, int retries);
 void enqueue_output(snac *snac, xs_dict *msg, xs_str *inbox, int retries);
 void enqueue_output_by_actor(snac *snac, xs_dict *msg, xs_str *actor, int retries);
 void enqueue_email(xs_str *msg, int retries);
