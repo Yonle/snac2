@@ -1110,17 +1110,21 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
     else
     if (strcmp(type, "output") == 0) {
         int status;
-        xs_str *inbox = xs_dict_get(q_item, "inbox");
-        xs_dict *msg  = xs_dict_get(q_item, "message");
-        int retries   = xs_number_get(xs_dict_get(q_item, "retries"));
-        xs *payload   = NULL;
-        int p_size    = 0;
+        xs_str *inbox  = xs_dict_get(q_item, "inbox");
+        xs_str *keyid  = xs_dict_get(q_item, "keyid");
+        xs_str *seckey = xs_dict_get(q_item, "seckey");
+        xs_dict *msg   = xs_dict_get(q_item, "message");
+        int retries    = xs_number_get(xs_dict_get(q_item, "retries"));
+        xs *payload    = NULL;
+        int p_size     = 0;
 
-        if (xs_is_null(inbox) || xs_is_null(msg))
+        if (xs_is_null(inbox) || xs_is_null(msg) || xs_is_null(keyid) || xs_is_null(seckey)) {
+            srv_log(xs_fmt("incomplete output message"));
             return;
+        }
 
         /* deliver */
-        status = send_to_inbox(snac, inbox, msg, &payload, &p_size, retries == 0 ? 3 : 8);
+        status = send_to_inbox_raw(keyid, seckey, inbox, msg, &payload, &p_size, retries == 0 ? 3 : 8);
 
         snac_log(snac, xs_fmt("process_queue sent to inbox %s %d", inbox, status));
 
