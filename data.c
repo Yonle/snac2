@@ -1420,6 +1420,22 @@ void enqueue_email(xs_str *msg, int retries)
 }
 
 
+void enqueue_telegram(const xs_str *msg, const char *bot, const char *chat_id)
+/* enqueues a message to be sent via Telegram */
+{
+    xs *qmsg   = _new_qmsg("telegram", msg, 0);
+    char *ntid = xs_dict_get(qmsg, "ntid");
+    xs *fn     = xs_fmt("%s/queue/%s.json", srv_basedir, ntid);
+
+    qmsg = xs_dict_append(qmsg, "bot",      bot);
+    qmsg = xs_dict_append(qmsg, "chat_id",  chat_id);
+
+    qmsg = _enqueue_put(fn, qmsg);
+
+    srv_debug(1, xs_fmt("enqueue_email %s %s", bot, chat_id));
+}
+
+
 void enqueue_message(snac *snac, xs_dict *msg)
 /* enqueues an output message */
 {

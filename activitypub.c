@@ -771,12 +771,7 @@ xs_dict *msg_note(snac *snac, xs_str *content, xs_val *rcpts, xs_str *in_reply_t
 void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
 /* notifies the user of relevant events */
 {
-    char *email  = xs_dict_get(snac->config, "email");
     char *object = NULL;
-
-    /* no email address? done */
-    if (xs_is_null(email) || *email == '\0')
-        return;
 
     if (strcmp(type, "Create") == 0) {
         /* only notify of notes specifically for us */
@@ -804,21 +799,8 @@ void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
         }
     }
 
-    snac_debug(snac, 1, xs_fmt("notify(%s, %s, %s)", type, utype, actor));
-
-    /* prepare message */
-
-    xs *subject = xs_fmt("snac notify for @%s@%s",
-                    xs_dict_get(snac->config, "uid"), xs_dict_get(srv_config, "host"));
-    xs *from    = xs_fmt("snac-daemon <snac-daemon@%s>", xs_dict_get(srv_config, "host"));
-    xs *header  = xs_fmt(
-                    "From: %s\n"
-                    "To: %s\n"
-                    "Subject: %s\n"
-                    "\n",
-                    from, email, subject);
-
-    xs *body = xs_str_new(header);
+    /* prepare message body */
+    xs *body = xs_str_new(NULL);
 
     if (strcmp(utype, "(null)") != 0) {
         xs *s1 = xs_fmt("Type  : %s + %s\n", type, utype);
@@ -839,7 +821,35 @@ void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
         body = xs_str_cat(body, s1);
     }
 
-    enqueue_email(body, 0);
+    /* email */
+
+    char *email = xs_dict_get(snac->config, "email");
+
+    if (!xs_is_null(email) && *email != '\0') {
+        snac_debug(snac, 1, xs_fmt("email notify %s %s %s", type, utype, actor));
+
+        xs *subject = xs_fmt("snac notify for @%s@%s",
+                    xs_dict_get(snac->config, "uid"), xs_dict_get(srv_config, "host"));
+        xs *from    = xs_fmt("snac-daemon <snac-daemon@%s>", xs_dict_get(srv_config, "host"));
+        xs *header  = xs_fmt(
+                    "From: %s\n"
+                    "To: %s\n"
+                    "Subject: %s\n"
+                    "\n",
+                    from, email, subject);
+
+        xs *email_body = xs_fmt("%s%s", header, body);
+
+        enqueue_email(email_body, 0);
+    }
+
+    /* telegram */
+
+    char *bot     = xs_dict_get(snac->config, "telegram_bot");
+    char *chat_id = xs_dict_get(snac->config, "telegram_chat_id");
+
+    if (!xs_is_null(bot) && !xs_is_null(chat_id) && *bot && *chat_id)
+        enqueue_telegram(body, bot, chat_id);
 }
 
 
@@ -1178,15 +1188,38 @@ void process_queue_item(xs_dict *q_item)
             retries++;
 
             if (retries > queue_retry_max)
-                srv_log(xs_fmt("process_queue email giving up (errno: %d)", errno));
+                srv_log(xs_fmt("email giving up (errno: %d)", errno));
             else {
                 /* requeue */
                 srv_log(xs_fmt(
-                    "process_queue email requeue #%d (errno: %d)", retries, errno));
+                    "email requeue #%d (errno: %d)", retries, errno));
 
                 enqueue_email(msg, retries);
             }
         }
+    }
+    else
+    if (strcmp(type, "telegram") == 0) {
+        /* send this via telegram */
+        char *bot   = xs_dict_get(q_item, "bot");
+        char *msg   = xs_dict_get(q_item, "message");
+        xs *chat_id = xs_dup(xs_dict_get(q_item, "chat_id"));
+        int status  = 0;
+
+        /* chat_id must start with a - */
+        if (!xs_startswith(chat_id, "-"))
+            chat_id = xs_str_wrap_i("-", chat_id, NULL);
+
+        xs *url  = xs_fmt("https:/" "/api.telegram.org/bot%s/sendMessage", bot);
+        xs *body = xs_fmt("{\"chat_id\":%s,\"text\":\"%s\"}", chat_id, msg);
+
+        xs *headers = xs_dict_new();
+        headers = xs_dict_append(headers, "content-type", "application/json");
+
+        xs *rsp  = xs_http_request("POST", url, headers,
+                                   body, strlen(body), &status, NULL, NULL, 0);
+
+        srv_debug(0, xs_fmt("telegram post %d", status));
     }
     else
     if (strcmp(type, "purge") == 0) {
@@ -1210,12 +1243,8 @@ void process_queue(void)
     while (xs_list_iter(&p, &fn)) {
         xs *q_item = dequeue(fn);
 
-        if (q_item == NULL) {
-            srv_log(xs_fmt("process_queue q_item error"));
-            continue;
-        }
-
-        job_post(q_item);
+        if (q_item != NULL)
+            job_post(q_item);
     }
 }
 

@@ -128,6 +128,7 @@ void enqueue_input(snac *snac, xs_dict *msg, xs_dict *req, int retries);
 void enqueue_output(snac *snac, xs_dict *msg, xs_str *inbox, int retries);
 void enqueue_output_by_actor(snac *snac, xs_dict *msg, xs_str *actor, int retries);
 void enqueue_email(xs_str *msg, int retries);
+void enqueue_telegram(const xs_str *msg, const char *bot, const char *chat_id);
 void enqueue_message(snac *snac, char *msg);
 
 xs_list *user_queue(snac *snac);
