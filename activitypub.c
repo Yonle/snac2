@@ -160,19 +160,31 @@ int timeline_request(snac *snac, char **id, d_char **wrk)
 }
 
 
-int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_size, int timeout)
+int send_to_inbox_raw(const char *keyid, const char *seckey,
+                  const xs_str *inbox, const xs_dict *msg,
+                  xs_val **payload, int *p_size, int timeout)
 /* sends a message to an Inbox */
 {
     int status;
-    d_char *response;
-    xs *j_msg = xs_json_dumps_pp(msg, 4);
+    xs_dict *response;
+    xs *j_msg = xs_json_dumps_pp((xs_dict *)msg, 4);
 
-    response = http_signed_request(snac, "POST", inbox,
+    response = http_signed_request_raw(keyid, seckey, "POST", inbox,
         NULL, j_msg, strlen(j_msg), &status, payload, p_size, timeout);
 
     xs_free(response);
 
     return status;
+}
+
+
+int send_to_inbox(snac *snac, const xs_str *inbox, const xs_dict *msg,
+                  xs_val **payload, int *p_size, int timeout)
+/* sends a message to an Inbox */
+{
+    char *seckey = xs_dict_get(snac->key, "secret");
+
+    return send_to_inbox_raw(snac->actor, seckey, inbox, msg, payload, p_size, timeout);
 }
 
 

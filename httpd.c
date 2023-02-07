@@ -295,14 +295,14 @@ static void *job_thread(void *arg)
 {
     long long pid = (long long)arg;
 
-    srv_debug(1, xs_fmt("job thread %ld started", pid));
+    srv_debug(0, xs_fmt("job thread %ld started", pid));
 
     for (;;) {
         xs *job = NULL;
 
         job_wait(&job);
 
-        srv_debug(1, xs_fmt("job thread %ld wake up", pid));
+        srv_debug(0, xs_fmt("job thread %ld wake up", pid));
 
         if (job == NULL)
             break;
@@ -322,7 +322,7 @@ static void *job_thread(void *arg)
         }
     }
 
-    srv_debug(1, xs_fmt("job thread %ld stopped", pid));
+    srv_debug(0, xs_fmt("job thread %ld stopped", pid));
 
     return NULL;
 }

@@ -142,6 +142,12 @@ xs_dict *dequeue(const char *fn);
 void purge(snac *snac);
 void purge_all(void);
 
+xs_dict *http_signed_request_raw(const char *keyid, const char *seckey,
+                            const char *method, const char *url,
+                            xs_dict *headers,
+                            const char *body, int b_size,
+                            int *status, xs_str **payload, int *p_size,
+                            int timeout);
 xs_dict *http_signed_request(snac *snac, const char *method, const char *url,
                             xs_dict *headers,
                             const char *body, int b_size,
@@ -168,7 +174,11 @@ d_char *msg_update(snac *snac, char *object);
 
 int activitypub_request(snac *snac, char *url, d_char **data);
 int actor_request(snac *snac, char *actor, d_char **data);
-int send_to_inbox(snac *snac, char *inbox, char *msg, d_char **payload, int *p_size, int timeout);
+int send_to_inbox_raw(const char *keyid, const char *seckey,
+                  const xs_str *inbox, const xs_dict *msg,
+                  xs_val **payload, int *p_size, int timeout);
+int send_to_inbox(snac *snac, const xs_str *inbox, const xs_dict *msg,
+                  xs_val **payload, int *p_size, int timeout);
 d_char *get_actor_inbox(snac *snac, char *actor);
 int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size, int timeout);
 int is_msg_public(snac *snac, char *msg);
