@@ -149,7 +149,7 @@ void srv_archive(const char *direction, xs_dict *req,
     xs *dir  = xs_fmt("%s/archive/%s_%s", srv_basedir, date, direction);
     FILE *f;
 
-    if (mkdir(dir, 0755) != -1) {
+    if (mkdir(dir, DIR_PERM) != -1) {
         xs *meta_fn = xs_fmt("%s/_META", dir);
 
         if ((f = fopen(meta_fn, "w")) != NULL) {

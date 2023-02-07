@@ -143,19 +143,19 @@ int snac_init(const char *basedir)
         }
     }
 
-    if (mkdir(srv_basedir, 0755) == -1) {
+    if (mkdir(srv_basedir, 0775) == -1) {
         printf("ERROR: cannot create directory '%s'\n", srv_basedir);
         return 1;
     }
 
     xs *udir = xs_fmt("%s/user", srv_basedir);
-    mkdir(udir, 0755);
+    mkdir(udir, DIR_PERM);
 
     xs *odir = xs_fmt("%s/object", srv_basedir);
-    mkdir(odir, 0755);
+    mkdir(odir, DIR_PERM);
 
     xs *qdir = xs_fmt("%s/queue", srv_basedir);
-    mkdir(qdir, 0755);
+    mkdir(qdir, DIR_PERM);
 
     xs *gfn = xs_fmt("%s/greeting.html", srv_basedir);
     if ((f = fopen(gfn, "w")) == NULL) {
@@ -243,7 +243,7 @@ int adduser(const char *uid)
 
     xs *basedir = xs_fmt("%s/user/%s", srv_basedir, uid);
 
-    if (mkdir(basedir, 0755) == -1) {
+    if (mkdir(basedir, DIR_PERM) == -1) {
         printf("ERROR: cannot create directory '%s'\n", basedir);
         return 0;
     }
@@ -256,7 +256,7 @@ int adduser(const char *uid)
 
     for (n = 0; dirs[n]; n++) {
         xs *d = xs_fmt("%s/%s", basedir, dirs[n]);
-        mkdir(d, 0755);
+        mkdir(d, DIR_PERM);
     }
 
     xs *scssfn = xs_fmt("%s/style.css", srv_basedir);

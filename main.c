@@ -8,6 +8,8 @@
 
 #include "snac.h"
 
+#include <sys/stat.h>
+
 int usage(void)
 {
     printf("snac " VERSION " - A simple, minimalistic ActivityPub instance\n");
@@ -54,6 +56,9 @@ int main(int argc, char *argv[])
     char *url;
     int argi = 1;
     snac snac;
+
+    /* ensure group has write access */
+    umask(0007);
 
     if ((cmd = GET_ARGV()) == NULL)
         return usage();

@@ -5,6 +5,8 @@
 
 #define USER_AGENT "snac/" VERSION
 
+#define DIR_PERM 02770
+
 extern double disk_layout;
 extern d_char *srv_basedir;
 extern d_char *srv_config;
