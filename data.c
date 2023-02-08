@@ -810,22 +810,32 @@ double timeline_mtime(snac *snac)
 }
 
 
+xs_str *timeline_fn_by_md5(snac *snac, const char *md5)
+/* get the filename of an entry by md5 from any timeline */
+{
+    xs_str *fn = xs_fmt("%s/private/%s.json", snac->basedir, md5);
+
+    if (mtime(fn) == 0.0) {
+        fn = xs_free(fn);
+        fn = xs_fmt("%s/public/%s.json", snac->basedir, md5);
+
+        if (mtime(fn) == 0.0)
+            fn = xs_free(fn);
+    }
+
+    return fn;
+}
+
+
 int timeline_get_by_md5(snac *snac, const char *md5, xs_dict **msg)
 /* gets a message from the timeline */
 {
     int status = 404;
     FILE *f    = NULL;
 
-    /* try to open from the private cache first */
-    xs *prfn = xs_fmt("%s/private/%s.json", snac->basedir, md5);
+    xs *fn = timeline_fn_by_md5(snac, md5);
 
-    if ((f = fopen(prfn, "r")) == NULL) {
-        /* try now the public one */
-        xs *pufn = xs_fmt("%s/public/%s.json", snac->basedir, md5);
-        f = fopen(pufn, "r");
-    }
-
-    if (f != NULL) {
+    if (fn != NULL && (f = fopen(fn, "r")) != NULL) {
         flock(fileno(f), LOCK_SH);
 
         xs *j = xs_readall(f);
@@ -1385,9 +1395,13 @@ void enqueue_output_raw(const char *keyid, const char *seckey,
     qmsg = xs_dict_append(qmsg, "keyid",  keyid);
     qmsg = xs_dict_append(qmsg, "seckey", seckey);
 
-    qmsg = _enqueue_put(fn, qmsg);
-
-    srv_debug(1, xs_fmt("enqueue_output %s %s %d", inbox, fn, retries));
+    /* if it's to be sent right now, bypass the disk queue and post the job */
+    if (retries == 0)
+        job_post(qmsg);
+    else {
+        qmsg = _enqueue_put(fn, qmsg);
+        srv_debug(1, xs_fmt("enqueue_output %s %s %d", inbox, fn, retries));
+    }
 }
 
 
