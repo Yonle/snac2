@@ -827,6 +827,15 @@ xs_str *timeline_fn_by_md5(snac *snac, const char *md5)
 }
 
 
+int timeline_here(snac *snac, const char *md5)
+/* checks if an object is in the user cache */
+{
+    xs *fn = timeline_fn_by_md5(snac, md5);
+
+    return !(fn == NULL);
+}
+
+
 int timeline_get_by_md5(snac *snac, const char *md5, xs_dict **msg)
 /* gets a message from the timeline */
 {
@@ -929,9 +938,7 @@ xs_list *timeline_top_level(snac *snac, xs_list *list)
                 break;
 
             /* well, there is a parent... but is it here? */
-            xs *pfn = timeline_fn_by_md5(snac, line2);
-
-            if (pfn == NULL)
+            if (!timeline_here(snac, line2))
                 break;
 
             /* it's here! try again with its own parent */
