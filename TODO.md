@@ -2,8 +2,6 @@
 
 ## Open
 
-If there is a post in private.idx that has a parent that is in the global object database, this parent will be inserted into the list by timeline_top_level(). BUT, the new function timeline_get_by_md5() (that only looks in the user caches) won't find the parent, so the full thread will not be shown. This is BAD.
-
 There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where the problem is.
 
 Add a list of hashtags to drop.
@@ -215,3 +213,5 @@ Add support for editing our own messages (2023-01-25T18:36:16+0100).
 Implement hashtags. They are not very useful, as they can only be implemented as instance-only (not propagated), but it may help classifiying your own posts (2023-01-26T14:39:51+0100).
 
 Refactor the queue to be global, not per user (2023-02-03T20:49:31+0100).
+
+If there is a post in private.idx that has a parent that is in the global object database, this parent will be inserted into the list by timeline_top_level(). BUT, the new function timeline_get_by_md5() (that only looks in the user caches) won't find the parent, so the full thread will not be shown. This is BAD (2023-02-08T13:48:12+0100).
