@@ -702,17 +702,19 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
     }
     else
     if (strcmp(type, "Note") == 0) {
-        /* is the parent not here? */
-        char *parent = xs_dict_get(msg, "inReplyTo");
+        if (level == 0) {
+            /* is the parent not here? */
+            char *parent = xs_dict_get(msg, "inReplyTo");
 
-        if (!xs_is_null(parent) && *parent && !timeline_here(snac, parent)) {
-            xs *s1 = xs_fmt(
-                "<div class=\"snac-origin\">%s "
-                "<a href=\"%s\">»</a></div>\n",
-                L("in reply to"), parent
-            );
+            if (!xs_is_null(parent) && *parent && !timeline_here(snac, parent)) {
+                xs *s1 = xs_fmt(
+                    "<div class=\"snac-origin\">%s "
+                    "<a href=\"%s\">»</a></div>\n",
+                    L("in reply to"), parent
+                );
 
-            s = xs_str_cat(s, s1);
+                s = xs_str_cat(s, s1);
+            }
         }
     }
 
