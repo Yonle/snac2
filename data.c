@@ -906,11 +906,12 @@ void timeline_admire(snac *snac, char *id, char *admirer, int like)
 }
 
 
-d_char *timeline_top_level(d_char *list)
+xs_list *timeline_top_level(snac *snac, xs_list *list)
 /* returns the top level md5 entries from this index */
 {
     xs_set seen;
-    char *p, *v;
+    xs_list *p;
+    xs_str *v;
 
     xs_set_init(&seen);
 
@@ -927,8 +928,10 @@ d_char *timeline_top_level(d_char *list)
             if (!object_parent(line, line2, sizeof(line2)))
                 break;
 
-            /* well, there is a parent... but if it's not there, use this */
-            if (!object_here_by_md5(line2))
+            /* well, there is a parent... but is it here? */
+            xs *pfn = timeline_fn_by_md5(snac, line2);
+
+            if (pfn == NULL)
                 break;
 
             /* it's here! try again with its own parent */
@@ -965,7 +968,7 @@ d_char *timeline_list(snac *snac, const char *idx_name, int skip, int show)
 {
     xs *list = timeline_simple_list(snac, idx_name, skip, show);
 
-    return timeline_top_level(list);
+    return timeline_top_level(snac, list);
 }
 
 

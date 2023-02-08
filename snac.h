@@ -99,7 +99,7 @@ d_char *timeline_list(snac *snac, const char *idx_name, int skip, int show);
 int timeline_add(snac *snac, char *id, char *o_msg);
 void timeline_admire(snac *snac, char *id, char *admirer, int like);
 
-d_char *timeline_top_level(d_char *list);
+xs_list *timeline_top_level(snac *snac, xs_list *list);
 
 d_char *local_list(snac *snac, int max);
 
