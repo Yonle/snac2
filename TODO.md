@@ -2,6 +2,8 @@
 
 ## Open
 
+If there is a post in private.idx that has a parent that is in the global object database, this parent will be inserted into the list by timeline_top_level(). BUT, the new function timeline_get_by_md5() (that only looks in the user caches) won't find the parent, so the full thread will not be shown. This is BAD.
+
 There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where the problem is.
 
 Add a list of hashtags to drop.
