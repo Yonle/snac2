@@ -177,13 +177,13 @@ int user_open(snac *snac, const char *uid)
                         srv_log(xs_fmt("cannot parse '%s'", key_file));
                 }
                 else
-                    srv_log(xs_fmt("error opening '%s'", key_file));
+                    srv_log(xs_fmt("error opening '%s' %d", key_file, errno));
             }
             else
                 srv_log(xs_fmt("cannot parse '%s'", cfg_file));
         }
         else
-            srv_debug(2, xs_fmt("error opening '%s'", cfg_file));
+            srv_debug(2, xs_fmt("error opening '%s' %d", cfg_file, errno));
     }
     else
         srv_debug(1, xs_fmt("invalid user '%s'", uid));
