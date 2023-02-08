@@ -780,10 +780,10 @@ xs_dict *msg_note(snac *snac, xs_str *content, xs_val *rcpts, xs_str *in_reply_t
 }
 
 
-void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
+void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg)
 /* notifies the user of relevant events */
 {
-    char *object = NULL;
+    xs_val *object = NULL;
 
     if (strcmp(type, "Create") == 0) {
         /* only notify of notes specifically for us */
@@ -812,7 +812,10 @@ void notify(snac *snac, char *type, char *utype, char *actor, char *msg)
     }
 
     /* prepare message body */
-    xs *body = xs_str_new(NULL);
+    xs *body = xs_fmt("User  : @%s@%s\n",
+        xs_dict_get(snac->config, "uid"),
+        xs_dict_get(srv_config,   "host")
+    );
 
     if (strcmp(utype, "(null)") != 0) {
         xs *s1 = xs_fmt("Type  : %s + %s\n", type, utype);
