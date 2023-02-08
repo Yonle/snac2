@@ -6,6 +6,8 @@ Users can now set the number of days after which the posts in their timeline wil
 
 Added support for sending notifications via Telegram.
 
+Followers can now be deleted from the *people* page.
+
 The `note` action from the command-line tool can also accept the post content from the standard input.
 
 ## 2.20
