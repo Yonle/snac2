@@ -1030,8 +1030,10 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
 
             if (following_check(snac, actor_id))
                 s = html_button(s, "unfollow", L("Unfollow"));
-            else
+            else {
                 s = html_button(s, "follow", L("Follow"));
+                s = html_button(s, "delete", L("Delete"));
+            }
 
             if (is_muted(snac, actor_id))
                 s = html_button(s, "unmute", L("Unmute"));
@@ -1551,22 +1553,28 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         }
         else
         if (strcmp(action, L("Delete")) == 0) {
-            /* delete an entry */
-            if (xs_startswith(id, snac.actor)) {
-                /* it's a post by us: generate a delete */
-                xs *msg = msg_delete(&snac, id);
-
-                enqueue_message(&snac, msg);
-
-                /* FIXME: also post this Tombstone to people
-                   that Announce'd it */
-
-                snac_log(&snac, xs_fmt("posted tombstone for %s", id));
+            if (actor != NULL) {
+                /* delete follower */
+                if (valid_status(follower_del(&snac, actor)))
+                    snac_log(&snac, xs_fmt("deleted follower %s", actor));
+                else
+                    snac_log(&snac, xs_fmt("error deleting follower %s", actor));
             }
+            else {
+                /* delete an entry */
+                if (xs_startswith(id, snac.actor)) {
+                    /* it's a post by us: generate a delete */
+                    xs *msg = msg_delete(&snac, id);
 
-            timeline_del(&snac, id);
+                    enqueue_message(&snac, msg);
 
-            snac_log(&snac, xs_fmt("deleted entry %s", id));
+                    snac_log(&snac, xs_fmt("posted tombstone for %s", id));
+                }
+
+                timeline_del(&snac, id);
+
+                snac_log(&snac, xs_fmt("deleted entry %s", id));
+            }
         }
         else
             status = 404;
