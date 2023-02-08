@@ -705,7 +705,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
         /* is the parent not here? */
         char *parent = xs_dict_get(msg, "inReplyTo");
 
-        if (!xs_is_null(parent) && *parent && !object_here(parent)) {
+        if (!xs_is_null(parent) && *parent && !timeline_here(snac, parent)) {
             xs *s1 = xs_fmt(
                 "<div class=\"snac-origin\">%s "
                 "<a href=\"%s\">»</a></div>\n",
