@@ -420,9 +420,13 @@ void httpd(void)
     sem_init(&job_sem, 0, 0);
     job_fifo = xs_list_new();
 
+    n_threads = xs_number_get(xs_dict_get(srv_config, "num_threads"));
+
 #ifdef _SC_NPROCESSORS_ONLN
-    /* get number of CPUs on the machine */
-    n_threads = sysconf(_SC_NPROCESSORS_ONLN);
+    if (n_threads == 0) {
+        /* get number of CPUs on the machine */
+        n_threads = sysconf(_SC_NPROCESSORS_ONLN);
+    }
 #endif
 
     if (n_threads < 4)
