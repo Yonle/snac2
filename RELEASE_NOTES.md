@@ -2,7 +2,7 @@
 
 ## 2.21
 
-Users can now set the number of days after which the posts in their timeline will be deleted (this setting applies to both their own posts and those from the rest of the Fediverse).
+Users can now set an expire time for the entries in their timelines (both their own and others').
 
 Added support for sending notifications via Telegram.
 
