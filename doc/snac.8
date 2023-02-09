@@ -170,6 +170,10 @@ and
 Setting this to true disables their usage. These functions limit severely
 what an intruder can do in case of a security vulnerability, so only enable
 this option if something is very broken.
+.It Ic num_threads
+By setting this value, you can specify the exact number of threads
+.Nm
+will use when processing connections. Values lesser than 4 will be ignored.
 .El
 .Pp
 You must restart the server to make effective these changes.
