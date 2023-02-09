@@ -8,6 +8,8 @@ Added support for sending notifications via Telegram.
 
 Followers can now be deleted from the *people* page.
 
+The internal way of processing connections have been rewritten to be more efficient. This way, `snac` is much faster in processing outgoing connections and less prone to choke on an avalanche of incoming messages.
+
 The `note` action from the command-line tool can also accept the post content from the standard input.
 
 ## 2.20
