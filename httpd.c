@@ -293,16 +293,16 @@ void job_wait(xs_val **job)
 static void *job_thread(void *arg)
 /* job thread */
 {
-    long long pid = (long long)arg;
+    int pid = (char *) arg - (char *) 0x0;
 
-    srv_debug(1, xs_fmt("job thread %ld started", pid));
+    srv_debug(1, xs_fmt("job thread %d started", pid));
 
     for (;;) {
         xs *job = NULL;
 
         job_wait(&job);
 
-        srv_debug(1, xs_fmt("job thread %ld wake up", pid));
+        srv_debug(1, xs_fmt("job thread %d wake up", pid));
 
         if (job == NULL)
             break;
@@ -322,7 +322,7 @@ static void *job_thread(void *arg)
         }
     }
 
-    srv_debug(1, xs_fmt("job thread %ld stopped", pid));
+    srv_debug(1, xs_fmt("job thread %d stopped", pid));
 
     return NULL;
 }
@@ -441,8 +441,9 @@ void httpd(void)
     pthread_create(&threads[0], NULL, background_thread, NULL);
 
     /* the rest of threads are for job processing */
+    char *ptr = (char *) 0x1;
     for (n = 1; n < n_threads; n++)
-        pthread_create(&threads[n], NULL, job_thread, (void *)(long long)n);
+        pthread_create(&threads[n], NULL, job_thread, ptr++);
 
     if (setjmp(on_break) == 0) {
         for (;;) {
