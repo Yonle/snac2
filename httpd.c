@@ -419,9 +419,10 @@ void httpd(void)
 
     srv_log(xs_fmt("httpd start %s:%d %s", address, port, USER_AGENT));
 
+    /* show the number of usable file descriptors */
     struct rlimit r;
     getrlimit(RLIMIT_NOFILE, &r);
-    srv_debug(0, xs_fmt("available (rlimit) fds: %d (cur)/%d (max)",
+    srv_debug(1, xs_fmt("available (rlimit) fds: %d (cur) / %d (max)",
                         (int) r.rlim_cur, (int) r.rlim_max));
 
     /* initialize the job control engine */
