@@ -2,13 +2,13 @@
 
 ## 2.21
 
-Users can now set an expire time for the entries in their timelines (both their own and others').
+Users can now specify an expire time for the entries in their timelines (both their own and others').
 
-Added support for sending notifications via Telegram.
+Added support for sending notifications (replies, follows, likes, etc.) via Telegram.
 
-Followers can now be deleted from the *people* page.
+Followers can now be deleted (from the *people* page in the web interface). Yes, to stop sending in vain your valuable and acute posts to those accounts that disappeared long ago and flood the log with connection errors.
 
-The internal way of processing connections have been rewritten to be more efficient. This way, `snac` is much faster in processing outgoing connections and less prone to choke on an avalanche of incoming messages.
+The internal way of processing connections have been rewritten to be more efficient or, as technical people say, "scalable". This way, `snac` is much faster in processing outgoing connections and less prone to choke on an avalanche of incoming messages. This is a big step towards the secret and real purpose of the creation of this software: being able to host the account of #StephenKing when he finally leaves that other site.
 
 The `note` action from the command-line tool can also accept the post content from the standard input.
 
