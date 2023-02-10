@@ -257,7 +257,8 @@ void job_post(const xs_val *job)
         pthread_mutex_lock(&job_mutex);
 
         /* add to the fifo */
-        job_fifo = xs_list_append(job_fifo, job);
+        if (job_fifo != NULL)
+            job_fifo = xs_list_append(job_fifo, job);
 
         /* unlock the mutex */
         pthread_mutex_unlock(&job_mutex);
@@ -278,7 +279,8 @@ void job_wait(xs_val **job)
         pthread_mutex_lock(&job_mutex);
 
         /* dequeue */
-        job_fifo = xs_list_shift(job_fifo, job);
+        if (job_fifo != NULL)
+            job_fifo = xs_list_shift(job_fifo, job);
 
         /* unlock the mutex */
         pthread_mutex_unlock(&job_mutex);
@@ -465,7 +467,9 @@ void httpd(void)
     for (n = 0; n < n_threads; n++)
         pthread_join(threads[n], NULL);
 
+    pthread_mutex_lock(&job_mutex);
     job_fifo = xs_free(job_fifo);
+    pthread_mutex_unlock(&job_mutex);
 
     srv_log(xs_fmt("httpd stop %s:%d", address, port));
 }
