@@ -15,6 +15,8 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+#include <sys/resource.h> // for getrlimit()
+
 
 /* nodeinfo 2.0 template */
 const char *nodeinfo_2_0_template = ""
@@ -416,6 +418,11 @@ void httpd(void)
     signal(SIGINT,  term_handler);
 
     srv_log(xs_fmt("httpd start %s:%d %s", address, port, USER_AGENT));
+
+    struct rlimit r;
+    getrlimit(RLIMIT_NOFILE, &r);
+    srv_debug(0, xs_fmt("available (rlimit) fds: %d (cur)/%d (max)",
+                        (int) r.rlim_cur, (int) r.rlim_max));
 
     /* initialize the job control engine */
     pthread_mutex_init(&job_mutex, NULL);
