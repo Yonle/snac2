@@ -14,23 +14,17 @@ Add support for uploading the avatar, instead of needing an URL to an image. As 
 
 Add (back) the possibility to attach an image by URL.
 
-With this new disk layout, hidden posts (and their children) can be directly skipped (are there any other implications?).
+With this new disk layout, hidden posts (and their children) can be directly skipped when rendering the HTML timeline (are there any other implications?).
 
 ## Wishlist
 
-Move the output messages to the global queue.
+Implement the ActivityPub C2S (Client to Server) API: https://www.w3.org/TR/activitypub/#client-to-server-interactions . I skipped that part of the documentation entirely, so I don't know if this is trivial or hell. The Android client at http://andstatus.org/ implements it, or so it seems. There may be others.
 
-Refactor the global queue to use a pool of threads.
-
-Implement the ActivityPub C2S (Client to Server) API: (https://www.w3.org/TR/activitypub/#client-to-server-interactions). The client at http://andstatus.org/ implements it.
-
-Implement HTTP caches (If-None-Match / ETag).
+Implement HTTP caches (If-None-Match / ETag). I'm not sure if it's worth.
 
 The 'history' pages are just monthly HTML snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you e.g. intentionally delete a post because it will remain there in the history forever. If you activate local timeline purging, purged entries will remain in the history as 'ghosts', which may or may not be what the user wants.
 
 Implement bulleted lists. Mastodon is crap and won't show them, but other implementations (Friendica, Pleroma) will do.
-
-Add a user-settable `purge_days`. This is not at first very hard to do, but purging posts from a user cache directory does not also delete them from the global object database and they will be kept in the indexes (unless they are also deleted from the indexes, which is a too expensive operation); this way, if another user in the same instance follows you, your posts will not disappear as you desire and that may be confusing and annoying. A different way to implement this: configure a maximum number of entries to keep and truncate the indexes in the purge. But this does not clear the disk usage, which is why I want to implement this (to implement bots that generate posts periodically and avoid the disks exploding).
 
 ## Closed
 
@@ -215,3 +209,9 @@ Implement hashtags. They are not very useful, as they can only be implemented as
 Refactor the queue to be global, not per user (2023-02-03T20:49:31+0100).
 
 If there is a post in private.idx that has a parent that is in the global object database, this parent will be inserted into the list by timeline_top_level(). BUT, the new function timeline_get_by_md5() (that only looks in the user caches) won't find the parent, so the full thread will not be shown. This is BAD (2023-02-08T13:48:12+0100).
+
+Move the output messages to the global queue (2023-02-10T12:17:30+0100).
+
+Refactor the global queue to use a pool of threads (2023-02-10T12:17:38+0100).
+
+Add a user-settable `purge_days`. This is not at first very hard to do, but purging posts from a user cache directory does not also delete them from the global object database and they will be kept in the indexes (unless they are also deleted from the indexes, which is a too expensive operation); this way, if another user in the same instance follows you, your posts will not disappear as you desire and that may be confusing and annoying. A different way to implement this: configure a maximum number of entries to keep and truncate the indexes in the purge. But this does not clear the disk usage, which is why I want to implement this (to implement bots that generate posts periodically and avoid the disks exploding) (2023-02-10T12:18:42+0100).
