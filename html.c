@@ -1022,10 +1022,9 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
             xs *s1 = xs_fmt(
                 "<p><form method=\"post\" action=\"%s/admin/action\">\n"
                 "<input type=\"hidden\" name=\"actor\" value=\"%s\">\n"
-                "<input type=\"hidden\" name=\"actor-delete\" value=\"%s\">\n",
+                "<input type=\"hidden\" name=\"actor-form\" value=\"yes\">\n",
 
-                snac->actor, actor_id,
-                md5, t
+                snac->actor, actor_id
             );
             s = xs_str_cat(s, s1);
 
@@ -1033,7 +1032,9 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
                 s = html_button(s, "unfollow", L("Unfollow"));
             else {
                 s = html_button(s, "follow", L("Follow"));
-                s = html_button(s, "delete", L("Delete"));
+
+                if (follower_check(snac, actor_id))
+                    s = html_button(s, "delete", L("Delete"));
             }
 
             if (is_muted(snac, actor_id))
@@ -1554,8 +1555,8 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         }
         else
         if (strcmp(action, L("Delete")) == 0) {
-            char *actor_delete = xs_dict_get(p_vars, "actor-delete");
-            if (actor_delete != NULL) {
+            char *actor_form = xs_dict_get(p_vars, "actor-form");
+            if (actor_form != NULL) {
                 /* delete follower */
                 if (valid_status(follower_del(&snac, actor)))
                     snac_log(&snac, xs_fmt("deleted follower %s", actor));
