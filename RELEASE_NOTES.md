@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.22
+
+Fixed a bug with the Delete button in the web interface: sometimes, instead of the post (as the user intended), the follower was deleted instead :facepalm:
+
 ## 2.21
 
 Users can now specify an expire time for the entries in their timelines (both their own and others').
