@@ -108,7 +108,7 @@ int srv_open(char *basedir, int auto_upgrade)
         unveil("/usr/share/zoneinfo",  "r");
         unveil(NULL,                   NULL);
         srv_debug(1, xs_fmt("Calling pledge()"));
-        pledge("stdio rpath wpath cpath flock inet proc exec dns", NULL);
+        pledge("stdio rpath wpath cpath flock inet proc exec dns fattr", NULL);
     }
 #endif /* __OpenBSD__ */
 
