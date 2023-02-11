@@ -4,6 +4,8 @@
 
 Fixed a bug with the Delete button in the web interface: sometimes, instead of the post (as the user intended), the follower was deleted instead :facepalm:
 
+Fixed a bug in the command-line option `follow` (and probably others), that made it fail silently if there was no running server.
+
 ## 2.21
 
 Users can now specify an expire time for the entries in their timelines (both their own and others').
