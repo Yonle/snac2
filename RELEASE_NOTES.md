@@ -6,6 +6,8 @@ Fixed a bug with the Delete button in the web interface: sometimes, instead of t
 
 Fixed a bug in the command-line option `follow` (and probably others), that made it fail silently if there was no running server.
 
+Fixed a crash under OpenBSD (a recent change needed a new permission to the `pledge()` call that was forgotten).
+
 ## 2.21
 
 Users can now specify an expire time for the entries in their timelines (both their own and others').
