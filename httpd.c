@@ -251,6 +251,13 @@ static sem_t job_sem;
 xs_list *job_fifo = NULL;
 
 
+int job_fifo_ready(void)
+/* returns true if the job fifo is ready */
+{
+    return job_fifo != NULL;
+}
+
+
 void job_post(const xs_val *job)
 /* posts a job for the threads to process it */
 {
