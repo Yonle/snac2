@@ -1,7 +1,7 @@
 /* snac - A simple, minimalistic ActivityPub instance */
 /* copyright (c) 2022 - 2023 grunfink / MIT license */
 
-#define VERSION "2.22"
+#define VERSION "2.23-dev"
 
 #define USER_AGENT "snac/" VERSION
 
@@ -30,12 +30,13 @@ int srv_open(char *basedir, int auto_upgrade);
 void srv_free(void);
 
 typedef struct _snac {
-    d_char *uid;        /* uid */
-    d_char *basedir;    /* user base directory */
-    d_char *config;     /* user configuration */
-    d_char *key;        /* keypair */
-    d_char *actor;      /* actor url */
-    d_char *md5;        /* actor url md5 */
+    xs_str *uid;        /* uid */
+    xs_str *basedir;    /* user base directory */
+    xs_dict *config;    /* user configuration */
+    xs_dict *config_o;  /* user configuration admin override */
+    xs_dict *key;       /* keypair */
+    xs_str *actor;      /* actor url */
+    xs_str *md5;        /* actor url md5 */
 } snac;
 
 int user_open(snac *snac, const char *uid);

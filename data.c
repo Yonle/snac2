@@ -130,6 +130,7 @@ void user_free(snac *snac)
     xs_free(snac->uid);
     xs_free(snac->basedir);
     xs_free(snac->config);
+    xs_free(snac->config_o);
     xs_free(snac->key);
     xs_free(snac->actor);
     xs_free(snac->md5);
@@ -172,7 +173,22 @@ int user_open(snac *snac, const char *uid)
                     if ((snac->key = xs_json_loads(key_data)) != NULL) {
                         snac->actor = xs_fmt("%s/%s", srv_baseurl, uid);
                         snac->md5   = xs_md5_hex(snac->actor, strlen(snac->actor));
+
+                        /* everything is ok right now */
                         ret = 1;
+
+                        /* does it have a configuration override? */
+                        xs *cfg_file_o = xs_fmt("%s/user_o.json", snac->basedir);
+                        if ((f = fopen(cfg_file_o, "r")) != NULL) {
+                            xs *j = xs_readall(f);
+                            fclose(f);
+
+                            if ((snac->config_o = xs_json_loads(j)) == NULL)
+                                srv_log(xs_fmt("cannot parse '%s'", cfg_file_o));
+                        }
+
+                        if (snac->config_o == NULL)
+                            snac->config_o = xs_dict_new();
                     }
                     else
                         srv_log(xs_fmt("cannot parse '%s'", key_file));
