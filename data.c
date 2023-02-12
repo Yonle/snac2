@@ -184,20 +184,20 @@ int user_open(snac *snac, const char *uid)
                             fclose(f);
 
                             if ((snac->config_o = xs_json_loads(j)) == NULL)
-                                srv_log(xs_fmt("cannot parse '%s'", cfg_file_o));
+                                srv_log(xs_fmt("error parsing '%s'", cfg_file_o));
                         }
 
                         if (snac->config_o == NULL)
                             snac->config_o = xs_dict_new();
                     }
                     else
-                        srv_log(xs_fmt("cannot parse '%s'", key_file));
+                        srv_log(xs_fmt("error parsing '%s'", key_file));
                 }
                 else
                     srv_log(xs_fmt("error opening '%s' %d", key_file, errno));
             }
             else
-                srv_log(xs_fmt("cannot parse '%s'", cfg_file));
+                srv_log(xs_fmt("error parsing '%s'", cfg_file));
         }
         else
             srv_debug(2, xs_fmt("error opening '%s' %d", cfg_file, errno));
@@ -1648,7 +1648,8 @@ void purge_user(snac *snac)
     priv_days = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
     pub_days  = xs_number_get(xs_dict_get(srv_config, "local_purge_days"));
 
-    if ((v = xs_dict_get(snac->config, "purge_days")) != NULL)
+    if ((v = xs_dict_get(snac->config_o, "purge_days")) != NULL ||
+        (v = xs_dict_get(snac->config, "purge_days")) != NULL)
         user_days = xs_number_get(v);
 
     if (user_days) {
