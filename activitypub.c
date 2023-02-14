@@ -1180,7 +1180,22 @@ void process_queue_item(xs_dict *q_item)
         /* deliver */
         status = send_to_inbox_raw(keyid, seckey, inbox, msg, &payload, &p_size, retries == 0 ? 3 : 8);
 
-        srv_log(xs_fmt("output message: sent to inbox %s %d", inbox, status));
+        if (payload && !valid_status(status)) {
+            /* in case of error, print a part of the payload,
+               as it may be informative */
+            if (p_size > 24) {
+                /* trim the message */
+                payload[24] = '\0';
+                payload = xs_str_cat(payload, "...");
+            }
+
+            payload = xs_str_wrap_i(" (", payload, ")");
+        }
+
+        if (payload == NULL)
+            payload = xs_str_new(NULL);
+
+        srv_log(xs_fmt("output message: sent to inbox %s %d%s", inbox, status, payload));
 
         if (!valid_status(status)) {
             retries++;
@@ -1377,8 +1392,11 @@ int activitypub_post_handler(d_char *req, char *q_path,
     snac snac;
     char *v;
 
-    if (i_ctype == NULL)
+    if (i_ctype == NULL) {
+        *body  = xs_str_new("no content-type");
+        *ctype = "text/plain";
         return 400;
+    }
 
     if (xs_str_in(i_ctype, "application/activity+json") == -1 &&
         xs_str_in(i_ctype, "application/ld+json") == -1)
@@ -1389,6 +1407,9 @@ int activitypub_post_handler(d_char *req, char *q_path,
 
     if (msg == NULL) {
         srv_log(xs_fmt("activitypub_post_handler JSON error %s", q_path));
+
+        *body  = xs_str_new("JSON error");
+        *ctype = "text/plain";
         status = 400;
     }
 
@@ -1417,6 +1438,9 @@ int activitypub_post_handler(d_char *req, char *q_path,
 
         if (strcmp(s2, v) != 0) {
             srv_log(xs_fmt("digest check FAILED"));
+
+            *body  = xs_str_new("bad digest");
+            *ctype = "text/plain";
             status = 400;
         }
     }

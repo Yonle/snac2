@@ -198,7 +198,7 @@ void httpd_connection(FILE *f)
     if (status == 404)
         body = xs_str_new("<h1>404 Not Found</h1>");
 
-    if (status == 400)
+    if (status == 400 && body != NULL)
         body = xs_str_new("<h1>400 Bad Request</h1>");
 
     if (status == 303)
