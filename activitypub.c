@@ -1187,8 +1187,9 @@ void process_queue_item(xs_dict *q_item)
                 payload = xs_str_cat(payload, "...");
             }
 
-            payload = xs_replace_i(payload, "\n", "\\n");
-            payload = xs_replace_i(payload, "\r", "\\r");
+            /* strip ugly control characters */
+            payload = xs_replace_i(payload, "\n", "");
+            payload = xs_replace_i(payload, "\r", "");
 
             if (*payload)
                 payload = xs_str_wrap_i(" [", payload, "]");
