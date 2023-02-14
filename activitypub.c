@@ -1188,6 +1188,7 @@ void process_queue_item(xs_dict *q_item)
             }
 
             payload = xs_replace_i(payload, "\n", "\\n");
+            payload = xs_replace_i(payload, "\r", "\\r");
 
             if (*payload)
                 payload = xs_str_wrap_i(" [", payload, "]");
