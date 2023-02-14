@@ -1180,19 +1180,19 @@ void process_queue_item(xs_dict *q_item)
         /* deliver */
         status = send_to_inbox_raw(keyid, seckey, inbox, msg, &payload, &p_size, retries == 0 ? 3 : 8);
 
-        if (payload && !valid_status(status)) {
-            /* in case of error, print a part of the payload,
-               as it may be informative */
+        if (payload) {
             if (p_size > 24) {
                 /* trim the message */
                 payload[24] = '\0';
                 payload = xs_str_cat(payload, "...");
             }
 
-            payload = xs_str_wrap_i(" (", payload, ")");
-        }
+            payload = xs_replace_i(payload, "\n", "\\n");
 
-        if (payload == NULL)
+            if (*payload)
+                payload = xs_str_wrap_i(" [", payload, "]");
+        }
+        else
             payload = xs_str_new(NULL);
 
         srv_log(xs_fmt("output message: sent to inbox %s %d%s", inbox, status, payload));
