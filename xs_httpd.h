@@ -265,7 +265,7 @@ void xs_httpd_response(FILE *f, int status, xs_dict *headers, xs_str *body, int 
     xs_str *k;
     xs_val *v;
 
-    proto = xs_fmt("HTTP/1.1 %d ", status);
+    proto = xs_fmt("HTTP/1.1 %d %s", status, status / 100 == 2 ? "OK" : "ERROR");
     fprintf(f, "%s\r\n", proto);
 
     p = headers;
