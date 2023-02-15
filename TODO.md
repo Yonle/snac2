@@ -10,10 +10,6 @@ Add a per-account toggle to [un]mute their Announces.
 
 Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac2/issues/3
 
-Add (back) the possibility to attach an image by URL.
-
-With this new disk layout, hidden posts (and their children) can be directly skipped when rendering the HTML timeline (are there any other implications?).
-
 ## Wishlist
 
 Implement the ActivityPub C2S (Client to Server) API: https://www.w3.org/TR/activitypub/#client-to-server-interactions . I skipped that part of the documentation entirely, so I don't know if this is trivial or hell. The Android client at http://andstatus.org/ implements it, or so it seems. There may be others.
@@ -23,6 +19,10 @@ Implement HTTP caches (If-None-Match / ETag). I'm not sure if it's worth.
 The 'history' pages are just monthly HTML snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you e.g. intentionally delete a post because it will remain there in the history forever. If you activate local timeline purging, purged entries will remain in the history as 'ghosts', which may or may not be what the user wants.
 
 Implement bulleted lists. Mastodon is crap and won't show them, but other implementations (Friendica, Pleroma) will do.
+
+Add (back) the possibility to attach an image by URL.
+
+With this new disk layout, hidden posts (and their children) can be directly skipped when rendering the HTML timeline (are there any other implications?).
 
 ## Closed
 
