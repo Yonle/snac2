@@ -290,12 +290,11 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<details><summary>%s</summary>\n"
 
         "<div class=\"snac-user-setup\">\n"
-        "<form method=\"post\" action=\"%s/admin/user-setup\">\n"
+        "<form method=\"post\" action=\"%s/admin/user-setup\" enctype=\"multipart/form-data\">\n"
         "<p>%s:<br>\n"
         "<input type=\"text\" name=\"name\" value=\"%s\"></p>\n"
 
-        "<p>%s:<br>\n"
-        "<input type=\"text\" name=\"avatar\" value=\"%s\"></p>\n"
+        "<p>%s: <input type=\"file\" name=\"avatar_file\"></p>\n"
 
         "<p>%s:<br>\n"
         "<textarea name=\"bio\" cols=\"40\" rows=\"4\">%s</textarea></p>\n"
@@ -368,8 +367,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         snac->actor,
         L("User name"),
         xs_dict_get(snac->config, "name"),
-        L("Avatar URL"),
-        xs_dict_get(snac->config, "avatar"),
+        L("Avatar"),
         L("Bio"),
         xs_dict_get(snac->config, "bio"),
         strcmp(cw, "open") == 0 ? "checked" : "",
@@ -1616,7 +1614,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         }
 
         /* avatar upload */
-        char *avatar_file = xs_dict_get(p_vars, "avatar_file");
+        xs_list *avatar_file = xs_dict_get(p_vars, "avatar_file");
         if (!xs_is_null(avatar_file) && xs_type(avatar_file) == XSTYPE_LIST) {
             char *fn = xs_list_get(avatar_file, 0);
 
