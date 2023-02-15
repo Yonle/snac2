@@ -1615,6 +1615,25 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
             snac.config = xs_dict_set(snac.config, "purge_days", days);
         }
 
+        /* avatar upload */
+        char *avatar_file = xs_dict_get(p_vars, "avatar_file");
+        if (!xs_is_null(avatar_file) && xs_type(avatar_file) == XSTYPE_LIST) {
+            char *fn = xs_list_get(avatar_file, 0);
+
+            if (*fn != '\0') {
+                char *ext = strrchr(fn, '.');
+                xs *id    = xs_fmt("avatar%s", ext);
+                xs *url   = xs_fmt("%s/s/%s", snac.actor, id);
+                int fo    = xs_number_get(xs_list_get(avatar_file, 1));
+                int fs    = xs_number_get(xs_list_get(avatar_file, 2));
+
+                /* store */
+                static_put(&snac, id, payload + fo, fs);
+
+                snac.config = xs_dict_set(snac.config, "avatar", url);
+            }
+        }
+
         /* password change? */
         if ((p1 = xs_dict_get(p_vars, "passwd1")) != NULL &&
             (p2 = xs_dict_get(p_vars, "passwd2")) != NULL &&
