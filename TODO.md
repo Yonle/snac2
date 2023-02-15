@@ -10,8 +10,6 @@ Add a per-account toggle to [un]mute their Announces.
 
 Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac2/issues/3
 
-Add support for uploading the avatar, instead of needing an URL to an image. As a kludgy workaround, you can post something with an attached image, copy the auto-generated URL and use it. You can even delete the post, as attached images are never deleted (I said it was kludgy).
-
 Add (back) the possibility to attach an image by URL.
 
 With this new disk layout, hidden posts (and their children) can be directly skipped when rendering the HTML timeline (are there any other implications?).
@@ -215,3 +213,5 @@ Move the output messages to the global queue (2023-02-10T12:17:30+0100).
 Refactor the global queue to use a pool of threads (2023-02-10T12:17:38+0100).
 
 Add a user-settable `purge_days`. This is not at first very hard to do, but purging posts from a user cache directory does not also delete them from the global object database and they will be kept in the indexes (unless they are also deleted from the indexes, which is a too expensive operation); this way, if another user in the same instance follows you, your posts will not disappear as you desire and that may be confusing and annoying. A different way to implement this: configure a maximum number of entries to keep and truncate the indexes in the purge. But this does not clear the disk usage, which is why I want to implement this (to implement bots that generate posts periodically and avoid the disks exploding) (2023-02-10T12:18:42+0100).
+
+Add support for uploading the avatar, instead of needing an URL to an image. As a kludgy workaround, you can post something with an attached image, copy the auto-generated URL and use it. You can even delete the post, as attached images are never deleted (I said it was kludgy) (2023-02-15T09:31:06+0100).
