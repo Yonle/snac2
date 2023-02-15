@@ -194,7 +194,7 @@ d_char *get_actor_inbox(snac *snac, char *actor)
     xs *data = NULL;
     char *v = NULL;
 
-    if (valid_status(actor_request(snac, actor, &data))) {
+    if (valid_status(actor_get(snac, actor, &data))) {
         /* try first endpoints/sharedInbox */
         if ((v = xs_dict_get(data, "endpoints")))
             v = xs_dict_get(v, "sharedInbox");
