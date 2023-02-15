@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.23
+
+The user avatar can now be uploaded (instead of given as an URL).
+
 ## 2.22
 
 Fixed a bug with the Delete button in the web interface: sometimes, instead of the post (as the user intended), the follower was deleted instead :facepalm:
