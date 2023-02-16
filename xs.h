@@ -97,6 +97,8 @@ xs_list *xs_split_n(const char *str, const char *sep, int times);
 xs_dict *xs_dict_new(void);
 xs_dict *xs_dict_append_m(xs_dict *dict, const xs_str *key, const xs_val *mem, int dsz);
 #define xs_dict_append(dict, key, data) xs_dict_append_m(dict, key, data, xs_size(data))
+xs_dict *xs_dict_prepend_m(xs_dict *dict, const xs_str *key, const xs_val *mem, int dsz);
+#define xs_dict_prepend(dict, key, data) xs_dict_prepend_m(dict, key, data, xs_size(data))
 int xs_dict_iter(xs_dict **dict, xs_str **key, xs_val **value);
 xs_dict *xs_dict_get(const xs_dict *dict, const xs_str *key);
 xs_dict *xs_dict_del(xs_dict *dict, const xs_str *key);
@@ -859,21 +861,36 @@ xs_dict *xs_dict_new(void)
 }
 
 
-xs_dict *xs_dict_append_m(xs_dict *dict, const xs_str *key, const xs_val *mem, int dsz)
-/* adds a memory block to the dict */
+xs_dict *xs_dict_insert_m(xs_dict *dict, int offset, const xs_str *key,
+                          const xs_val *data, int dsz)
+/* inserts a memory block into the dict */
 {
     XS_ASSERT_TYPE(dict, XSTYPE_DICT);
     XS_ASSERT_TYPE(key, XSTYPE_STRING);
 
-    char c = XSTYPE_DITEM;
-    int sz = xs_size(dict);
     int ksz = xs_size(key);
 
-    dict = xs_insert_m(dict, sz - 1, &c, 1);
-    dict = xs_insert_m(dict, sz, key, ksz);
-    dict = xs_insert_m(dict, sz + ksz, mem, dsz);
+    dict = xs_expand(dict, offset, 1 + ksz + dsz);
+
+    dict[offset] = XSTYPE_DITEM;
+    memcpy(&dict[offset + 1], key, ksz);
+    memcpy(&dict[offset + 1 + ksz], data, dsz);
 
     return dict;
+}
+
+
+xs_dict *xs_dict_append_m(xs_dict *dict, const xs_str *key, const xs_val *mem, int dsz)
+/* appends a memory block to the dict */
+{
+    return xs_dict_insert_m(dict, xs_size(dict) - 1, key, mem, dsz);
+}
+
+
+xs_dict *xs_dict_prepend_m(xs_dict *dict, const xs_str *key, const xs_val *mem, int dsz)
+/* prepends a memory block to the dict */
+{
+    return xs_dict_insert_m(dict, 4, key, mem, dsz);
 }
 
 
@@ -962,8 +979,8 @@ xs_dict *xs_dict_set(xs_dict *dict, const xs_str *key, const xs_val *data)
     /* delete the possibly existing key */
     dict = xs_dict_del(dict, key);
 
-    /* append the data */
-    dict = xs_dict_append(dict, key, data);
+    /* add the data */
+    dict = xs_dict_prepend(dict, key, data);
 
     return dict;
 }
