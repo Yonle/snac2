@@ -2,6 +2,8 @@
 
 ## Open
 
+Add a notification area, where recent events of interest would be easily seen.
+
 There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where the problem is.
 
 Add a list of hashtags to drop.
