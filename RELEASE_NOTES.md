@@ -2,6 +2,8 @@
 
 ## 2.24
 
+Added a checkbox to post a message only to those people mentioned in the message body.
+
 Fixed an over-optimization bug that caused some mentioned recipients to be skipped.
 
 Added some new administrator tweaks: email notifications can be globally disabled.
