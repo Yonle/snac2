@@ -268,6 +268,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "rows=\"8\" wrap=\"virtual\" required=\"required\"></textarea>\n"
         "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
         "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
+        "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
         "<p><input type=\"file\" name=\"attach\">\n"
         "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
         "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
@@ -360,6 +361,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
         L("Sensitive content"),
+        L("Only for mentioned people"),
         L("Image description"),
         L("Post"),
 
@@ -527,6 +529,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
             "<input type=\"hidden\" name=\"edit_id\" value=\"%s\">\n"
 
             "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
+            "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
             "<p><input type=\"file\" name=\"attach\">\n"
             "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
 
@@ -542,6 +545,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
             prev_src,
             id,
             L("Sensitive content"),
+            L("Only for mentioned people"),
             L("Image description"),
             md5,
             L("Post")
@@ -564,6 +568,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
             "<input type=\"hidden\" name=\"in_reply_to\" value=\"%s\">\n"
 
             "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
+            "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
             "<p><input type=\"file\" name=\"attach\">\n"
             "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
 
@@ -579,6 +584,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
             ct,
             id,
             L("Sensitive content"),
+            L("Only for mentioned people"),
             L("Image description"),
             md5,
             L("Post")
@@ -1353,7 +1359,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
     int status = 0;
     snac snac;
     char *uid, *p_path;
-    char *p_vars;
+    xs_dict *p_vars;
 
     xs *l = xs_split_n(q_path, "/", 2);
 
@@ -1383,16 +1389,16 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
 
     if (p_path && strcmp(p_path, "admin/note") == 0) {
         /* post note */
-        char *content     = xs_dict_get(p_vars, "content");
-        char *in_reply_to = xs_dict_get(p_vars, "in_reply_to");
-        char *attach_url  = xs_dict_get(p_vars, "attach_url");
-        char *attach_file = xs_dict_get(p_vars, "attach");
-        char *to          = xs_dict_get(p_vars, "to");
-        char *sensitive   = xs_dict_get(p_vars, "sensitive");
-        char *edit_id     = xs_dict_get(p_vars, "edit_id");
-        char *alt_text    = xs_dict_get(p_vars, "alt_text");
-        xs *attach_list   = xs_list_new();
-        int priv          = 0;
+        xs_str *content      = xs_dict_get(p_vars, "content");
+        xs_str *in_reply_to  = xs_dict_get(p_vars, "in_reply_to");
+        xs_str *attach_url   = xs_dict_get(p_vars, "attach_url");
+        xs_list *attach_file = xs_dict_get(p_vars, "attach");
+        xs_str *to           = xs_dict_get(p_vars, "to");
+        xs_str *sensitive    = xs_dict_get(p_vars, "sensitive");
+        xs_str *edit_id      = xs_dict_get(p_vars, "edit_id");
+        xs_str *alt_text     = xs_dict_get(p_vars, "alt_text");
+        int priv             = !xs_is_null(xs_dict_get(p_vars, "mentioned_only"));
+        xs *attach_list      = xs_list_new();
 
         /* default alt text */
         if (xs_is_null(alt_text))
