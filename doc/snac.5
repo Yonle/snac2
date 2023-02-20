@@ -91,8 +91,8 @@ has the user id as name and contains the following subdirectories and files:
 User configuration file.
 .It Pa user_o.json
 User configuration override file. This file is intended for administrators to
-override some user preferences (e.g. for setting shorter purge days that what
-the user may have defined).
+override some user preferences. For current version, the fields that can be
+overridden are 'purge_days' and 'email'.
 .It Pa key.json
 Secret/public key PEM data.
 .It Pa followers.idx
