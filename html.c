@@ -327,9 +327,17 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "</div>\n"
         "</div>\n";
 
-    char *email = xs_dict_get(snac->config, "email");
-    if (xs_is_null(email))
-        email = "";
+    const char *email = "[disabled by admin]";
+
+    if (xs_type(xs_dict_get(srv_config, "disable_email_notifications")) != XSTYPE_TRUE) {
+        email = xs_dict_get(snac->config_o, "email");
+        if (xs_is_null(email)) {
+            email = xs_dict_get(snac->config, "email");
+
+            if (xs_is_null(email))
+                email = "";
+        }
+    }
 
     char *cw = xs_dict_get(snac->config, "cw");
     if (xs_is_null(cw))

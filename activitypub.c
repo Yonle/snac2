@@ -838,9 +838,19 @@ void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg
 
     /* email */
 
-    char *email = xs_dict_get(snac->config, "email");
+    const char *email = "[disabled by admin]";
 
-    if (!xs_is_null(email) && *email != '\0') {
+    if (xs_type(xs_dict_get(srv_config, "disable_email_notifications")) != XSTYPE_TRUE) {
+        email = xs_dict_get(snac->config_o, "email");
+        if (xs_is_null(email)) {
+            email = xs_dict_get(snac->config, "email");
+
+            if (xs_is_null(email))
+                email = "[empty]";
+        }
+    }
+
+    if (*email != '[') {
         snac_debug(snac, 1, xs_fmt("email notify %s %s %s", type, utype, actor));
 
         xs *subject = xs_fmt("snac notify for @%s@%s",
