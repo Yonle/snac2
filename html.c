@@ -212,6 +212,20 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
 
     {
         xs *s1;
+        xs *avatar = xs_dup(xs_dict_get(snac->config, "avatar"));
+
+        if (avatar == NULL || *avatar == '\0') {
+            xs_free(avatar);
+            avatar = xs_fmt("data:image/png;base64, %s", default_avatar_base64());
+        }
+
+        s1 = xs_fmt("<img src=\"%s\" class=\"snac-avatar\" alt=\"\"/>&nbsp;", avatar);
+
+        s = xs_str_cat(s, s1);
+    }
+
+    {
+        xs *s1;
 
         if (local)
             s1 = xs_fmt(
