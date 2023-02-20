@@ -194,7 +194,7 @@ d_char *get_actor_inbox(snac *snac, char *actor)
     xs *data = NULL;
     char *v = NULL;
 
-    if (valid_status(actor_get(snac, actor, &data))) {
+    if (valid_status(actor_request(snac, actor, &data))) {
         /* try first endpoints/sharedInbox */
         if ((v = xs_dict_get(data, "endpoints")))
             v = xs_dict_get(v, "sharedInbox");
@@ -281,6 +281,8 @@ d_char *inbox_list(snac *snac, char *msg)
             /* add the inbox if it's not already there */
             xs_set_add(&inboxes, inbox);
         }
+        else
+            snac_log(snac, xs_fmt("cannot find inbox for %s", v));
     }
 
     return xs_set_result(&inboxes);
