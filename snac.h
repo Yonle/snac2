@@ -170,7 +170,10 @@ const char *default_avatar_base64(void);
 d_char *msg_admiration(snac *snac, char *object, char *type);
 d_char *msg_create(snac *snac, char *object);
 d_char *msg_follow(snac *snac, char *actor);
-xs_dict *msg_note(snac *snac, xs_str *content, xs_val *rcpts, xs_str *in_reply_to, xs_list *attach);
+
+xs_dict *msg_note(snac *snac, xs_str *content, xs_val *rcpts,
+                  xs_str *in_reply_to, xs_list *attach, int priv);
+
 d_char *msg_undo(snac *snac, char *object);
 d_char *msg_delete(snac *snac, char *id);
 d_char *msg_actor(snac *snac);

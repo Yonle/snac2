@@ -1392,6 +1392,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         char *edit_id     = xs_dict_get(p_vars, "edit_id");
         char *alt_text    = xs_dict_get(p_vars, "alt_text");
         xs *attach_list   = xs_list_new();
+        int priv          = 0;
 
         /* default alt text */
         if (xs_is_null(alt_text))
@@ -1436,7 +1437,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
             xs *c_msg     = NULL;
             xs *content_2 = xs_replace(content, "\r", "");
 
-            msg = msg_note(&snac, content_2, to, in_reply_to, attach_list);
+            msg = msg_note(&snac, content_2, to, in_reply_to, attach_list, priv);
 
             if (sensitive != NULL) {
                 xs *t = xs_val_new(XSTYPE_TRUE);

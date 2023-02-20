@@ -632,7 +632,8 @@ d_char *msg_follow(snac *snac, char *url_or_uid)
 }
 
 
-xs_dict *msg_note(snac *snac, xs_str *content, xs_val *rcpts, xs_str *in_reply_to, xs_list *attach)
+xs_dict *msg_note(snac *snac, xs_str *content, xs_val *rcpts,
+                  xs_str *in_reply_to, xs_list *attach, int priv)
 /* creates a 'Note' message */
 {
     xs *ntid = tid(0);
@@ -702,8 +703,7 @@ xs_dict *msg_note(snac *snac, xs_str *content, xs_val *rcpts, xs_str *in_reply_t
                 ctxt = xs_dup(v);
 
             /* if this message is public, ours will also be */
-            if (is_msg_public(snac, p_msg) &&
-                xs_list_in(to, public_address) == -1)
+            if (!priv && is_msg_public(snac, p_msg) && xs_list_in(to, public_address) == -1)
                 to = xs_list_append(to, public_address);
         }
 
@@ -749,7 +749,7 @@ xs_dict *msg_note(snac *snac, xs_str *content, xs_val *rcpts, xs_str *in_reply_t
     }
 
     /* no recipients? must be for everybody */
-    if (xs_list_len(to) == 0)
+    if (!priv && xs_list_len(to) == 0)
         to = xs_list_append(to, public_address);
 
     /* delete all cc recipients that also are in the to */

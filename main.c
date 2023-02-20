@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
         else
             content = xs_dup(url);
 
-        msg = msg_note(&snac, content, NULL, in_reply_to, NULL);
+        msg = msg_note(&snac, content, NULL, in_reply_to, NULL, 0);
 
         c_msg = msg_create(&snac, msg);
 
