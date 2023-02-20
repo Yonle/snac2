@@ -2,6 +2,8 @@
 
 ## 2.24
 
+Fixed an over-optimization bug that caused some mentioned recipients to be skipped.
+
 Added some new administrator tweaks: email notifications can be globally disabled.
 
 ## 2.23
