@@ -850,7 +850,7 @@ void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg
         }
     }
 
-    if (*email != '[') {
+    if (*email != '\0' && *email != '[') {
         snac_debug(snac, 1, xs_fmt("email notify %s %s %s", type, utype, actor));
 
         xs *subject = xs_fmt("snac notify for @%s@%s",
