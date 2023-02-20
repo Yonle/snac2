@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.24
+
+Added some new administrator tweaks: email notifications can be globally disabled.
+
 ## 2.23
 
 The user avatar can now be uploaded (instead of given as an URL).
