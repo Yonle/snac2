@@ -1113,14 +1113,27 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
 
     if (strcmp(type, "message") == 0) {
         xs_dict *msg = xs_dict_get(q_item, "message");
-        xs *inboxes  = inbox_list(snac, msg);
+        xs *rcpts    = recipient_list(snac, msg, 1);
+        xs_set inboxes;
         xs_list *p;
-        xs_str *inbox;
+        xs_str *actor;
 
-        p = inboxes;
-        while (xs_list_iter(&p, &inbox)) {
-            enqueue_output(snac, msg, inbox, 0);
+        xs_set_init(&inboxes);
+
+        p = rcpts;
+        while (xs_list_iter(&p, &actor)) {
+            xs *inbox = get_actor_inbox(snac, actor);
+
+            if (inbox != NULL) {
+                /* add to the set and, if it's not there, send message */
+                if (xs_set_add(&inboxes, inbox) == 1)
+                    enqueue_output(snac, msg, inbox, 0);
+            }
+            else
+                snac_log(snac, xs_fmt("cannot find inbox for %s", actor));
         }
+
+        xs_set_free(&inboxes);
     }
     else
     if (strcmp(type, "input") == 0) {
