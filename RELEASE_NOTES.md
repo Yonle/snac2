@@ -2,7 +2,7 @@
 
 ## 2.24
 
-Added a checkbox to post a message only to those people mentioned in the message body.
+Sending non-public messages is now much easier: a checkbox to post a message to only those people mentioned in the message body has been added.
 
 Fixed an over-optimization bug that caused some mentioned recipients to be skipped.
 
