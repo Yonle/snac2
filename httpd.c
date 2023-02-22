@@ -342,6 +342,9 @@ static void *job_thread(void *arg)
     return NULL;
 }
 
+/* background thread sleep control */
+static pthread_mutex_t sleep_mutex;
+static pthread_cond_t  sleep_cond;
 
 static void *background_thread(void *arg)
 /* background thread (queue management and other things) */
@@ -392,16 +395,14 @@ static void *background_thread(void *arg)
 #ifdef USE_POLL_FOR_SLEEP
             poll(NULL, 0, 3 * 1000);
 #else
-            pthread_mutex_t dummy_mutex = PTHREAD_MUTEX_INITIALIZER;
-            pthread_cond_t  dummy_cond  = PTHREAD_COND_INITIALIZER;
             struct timespec ts;
 
             clock_gettime(CLOCK_REALTIME, &ts);
             ts.tv_sec += 3;
 
-            pthread_mutex_lock(&dummy_mutex);
-            while (pthread_cond_timedwait(&dummy_cond, &dummy_mutex, &ts) == 0);
-            pthread_mutex_unlock(&dummy_mutex);
+            pthread_mutex_lock(&sleep_mutex);
+            while (pthread_cond_timedwait(&sleep_cond, &sleep_mutex, &ts) == 0);
+            pthread_mutex_unlock(&sleep_mutex);
 #endif
         }
     }
@@ -448,6 +449,10 @@ void httpd(void)
     pthread_mutex_init(&job_mutex, NULL);
     sem_init(&job_sem, 0, 0);
     job_fifo = xs_list_new();
+
+    /* initialize sleep control */
+    pthread_mutex_init(&sleep_mutex, NULL);
+    pthread_cond_init(&sleep_cond, NULL);
 
     n_threads = xs_number_get(xs_dict_get(srv_config, "num_threads"));
 
