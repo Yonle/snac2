@@ -190,9 +190,9 @@ d_char *get_actor_inbox(snac *snac, char *actor);
 int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size, int timeout);
 int is_msg_public(snac *snac, char *msg);
 
-void process_user_queue(snac *snac);
+int process_user_queue(snac *snac);
 void process_queue_item(xs_dict *q_item);
-void process_queue(void);
+int process_queue(void);
 
 int activitypub_get_handler(d_char *req, char *q_path,
                             char **body, int *b_size, char **ctype);

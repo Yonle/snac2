@@ -17,6 +17,10 @@
 
 #include <sys/resource.h> // for getrlimit()
 
+#ifdef USE_POLL_FOR_SLEEP
+#include <poll.h>
+#endif
+
 
 /* nodeinfo 2.0 template */
 const char *nodeinfo_2_0_template = ""
@@ -338,6 +342,7 @@ static void *job_thread(void *arg)
     return NULL;
 }
 
+#include <poll.h>
 
 static void *background_thread(void *arg)
 /* background thread (queue management and other things) */
@@ -351,6 +356,7 @@ static void *background_thread(void *arg)
 
     while (srv_running) {
         time_t t;
+        int cnt = 0;
 
         {
             xs *list = user_list();
@@ -362,14 +368,14 @@ static void *background_thread(void *arg)
                 snac snac;
 
                 if (user_open(&snac, uid)) {
-                    process_user_queue(&snac);
+                    cnt += process_user_queue(&snac);
                     user_free(&snac);
                 }
             }
         }
 
         /* global queue */
-        process_queue();
+        cnt += process_queue();
 
         /* time to purge? */
         if ((t = time(NULL)) > purge_time) {
@@ -381,17 +387,24 @@ static void *background_thread(void *arg)
             job_post(q_item);
         }
 
-        /* sleep 3 seconds */
-        pthread_mutex_t dummy_mutex = PTHREAD_MUTEX_INITIALIZER;
-        pthread_cond_t  dummy_cond  = PTHREAD_COND_INITIALIZER;
-        struct timespec ts;
+        if (cnt == 0) {
+            /* sleep 3 seconds */
 
-        clock_gettime(CLOCK_REALTIME, &ts);
-        ts.tv_sec += 3;
+#ifdef USE_POLL_FOR_SLEEP
+            poll(NULL, 0, 3 * 1000);
+#else
+            pthread_mutex_t dummy_mutex = PTHREAD_MUTEX_INITIALIZER;
+            pthread_cond_t  dummy_cond  = PTHREAD_COND_INITIALIZER;
+            struct timespec ts;
 
-        pthread_mutex_lock(&dummy_mutex);
-        while (pthread_cond_timedwait(&dummy_cond, &dummy_mutex, &ts) == 0);
-        pthread_mutex_unlock(&dummy_mutex);
+            clock_gettime(CLOCK_REALTIME, &ts);
+            ts.tv_sec += 3;
+
+            pthread_mutex_lock(&dummy_mutex);
+            while (pthread_cond_timedwait(&dummy_cond, &dummy_mutex, &ts) == 0);
+            pthread_mutex_unlock(&dummy_mutex);
+#endif
+        }
     }
 
     srv_log(xs_fmt("background thread stopped"));

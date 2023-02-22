@@ -1160,9 +1160,10 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
 }
 
 
-void process_user_queue(snac *snac)
+int process_user_queue(snac *snac)
 /* processes a user's queue */
 {
+    int cnt = 0;
     xs *list = user_queue(snac);
 
     xs_list *p = list;
@@ -1177,7 +1178,10 @@ void process_user_queue(snac *snac)
         }
 
         process_user_queue_item(snac, q_item);
+        cnt++;
     }
+
+    return cnt;
 }
 
 
@@ -1299,9 +1303,10 @@ void process_queue_item(xs_dict *q_item)
 }
 
 
-void process_queue(void)
+int process_queue(void)
 /* processes the global queue */
 {
+    int cnt = 0;
     xs *list = queue();
 
     xs_list *p = list;
@@ -1310,9 +1315,13 @@ void process_queue(void)
     while (xs_list_iter(&p, &fn)) {
         xs *q_item = dequeue(fn);
 
-        if (q_item != NULL)
+        if (q_item != NULL) {
             job_post(q_item);
+            cnt++;
+        }
     }
+
+    return cnt;
 }
 
 
