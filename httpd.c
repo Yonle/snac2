@@ -342,7 +342,6 @@ static void *job_thread(void *arg)
     return NULL;
 }
 
-#include <poll.h>
 
 static void *background_thread(void *arg)
 /* background thread (queue management and other things) */
