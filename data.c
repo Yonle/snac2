@@ -541,6 +541,9 @@ int _object_add(const char *id, d_char *obj, int ow)
             /* update the children index of the parent */
             xs *c_idx = _object_fn(in_reply_to);
 
+            if (mtime(c_idx) == 0.0)
+                srv_debug(0, xs_fmt("object_add (warn) parent object not here %s", c_idx));
+
             c_idx = xs_replace_i(c_idx, ".json", "_c.idx");
 
             if (!index_in(c_idx, id)) {
@@ -590,7 +593,7 @@ int object_del_by_md5(const char *md5)
     int status = 404;
     xs *fn     = _object_fn_by_md5(md5);
 
-    if (fn != NULL && unlink(fn) != -1) {
+    if (unlink(fn) != -1) {
         status = 200;
 
         /* also delete associated indexes */
