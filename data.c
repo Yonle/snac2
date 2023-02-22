@@ -254,6 +254,14 @@ FILE *index_lock(const char *fn)
 }
 
 
+void index_unlock(FILE *f, const char *fn)
+{
+    xs *lck = xs_fmt("%s.lck", fn);
+    unlink(lck);
+    fclose(f);
+}
+
+
 int index_add_md5(const char *fn, const char *md5)
 /* adds an md5 to an index */
 {
@@ -275,7 +283,7 @@ int index_add_md5(const char *fn, const char *md5)
     else
         status = 500;
 
-    fclose(l);
+    index_unlock(l, fn);
 
     return status;
 }
@@ -327,7 +335,7 @@ int index_del_md5(const char *fn, const char *md5)
     else
         status = 500;
 
-    fclose(l);
+    index_unlock(l, fn);
 
     return status;
 }
