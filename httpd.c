@@ -478,9 +478,12 @@ void httpd(void)
         for (;;) {
             FILE *f = xs_socket_accept(rs);
 
-            xs *job = xs_data_new(&f, sizeof(FILE *));
-
-            job_post(job);
+            if (f != NULL) {
+                xs *job = xs_data_new(&f, sizeof(FILE *));
+                job_post(job);
+            }
+            else
+                break;
         }
     }
 
