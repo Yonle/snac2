@@ -243,11 +243,25 @@ double mtime_nl(const char *fn, int *n_link)
 
 /** indexes **/
 
+
+FILE *index_lock(const char *fn)
+{
+    xs *lck = xs_fmt("%s.lck", fn);
+    FILE *f = fopen(lck, "a");
+    flock(fileno(f), LOCK_EX);
+
+    return f;
+}
+
+
 int index_add_md5(const char *fn, const char *md5)
 /* adds an md5 to an index */
 {
     int status = 201; /* Created */
-    FILE *f;
+    FILE *l, *f;
+
+    if ((l = index_lock(fn)) == NULL)
+        return 500;
 
     if ((f = fopen(fn, "a")) != NULL) {
         flock(fileno(f), LOCK_EX);
@@ -260,6 +274,8 @@ int index_add_md5(const char *fn, const char *md5)
     }
     else
         status = 500;
+
+    fclose(l);
 
     return status;
 }
@@ -277,7 +293,10 @@ int index_del_md5(const char *fn, const char *md5)
 /* deletes an md5 from an index */
 {
     int status = 404;
-    FILE *i, *o;
+    FILE *l, *i, *o;
+
+    if ((l = index_lock(fn)) == NULL)
+        return 500;
 
     if ((i = fopen(fn, "r")) != NULL) {
         flock(fileno(i), LOCK_EX);
@@ -296,6 +315,7 @@ int index_del_md5(const char *fn, const char *md5)
 
             xs *ofn = xs_fmt("%s.bak", fn);
 
+            unlink(ofn);
             link(fn, ofn);
             rename(nfn, fn);
         }
@@ -306,6 +326,8 @@ int index_del_md5(const char *fn, const char *md5)
     }
     else
         status = 500;
+
+    fclose(l);
 
     return status;
 }
