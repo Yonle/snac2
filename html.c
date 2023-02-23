@@ -37,19 +37,16 @@ int login(snac *snac, char *headers)
 }
 
 
-d_char *html_actor_icon(snac *snac, d_char *os, char *actor,
-    const char *date, const char *udate, const char *url, int priv)
+xs_str *actor_name(xs_dict *actor)
+/* gets the actor name */
 {
-    xs *s = xs_str_new(NULL);
+    xs_list *p;
+    char *v;
+    xs_str *name;
 
-    xs *name   = NULL;
-    xs *avatar = NULL;
-    char *p, *v;
-
-    /* get the name */
     if (xs_is_null((v = xs_dict_get(actor, "name"))) || *v == '\0') {
-        if (xs_is_null(v = xs_dict_get(actor, "preferredUsername"))) {
-            v = "user";
+        if (xs_is_null(v = xs_dict_get(actor, "preferredUsername")) || *v == '\0') {
+            v = "anonymous";
         }
     }
 
@@ -74,6 +71,20 @@ d_char *html_actor_icon(snac *snac, d_char *os, char *actor,
             }
         }
     }
+
+    return name;
+}
+
+
+d_char *html_actor_icon(snac *snac, d_char *os, char *actor,
+    const char *date, const char *udate, const char *url, int priv)
+{
+    xs *s = xs_str_new(NULL);
+
+    xs *avatar = NULL;
+    char *v;
+
+    xs *name = actor_name(actor);
 
     /* get the avatar */
     if ((v = xs_dict_get(actor, "icon")) != NULL &&
@@ -708,10 +719,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
         }
         else
         if (valid_status(object_get_by_md5(p, &actor_r))) {
-            char *name;
-
-            if ((name = xs_dict_get(actor_r, "name")) == NULL)
-                name = xs_dict_get(actor_r, "preferredUsername");
+            xs *name = actor_name(actor_r);
 
             if (!xs_is_null(name)) {
                 xs *s1 = xs_fmt(
