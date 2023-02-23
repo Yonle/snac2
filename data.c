@@ -1642,20 +1642,27 @@ xs_dict *dequeue(const char *fn)
 
 /** the purge **/
 
-static void _purge_file(const char *fn, time_t mt)
+static int _purge_file(const char *fn, time_t mt)
 /* purge fn if it's older than days */
 {
+    int ret = 0;
+
     if (mtime(fn) < mt) {
         /* older than the minimum time: delete it */
         unlink(fn);
         srv_debug(1, xs_fmt("purged %s", fn));
+        ret = 1;
     }
+
+    return ret;
 }
 
 
 static void _purge_subdir(snac *snac, const char *subdir, int days)
 /* purges all files in subdir older than days */
 {
+    int cnt = 0;
+
     if (days) {
         time_t mt = time(NULL) - days * 24 * 3600;
         xs *spec  = xs_fmt("%s/%s/" "*", snac->basedir, subdir);
@@ -1664,8 +1671,10 @@ static void _purge_subdir(snac *snac, const char *subdir, int days)
 
         p = list;
         while (xs_list_iter(&p, &v))
-            _purge_file(v, mt);
+            cnt += _purge_file(v, mt);
     }
+
+    snac_debug(snac, 0, xs_fmt("purge: ~/%s/ %d", subdir, cnt));
 }
 
 
@@ -1675,6 +1684,7 @@ void purge_server(void)
     xs *spec = xs_fmt("%s/object/??", srv_basedir);
     xs *dirs = xs_glob(spec, 0, 0);
     char *p, *v;
+    int cnt = 0;
 
     time_t mt = time(NULL) - 7 * 24 * 3600;
 
@@ -1695,9 +1705,12 @@ void purge_server(void)
                 char *md5 = xs_list_get(l, -1);
 
                 object_del_by_md5(md5);
+                cnt++;
             }
         }
     }
+
+    srv_debug(0, xs_fmt("purge: global %d", cnt));
 }
 
 
@@ -1706,6 +1719,7 @@ void purge_user(snac *snac)
 {
     int priv_days, pub_days, user_days = 0;
     char *v;
+    int n;
 
     priv_days = xs_number_get(xs_dict_get(srv_config, "timeline_purge_days"));
     pub_days  = xs_number_get(xs_dict_get(srv_config, "local_purge_days"));
@@ -1727,6 +1741,14 @@ void purge_user(snac *snac)
     _purge_subdir(snac, "private", priv_days);
 
     _purge_subdir(snac, "public",  pub_days);
+
+    const char *idxs[] = { "followers.idx", "private.idx", "public.idx", NULL };
+
+    for (n = 0; idxs[n]; n++) {
+        xs *idx = xs_fmt("%s/%s", snac->basedir, idxs[n]);
+        int gc = index_gc(idx);
+        snac_debug(snac, 0, xs_fmt("purge: %s %d", idx, gc));
+    }
 }
 
 
