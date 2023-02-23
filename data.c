@@ -327,57 +327,6 @@ int index_gc(const char *fn)
 }
 
 
-int index_del_md5(const char *fn, const char *md5)
-/* deletes an md5 from an index */
-{
-    int status = 404;
-    FILE *i, *o;
-
-    pthread_mutex_lock(&data_mutex);
-
-    if ((i = fopen(fn, "r")) != NULL) {
-        flock(fileno(i), LOCK_EX);
-
-        xs *nfn = xs_fmt("%s.new", fn);
-        char line[256];
-
-        if ((o = fopen(nfn, "w")) != NULL) {
-            while (fgets(line, sizeof(line), i) != NULL) {
-                line[32] = '\0';
-                if (memcmp(line, md5, 32) != 0)
-                    fprintf(o, "%s\n", line);
-            }
-
-            fclose(o);
-
-            xs *ofn = xs_fmt("%s.bak", fn);
-
-            unlink(ofn);
-            link(fn, ofn);
-            rename(nfn, fn);
-        }
-        else
-            status = 500;
-
-        fclose(i);
-    }
-    else
-        status = 500;
-
-    pthread_mutex_unlock(&data_mutex);
-
-    return status;
-}
-
-
-int index_del(const char *fn, const char *id)
-/* deletes an id from an index */
-{
-    xs *md5 = xs_md5_hex(id, strlen(id));
-    return index_del_md5(fn, md5);
-}
-
-
 int index_in_md5(const char *fn, const char *md5)
 /* checks if the md5 is already in the index */
 {
@@ -779,8 +728,7 @@ int _object_user_cache(snac *snac, const char *id, const char *cachedir, int del
     int ret;
 
     if (del) {
-        if ((ret = unlink(cfn)) != -1)
-            index_del(idx, id);
+        ret = unlink(cfn);
     }
     else {
         if ((ret = link(ofn, cfn)) != -1)
