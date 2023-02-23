@@ -14,12 +14,15 @@
 #include <sys/stat.h>
 #include <sys/file.h>
 #include <fcntl.h>
-
+#include <pthread.h>
 
 double disk_layout = 2.7;
 
+/* storage serializer */
+pthread_mutex_t data_mutex = {0};
 
 int snac_upgrade(d_char **error);
+
 
 int srv_open(char *basedir, int auto_upgrade)
 /* opens a server */
@@ -28,6 +31,8 @@ int srv_open(char *basedir, int auto_upgrade)
     xs *cfg_file = NULL;
     FILE *f;
     d_char *error = NULL;
+
+    pthread_mutex_init(&data_mutex, NULL);
 
     srv_basedir = xs_str_new(basedir);
 
@@ -121,6 +126,8 @@ void srv_free(void)
     xs_free(srv_basedir);
     xs_free(srv_config);
     xs_free(srv_baseurl);
+
+    pthread_mutex_destroy(&data_mutex);
 }
 
 
@@ -250,6 +257,8 @@ int index_add_md5(const char *fn, const char *md5)
     int status = 201; /* Created */
     FILE *f;
 
+    pthread_mutex_lock(&data_mutex);
+
     if ((f = fopen(fn, "a")) != NULL) {
         flock(fileno(f), LOCK_EX);
 
@@ -261,6 +270,8 @@ int index_add_md5(const char *fn, const char *md5)
     }
     else
         status = 500;
+
+    pthread_mutex_unlock(&data_mutex);
 
     return status;
 }
@@ -279,6 +290,8 @@ int index_del_md5(const char *fn, const char *md5)
 {
     int status = 404;
     FILE *i, *o;
+
+    pthread_mutex_lock(&data_mutex);
 
     if ((i = fopen(fn, "r")) != NULL) {
         flock(fileno(i), LOCK_EX);
@@ -308,6 +321,8 @@ int index_del_md5(const char *fn, const char *md5)
     }
     else
         status = 500;
+
+    pthread_mutex_unlock(&data_mutex);
 
     return status;
 }
