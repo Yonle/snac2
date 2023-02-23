@@ -285,6 +285,48 @@ int index_add(const char *fn, const char *id)
 }
 
 
+int index_gc(const char *fn)
+/* garbage-collects an index, deleting objects that are not here */
+{
+    FILE *i, *o;
+    int gc = -1;
+
+    pthread_mutex_lock(&data_mutex);
+
+    if ((i = fopen(fn, "r")) != NULL) {
+        xs *nfn = xs_fmt("%s.new", fn);
+        char line[256];
+
+        if ((o = fopen(nfn, "w")) != NULL) {
+            gc = 0;
+
+            while (fgets(line, sizeof(line), i) != NULL) {
+                line[32] = '\0';
+
+                if (object_here_by_md5(line))
+                    fprintf(o, "%s\n", line);
+                else
+                    gc++;
+            }
+
+            fclose(o);
+
+            xs *ofn = xs_fmt("%s.bak", fn);
+
+            unlink(ofn);
+            link(fn, ofn);
+            rename(nfn, fn);
+        }
+
+        fclose(i);
+    }
+
+    pthread_mutex_unlock(&data_mutex);
+
+    return gc;
+}
+
+
 int index_del_md5(const char *fn, const char *md5)
 /* deletes an md5 from an index */
 {

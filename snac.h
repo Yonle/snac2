@@ -60,6 +60,7 @@ double mtime_nl(const char *fn, int *n_link);
 #define mtime(fn) mtime_nl(fn, NULL)
 
 int index_add(const char *fn, const char *md5);
+int index_gc(const char *fn);
 int index_del(const char *fn, const char *md5);
 int index_first(const char *fn, char *buf, int size);
 int index_len(const char *fn);
