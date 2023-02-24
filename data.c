@@ -549,9 +549,6 @@ int _object_add(const char *id, d_char *obj, int ow)
             /* update the children index of the parent */
             xs *c_idx = _object_fn(in_reply_to);
 
-            if (mtime(c_idx) == 0.0)
-                srv_debug(0, xs_fmt("object_add (warn) parent object not here %s", c_idx));
-
             c_idx = xs_replace_i(c_idx, ".json", "_c.idx");
 
             if (!index_in(c_idx, id)) {
@@ -1631,34 +1628,68 @@ void purge_server(void)
 {
     xs *spec = xs_fmt("%s/object/??", srv_basedir);
     xs *dirs = xs_glob(spec, 0, 0);
-    char *p, *v;
+    xs_list *p;
+    xs_str *v;
     int cnt = 0;
+    int icnt = 0;
 
     time_t mt = time(NULL) - 7 * 24 * 3600;
 
     p = dirs;
     while (xs_list_iter(&p, &v)) {
-        xs *spec2 = xs_fmt("%s/" "*.json", v);
-        xs *files = xs_glob(spec2, 0, 0);
-        char *p2, *v2;
+        xs_list *p2;
+        xs_str *v2;
 
-        p2 = files;
-        while (xs_list_iter(&p2, &v2)) {
-            int n_link;
+        {
+            xs *spec2 = xs_fmt("%s/" "*.json", v);
+            xs *files = xs_glob(spec2, 0, 0);
 
-            /* old and with no hard links? */
-            if (mtime_nl(v2, &n_link) < mt && n_link < 2) {
-                xs *s1    = xs_replace(v2, ".json", "");
-                xs *l     = xs_split(s1, "/");
-                char *md5 = xs_list_get(l, -1);
+            p2 = files;
+            while (xs_list_iter(&p2, &v2)) {
+                int n_link;
 
-                object_del_by_md5(md5);
-                cnt++;
+                /* old and with no hard links? */
+                if (mtime_nl(v2, &n_link) < mt && n_link < 2) {
+                    xs *s1    = xs_replace(v2, ".json", "");
+                    xs *l     = xs_split(s1, "/");
+                    char *md5 = xs_list_get(l, -1);
+
+                    object_del_by_md5(md5);
+                    cnt++;
+                }
+            }
+        }
+
+        {
+            /* look for stray indexes */
+            xs *speci = xs_fmt("%s/" "*_?.idx", v);
+            xs *idxfs = xs_glob(speci, 0, 0);
+
+            p2 = idxfs;
+            while (xs_list_iter(&p2, &v2)) {
+                /* old enough to consider? */
+                if (mtime(v2) < mt) {
+                    /* check if the indexed object is here */
+                    xs *o = xs_dup(v2);
+                    char *ext = strchr(o, '_');
+
+                    if (ext) {
+                        *ext = '\0';
+                        o = xs_str_cat(o, ".json");
+
+                        if (mtime(o) == 0.0) {
+                            /* delete */
+                            unlink(v2);
+                            srv_debug(1, xs_fmt("purged %s", v2));
+                            icnt++;
+                        }
+                    }
+                }
             }
         }
     }
 
-    srv_debug(0, xs_fmt("purge: global %d", cnt));
+    srv_debug(0, xs_fmt("purge: global (obj: %d, idx: %d)", cnt, icnt));
 }
 
 
