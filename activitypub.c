@@ -55,12 +55,22 @@ int activitypub_request(snac *snac, char *url, d_char **data)
     int p_size;
     char *ctype;
 
-    /* check if it's an url for this same site */
-    /* ... */
-
     /* get from the net */
     response = http_signed_request(snac, "GET", url,
         NULL, NULL, 0, &status, &payload, &p_size, 0);
+
+    if (status == 0 || (status >= 500 && status <= 599)) {
+        /* I found an instance running Misskey that returned
+           500 on signed messages but returned the object
+           perfectly without signing (?), so why not try */
+        xs_free(response);
+
+        xs *hdrs = xs_dict_new();
+        hdrs = xs_dict_append(hdrs, "accept", "application/activity+json");
+
+        response = xs_http_request("GET", url, hdrs,
+            NULL, 0, &status, &payload, &p_size, 0);
+    }
 
     if (valid_status(status)) {
         /* ensure it's ActivityPub data */
