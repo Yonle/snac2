@@ -1619,7 +1619,7 @@ static void _purge_subdir(snac *snac, const char *subdir, int days)
             cnt += _purge_file(v, mt);
     }
 
-    snac_debug(snac, 0, xs_fmt("purge: ~/%s/ %d", subdir, cnt));
+    snac_debug(snac, 1, xs_fmt("purge: ~/%s/ %d", subdir, cnt));
 }
 
 
@@ -1689,7 +1689,7 @@ void purge_server(void)
         }
     }
 
-    srv_debug(0, xs_fmt("purge: global (obj: %d, idx: %d)", cnt, icnt));
+    srv_debug(1, xs_fmt("purge: global (obj: %d, idx: %d)", cnt, icnt));
 }
 
 
@@ -1726,7 +1726,7 @@ void purge_user(snac *snac)
     for (n = 0; idxs[n]; n++) {
         xs *idx = xs_fmt("%s/%s", snac->basedir, idxs[n]);
         int gc = index_gc(idx);
-        snac_debug(snac, 0, xs_fmt("purge: %s %d", idx, gc));
+        snac_debug(snac, 1, xs_fmt("purge: %s %d", idx, gc));
     }
 }
 
