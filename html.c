@@ -226,6 +226,14 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
                     s_bio[n] != '\r' && s_bio[n] != '\n' && n < 128; n++);
         s_bio[n] = '\0';
 
+        xs *s_avatar = xs_dup(avatar);
+
+        /* don't inline an empty avatar: create a real link */
+        if (xs_startswith(s_avatar, "data:")) {
+            xs_free(s_avatar);
+            s_avatar = xs_fmt("%s/susie.png", srv_baseurl);
+        }
+
         /* og properties */
         xs *s1 = xs_fmt(
             "<meta property=\"og:site_name\" content=\"%s\"/>\n"
@@ -239,7 +247,7 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
             snac->uid,
             xs_dict_get(srv_config, "host"),
             s_bio,
-            avatar);
+            s_avatar);
         s = xs_str_cat(s, s1);
     }
 
