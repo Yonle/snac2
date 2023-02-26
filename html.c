@@ -210,6 +210,39 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
         s = xs_str_cat(s, s1);
     }
 
+    xs *avatar = xs_dup(xs_dict_get(snac->config, "avatar"));
+
+    if (avatar == NULL || *avatar == '\0') {
+        xs_free(avatar);
+        avatar = xs_fmt("data:image/png;base64, %s", default_avatar_base64());
+    }
+
+    {
+        xs *s_bio = xs_dup(xs_dict_get(snac->config, "bio"));
+        int n;
+
+        /* sorten a bio */
+        for (n = 0; s_bio[n] && s_bio[n] != '&' &&
+                    s_bio[n] != '\r' && s_bio[n] != '\n' && n < 128; n++);
+        s_bio[n] = '\0';
+
+        /* og properties */
+        xs *s1 = xs_fmt(
+            "<meta property=\"og:site_name\" content=\"%s\"/>\n"
+            "<meta property=\"og:title\" content=\"%s (@%s@%s)\"/>\n"
+            "<meta property=\"og:description\" content=\"%s\"/>\n"
+            "<meta property=\"og:image\" content=\"%s\"/>\n"
+            "<meta property=\"og:image:width\" content=\"300\"/>\n"
+            "<meta property=\"og:image:height\" content=\"300\"/>\n",
+            xs_dict_get(srv_config, "host"),
+            xs_dict_get(snac->config, "name"),
+            snac->uid,
+            xs_dict_get(srv_config, "host"),
+            s_bio,
+            avatar);
+        s = xs_str_cat(s, s1);
+    }
+
     {
         xs *s1 = xs_fmt("<link rel=\"alternate\" type=\"application/rss+xml\" "
                         "title=\"RSS\" href=\"%s.rss\" />\n", snac->actor);
@@ -223,12 +256,6 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
 
     {
         xs *s1;
-        xs *avatar = xs_dup(xs_dict_get(snac->config, "avatar"));
-
-        if (avatar == NULL || *avatar == '\0') {
-            xs_free(avatar);
-            avatar = xs_fmt("data:image/png;base64, %s", default_avatar_base64());
-        }
 
         s1 = xs_fmt("<img src=\"%s\" class=\"snac-avatar\" alt=\"\"/>&nbsp;", avatar);
 
