@@ -4,7 +4,7 @@
 
 #define _XS_JSON_H
 
-xs_str *xs_json_dumps_pp(xs_val *data, int indent);
+xs_str *xs_json_dumps_pp(const xs_val *data, int indent);
 #define xs_json_dumps(data) xs_json_dumps_pp(data, 0)
 xs_val *xs_json_loads(const xs_str *json);
 
@@ -15,7 +15,7 @@ xs_val *xs_json_loads(const xs_str *json);
 
 /** JSON dumps **/
 
-d_char *_xs_json_dumps_str(d_char *s, char *data)
+static xs_str *_xs_json_dumps_str(xs_str *s, const char *data)
 /* dumps a string in JSON format */
 {
     unsigned char c;
@@ -55,7 +55,7 @@ d_char *_xs_json_dumps_str(d_char *s, char *data)
 }
 
 
-d_char *_xs_json_indent(d_char *s, int level, int indent)
+static xs_str *_xs_json_indent(xs_str *s, int level, int indent)
 /* adds indentation */
 {
     if (indent) {
@@ -71,11 +71,12 @@ d_char *_xs_json_indent(d_char *s, int level, int indent)
 }
 
 
-d_char *_xs_json_dumps(d_char *s, char *data, int level, int indent)
+static xs_str *_xs_json_dumps(xs_str *s, const xs_val *s_data, int level, int indent)
 /* dumps partial data as JSON */
 {
-    char *k, *v;
     int c = 0;
+    xs_val *v;
+    xs_val *data = (xs_val *)s_data;
 
     switch (xs_type(data)) {
     case XSTYPE_NULL:
@@ -115,6 +116,7 @@ d_char *_xs_json_dumps(d_char *s, char *data, int level, int indent)
     case XSTYPE_DICT:
         s = xs_str_cat(s, "{");
 
+        xs_str *k;
         while (xs_dict_iter(&data, &k, &v)) {
             if (c != 0)
                 s = xs_str_cat(s, ",");
@@ -148,7 +150,7 @@ d_char *_xs_json_dumps(d_char *s, char *data, int level, int indent)
 }
 
 
-xs_str *xs_json_dumps_pp(xs_val *data, int indent)
+xs_str *xs_json_dumps_pp(const xs_val *data, int indent)
 /* dumps a piece of data as JSON */
 {
     xstype t = xs_type(data);
@@ -188,11 +190,11 @@ typedef enum {
 } js_type;
 
 
-d_char *_xs_json_loads_lexer(const char **json, js_type *t)
+static xs_val *_xs_json_loads_lexer(const char **json, js_type *t)
 {
     char c;
     const char *s = *json;
-    d_char *v = NULL;
+    xs_val *v = NULL;
 
     /* skip blanks */
     while (*s == L' ' || *s == L'\t' || *s == L'\n' || *s == L'\r')
@@ -324,10 +326,10 @@ d_char *_xs_json_loads_lexer(const char **json, js_type *t)
 }
 
 
-d_char *_xs_json_loads_array(const char **json, js_type *t);
-d_char *_xs_json_loads_object(const char **json, js_type *t);
+static xs_list *_xs_json_loads_array(const char **json, js_type *t);
+static xs_dict *_xs_json_loads_object(const char **json, js_type *t);
 
-d_char *_xs_json_loads_value(const char **json, js_type *t, d_char *v)
+static xs_val *_xs_json_loads_value(const char **json, js_type *t, xs_val *v)
 /* parses a JSON value */
 {
     if (*t == JS_OBRACK)
@@ -345,12 +347,12 @@ d_char *_xs_json_loads_value(const char **json, js_type *t, d_char *v)
 }
 
 
-d_char *_xs_json_loads_array(const char **json, js_type *t)
+static xs_list *_xs_json_loads_array(const char **json, js_type *t)
 /* parses a JSON array */
 {
     const char *s = *json;
     xs *v;
-    d_char *l;
+    xs_list *l;
     js_type tt;
 
     l = xs_list_new();
@@ -401,12 +403,12 @@ d_char *_xs_json_loads_array(const char **json, js_type *t)
 }
 
 
-d_char *_xs_json_loads_object(const char **json, js_type *t)
+static xs_dict *_xs_json_loads_object(const char **json, js_type *t)
 /* parses a JSON object */
 {
     const char *s = *json;
     xs *k1;
-    d_char *d;
+    xs_dict *d;
     js_type tt;
 
     d = xs_dict_new();
