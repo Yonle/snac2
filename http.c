@@ -119,7 +119,7 @@ xs_dict *http_signed_request(snac *snac, const char *method, const char *url,
 }
 
 
-static int _check_signature(snac *snac, char *req, char **err)
+int check_signature(snac *snac, xs_dict *req, xs_str **err)
 /* check the signature */
 {
     char *sig_hdr = xs_dict_get(req, "signature");
@@ -134,7 +134,8 @@ static int _check_signature(snac *snac, char *req, char **err)
     {
         /* extract the values */
         xs *l = xs_split(sig_hdr, ",");
-        char *v;
+        xs_list *p;
+        xs_val *v;
 
         p = l;
         while (xs_list_iter(&p, &v)) {
@@ -182,7 +183,8 @@ static int _check_signature(snac *snac, char *req, char **err)
 
     {
         xs *l = xs_split(headers, " ");
-        char *v;
+        xs_list *p;
+        xs_val *v;
 
         p = l;
         while (xs_list_iter(&p, &v)) {
@@ -223,31 +225,4 @@ static int _check_signature(snac *snac, char *req, char **err)
     }
 
     return 1;
-}
-
-
-int check_signature(snac *snac, char *req)
-/* checks the signature and archives the error */
-{
-    int ret;
-    xs *err = NULL;
-
-    if ((ret = _check_signature(snac, req, &err)) == 0) {
-        snac_debug(snac, 1, xs_fmt("check_signature %s", err));
-
-        xs *ntid = tid(0);
-        xs *fn   = xs_fmt("%s/error/check_signature_%s", srv_basedir, ntid);
-        FILE *f;
-
-        if ((f = fopen(fn, "w")) != NULL) {
-            fprintf(f, "Error: %s\nRequest headers:\n", err);
-
-            xs *j = xs_json_dumps_pp(req, 4);
-
-            fwrite(j, strlen(j), 1, f);
-            fclose(f);
-        }
-    }
-
-    return ret;
 }

@@ -1844,3 +1844,33 @@ void srv_archive(const char *direction, xs_dict *req,
         }
     }
 }
+
+
+void srv_archive_error(const char *prefix, const xs_str *err,
+                       const xs_dict *req, const xs_dict *data)
+/* archives an error */
+{
+    xs *ntid = tid(0);
+    xs *fn   = xs_fmt("%s/error/%s_%s", srv_basedir, prefix, ntid);
+    FILE *f;
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        fprintf(f, "Error: %s\n", err);
+
+        if (req) {
+            fprintf(f, "Request headers:\n");
+
+            xs *j = xs_json_dumps_pp(req, 4);
+            fwrite(j, strlen(j), 1, f);
+        }
+
+        if (data) {
+            fprintf(f, "Data:\n");
+
+            xs *j = xs_json_dumps_pp(data, 4);
+            fwrite(j, strlen(j), 1, f);
+        }
+
+        fclose(f);
+    }
+}

@@ -930,8 +930,13 @@ int process_input_message(snac *snac, char *msg, char *req)
     }
 
     /* check the signature */
-    if (!check_signature(snac, req)) {
-        snac_log(snac, xs_fmt("bad signature %s", actor));
+    xs *sig_err = NULL;
+
+    if (!check_signature(snac, req, &sig_err)) {
+        snac_log(snac, xs_fmt("bad signature %s (%s)", actor, sig_err));
+
+        srv_archive_error("check_signature", sig_err, req, msg);
+
         return 1;
     }
 

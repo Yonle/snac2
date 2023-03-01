@@ -55,6 +55,8 @@ void srv_archive(const char *direction, xs_dict *req,
                  const char *payload, int p_size,
                  int status, xs_dict *headers,
                  const char *body, int b_size);
+void srv_archive_error(const char *prefix, const xs_str *err,
+                       const xs_dict *req, const xs_dict *data);
 
 double mtime_nl(const char *fn, int *n_link);
 #define mtime(fn) mtime_nl(fn, NULL)
@@ -157,7 +159,7 @@ xs_dict *http_signed_request(snac *snac, const char *method, const char *url,
                             const char *body, int b_size,
                             int *status, xs_str **payload, int *p_size,
                             int timeout);
-int check_signature(snac *snac, char *req);
+int check_signature(snac *snac, xs_dict *req, xs_str **err);
 
 void httpd(void);
 
