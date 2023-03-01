@@ -96,24 +96,43 @@ int actor_request(snac *snac, char *actor, d_char **data)
     int status, status2;
     xs *payload = NULL;
 
+    if (data)
+        *data = NULL;
+
     /* get from disk first */
     status = actor_get(snac, actor, data);
 
-    if (status == 200)
-        return status;
+    if (status != 200) {
+        /* actor data non-existent or stale: get from the net */
+        status2 = activitypub_request(snac, actor, &payload);
 
-    /* actor data non-existent or stale: get from the net */
-    status2 = activitypub_request(snac, actor, &payload);
+        if (valid_status(status2)) {
+            /* renew data */
+            status = actor_add(snac, actor, payload);
 
-    if (valid_status(status2)) {
-        /* renew data */
-        status = actor_add(snac, actor, payload);
-
-        if (data != NULL) {
-            *data   = payload;
-            payload = NULL;
+            if (data != NULL) {
+                *data   = payload;
+                payload = NULL;
+            }
         }
     }
+
+#if 0
+    if (valid_status(status) && data && *data) {
+        xs *fn = xs_fmt("%s/inboxes.lst", srv_basedir);
+        FILE *f;
+
+        if ((f = fopen(fn, "a")) != NULL) {
+            char *v;
+            if (!xs_is_null(v = xs_dict_get(*data, "endpoints")) &&
+                !xs_is_null(v = xs_dict_get(v, "sharedInbox"))) {
+                fprintf(f, "%s\n", v);
+            }
+
+            fclose(f);
+        }
+    }
+#endif
 
     return status;
 }
