@@ -66,7 +66,8 @@ int activitypub_request(snac *snac, char *url, d_char **data)
         xs_free(response);
 
         xs *hdrs = xs_dict_new();
-        hdrs = xs_dict_append(hdrs, "accept", "application/activity+json");
+        hdrs = xs_dict_append(hdrs, "accept",     "application/activity+json");
+        hdrs = xs_dict_append(hdrs, "user-agent", USER_AGENT);
 
         response = xs_http_request("GET", url, hdrs,
             NULL, 0, &status, &payload, &p_size, 0);
