@@ -157,6 +157,9 @@ int snac_init(const char *basedir)
     xs *qdir = xs_fmt("%s/queue", srv_basedir);
     mkdirx(qdir);
 
+    xs *ibdir = xs_fmt("%s/inbox", srv_basedir);
+    mkdirx(ibdir);
+
     xs *gfn = xs_fmt("%s/greeting.html", srv_basedir);
     if ((f = fopen(gfn, "w")) == NULL) {
         printf("ERROR: cannot create '%s'\n", gfn);

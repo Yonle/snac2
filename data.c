@@ -96,6 +96,9 @@ int srv_open(char *basedir, int auto_upgrade)
     xs *qdir = xs_fmt("%s/queue", srv_basedir);
     mkdirx(qdir);
 
+    xs *ibdir = xs_fmt("%s/inboxes", srv_basedir);
+    mkdirx(ibdir);
+
 #ifdef __OpenBSD__
     char *v = xs_dict_get(srv_config, "disable_openbsd_security");
 
@@ -1360,6 +1363,37 @@ d_char *history_list(snac *snac)
     xs *spec = xs_fmt("%s/history/" "*.html", snac->basedir);
 
     return xs_glob(spec, 1, 0);
+}
+
+
+/** inbox collection **/
+
+void inbox_add(const char *inbox)
+/* collects a shared inbox */
+{
+    xs *md5 = xs_md5_hex(inbox, strlen(inbox));
+    xs *fn  = xs_fmt("%s/inboxes/%s", srv_basedir, md5);
+    FILE *f;
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        pthread_mutex_lock(&data_mutex);
+
+        fprintf(f, "%s\n", inbox);
+        fclose(f);
+
+        pthread_mutex_unlock(&data_mutex);
+    }
+}
+
+
+void inbox_add_by_actor(const xs_dict *actor)
+/* collects an actor's shared inbox, if it has one */
+{
+    char *v;
+
+    if (!xs_is_null(v = xs_dict_get(actor, "endpoints")) &&
+        !xs_is_null(v = xs_dict_get(v, "sharedInbox")))
+        inbox_add(v);
 }
 
 

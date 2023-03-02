@@ -117,22 +117,8 @@ int actor_request(snac *snac, char *actor, d_char **data)
         }
     }
 
-#if 0
-    if (valid_status(status) && data && *data) {
-        xs *fn = xs_fmt("%s/inboxes.lst", srv_basedir);
-        FILE *f;
-
-        if ((f = fopen(fn, "a")) != NULL) {
-            char *v;
-            if (!xs_is_null(v = xs_dict_get(*data, "endpoints")) &&
-                !xs_is_null(v = xs_dict_get(v, "sharedInbox"))) {
-                fprintf(f, "%s\n", v);
-            }
-
-            fclose(f);
-        }
-    }
-#endif
+    if (valid_status(status) && data && *data)
+        inbox_add_by_actor(*data);
 
     return status;
 }

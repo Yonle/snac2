@@ -132,6 +132,9 @@ d_char *history_get(snac *snac, char *id);
 int history_del(snac *snac, char *id);
 d_char *history_list(snac *snac);
 
+void inbox_add(const char *inbox);
+void inbox_add_by_actor(const xs_dict *actor);
+
 void enqueue_input(snac *snac, xs_dict *msg, xs_dict *req, int retries);
 void enqueue_output_raw(const char *keyid, const char *seckey,
                         xs_dict *msg, xs_str *inbox, int retries);
