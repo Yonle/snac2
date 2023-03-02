@@ -1101,19 +1101,22 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
     if (strcmp(type, "message") == 0) {
         xs_dict *msg = xs_dict_get(q_item, "message");
         xs *rcpts    = recipient_list(snac, msg, 1);
-        xs *shibx    = inbox_list();
         xs_set inboxes;
         xs_list *p;
-        xs_str *v;
         xs_str *actor;
 
         xs_set_init(&inboxes);
 
-        /* send first to the collected inboxes */
-        p = shibx;
-        while (xs_list_iter(&p, &v)) {
-            if (xs_set_add(&inboxes, v) == 1)
-                enqueue_output(snac, msg, v, 0);
+        /* if it's public, send first to the collected inboxes */
+        if (is_msg_public(snac, msg)) {
+            xs *shibx = inbox_list();
+            xs_str *v;
+
+            p = shibx;
+            while (xs_list_iter(&p, &v)) {
+                if (xs_set_add(&inboxes, v) == 1)
+                    enqueue_output(snac, msg, v, 0);
+            }
         }
 
         /* iterate now the recipients */
