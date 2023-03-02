@@ -1210,9 +1210,9 @@ void process_queue_item(xs_dict *q_item)
         status = send_to_inbox_raw(keyid, seckey, inbox, msg, &payload, &p_size, retries == 0 ? 3 : 8);
 
         if (payload) {
-            if (p_size > 24) {
+            if (p_size > 64) {
                 /* trim the message */
-                payload[24] = '\0';
+                payload[64] = '\0';
                 payload = xs_str_cat(payload, "...");
             }
 
@@ -1361,7 +1361,7 @@ int activitypub_get_handler(d_char *req, char *q_path,
         msg = msg_actor(&snac);
         *ctype = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"";
 
-        snac_debug(&snac, 1, xs_fmt("serving actor"));
+        snac_debug(&snac, 0, xs_fmt("serving actor"));
     }
     else
     if (strcmp(p_path, "outbox") == 0) {
