@@ -279,6 +279,7 @@ d_char *recipient_list(snac *snac, char *msg, int expand_public)
 }
 
 
+#if 0
 d_char *inbox_list(snac *snac, char *msg)
 /* returns the list of inboxes that are recipients of this message */
 {
@@ -302,7 +303,7 @@ d_char *inbox_list(snac *snac, char *msg)
 
     return xs_set_result(&inboxes);
 }
-
+#endif
 
 int is_msg_public(snac *snac, char *msg)
 /* checks if a message is public */

@@ -96,7 +96,7 @@ int srv_open(char *basedir, int auto_upgrade)
     xs *qdir = xs_fmt("%s/queue", srv_basedir);
     mkdirx(qdir);
 
-    xs *ibdir = xs_fmt("%s/inboxes", srv_basedir);
+    xs *ibdir = xs_fmt("%s/inbox", srv_basedir);
     mkdirx(ibdir);
 
 #ifdef __OpenBSD__
@@ -1372,7 +1372,7 @@ void inbox_add(const char *inbox)
 /* collects a shared inbox */
 {
     xs *md5 = xs_md5_hex(inbox, strlen(inbox));
-    xs *fn  = xs_fmt("%s/inboxes/%s", srv_basedir, md5);
+    xs *fn  = xs_fmt("%s/inbox/%s", srv_basedir, md5);
     FILE *f;
 
     if ((f = fopen(fn, "w")) != NULL) {
@@ -1395,6 +1395,17 @@ void inbox_add_by_actor(const xs_dict *actor)
         !xs_is_null(v = xs_dict_get(v, "sharedInbox")))
         inbox_add(v);
 }
+
+
+#if 0
+xs_list *inbox_list(void)
+/* returns the collected inboxes as a list */
+{
+    xs_list *l = xs_list_new();
+
+    return l;
+}
+#endif
 
 
 /** the queue **/
