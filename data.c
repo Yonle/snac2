@@ -1818,7 +1818,7 @@ void purge_all(void)
 
 /** archive **/
 
-void srv_archive(const char *direction, xs_dict *req,
+void srv_archive(const char *direction, const char *url, xs_dict *req,
                  const char *payload, int p_size,
                  int status, xs_dict *headers,
                  const char *body, int b_size)
@@ -1837,6 +1837,10 @@ void srv_archive(const char *direction, xs_dict *req,
             xs *j2 = xs_json_dumps_pp(headers, 4);
 
             fprintf(f, "dir: %s\n", direction);
+
+            if (url)
+                fprintf(f, "url: %s\n", url);
+
             fprintf(f, "req: %s\n", j1);
             fprintf(f, "p_size: %d\n", p_size);
             fprintf(f, "status: %d\n", status);
@@ -1928,6 +1932,8 @@ void srv_archive_error(const char *prefix, const xs_str *err,
 
             xs *j = xs_json_dumps_pp(req, 4);
             fwrite(j, strlen(j), 1, f);
+
+            fprintf(f, "\n");
         }
 
         if (data) {
@@ -1935,6 +1941,8 @@ void srv_archive_error(const char *prefix, const xs_str *err,
 
             xs *j = xs_json_dumps_pp(data, 4);
             fwrite(j, strlen(j), 1, f);
+
+            fprintf(f, "\n");
         }
 
         fclose(f);

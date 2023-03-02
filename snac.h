@@ -51,7 +51,7 @@ int validate_uid(const char *uid);
 d_char *hash_password(const char *uid, const char *passwd, const char *nonce);
 int check_password(const char *uid, const char *passwd, const char *hash);
 
-void srv_archive(const char *direction, xs_dict *req,
+void srv_archive(const char *direction, const char *url, xs_dict *req,
                  const char *payload, int p_size,
                  int status, xs_dict *headers,
                  const char *body, int b_size);

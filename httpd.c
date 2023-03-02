@@ -228,7 +228,7 @@ void httpd_connection(FILE *f)
 
     fclose(f);
 
-    srv_archive("RECV", req, payload, p_size, status, headers, body, b_size);
+    srv_archive("RECV", NULL, req, payload, p_size, status, headers, body, b_size);
 
     xs_free(body);
 }

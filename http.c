@@ -96,7 +96,7 @@ xs_dict *http_signed_request_raw(const char *keyid, const char *seckey,
     response = xs_http_request(method, url, hdrs,
                            body, b_size, status, payload, p_size, timeout);
 
-    srv_archive("SEND", hdrs, body, b_size, *status, response, *payload, *p_size);
+    srv_archive("SEND", url, hdrs, body, b_size, *status, response, *payload, *p_size);
 
     return response;
 }
