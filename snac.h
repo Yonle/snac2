@@ -134,6 +134,7 @@ d_char *history_list(snac *snac);
 
 void inbox_add(const char *inbox);
 void inbox_add_by_actor(const xs_dict *actor);
+xs_list *inbox_list(void);
 
 void enqueue_input(snac *snac, xs_dict *msg, xs_dict *req, int retries);
 void enqueue_output_raw(const char *keyid, const char *seckey,
@@ -193,7 +194,7 @@ int send_to_inbox(snac *snac, const xs_str *inbox, const xs_dict *msg,
                   xs_val **payload, int *p_size, int timeout);
 d_char *get_actor_inbox(snac *snac, char *actor);
 int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size, int timeout);
-int is_msg_public(snac *snac, char *msg);
+int is_msg_public(snac *snac, xs_dict *msg);
 
 int process_user_queue(snac *snac);
 void process_queue_item(xs_dict *q_item);

@@ -279,46 +279,13 @@ d_char *recipient_list(snac *snac, char *msg, int expand_public)
 }
 
 
-#if 0
-d_char *inbox_list(snac *snac, char *msg)
-/* returns the list of inboxes that are recipients of this message */
-{
-    xs *rcpts = recipient_list(snac, msg, 1);
-    xs_set inboxes;
-    char *p, *v;
-
-    xs_set_init(&inboxes);
-
-    p = rcpts;
-    while (xs_list_iter(&p, &v)) {
-        xs *inbox;
-
-        if ((inbox = get_actor_inbox(snac, v)) != NULL) {
-            /* add the inbox if it's not already there */
-            xs_set_add(&inboxes, inbox);
-        }
-        else
-            snac_log(snac, xs_fmt("cannot find inbox for %s", v));
-    }
-
-    return xs_set_result(&inboxes);
-}
-#endif
-
-int is_msg_public(snac *snac, char *msg)
+int is_msg_public(snac *snac, xs_dict *msg)
 /* checks if a message is public */
 {
     int ret = 0;
     xs *rcpts = recipient_list(snac, msg, 0);
-    char *p, *v;
 
-    p = rcpts;
-    while (!ret && xs_list_iter(&p, &v)) {
-        if (strcmp(v, public_address) == 0)
-            ret = 1;
-    }
-
-    return ret;
+    return xs_list_in(rcpts, public_address) != -1;
 }
 
 

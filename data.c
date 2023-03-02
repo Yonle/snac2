@@ -1375,7 +1375,7 @@ void inbox_add(const char *inbox)
     xs *fn  = xs_fmt("%s/inbox/%s", srv_basedir, md5);
     FILE *f;
 
-    if ((f = fopen(fn, "w")) != NULL) {
+    if (strlen(inbox) < 256 && (f = fopen(fn, "w")) != NULL) {
         pthread_mutex_lock(&data_mutex);
 
         fprintf(f, "%s\n", inbox);
@@ -1397,15 +1397,36 @@ void inbox_add_by_actor(const xs_dict *actor)
 }
 
 
-#if 0
 xs_list *inbox_list(void)
 /* returns the collected inboxes as a list */
 {
-    xs_list *l = xs_list_new();
+    xs_list *ibl = xs_list_new();
+    xs *spec     = xs_fmt("%s/inbox/" "*", srv_basedir);
+    xs *files    = xs_glob(spec, 0, 0);
+    xs_list *p   = files;
+    xs_val *v;
 
-    return l;
+    while (xs_list_iter(&p, &v)) {
+        FILE *f;
+
+        if ((f = fopen(v, "r")) != NULL) {
+            char line[256];
+
+            if (fgets(line, sizeof(line), f)) {
+                fclose(f);
+
+                int i = strlen(line);
+
+                if (i) {
+                    line[i - 1] = '\0';
+                    ibl = xs_list_append(ibl, line);
+                }
+            }
+        }
+    }
+
+    return ibl;
 }
-#endif
 
 
 /** the queue **/
