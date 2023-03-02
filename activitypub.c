@@ -282,7 +282,6 @@ d_char *recipient_list(snac *snac, char *msg, int expand_public)
 int is_msg_public(snac *snac, xs_dict *msg)
 /* checks if a message is public */
 {
-    int ret = 0;
     xs *rcpts = recipient_list(snac, msg, 0);
 
     return xs_list_in(rcpts, public_address) != -1;
@@ -1102,12 +1101,22 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
     if (strcmp(type, "message") == 0) {
         xs_dict *msg = xs_dict_get(q_item, "message");
         xs *rcpts    = recipient_list(snac, msg, 1);
+        xs *shibx    = inbox_list();
         xs_set inboxes;
         xs_list *p;
+        xs_str *v;
         xs_str *actor;
 
         xs_set_init(&inboxes);
 
+        /* send first to the collected inboxes */
+        p = shibx;
+        while (xs_list_iter(&p, &v)) {
+            if (xs_set_add(&inboxes, v) == 1)
+                enqueue_output(snac, msg, v, 0);
+        }
+
+        /* iterate now the recipients */
         p = rcpts;
         while (xs_list_iter(&p, &actor)) {
             xs *inbox = get_actor_inbox(snac, actor);
