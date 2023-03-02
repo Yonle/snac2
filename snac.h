@@ -218,5 +218,5 @@ int adduser(const char *uid);
 int resetpwd(snac *snac);
 
 int job_fifo_ready(void);
-void job_post(const xs_val *job);
+void job_post(const xs_val *job, int urgent);
 void job_wait(xs_val **job);

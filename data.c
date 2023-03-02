@@ -1497,7 +1497,7 @@ void enqueue_output_raw(const char *keyid, const char *seckey,
 
     /* if it's to be sent right now, bypass the disk queue and post the job */
     if (retries == 0 && job_fifo_ready())
-        job_post(qmsg);
+        job_post(qmsg, 0);
     else {
         qmsg = _enqueue_put(fn, qmsg);
         srv_debug(1, xs_fmt("enqueue_output %s %s %d", inbox, fn, retries));

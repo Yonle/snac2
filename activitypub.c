@@ -1316,7 +1316,7 @@ int process_queue(void)
         xs *q_item = dequeue(fn);
 
         if (q_item != NULL) {
-            job_post(q_item);
+            job_post(q_item, 0);
             cnt++;
         }
     }
