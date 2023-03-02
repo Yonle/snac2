@@ -87,11 +87,13 @@ xs_dict *http_signed_request_raw(const char *keyid, const char *seckey,
     else
         hdrs = xs_dict_append(hdrs, "accept",       "application/activity+json");
 
+    xs *user_agent = xs_fmt("%s; +%s/", USER_AGENT, srv_baseurl);
+
     hdrs = xs_dict_append(hdrs, "date",         date);
     hdrs = xs_dict_append(hdrs, "signature",    signature);
     hdrs = xs_dict_append(hdrs, "digest",       digest);
     hdrs = xs_dict_append(hdrs, "host",         host);
-    hdrs = xs_dict_append(hdrs, "user-agent",   USER_AGENT);
+    hdrs = xs_dict_append(hdrs, "user-agent",   user_agent);
 
     response = xs_http_request(method, url, hdrs,
                            body, b_size, status, payload, p_size, timeout);
