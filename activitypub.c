@@ -1362,7 +1362,9 @@ int activitypub_get_handler(d_char *req, char *q_path,
         msg = msg_actor(&snac);
         *ctype = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"";
 
-        snac_debug(&snac, 0, xs_fmt("serving actor"));
+        char *ua = xs_dict_get(req, "user-agent");
+
+        snac_debug(&snac, 0, xs_fmt("serving actor [%s]", ua ? ua : "No UA"));
     }
     else
     if (strcmp(p_path, "outbox") == 0) {
