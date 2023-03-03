@@ -1108,19 +1108,7 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
 
         xs_set_init(&inboxes);
 
-        /* if it's public, send first to the collected inboxes */
-        if (is_msg_public(snac, msg)) {
-            xs *shibx = inbox_list();
-            xs_str *v;
-
-            p = shibx;
-            while (xs_list_iter(&p, &v)) {
-                if (xs_set_add(&inboxes, v) == 1)
-                    enqueue_output(snac, msg, v, 0);
-            }
-        }
-
-        /* iterate now the recipients */
+        /* iterate the recipients */
         p = rcpts;
         while (xs_list_iter(&p, &actor)) {
             xs *inbox = get_actor_inbox(snac, actor);
@@ -1132,6 +1120,18 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
             }
             else
                 snac_log(snac, xs_fmt("cannot find inbox for %s", actor));
+        }
+
+        /* if it's public, send to the collected inboxes */
+        if (is_msg_public(snac, msg)) {
+            xs *shibx = inbox_list();
+            xs_str *inbox;
+
+            p = shibx;
+            while (xs_list_iter(&p, &inbox)) {
+                if (xs_set_add(&inboxes, inbox) == 1)
+                    enqueue_output(snac, msg, inbox, 0);
+            }
         }
 
         xs_set_free(&inboxes);
