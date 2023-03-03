@@ -1484,6 +1484,17 @@ int activitypub_post_handler(d_char *req, char *q_path,
         }
     }
 
+    /* if the message is from a muted actor, reject it right now */
+    if (!xs_is_null(v = xs_dict_get(msg, "actor")) && *v) {
+        if (is_muted(&snac, v)) {
+            srv_log(xs_fmt("rejected message from MUTEd actor %s", v));
+
+            *body  = xs_str_new("rejected");
+            *ctype = "text/plain";
+            status = 403;
+        }
+    }
+
     if (valid_status(status)) {
         enqueue_input(&snac, msg, req, 0);
         *ctype = "application/activity+json";
