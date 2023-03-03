@@ -134,9 +134,7 @@ xs_dict *xs_http_request(const char *method, const char *url,
                 b_size = xs_size(body);
 
             /* add the content-length header */
-            char tmp[32];
-            sprintf(tmp, "content-length: %d", b_size);
-            list = curl_slist_append(list, tmp);
+            curl_easy_setopt(curl, CURLOPT_INFILESIZE, b_size);
 
             pd.data = (char *)body;
             pd.size = b_size;
