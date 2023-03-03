@@ -12,6 +12,8 @@ Add a per-account toggle to [un]mute their Announces.
 
 Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac2/issues/3
 
+Fix `Like` and `Update` recipients.
+
 ## Wishlist
 
 Implement the ActivityPub C2S (Client to Server) API: https://www.w3.org/TR/activitypub/#client-to-server-interactions . I skipped that part of the documentation entirely, so I don't know if this is trivial or hell. The Android client at http://andstatus.org/ implements it, or so it seems. There may be others.
