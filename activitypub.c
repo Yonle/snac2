@@ -471,7 +471,9 @@ d_char *msg_admiration(snac *snac, char *object, char *type)
 
         msg = msg_base(snac, type, "@dummy", snac->actor, "@now", object);
 
-        rcpts = xs_list_append(rcpts, public_address);
+        if (is_msg_public(snac, a_msg))
+            rcpts = xs_list_append(rcpts, public_address);
+
         rcpts = xs_list_append(rcpts, xs_dict_get(a_msg, "attributedTo"));
 
         msg = xs_dict_append(msg, "to", rcpts);
