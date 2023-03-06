@@ -183,8 +183,7 @@ d_char *sanitize(const char *content)
 
     /* strip dangerous control codes */
     for (n = 0; content2[n]; n++) {
-        if (content2[n] > 0x0   && content2[n] < 0x20 &&
-            content2[n] != '\r' && content2[n] != '\n')
+        if (xs_type(&content2[n]) != XSTYPE_STRING)
             content2[n] = ' ';
     }
 
