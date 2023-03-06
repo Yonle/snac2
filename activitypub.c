@@ -295,7 +295,7 @@ int is_msg_for_me(snac *snac, xs_dict *msg)
     int ret = 1;
     char *type = xs_dict_get(msg, "type");
 
-    if (!xs_is_null(type) && strcmp(type, "Note") == 0) {
+    if (!xs_is_null(type) && strcmp(type, "Create") == 0) {
         xs *rcpts = recipient_list(snac, msg, 0);
         xs_list *p = rcpts;
         xs_str *v;
@@ -307,8 +307,8 @@ int is_msg_for_me(snac *snac, xs_dict *msg)
         }
 
         /* if we're not following this fellow, then the answer is NO */
-        char *atto = xs_dict_get(msg, "attributedTo");
-        if (xs_is_null(atto) || !following_check(snac, atto))
+        char *actor = xs_dict_get(msg, "actor");
+        if (xs_is_null(actor) || !following_check(snac, actor))
             ret = 0;
     }
 
