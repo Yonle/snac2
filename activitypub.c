@@ -289,31 +289,48 @@ int is_msg_public(snac *snac, xs_dict *msg)
 }
 
 
-int is_msg_for_me(snac *snac, xs_dict *msg)
+int is_msg_for_me(snac *snac, xs_dict *c_msg)
 /* checks if this message is for me */
 {
-    int ret = 1;
-    char *type = xs_dict_get(msg, "type");
+    char *type = xs_dict_get(c_msg, "type");
 
-    if (!xs_is_null(type) && strcmp(type, "Create") == 0) {
-        xs *rcpts = recipient_list(snac, msg, 0);
-        xs_list *p = rcpts;
-        xs_str *v;
+    /* if it's not a Create, allow */
+    if (xs_is_null(type) || strcmp(type, "Create") != 0)
+        return 1;
 
-        while(xs_list_iter(&p, &v)) {
-            /* explicitly for me? we're done */
-            if (strcmp(v, snac->actor) == 0)
-                goto done;
-        }
+    xs_dict *msg = xs_dict_get(c_msg, "object");
+    xs *rcpts = recipient_list(snac, msg, 0);
+    xs_list *p = rcpts;
+    xs_str *v;
 
-        /* if we're not following this fellow, then the answer is NO */
-        char *actor = xs_dict_get(msg, "actor");
-        if (xs_is_null(actor) || !following_check(snac, actor))
-            ret = 0;
+    while(xs_list_iter(&p, &v)) {
+        /* explicitly for me? we're done */
+        if (strcmp(v, snac->actor) == 0)
+            return 2;
     }
 
-done:
-    return ret;
+    /* accept if it's from someone we follow */
+    char *atto = xs_dict_get(msg, "attributedTo");
+
+    if (!xs_is_null(atto) && following_check(snac, atto))
+        return 3;
+
+    /* is this message a reply to another? */
+    char *irt = xs_dict_get(msg, "inReplyTo");
+    if (!xs_is_null(irt)) {
+        xs *r_msg = NULL;
+
+        /* try to get it */
+        if (valid_status(object_get(irt, &r_msg))) {
+            atto = xs_dict_get(r_msg, "attributedTo");
+
+            /* accept if the replied message is from someone we follow */
+            if (!xs_is_null(atto) && following_check(snac, atto))
+                return 4;
+        }
+    }
+
+    return 0;
 }
 
 
@@ -921,7 +938,10 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
         utype = "(null)";
 
     /* reject messages that are not for this user */
-    if (!is_msg_for_me(snac, msg)) {
+    int d = is_msg_for_me(snac, msg);
+    snac_debug(snac, 0, xs_fmt("---> %s %d", xs_dict_get(msg, "id"), d));
+
+    if (!d) {
         snac_debug(snac, 0, xs_fmt("message from %s not for us", actor));
     }
 
