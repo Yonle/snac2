@@ -195,6 +195,7 @@ int send_to_inbox(snac *snac, const xs_str *inbox, const xs_dict *msg,
 d_char *get_actor_inbox(snac *snac, char *actor);
 int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size, int timeout);
 int is_msg_public(snac *snac, xs_dict *msg);
+int is_msg_for_me(snac *snac, xs_dict *msg);
 
 int process_user_queue(snac *snac);
 void process_queue_item(xs_dict *q_item);

@@ -289,6 +289,34 @@ int is_msg_public(snac *snac, xs_dict *msg)
 }
 
 
+int is_msg_for_me(snac *snac, xs_dict *msg)
+/* checks if this message is for me */
+{
+    int ret = 1;
+    char *type = xs_dict_get(msg, "type");
+
+    if (!xs_is_null(type) && strcmp(type, "Note") == 0) {
+        xs *rcpts = recipient_list(snac, msg, 0);
+        xs_list *p = rcpts;
+        xs_str *v;
+
+        while(xs_list_iter(&p, &v)) {
+            /* explicitly for me? we're done */
+            if (strcmp(v, snac->actor) == 0)
+                goto done;
+        }
+
+        /* if we're not following this fellow, then the answer is NO */
+        char *atto = xs_dict_get(msg, "attributedTo");
+        if (xs_is_null(atto) || !following_check(snac, atto))
+            ret = 0;
+    }
+
+done:
+    return ret;
+}
+
+
 void process_tags(snac *snac, const char *content, d_char **n_content, d_char **tag)
 /* parses mentions and tags from content */
 {
@@ -874,7 +902,7 @@ void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg
 
 /** queues **/
 
-int process_input_message(snac *snac, char *msg, char *req)
+int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
 /* processes an ActivityPub message from the input queue */
 {
     /* actor and type exist, were checked previously */
@@ -891,6 +919,11 @@ int process_input_message(snac *snac, char *msg, char *req)
         utype = xs_dict_get(object, "type");
     else
         utype = "(null)";
+
+    /* reject messages that are not for this user */
+    if (!is_msg_for_me(snac, msg)) {
+        snac_debug(snac, 0, xs_fmt("message from %s not for us", actor));
+    }
 
     /* bring the actor */
     a_status = actor_request(snac, actor, &actor_o);
