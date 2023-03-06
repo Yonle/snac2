@@ -183,7 +183,7 @@ xs_dict *msg_note(snac *snac, xs_str *content, xs_val *rcpts,
 d_char *msg_undo(snac *snac, char *object);
 d_char *msg_delete(snac *snac, char *id);
 d_char *msg_actor(snac *snac);
-d_char *msg_update(snac *snac, char *object);
+xs_dict *msg_update(snac *snac, xs_dict *object);
 
 int activitypub_request(snac *snac, char *url, d_char **data);
 int actor_request(snac *snac, char *actor, d_char **data);

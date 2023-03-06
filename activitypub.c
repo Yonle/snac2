@@ -445,12 +445,19 @@ d_char *msg_accept(snac *snac, char *object, char *to)
 }
 
 
-d_char *msg_update(snac *snac, char *object)
+xs_dict *msg_update(snac *snac, xs_dict *object)
 /* creates an Update message */
 {
     d_char *msg = msg_base(snac, "Update", "@object", snac->actor, "@now", object);
 
-    msg = xs_dict_append(msg, "to", public_address);
+    char *type = xs_dict_get(object, "type");
+
+    if (strcmp(type, "Note") == 0) {
+        msg = xs_dict_append(msg, "to", xs_dict_get(object, "to"));
+        msg = xs_dict_append(msg, "cc", xs_dict_get(object, "cc"));
+    }
+    else
+        msg = xs_dict_append(msg, "to", public_address);
 
     return msg;
 }
