@@ -179,11 +179,20 @@ d_char *sanitize(const char *content)
     xs *sl;
     int n = 0;
     char *p, *v;
+    xs *content2 = xs_dup(content);
 
-    sl = xs_regex_split(content, "</?[^>]+>");
+    /* strip dangerous control codes */
+    for (n = 0; content2[n]; n++) {
+        if (content2[n] > 0x0   && content2[n] < 0x20 &&
+            content2[n] != '\r' && content2[n] != '\n')
+            content2[n] = ' ';
+    }
+
+    sl = xs_regex_split(content2, "</?[^>]+>");
 
     p = sl;
 
+    n = 0;
     while (xs_list_iter(&p, &v)) {
         if (n & 0x1) {
             xs *s1  = xs_strip_i(xs_crop_i(xs_dup(v), v[1] == '/' ? 2 : 1, -1));
