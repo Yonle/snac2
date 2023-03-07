@@ -1669,7 +1669,7 @@ static int _purge_file(const char *fn, time_t mt)
 }
 
 
-static void _purge_subdir(snac *snac, const char *subdir, int days)
+static void _purge_user_subdir(snac *snac, const char *subdir, int days)
 /* purges all files in subdir older than days */
 {
     int cnt = 0;
@@ -1782,10 +1782,10 @@ void purge_user(snac *snac)
             pub_days = user_days;
     }
 
-    _purge_subdir(snac, "hidden",  priv_days);
-    _purge_subdir(snac, "private", priv_days);
+    _purge_user_subdir(snac, "hidden",  priv_days);
+    _purge_user_subdir(snac, "private", priv_days);
 
-    _purge_subdir(snac, "public",  pub_days);
+    _purge_user_subdir(snac, "public",  pub_days);
 
     const char *idxs[] = { "followers.idx", "private.idx", "public.idx", NULL };
 
