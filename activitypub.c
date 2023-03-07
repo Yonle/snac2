@@ -118,8 +118,10 @@ int actor_request(snac *snac, char *actor, d_char **data)
         }
     }
 
+#if 0
     if (valid_status(status) && data && *data)
         inbox_add_by_actor(*data);
+#endif
 
     return status;
 }
