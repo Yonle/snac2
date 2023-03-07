@@ -4,15 +4,11 @@
 
 Add a notification area, where recent events of interest would be easily seen.
 
-There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where the problem is.
-
 Add a list of hashtags to drop.
 
 Add a per-account toggle to [un]mute their Announces.
 
 Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac2/issues/3
-
-Fix `Like` and `Update` recipients.
 
 ## Wishlist
 
@@ -221,3 +217,7 @@ Add a user-settable `purge_days`. This is not at first very hard to do, but purg
 Add support for uploading the avatar, instead of needing an URL to an image. As a kludgy workaround, you can post something with an attached image, copy the auto-generated URL and use it. You can even delete the post, as attached images are never deleted (I said it was kludgy) (2023-02-15T09:31:06+0100).
 
 Child indexes (*_c.idx) with a parent not present keep accumulating; not a real problem, but I must check why I keep storing them because I don't remember (2023-02-25T18:15:30+0100).
+
+There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where the problem is (2023-03-07T10:28:21+0100).
+
+Fix `Like` and `Update` recipients (2023-03-07T10:28:36+0100).
