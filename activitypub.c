@@ -304,12 +304,16 @@ int is_msg_for_me(snac *snac, xs_dict *c_msg)
     xs_str *v;
 
     while(xs_list_iter(&p, &v)) {
-        /* explicitly for me? we're done */
+        /* explicitly for me? accept */
         if (strcmp(v, snac->actor) == 0)
             return 2;
+
+        /* for someone we follow? (probably cc'ed) accept */
+        if (following_check(snac, v))
+            return 5;
     }
 
-    /* accept if it's from someone we follow */
+    /* accept if it's by someone we follow */
     char *atto = xs_dict_get(msg, "attributedTo");
 
     if (!xs_is_null(atto) && following_check(snac, atto))
@@ -320,7 +324,7 @@ int is_msg_for_me(snac *snac, xs_dict *c_msg)
     if (!xs_is_null(irt)) {
         xs *r_msg = NULL;
 
-        /* try to get it */
+        /* try to get the replied message */
         if (valid_status(object_get(irt, &r_msg))) {
             atto = xs_dict_get(r_msg, "attributedTo");
 
