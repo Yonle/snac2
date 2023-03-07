@@ -179,15 +179,8 @@ d_char *sanitize(const char *content)
     xs *sl;
     int n = 0;
     char *p, *v;
-    xs *content2 = xs_dup(content);
 
-    /* strip dangerous control codes */
-    for (n = 0; content2[n]; n++) {
-        if (xs_type(&content2[n]) != XSTYPE_STRING)
-            content2[n] = ' ';
-    }
-
-    sl = xs_regex_split(content2, "</?[^>]+>");
+    sl = xs_regex_split(content, "</?[^>]+>");
 
     p = sl;
 

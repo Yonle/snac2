@@ -260,6 +260,10 @@ static xs_val *_xs_json_loads_lexer(const char **json, js_type *t)
                     else
                         cp = i;
 
+                    /* replace dangerous control codes with the replacement char */
+                    if (cp >= '\0' && cp < ' ' && !strchr("\r\n\t", cp))
+                        cp = 0xfffd;
+
                     v = xs_utf8_enc(v, cp);
                     c = '\0';
 
