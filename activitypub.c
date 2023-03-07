@@ -942,11 +942,10 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
         utype = "(null)";
 
     /* reject messages that are not for this user */
-    int d = is_msg_for_me(snac, msg);
-    snac_debug(snac, 0, xs_fmt("---> %s %d", xs_dict_get(msg, "id"), d));
-
-    if (!d) {
+    if (!is_msg_for_me(snac, msg)) {
         snac_debug(snac, 0, xs_fmt("message from %s not for us", actor));
+
+        return 1;
     }
 
     /* bring the actor */
