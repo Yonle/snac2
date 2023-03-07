@@ -1661,7 +1661,7 @@ static int _purge_file(const char *fn, time_t mt)
     if (mtime(fn) < mt) {
         /* older than the minimum time: delete it */
         unlink(fn);
-        srv_debug(1, xs_fmt("purged %s", fn));
+        srv_debug(2, xs_fmt("purged %s", fn));
         ret = 1;
     }
 
@@ -1669,23 +1669,33 @@ static int _purge_file(const char *fn, time_t mt)
 }
 
 
-static void _purge_user_subdir(snac *snac, const char *subdir, int days)
-/* purges all files in subdir older than days */
+static void _purge_dir(const char *dir, int days)
+/* purges all files in a directory older than days */
 {
     int cnt = 0;
 
     if (days) {
         time_t mt = time(NULL) - days * 24 * 3600;
-        xs *spec  = xs_fmt("%s/%s/" "*", snac->basedir, subdir);
+        xs *spec  = xs_fmt("%s/" "*", dir);
         xs *list  = xs_glob(spec, 0, 0);
-        char *p, *v;
+        xs_list *p;
+        xs_str *v;
 
         p = list;
         while (xs_list_iter(&p, &v))
             cnt += _purge_file(v, mt);
-    }
 
-    snac_debug(snac, 1, xs_fmt("purge: ~/%s/ %d", subdir, cnt));
+        srv_debug(1, xs_fmt("purge: %s %d", dir, cnt));
+    }
+}
+
+
+static void _purge_user_subdir(snac *snac, const char *subdir, int days)
+/* purges all files in a user subdir older than days */
+{
+    xs *u_subdir = xs_fmt("%s/%s", snac->basedir, subdir);
+
+    _purge_dir(u_subdir, days);
 }
 
 
@@ -1754,6 +1764,10 @@ void purge_server(void)
             }
         }
     }
+
+    /* purge collected inboxes */
+    xs *ib_dir = xs_fmt("%s/inbox", srv_basedir);
+    _purge_dir(ib_dir, 7);
 
     srv_debug(1, xs_fmt("purge: global (obj: %d, idx: %d)", cnt, icnt));
 }
