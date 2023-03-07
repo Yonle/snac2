@@ -1,5 +1,21 @@
 # Release Notes
 
+## 2.25
+
+Federation with other instances have been improved by collecting shared inbox information from input messages more thoroughly.
+
+Fixed an obscure bug that caused connection rejections from some instances.
+
+Some rules regarding incoming messages have been tightened; messages that are not related to the user are not added to the timeline. This has to be implemented because some ill-behaving ActivityPub implementations were found injecting unwanted messages to user inboxes.
+
+Messages from MUTEd users are rejected as soon as possible with a 403 Forbidden HTTP status.
+
+Fixed a minor bug regarding the scope of the 'Update' activity (edited posts were sent to more recipients that it should).
+
+More aggressive input sanitization (some posts were found that included strange ASCII control codes).
+
+Added "Open Graph" HTML meta tags for better previsualization of `snac` links from other social media.
+
 ## 2.24
 
 Sending non-public messages is now much easier: a checkbox to post a message to only those people mentioned in the message body has been added.
