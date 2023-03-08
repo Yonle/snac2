@@ -7,6 +7,7 @@
 int xs_socket_timeout(int s, double rto, double sto);
 int xs_socket_server(const char *addr, int port);
 FILE *xs_socket_accept(int rs);
+xs_str *xs_socket_peername(int s);
 
 
 #ifdef XS_IMPLEMENTATION
@@ -14,6 +15,7 @@ FILE *xs_socket_accept(int rs);
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 
 int xs_socket_timeout(int s, double rto, double sto)
@@ -89,6 +91,38 @@ FILE *xs_socket_accept(int rs)
 
     return cs == -1 ? NULL : fdopen(cs, "r+");
 }
+
+
+xs_str *xs_socket_peername(int s)
+/* returns the remote address as a string */
+{
+    xs_str *ip = NULL;
+    struct sockaddr_storage addr;
+    socklen_t slen = sizeof(addr);
+
+    if (getpeername(s, (struct sockaddr *)&addr, &slen) != -1) {
+        char buf[1024];
+        const char *p = NULL;
+
+        if (addr.ss_family == AF_INET) {
+            struct sockaddr_in *sa = (struct sockaddr_in *)&addr;
+
+            p = inet_ntop(AF_INET, &sa->sin_addr, buf, sizeof(buf));
+        }
+        else
+        if (addr.ss_family == AF_INET6) {
+            struct sockaddr_in6 *sa = (struct sockaddr_in6 *)&addr;
+
+            p = inet_ntop(AF_INET6, &sa->sin6_addr, buf, sizeof(buf));
+        }
+
+        if (p != NULL)
+            ip = xs_str_new(p);
+    }
+
+    return ip;
+}
+
 
 #endif /* XS_IMPLEMENTATION */
 
