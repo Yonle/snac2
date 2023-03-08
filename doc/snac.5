@@ -75,6 +75,12 @@ Directory holding user subdirectories.
 Directory holding the ActivityPub objects. Filenames are hashes of each
 message Id, stored in subdirectories starting with the first two letters
 of the hash.
+.It Pa queue/
+This directory contains the global queue of input/output messages as JSON files.
+File names contain timestamps that indicate when the message will
+be sent. Messages not accepted by their respective servers will be re-enqueued
+for later retransmission until a maximum number of retries is reached,
+then discarded.
 .It Pa inbox/
 Directory storing collected inbox URLs from other instances.
 .It Pa archive/
