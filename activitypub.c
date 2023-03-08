@@ -118,8 +118,13 @@ int actor_request(snac *snac, char *actor, d_char **data)
         }
     }
 
-    if (valid_status(status) && data && *data)
-        inbox_add_by_actor(*data);
+    /* collect the (presumed) shared inbox in this actor */
+    if (xs_type(xs_dict_get(srv_config, "disable_inbox_collection")) != XSTYPE_TRUE) {
+        if (valid_status(status) && data && *data)
+            inbox_add_by_actor(*data);
+    }
+    else
+        srv_log(xs_fmt("NOT collected"));
 
     return status;
 }
