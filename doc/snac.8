@@ -176,6 +176,9 @@ By setting this value, you can specify the exact number of threads
 will use when processing connections. Values lesser than 4 will be ignored.
 .It Ic disable_email_notifications
 By setting this to true, no email notification will be sent for any user.
+.It Ic disable_inbox_collection
+By setting this to true, no inbox collection is done. Inbox collection helps
+being discovered from remote instances, but also increases network traffic.
 .El
 .Pp
 You must restart the server to make effective these changes.
