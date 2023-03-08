@@ -169,7 +169,7 @@ d_char *not_really_markdown(const char *content)
 
 const char *valid_tags[] = {
     "a", "p", "br", "br/", "blockquote", "ul", "li",
-    "span", "i", "b", "pre", "code", "em", "strong", NULL
+    "span", "i", "b", "u", "pre", "code", "em", "strong", NULL
 };
 
 d_char *sanitize(const char *content)
