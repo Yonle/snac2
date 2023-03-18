@@ -69,8 +69,9 @@ xs_str *xs_replace_i(xs_str *str, const char *sfrom, const char *sto);
 #define xs_replace(str, sfrom, sto) xs_replace_i(xs_dup(str), sfrom, sto)
 xs_str *xs_fmt(const char *fmt, ...);
 int xs_str_in(const char *haystack, const char *needle);
-int xs_startswith(const char *str, const char *prefix);
-int xs_endswith(const char *str, const char *postfix);
+int _xs_startsorends(const char *str, const char *xfix, int ends);
+#define xs_startswith(str, prefix) _xs_startsorends(str, prefix, 0)
+#define xs_endswith(str, postfix) _xs_startsorends(str, postfix, 1)
 xs_str *xs_crop_i(xs_str *str, int start, int end);
 xs_str *xs_strip_chars_i(xs_str *str, const char *chars);
 #define xs_strip_i(str) xs_strip_chars_i(str, " \r\n\t\v\f")
@@ -81,7 +82,7 @@ xs_list *xs_list_append_m(xs_list *list, const char *mem, int dsz);
 #define xs_list_append(list, data) xs_list_append_m(list, data, xs_size(data))
 int xs_list_iter(xs_list **list, xs_val **value);
 int xs_list_len(const xs_list *list);
-char *xs_list_get(const xs_list *list, int num);
+xs_val *xs_list_get(const xs_list *list, int num);
 xs_list *xs_list_del(xs_list *list, int num);
 xs_list *xs_list_insert(xs_list *list, int num, const xs_val *data);
 xs_list *xs_list_insert_sorted(xs_list *list, const char *str);
@@ -100,7 +101,7 @@ xs_dict *xs_dict_append_m(xs_dict *dict, const xs_str *key, const xs_val *mem, i
 xs_dict *xs_dict_prepend_m(xs_dict *dict, const xs_str *key, const xs_val *mem, int dsz);
 #define xs_dict_prepend(dict, key, data) xs_dict_prepend_m(dict, key, data, xs_size(data))
 int xs_dict_iter(xs_dict **dict, xs_str **key, xs_val **value);
-xs_dict *xs_dict_get(const xs_dict *dict, const xs_str *key);
+xs_val *xs_dict_get(const xs_dict *dict, const xs_str *key);
 xs_dict *xs_dict_del(xs_dict *dict, const xs_str *key);
 xs_dict *xs_dict_set(xs_dict *dict, const xs_str *key, const xs_val *data);
 
@@ -475,20 +476,13 @@ int xs_str_in(const char *haystack, const char *needle)
 }
 
 
-int xs_startswith(const char *str, const char *prefix)
-/* returns true if str starts with prefix */
-{
-    return !!(xs_str_in(str, prefix) == 0);
-}
-
-
-int xs_endswith(const char *str, const char *postfix)
-/* returns true if str ends with postfix */
+int _xs_startsorends(const char *str, const char *xfix, int ends)
+/* returns true if str starts or ends with xfix */
 {
     int ssz = strlen(str);
-    int psz = strlen(postfix);
+    int psz = strlen(xfix);
 
-    return !!(ssz >= psz && memcmp(postfix, str + ssz - psz, psz) == 0);
+    return !!(ssz >= psz && memcmp(xfix, str + (ends ? ssz - psz : 0), psz) == 0);
 }
 
 
