@@ -12,7 +12,7 @@ Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac
 
 ## Wishlist
 
-Implement the ActivityPub C2S (Client to Server) API: https://www.w3.org/TR/activitypub/#client-to-server-interactions . I skipped that part of the documentation entirely, so I don't know if this is trivial or hell. The Android client at http://andstatus.org/ implements it, or so it seems. There may be others.
+Implement the ActivityPub C2S (Client to Server) API: https://www.w3.org/TR/activitypub/#client-to-server-interactions . The Android client at http://andstatus.org/ implements it, or so it seems. UPDATE: AndStatus starts doing an OAuth query, that is totally not ActivityPub C2S. The number of real ActivityPub C2S clients out here is probably zero.
 
 Implement HTTP caches (If-None-Match / ETag). I'm not sure if it's worth.
 
