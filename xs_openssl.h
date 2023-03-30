@@ -4,10 +4,13 @@
 
 #define _XS_OPENSSL_H
 
-xs_str *xs_md5_hex(const xs_val *input, int size);
-xs_str *xs_sha1_hex(const xs_val *input, int size);
-xs_str *xs_sha256_hex(const xs_val *input, int size);
-xs_str *xs_sha256_base64(const xs_val *input, int size);
+xs_str *_xs_digest(const xs_val *input, int size, const char *digest, int as_hex);
+
+#define xs_md5_hex(input, size)       _xs_digest(input, size, "md5",    1)
+#define xs_sha1_hex(input, size)      _xs_digest(input, size, "sha1",   1)
+#define xs_sha256_hex(input, size)    _xs_digest(input, size, "sha256", 1)
+#define xs_sha256_base64(input, size) _xs_digest(input, size, "sha256", 0)
+
 xs_dict *xs_rsa_genkey(int bits);
 xs_str *xs_rsa_sign(const char *secret, const char *mem, int size);
 int xs_rsa_verify(const char *pubkey, const char *mem, int size, const char *b64sig);
@@ -17,67 +20,30 @@ int xs_evp_verify(const char *pubkey, const char *mem, int size, const char *b64
 
 #ifdef XS_IMPLEMENTATION
 
-#include "openssl/md5.h"
-#include "openssl/sha.h"
 #include "openssl/rsa.h"
 #include "openssl/pem.h"
 #include "openssl/evp.h"
 
-xs_str *xs_md5_hex(const xs_val *input, int size)
+xs_str *_xs_digest(const xs_val *input, int size, const char *digest, int as_hex)
+/* generic function for generating and encoding digests */
 {
-    unsigned char md5[16];
-    MD5_CTX ctx;
+    const EVP_MD *md;
 
-    MD5_Init(&ctx);
-    MD5_Update(&ctx, input, size);
-    MD5_Final(md5, &ctx);
+    if ((md = EVP_get_digestbyname(digest)) == NULL)
+        return NULL;
 
-    return xs_hex_enc((char *)md5, sizeof(md5));
-}
+    unsigned char output[1024];
+    unsigned int out_size;
+    EVP_MD_CTX *mdctx;
 
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, md, NULL);
+    EVP_DigestUpdate(mdctx, input, size);
+    EVP_DigestFinal_ex(mdctx, output, &out_size);
+    EVP_MD_CTX_free(mdctx);
 
-xs_str *xs_sha1_hex(const xs_val *input, int size)
-{
-    unsigned char sha1[20];
-    SHA_CTX ctx;
-
-    SHA1_Init(&ctx);
-    SHA1_Update(&ctx, input, size);
-    SHA1_Final(sha1, &ctx);
-
-    return xs_hex_enc((char *)sha1, sizeof(sha1));
-}
-
-
-unsigned char *_xs_sha256(const void *input, int size, unsigned char *sha256)
-{
-    SHA256_CTX ctx;
-
-    SHA256_Init(&ctx);
-    SHA256_Update(&ctx, input, size);
-    SHA256_Final(sha256, &ctx);
-
-    return sha256;
-}
-
-
-xs_str *xs_sha256_hex(const xs_val *input, int size)
-{
-    unsigned char sha256[32];
-
-    _xs_sha256(input, size, sha256);
-
-    return xs_hex_enc((char *)sha256, sizeof(sha256));
-}
-
-
-xs_str *xs_sha256_base64(const xs_val *input, int size)
-{
-    unsigned char sha256[32];
-
-    _xs_sha256(input, size, sha256);
-
-    return xs_base64_enc((char *)sha256, sizeof(sha256));
+    return as_hex ? xs_hex_enc   ((char *)output, out_size) :
+                    xs_base64_enc((char *)output, out_size);
 }
 
 
