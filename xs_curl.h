@@ -127,7 +127,7 @@ xs_dict *xs_http_request(const char *method, const char *url,
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,  _data_callback);
 
     if (strcmp(method, "POST") == 0 || strcmp(method, "PUT") == 0) {
-        curl_easy_setopt(curl, method[1] == 'O' ? CURLOPT_POST : CURLOPT_PUT, 1L);
+        curl_easy_setopt(curl, method[1] == 'O' ? CURLOPT_POST : CURLOPT_UPLOAD, 1L);
 
         if (body != NULL) {
             if (b_size <= 0)
