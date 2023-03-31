@@ -297,10 +297,16 @@ int is_msg_public(snac *snac, xs_dict *msg)
 int is_msg_for_me(snac *snac, xs_dict *c_msg)
 /* checks if this message is for me */
 {
-    char *type = xs_dict_get(c_msg, "type");
+    const char *type = xs_dict_get(c_msg, "type");
+
+    /* if it's an Announce by someone we don't follow, reject */
+    if (strcmp(type, "Announce") == 0) {
+        if (!following_check(snac, xs_dict_get(c_msg, "actor")))
+            return 0;
+    }
 
     /* if it's not a Create, allow */
-    if (xs_is_null(type) || strcmp(type, "Create") != 0)
+    if (strcmp(type, "Create") != 0)
         return 1;
 
     xs_dict *msg = xs_dict_get(c_msg, "object");
@@ -937,6 +943,11 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
     xs *actor_o = NULL;
     int a_status;
     int do_notify = 0;
+
+    if (xs_is_null(actor) || xs_is_null(type)) {
+        snac_debug(snac, 0, xs_fmt("malformed message"));
+        return 1;
+    }
 
     char *object, *utype;
 
