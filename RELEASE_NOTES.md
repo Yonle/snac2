@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2.26
+
+The OpenSSL code has been refactored to avoid using deprecated functions.
+
+Added more aggressive filtering on unwanted `Announce` (boost) messages.
+
 ## 2.25
 
 Federation with other instances have been improved by collecting shared inbox information from input messages more thoroughly.
