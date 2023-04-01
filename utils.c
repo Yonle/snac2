@@ -295,7 +295,7 @@ int adduser(const char *uid)
     }
 
     printf("\nCreating RSA key...\n");
-    key = xs_rsa_genkey(4096);
+    key = xs_evp_genkey(4096);
     printf("Done.\n");
 
     xs *kfn = xs_fmt("%s/key.json", basedir);

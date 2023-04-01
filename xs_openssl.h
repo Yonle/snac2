@@ -11,9 +11,7 @@ xs_str *_xs_digest(const xs_val *input, int size, const char *digest, int as_hex
 #define xs_sha256_hex(input, size)    _xs_digest(input, size, "sha256", 1)
 #define xs_sha256_base64(input, size) _xs_digest(input, size, "sha256", 0)
 
-xs_dict *xs_rsa_genkey(int bits);
-xs_str *xs_rsa_sign(const char *secret, const char *mem, int size);
-int xs_rsa_verify(const char *pubkey, const char *mem, int size, const char *b64sig);
+xs_dict *xs_evp_genkey(int bits);
 xs_str *xs_evp_sign(const char *secret, const char *mem, int size);
 int xs_evp_verify(const char *pubkey, const char *mem, int size, const char *b64sig);
 
@@ -47,98 +45,42 @@ xs_str *_xs_digest(const xs_val *input, int size, const char *digest, int as_hex
 }
 
 
-xs_dict *xs_rsa_genkey(int bits)
-/* generates an RSA keypair */
+xs_dict *xs_evp_genkey(int bits)
+/* generates an RSA keypair using the EVP interface */
 {
-    BIGNUM *bne;
-    RSA *rsa;
     xs_dict *keypair = NULL;
+    EVP_PKEY_CTX *ctx;
+    EVP_PKEY *pkey = NULL;
 
-    if ((bne = BN_new()) != NULL) {
-        if (BN_set_word(bne, RSA_F4) == 1) {
-            if ((rsa = RSA_new()) != NULL) {
-                if (RSA_generate_key_ex(rsa, bits, bne, NULL) == 1) {
-                    BIO *bs = BIO_new(BIO_s_mem());
-                    BIO *bp = BIO_new(BIO_s_mem());
-                    BUF_MEM *sptr;
-                    BUF_MEM *pptr;
+    if ((ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL)) == NULL)
+        goto end;
 
-                    PEM_write_bio_RSAPrivateKey(bs, rsa, NULL, NULL, 0, 0, NULL);
-                    BIO_get_mem_ptr(bs, &sptr);
+    if (EVP_PKEY_keygen_init(ctx) <= 0 ||
+        EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, bits) <= 0 ||
+        EVP_PKEY_keygen(ctx, &pkey) <= 0)
+        goto end;
 
-                    PEM_write_bio_RSA_PUBKEY(bp, rsa);
-                    BIO_get_mem_ptr(bp, &pptr);
+    BIO *bs = BIO_new(BIO_s_mem());
+    BIO *bp = BIO_new(BIO_s_mem());
+    BUF_MEM *sptr;
+    BUF_MEM *pptr;
 
-                    keypair = xs_dict_new();
+    PEM_write_bio_PrivateKey(bs, pkey, NULL, NULL, 0, 0, NULL);
+    BIO_get_mem_ptr(bs, &sptr);
 
-                    keypair = xs_dict_append(keypair, "secret", sptr->data);
-                    keypair = xs_dict_append(keypair, "public", pptr->data);
+    PEM_write_bio_PUBKEY(bp, pkey);
+    BIO_get_mem_ptr(bp, &pptr);
 
-                    BIO_free(bs);
-                    BIO_free(bp);
-                }
-            }
-        }
-    }
+    keypair = xs_dict_new();
 
-    return keypair;    
-}
+    keypair = xs_dict_append(keypair, "secret", sptr->data);
+    keypair = xs_dict_append(keypair, "public", pptr->data);
 
+    BIO_free(bs);
+    BIO_free(bp);
 
-xs_str *xs_rsa_sign(const char *secret, const char *mem, int size)
-/* signs a memory block (secret is in PEM format) */
-{
-    xs_str *signature = NULL;
-    BIO *b;
-    RSA *rsa;
-    unsigned char *sig;
-    unsigned int sig_len;
-
-    /* un-PEM the key */
-    b = BIO_new_mem_buf(secret, strlen(secret));
-    rsa = PEM_read_bio_RSAPrivateKey(b, NULL, NULL, NULL);
-
-    /* alloc space */
-    sig = xs_realloc(NULL, RSA_size(rsa));
-
-    if (RSA_sign(NID_sha256, (unsigned char *)mem, size, sig, &sig_len, rsa) == 1)
-        signature = xs_base64_enc((char *)sig, sig_len);
-
-    BIO_free(b);
-    RSA_free(rsa);
-    xs_free(sig);
-
-    return signature;
-}
-
-
-int xs_rsa_verify(const char *pubkey, const char *mem, int size, const char *b64sig)
-/* verifies a base64 block, returns non-zero on ok */
-{
-    int r = 0;
-    BIO *b;
-    RSA *rsa;
-
-    /* un-PEM the key */
-    b = BIO_new_mem_buf(pubkey, strlen(pubkey));
-    rsa = PEM_read_bio_RSA_PUBKEY(b, NULL, NULL, NULL);
-
-    if (rsa != NULL) {
-        xs *sig = NULL;
-        int s_size;
-
-        /* de-base64 */
-        sig = xs_base64_dec(b64sig,  &s_size);
-
-        if (sig != NULL)
-            r = RSA_verify(NID_sha256, (unsigned char *)mem, size,
-                           (unsigned char *)sig, s_size, rsa);
-    }
-
-    BIO_free(b);
-    RSA_free(rsa);
-
-    return r;
+end:
+    return keypair;
 }
 
 
