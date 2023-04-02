@@ -959,7 +959,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
 
     /* reject messages that are not for this user */
     if (!is_msg_for_me(snac, msg)) {
-        snac_debug(snac, 0, xs_fmt("message from %s not for us", actor));
+        snac_debug(snac, 0, xs_fmt("message from %s of type '%s' not for us", actor, type));
 
         return 1;
     }
