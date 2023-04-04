@@ -321,7 +321,7 @@ static void *job_thread(void *arg)
 
         job_wait(&job);
 
-        srv_debug(1, xs_fmt("job thread %d wake up", pid));
+        srv_debug(2, xs_fmt("job thread %d wake up", pid));
 
         if (job == NULL)
             break;
