@@ -299,8 +299,17 @@ int is_msg_for_me(snac *snac, xs_dict *c_msg)
 {
     const char *type = xs_dict_get(c_msg, "type");
 
-    /* if it's an Announce by someone we don't follow, reject */
     if (strcmp(type, "Announce") == 0) {
+        const char *object = xs_dict_get(c_msg, "object");
+
+        if (xs_type(object) == XSTYPE_DICT)
+            object = xs_dict_get(object, "id");
+
+        /* if it's about one of our posts, accept it */
+        if (xs_startswith(object, snac->actor))
+            return 2;
+
+        /* if it's by someone we don't follow, reject */
         if (!following_check(snac, xs_dict_get(c_msg, "actor")))
             return 0;
     }
