@@ -132,6 +132,8 @@ d_char *history_get(snac *snac, char *id);
 int history_del(snac *snac, char *id);
 d_char *history_list(snac *snac);
 
+void lastlog_write(snac *snac);
+
 void inbox_add(const char *inbox);
 void inbox_add_by_actor(const xs_dict *actor);
 xs_list *inbox_list(void);

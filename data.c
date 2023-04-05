@@ -1366,6 +1366,19 @@ d_char *history_list(snac *snac)
 }
 
 
+void lastlog_write(snac *snac)
+/* writes the last time and date the user logged in */
+{
+    xs *fn = xs_fmt("%s/lastlog.txt", snac->basedir);
+    FILE *f;
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        fprintf(f, "%lf\n", ftime());
+        fclose(f);
+    }
+}
+
+
 /** inbox collection **/
 
 void inbox_add(const char *inbox)

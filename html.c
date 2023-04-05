@@ -13,11 +13,11 @@
 
 #include "snac.h"
 
-int login(snac *snac, char *headers)
+int login(snac *snac, const xs_dict *headers)
 /* tries a login */
 {
     int logged_in = 0;
-    char *auth = xs_dict_get(headers, "authorization");
+    const char *auth = xs_dict_get(headers, "authorization");
 
     if (auth && xs_startswith(auth, "Basic ")) {
         int sz;
@@ -32,6 +32,9 @@ int login(snac *snac, char *headers)
                 xs_dict_get(snac->config, "passwd"));
         }
     }
+
+    if (logged_in)
+        lastlog_write(snac);
 
     return logged_in;
 }
