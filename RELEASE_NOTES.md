@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.27
+
+Fixed overzealous rejection of some boosts.
+
 ## 2.26
 
 The OpenSSL code has been refactored to avoid using deprecated functions.
