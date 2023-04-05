@@ -1367,7 +1367,7 @@ d_char *history_list(snac *snac)
 
 
 void lastlog_write(snac *snac)
-/* writes the last time and date the user logged in */
+/* writes the last time the user logged in */
 {
     xs *fn = xs_fmt("%s/lastlog.txt", snac->basedir);
     FILE *f;

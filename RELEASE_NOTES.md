@@ -2,7 +2,7 @@
 
 ## 2.27
 
-Fixed overzealous rejection of some boosts.
+Fixed overzealous rejection of some local boosts.
 
 ## 2.26
 
