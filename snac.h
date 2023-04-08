@@ -223,3 +223,6 @@ int resetpwd(snac *snac);
 int job_fifo_ready(void);
 void job_post(const xs_val *job, int urgent);
 void job_wait(xs_val **job);
+
+int mastoapi_post_handler(xs_dict *req, char *q_path, char *payload, int p_size,
+                      char **body, int *b_size, char **ctype);
