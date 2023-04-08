@@ -224,7 +224,11 @@ int job_fifo_ready(void);
 void job_post(const xs_val *job, int urgent);
 void job_wait(xs_val **job);
 
-int mastoapi_post_handler(xs_dict *req, char *q_path, char *payload, int p_size,
+int mastoapi_post_handler(const xs_dict *req, const char *q_path,
+                      const char *payload, int p_size,
                       char **body, int *b_size, char **ctype);
-int oauth_post_handler(xs_dict *req, char *q_path, char *payload, int p_size,
+int oauth_get_handler(const xs_dict *req, const char *q_path,
+                      char **body, int *b_size, char **ctype);
+int oauth_post_handler(const xs_dict *req, const char *q_path,
+                      const char *payload, int p_size,
                       char **body, int *b_size, char **ctype);
