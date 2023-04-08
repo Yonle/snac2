@@ -226,3 +226,5 @@ void job_wait(xs_val **job);
 
 int mastoapi_post_handler(xs_dict *req, char *q_path, char *payload, int p_size,
                       char **body, int *b_size, char **ctype);
+int oauth_post_handler(xs_dict *req, char *q_path, char *payload, int p_size,
+                      char **body, int *b_size, char **ctype);
