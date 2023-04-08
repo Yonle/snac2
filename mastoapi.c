@@ -4,6 +4,7 @@
 #include "xs.h"
 #include "xs_encdec.h"
 #include "xs_json.h"
+#include "xs_io.h"
 #include "xs_time.h"
 
 #include "snac.h"
@@ -29,6 +30,47 @@ static xs_str *random_str(void)
 }
 
 
+int app_add(const char *id, const xs_dict *app)
+/* stores an app */
+{
+    int status = 201;
+    xs *fn     = xs_fmt("%s/app/", srv_basedir);
+    FILE *f;
+
+    mkdirx(fn);
+    fn = xs_str_cat(fn, id);
+    fn = xs_str_cat(fn, ".json");
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        xs *j = xs_json_dumps_pp(app, 4);
+        fwrite(j, strlen(j), 1, f);
+        fclose(f);
+    }
+    else
+        status = 500;
+
+    return status;
+}
+
+
+xs_dict *app_get(const char *id)
+/* gets an app */
+{
+    xs *fn       = xs_fmt("%s/app/%s.json", srv_basedir, id);
+    xs_dict *app = NULL;
+    FILE *f;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        xs *j = xs_readall(f);
+        fclose(f);
+
+        app = xs_json_loads(j);
+    }
+
+    return app;
+}
+
+
 const char *login_page = ""
 "<!DOCTYPE html>\n"
 "<body><h1>%s identify</h1>\n"
@@ -36,6 +78,7 @@ const char *login_page = ""
 "<p>Login: <input type=\"text\" name=\"login\"></p>\n"
 "<p>Password: <input type=\"password\" name=\"passwd\"></p>\n"
 "<input type=\"hidden\" name=\"redir\" value=\"%s\">\n"
+"<input type=\"hidden\" name=\"cid\" value=\"%s\">\n"
 "</form><p>%s</p></body>\n"
 "";
 
@@ -58,17 +101,20 @@ int oauth_get_handler(const xs_dict *req, const char *q_path,
         const char *cid   = xs_dict_get(msg, "client_id");
         const char *ruri  = xs_dict_get(msg, "redirect_uri");
         const char *rtype = xs_dict_get(msg, "response_type");
-        const char *scope = xs_dict_get(msg, "scope");
+
+        status = 400;
 
         if (cid && ruri && rtype && strcmp(rtype, "code") == 0) {
-            const char *host = xs_dict_get(srv_config, "host");
+            xs *app = app_get(cid);
 
-            *body  = xs_fmt(login_page, host, host, ruri, USER_AGENT);
-            *ctype = "text/html";
-            status = 200;
+            if (app != NULL) {
+                const char *host = xs_dict_get(srv_config, "host");
+
+                *body  = xs_fmt(login_page, host, host, ruri, cid, USER_AGENT);
+                *ctype = "text/html";
+                status = 200;
+            }
         }
-        else
-            status = 400;
     }
 
     return status;
@@ -183,6 +229,9 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
             *body  = xs_json_dumps_pp(app, 4);
             *ctype = "application/json";
             status = 200;
+
+            app = xs_dict_append(app, "code", "");
+            app_add(cid, app);
         }
     }
 
