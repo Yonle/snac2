@@ -29,6 +29,16 @@ static xs_str *random_str(void)
 }
 
 
+const char *login_page = ""
+"<!DOCTYPE html>\n"
+"<body><h1>%s identify</h1>\n"
+"<form method=\"post\" action=\"https:/" "/%s/oauth/x-snac-login\">\n"
+"<p>Login: <input type=\"text\" name=\"login\"></p>\n"
+"<p>Password: <input type=\"password\" name=\"passwd\"></p>\n"
+"<input type=\"hidden\" name=\"redir\" value=\"%s\">\n"
+"</form><p>%s</p></body>\n"
+"";
+
 int oauth_get_handler(const xs_dict *req, const char *q_path,
                       char **body, int *b_size, char **ctype)
 {
@@ -51,10 +61,11 @@ int oauth_get_handler(const xs_dict *req, const char *q_path,
         const char *scope = xs_dict_get(msg, "scope");
 
         if (cid && ruri && rtype && strcmp(rtype, "code") == 0) {
-            /* redirect to an identification page */
-            status = 303;
-//            *body  = xs_fmt("%s/test1/admin?redir=%s", srv_baseurl, ruri);
-            *body  = xs_fmt("%s/test1/admin", srv_baseurl);
+            const char *host = xs_dict_get(srv_config, "host");
+
+            *body  = xs_fmt(login_page, host, host, ruri, USER_AGENT);
+            *ctype = "text/html";
+            status = 200;
         }
         else
             status = 400;
