@@ -180,6 +180,9 @@ void httpd_connection(FILE *f)
             status = oauth_get_handler(req, q_path, &body, &b_size, &ctype);
 
         if (status == 0)
+            status = mastoapi_get_handler(req, q_path, &body, &b_size, &ctype);
+
+        if (status == 0)
             status = html_get_handler(req, q_path, &body, &b_size, &ctype);
     }
     else
