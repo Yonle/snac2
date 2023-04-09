@@ -342,7 +342,6 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         return 0;
 
     srv_debug(0, xs_fmt("mastoapi_get_handler %s", q_path));
-
     {
         xs *j = xs_json_dumps_pp(req, 4);
         printf("mastoapi get:\n%s\n", j);
@@ -386,7 +385,15 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             acct = xs_dict_append(acct, "created_at",   xs_dict_get(snac.config, "published"));
             acct = xs_dict_append(acct, "note",         xs_dict_get(snac.config, "bio"));
             acct = xs_dict_append(acct, "url",          snac.actor);
-            acct = xs_dict_append(acct, "avatar",       xs_dict_get(snac.config, "avatar"));
+
+            xs *avatar = xs_dup(xs_dict_get(snac.config, "avatar"));
+
+            if (xs_is_null(avatar) || *avatar == '\0') {
+                xs_free(avatar);
+                avatar = xs_fmt("%s/susie.png", srv_baseurl);
+            }
+
+            acct = xs_dict_append(acct, "avatar", avatar);
 
             *body  = xs_json_dumps_pp(acct, 4);
             *ctype = "application/json";
@@ -412,6 +419,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
     if (!xs_startswith(q_path, "/api/v1/"))
         return 0;
 
+    srv_debug(0, xs_fmt("mastoapi_post_handler %s", q_path));
     {
         xs *j = xs_json_dumps_pp(req, 4);
         printf("mastoapi post:\n%s\n", j);
@@ -430,10 +438,6 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
         return 400;
 
     {
-        xs *j = xs_json_dumps_pp(req, 4);
-        printf("%s\n", j);
-    }
-    {
         xs *j = xs_json_dumps_pp(msg, 4);
         printf("%s\n", j);
     }
@@ -441,8 +445,12 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
     xs *cmd = xs_replace(q_path, "/api/v1", "");
 
     if (strcmp(cmd, "/apps") == 0) {
-        const char *name = xs_dict_get(msg, "client_name");
-        const char *ruri = xs_dict_get(msg, "redirect_uris");
+        const char *name  = xs_dict_get(msg, "client_name");
+        const char *ruri  = xs_dict_get(msg, "redirect_uris");
+        const char *scope = xs_dict_get(msg, "scope");
+
+        if (xs_type(ruri) == XSTYPE_LIST)
+            ruri = xs_dict_get(ruri, 0);
 
         if (name && ruri) {
             xs *app  = xs_dict_new();
@@ -463,7 +471,13 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
             status = 200;
 
             app = xs_dict_append(app, "code", "");
+
+            if (scope)
+                app = xs_dict_append(app, "scope", scope);
+
             app_add(cid, app);
+
+            srv_debug(0, xs_fmt("mastoapi apps: new app %s", cid));
         }
     }
 
