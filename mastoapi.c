@@ -71,6 +71,56 @@ xs_dict *app_get(const char *id)
 }
 
 
+int token_add(const char *id, const xs_dict *token)
+/* stores a token */
+{
+    int status = 201;
+    xs *fn     = xs_fmt("%s/token/", srv_basedir);
+    FILE *f;
+
+    mkdirx(fn);
+    fn = xs_str_cat(fn, id);
+    fn = xs_str_cat(fn, ".json");
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        xs *j = xs_json_dumps_pp(token, 4);
+        fwrite(j, strlen(j), 1, f);
+        fclose(f);
+    }
+    else
+        status = 500;
+
+    return status;
+}
+
+
+xs_dict *token_get(const char *id)
+/* gets a token */
+{
+    xs *fn         = xs_fmt("%s/token/%s.json", srv_basedir, id);
+    xs_dict *token = NULL;
+    FILE *f;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        xs *j = xs_readall(f);
+        fclose(f);
+
+        token = xs_json_loads(j);
+    }
+
+    return token;
+}
+
+
+int token_del(const char *id)
+/* deletes a token */
+{
+    xs *fn = xs_fmt("%s/token/%s.json", srv_basedir, id);
+
+    return unlink(fn);
+}
+
+
 const char *login_page = ""
 "<!DOCTYPE html>\n"
 "<body><h1>%s OAuth identify</h1>\n"
@@ -176,7 +226,18 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
                     *body = xs_fmt("%s?code=%s", redir, code);
                     status = 303;
 
-                    srv_debug(0, xs_fmt("oauth x-snac-login: redirect to %s", *body));
+                    srv_debug(0, xs_fmt("oauth x-snac-login: success, redirect to %s", *body));
+
+                    /* assign the login to the app */
+                    xs *app = app_get(cid);
+
+                    if (app != NULL) {
+                        app = xs_dict_set(app, "uid",  login);
+                        app = xs_dict_set(app, "code", code);
+                        app_add(cid, app);
+                    }
+                    else
+                        srv_log(xs_fmt("oauth x-snac-login: error getting app %s", cid));
                 }
                 else
                     srv_debug(0, xs_fmt("oauth x-snac-login: login '%s' incorrect", login));
@@ -198,19 +259,44 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
         const char *ruri  = xs_dict_get(msg, "redirect_uri");
 
         if (gtype && code && cid && csec && ruri) {
-            xs *rsp   = xs_dict_new();
-            xs *cat   = xs_number_new(time(NULL));
-            xs *token = random_str();
+            xs *app = app_get(cid);
 
-            rsp = xs_dict_append(rsp, "access_token", token);
-            rsp = xs_dict_append(rsp, "token_type",   "Bearer");
-            rsp = xs_dict_append(rsp, "created_at",   cat);
+            if (app == NULL) {
+                status = 401;
+                srv_log(xs_fmt("oauth token: invalid app %s", cid));
+            }
+            else
+            if (strcmp(csec, xs_dict_get(app, "client_secret")) != 0) {
+                status = 401;
+                srv_log(xs_fmt("oauth token: invalid client_secret for app %s", cid));
+            }
+            else {
+                xs *rsp   = xs_dict_new();
+                xs *cat   = xs_number_new(time(NULL));
+                xs *tokid = random_str();
 
-            *body  = xs_json_dumps_pp(rsp, 4);
-            *ctype = "application/json";
-            status = 200;
+                rsp = xs_dict_append(rsp, "access_token", tokid);
+                rsp = xs_dict_append(rsp, "token_type",   "Bearer");
+                rsp = xs_dict_append(rsp, "created_at",   cat);
 
-            srv_debug(0, xs_fmt("oauth token: successful login, token %s", token));
+                *body  = xs_json_dumps_pp(rsp, 4);
+                *ctype = "application/json";
+                status = 200;
+
+                const char *uid = xs_dict_get(app, "uid");
+
+                srv_debug(0, xs_fmt("oauth token: "
+                                "successful login for %s, new token %s", uid, tokid));
+
+                xs *token = xs_dict_new();
+                token = xs_dict_append(token, "token",         tokid);
+                token = xs_dict_append(token, "client_id",     cid);
+                token = xs_dict_append(token, "client_secret", csec);
+                token = xs_dict_append(token, "uid",           uid);
+                token = xs_dict_append(token, "code",          code);
+
+                token_add(tokid, token);
+            }
         }
         else {
             srv_debug(0, xs_fmt("oauth token: invalid or unset arguments"));
@@ -221,15 +307,28 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
     if (strcmp(cmd, "/revoke") == 0) {
         const char *cid   = xs_dict_get(msg, "client_id");
         const char *csec  = xs_dict_get(msg, "client_secret");
-        const char *token = xs_dict_get(msg, "token");
+        const char *tokid = xs_dict_get(msg, "token");
 
-        if (cid && csec && token) {
+        if (cid && csec && tokid) {
+            xs *token = token_get(tokid);
+
             *body  = xs_str_new("{}");
             *ctype = "application/json";
-            status = 200;
+
+            if (token == NULL || strcmp(csec, xs_dict_get(token, "client_secret")) != 0) {
+                srv_debug(0, xs_fmt("oauth revoke: bad secret for token %s", tokid));
+                status = 403;
+            }
+            else {
+                token_del(tokid);
+                srv_debug(0, xs_fmt("oauth revoke: revoked token %s", tokid));
+                status = 200;
+            }
         }
-        else
-            status = 400;
+        else {
+            srv_debug(0, xs_fmt("oauth revoke: invalid or unset arguments"));
+            status = 403;
+        }
     }
 
     return status;
@@ -242,6 +341,8 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     if (!xs_startswith(q_path, "/api/v1/"))
         return 0;
 
+    srv_debug(0, xs_fmt("mastoapi_get_handler %s", q_path));
+
     {
         xs *j = xs_json_dumps_pp(req, 4);
         printf("mastoapi get:\n%s\n", j);
@@ -250,11 +351,55 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     int status   = 404;
     xs_dict *msg = xs_dict_get(req, "q_vars");
     xs *cmd      = xs_replace(q_path, "/api/v1", "");
+    char *v;
 
-    srv_debug(0, xs_fmt("mastoapi_get_handler %s", q_path));
+    snac snac = {0};
+    int logged_in = 0;
+
+    /* if there is an authorization field, try to validate it */
+    if (!xs_is_null(v = xs_dict_get(req, "authorization")) && xs_startswith(v, "Bearer ")) {
+        xs *tokid = xs_replace(v, "Bearer ", "");
+        xs *token = token_get(tokid);
+
+        if (token != NULL) {
+            const char *uid = xs_dict_get(token, "uid");
+
+            if (!xs_is_null(uid) && user_open(&snac, uid)) {
+                logged_in = 1;
+                srv_debug(0, xs_fmt("mastoapi auth: valid token for user %s", uid));
+            }
+            else
+                srv_log(xs_fmt("mastoapi auth: corrupted token %s", tokid));
+        }
+        else
+            srv_log(xs_fmt("mastoapi auth: invalid token %s", tokid));
+    }
 
     if (strcmp(cmd, "/accounts/verify_credentials") == 0) {
+        if (logged_in) {
+            xs_dict *acct = xs_dict_new();
+
+            acct = xs_dict_append(acct, "id",           xs_dict_get(snac.config, "uid"));
+            acct = xs_dict_append(acct, "username",     xs_dict_get(snac.config, "uid"));
+            acct = xs_dict_append(acct, "acct",         xs_dict_get(snac.config, "uid"));
+            acct = xs_dict_append(acct, "display_name", xs_dict_get(snac.config, "name"));
+            acct = xs_dict_append(acct, "created_at",   xs_dict_get(snac.config, "published"));
+            acct = xs_dict_append(acct, "note",         xs_dict_get(snac.config, "bio"));
+            acct = xs_dict_append(acct, "url",          snac.actor);
+            acct = xs_dict_append(acct, "avatar",       xs_dict_get(snac.config, "avatar"));
+
+            *body  = xs_json_dumps_pp(acct, 4);
+            *ctype = "application/json";
+            status = 200;
+        }
+        else {
+            status = 422;   // "Unprocessable entity" (no login)
+        }
     }
+
+    /* user cleanup */
+    if (logged_in)
+        user_free(&snac);
 
     return status;
 }
