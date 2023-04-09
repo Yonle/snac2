@@ -420,15 +420,20 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 limit = atoi(limit_s);
 
             xs *out      = xs_list_new();
-            xs *timeline = timeline_list(&snac, "private", 0, limit);
-            xs_list *p = timeline;
+            xs *timeline = timeline_list(&snac, "private", 0, XS_ALL);
+            xs_list *p   = timeline;
             xs_str *v;
 
             while (xs_list_iter(&p, &v) && cnt < limit) {
                 xs *msg = NULL;
 
-                if (max_id)
-                    break;
+                /* only return entries older that max_id */
+                if (max_id) {
+                    if (strcmp(v, max_id) == 0)
+                        max_id = NULL;
+
+                    continue;
+                }
 
                 /* get the entry */
                 if (!valid_status(timeline_get_by_md5(&snac, v, &msg)))
