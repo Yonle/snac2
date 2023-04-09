@@ -3,6 +3,7 @@
 
 #include "xs.h"
 #include "xs_encdec.h"
+#include "xs_openssl.h"
 #include "xs_json.h"
 #include "xs_io.h"
 #include "xs_time.h"
@@ -347,9 +348,9 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         printf("mastoapi get:\n%s\n", j);
     }
 
-    int status   = 404;
-    xs_dict *msg = xs_dict_get(req, "q_vars");
-    xs *cmd      = xs_replace(q_path, "/api/v1", "");
+    int status    = 404;
+    xs_dict *args = xs_dict_get(req, "q_vars");
+    xs *cmd       = xs_replace(q_path, "/api/v1", "");
     char *v;
 
     snac snac = {0};
@@ -376,7 +377,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
     if (strcmp(cmd, "/accounts/verify_credentials") == 0) {
         if (logged_in) {
-            xs_dict *acct = xs_dict_new();
+            xs *acct = xs_dict_new();
 
             acct = xs_dict_append(acct, "id",           xs_dict_get(snac.config, "uid"));
             acct = xs_dict_append(acct, "username",     xs_dict_get(snac.config, "uid"));
@@ -386,12 +387,13 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             acct = xs_dict_append(acct, "note",         xs_dict_get(snac.config, "bio"));
             acct = xs_dict_append(acct, "url",          snac.actor);
 
-            xs *avatar = xs_dup(xs_dict_get(snac.config, "avatar"));
+            xs *avatar = NULL;
+            char *av   = xs_dict_get(snac.config, "avatar");
 
-            if (xs_is_null(avatar) || *avatar == '\0') {
-                xs_free(avatar);
+            if (xs_is_null(av) || *av == '\0')
                 avatar = xs_fmt("%s/susie.png", srv_baseurl);
-            }
+            else
+                avatar = xs_dup(av);
 
             acct = xs_dict_append(acct, "avatar", avatar);
 
@@ -402,6 +404,133 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         else {
             status = 422;   // "Unprocessable entity" (no login)
         }
+    }
+    else
+    if (strcmp(cmd, "/timelines/home") == 0) {
+        /* the private timeline */
+        if (logged_in) {
+            const char *max_id   = xs_dict_get(args, "max_id");
+            const char *since_id = xs_dict_get(args, "since_id");
+            const char *min_id   = xs_dict_get(args, "min_id");
+            const char *limit_s  = xs_dict_get(args, "limit");
+            int limit = 20;
+            int cnt = 0;
+
+            if (!xs_is_null(limit_s))
+                limit = atoi(limit_s);
+
+            xs *out      = xs_list_new();
+            xs *timeline = timeline_list(&snac, "private", 0, limit);
+            xs_list *p = timeline;
+            xs_str *v;
+
+            while (xs_list_iter(&p, &v) && cnt < limit) {
+                xs *msg = NULL;
+
+                if (max_id)
+                    break;
+
+                /* get the entry */
+                if (!valid_status(timeline_get_by_md5(&snac, v, &msg)))
+                    continue;
+
+                /* discard not-Notes */
+                if (strcmp(xs_dict_get(msg, "type"), "Note") != 0)
+                    continue;
+
+                xs *actor = NULL;
+                actor_get(&snac, xs_dict_get(msg, "attributedTo"), &actor);
+
+                /* if the author is not here, discard */
+                if (actor == NULL)
+                    continue;
+
+                xs *acct = xs_dict_new();
+
+                const char *display_name = xs_dict_get(actor, "name");
+                if (xs_is_null(display_name) || *display_name == '\0')
+                    display_name = xs_dict_get(actor, "preferredUsername");
+
+                const char *id = xs_dict_get(actor, "id");
+                xs *acct_md5 = xs_md5_hex(id, strlen(id));
+                acct = xs_dict_append(acct, "id",           acct_md5);
+                acct = xs_dict_append(acct, "username",     xs_dict_get(actor, "preferredUsername"));
+                acct = xs_dict_append(acct, "acct",         xs_dict_get(actor, "preferredUsername"));
+                acct = xs_dict_append(acct, "display_name", display_name);
+                acct = xs_dict_append(acct, "created_at",   xs_dict_get(actor, "published"));
+                acct = xs_dict_append(acct, "note",         xs_dict_get(actor, "summary"));
+                acct = xs_dict_append(acct, "url",          id);
+
+                xs *avatar  = NULL;
+                xs_dict *av = xs_dict_get(actor, "icon");
+
+                if (xs_type(av) == XSTYPE_DICT)
+                    avatar = xs_dup(xs_dict_get(av, "url"));
+                else
+                    avatar = xs_fmt("%s/susie.png", srv_baseurl);
+
+                acct = xs_dict_append(acct, "avatar", avatar);
+
+                xs *f  = xs_val_new(XSTYPE_FALSE);
+                xs *t  = xs_val_new(XSTYPE_TRUE);
+                xs *n  = xs_val_new(XSTYPE_NULL);
+                xs *el = xs_list_new();
+                xs *ed = xs_dict_new();
+                char *tmp;
+
+                xs *st = xs_dict_new();
+
+                st = xs_dict_append(st, "id",           v);
+                st = xs_dict_append(st, "uri",          xs_dict_get(msg, "id"));
+                st = xs_dict_append(st, "created_at",   xs_dict_get(msg, "published"));
+                st = xs_dict_append(st, "account",      acct);
+                st = xs_dict_append(st, "content",      xs_dict_get(msg, "content"));
+                st = xs_dict_append(st, "visibility",   "public");
+
+                tmp = xs_dict_get(msg, "sensitive");
+                if (xs_is_null(tmp))
+                    tmp = f;
+
+                st = xs_dict_append(st, "sensitive",    tmp);
+                st = xs_dict_append(st, "spoiler_text", "");
+
+                st = xs_dict_append(st, "media_attachments", el);
+                st = xs_dict_append(st, "mentions",          el);
+                st = xs_dict_append(st, "tags",              el);
+                st = xs_dict_append(st, "emojis",            el);
+
+                st = xs_dict_append(st, "reblogs_count", xs_number_new(0));
+                st = xs_dict_append(st, "favourites_count", xs_number_new(0));
+                st = xs_dict_append(st, "replies_count", xs_number_new(0));
+
+                st = xs_dict_append(st, "url",          xs_dict_get(msg, "id"));
+
+                st = xs_dict_append(st, "in_reply_to_id",         n);
+                st = xs_dict_append(st, "in_reply_to_account_id", n);
+                st = xs_dict_append(st, "reblog",                 n);
+                st = xs_dict_append(st, "poll",                   n);
+                st = xs_dict_append(st, "card",                   ed);
+
+                st = xs_dict_append(st, "language",  "en");
+                st = xs_dict_append(st, "text",      "");
+                st = xs_dict_append(st, "edited_at", n);
+
+                out = xs_list_append(out, st);
+
+                cnt++;
+            }
+
+            *body  = xs_json_dumps_pp(out, 4);
+            *ctype = "application/json";
+            status = 200;
+        }
+        else {
+            status = 401; // unauthorized
+        }
+    }
+    else
+    if (strcmp(cmd, "/timelines/public") == 0) {
+        /* the public timeline */
     }
 
     /* user cleanup */
