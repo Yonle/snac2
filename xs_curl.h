@@ -55,7 +55,7 @@ static int _data_callback(void *buffer, size_t size,
 
     /* open space */
     pd->size += sz;
-    pd->data = xs_realloc(pd->data, pd->size + 1);
+    pd->data = xs_realloc(pd->data, _xs_blk_size(pd->size + 1));
 
     /* copy data */
     memcpy(pd->data + pd->offset, buffer, sz);
