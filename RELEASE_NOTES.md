@@ -4,6 +4,8 @@
 
 Fixed overzealous rejection of some local boosts.
 
+Fixed some buffer overflows (contributed by Saagar Jha).
+
 ## 2.26
 
 The OpenSSL code has been refactored to avoid using deprecated functions.
