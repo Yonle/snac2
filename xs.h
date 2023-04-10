@@ -1057,12 +1057,12 @@ xs_data *xs_data_new(const void *data, int size)
     xs_data *v;
 
     /* add the overhead (data type + 24bit size) */
-    size += 4;
+    int total_size = size + 4;
 
-    v = xs_realloc(NULL, _xs_blk_size(size));
+    v = xs_realloc(NULL, _xs_blk_size(total_size));
     v[0] = XSTYPE_DATA;
 
-    _xs_put_24b(v + 1, size);
+    _xs_put_24b(v + 1, total_size);
 
     memcpy(&v[4], data, size);
 
