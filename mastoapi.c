@@ -443,11 +443,14 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             const char *since_id = xs_dict_get(args, "since_id");
 //            const char *min_id   = xs_dict_get(args, "min_id");
             const char *limit_s  = xs_dict_get(args, "limit");
-            int limit = 20;
-            int cnt = 0;
+            int limit = 0;
+            int cnt   = 0;
 
             if (!xs_is_null(limit_s))
                 limit = atoi(limit_s);
+
+            if (limit == 0)
+                limit = 20;
 
             xs *timeline = timeline_simple_list(&snac, "private", 0, XS_ALL);
 
@@ -495,13 +498,17 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 if (xs_is_null(display_name) || *display_name == '\0')
                     display_name = xs_dict_get(actor, "preferredUsername");
 
-                const char *id = xs_dict_get(actor, "id");
+                const char *id  = xs_dict_get(actor, "id");
+                const char *pub = xs_dict_get(actor, "published");
                 xs *acct_md5 = xs_md5_hex(id, strlen(id));
                 acct = xs_dict_append(acct, "id",           acct_md5);
                 acct = xs_dict_append(acct, "username",     xs_dict_get(actor, "preferredUsername"));
                 acct = xs_dict_append(acct, "acct",         xs_dict_get(actor, "preferredUsername"));
                 acct = xs_dict_append(acct, "display_name", display_name);
-                acct = xs_dict_append(acct, "created_at",   xs_dict_get(actor, "published"));
+
+                if (pub)
+                    acct = xs_dict_append(acct, "created_at", pub);
+
                 acct = xs_dict_append(acct, "note",         xs_dict_get(actor, "summary"));
                 acct = xs_dict_append(acct, "url",          id);
 
@@ -624,6 +631,8 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             *body  = xs_json_dumps_pp(out, 4);
             *ctype = "application/json";
             status = 200;
+
+//            printf("%s\n", *body);
         }
         else {
             status = 401; // unauthorized
