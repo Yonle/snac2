@@ -6,6 +6,7 @@
 
  xs_str *xs_hex_enc(const xs_val *data, int size);
  xs_val *xs_hex_dec(const xs_str *hex, int *size);
+ int xs_is_hex(const char *str);
  xs_str *xs_base64_enc(const xs_val *data, int sz);
  xs_val *xs_base64_dec(const xs_str *data, int *size);
  xs_str *xs_utf8_enc(xs_str *str, unsigned int cpoint);
@@ -62,6 +63,18 @@ xs_val *xs_hex_dec(const xs_str *hex, int *size)
     *size = sz / 2;
 
     return s;
+}
+
+
+int xs_is_hex(const char *str)
+/* returns 1 if str is an hex string */
+{
+    while (*str) {
+        if (strchr("0123456789abcdefABCDEF", *str++) == NULL)
+            return 0;
+    }
+
+    return 1;
 }
 
 
