@@ -158,6 +158,7 @@ const char *login_page = ""
 "<p>Password: <input type=\"password\" name=\"passwd\"></p>\n"
 "<input type=\"hidden\" name=\"redir\" value=\"%s\">\n"
 "<input type=\"hidden\" name=\"cid\" value=\"%s\">\n"
+"<input type=\"hidden\" name=\"state\" value=\"%s\">\n"
 "<input type=\"submit\" value=\"OK\">\n"
 "</form><p>%s</p></body>\n"
 "";
@@ -183,6 +184,7 @@ int oauth_get_handler(const xs_dict *req, const char *q_path,
         const char *cid   = xs_dict_get(msg, "client_id");
         const char *ruri  = xs_dict_get(msg, "redirect_uri");
         const char *rtype = xs_dict_get(msg, "response_type");
+        const char *state = xs_dict_get(msg, "state");
 
         status = 400;
 
@@ -192,7 +194,10 @@ int oauth_get_handler(const xs_dict *req, const char *q_path,
             if (app != NULL) {
                 const char *host = xs_dict_get(srv_config, "host");
 
-                *body  = xs_fmt(login_page, host, "", host, ruri, cid, USER_AGENT);
+                if (xs_is_null(state))
+                    state = "";
+
+                *body  = xs_fmt(login_page, host, "", host, ruri, cid, state, USER_AGENT);
                 *ctype = "text/html";
                 status = 200;
 
@@ -232,11 +237,12 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
         const char *passwd = xs_dict_get(msg, "passwd");
         const char *redir  = xs_dict_get(msg, "redir");
         const char *cid    = xs_dict_get(msg, "cid");
+        const char *state  = xs_dict_get(msg, "state");
 
         const char *host = xs_dict_get(srv_config, "host");
 
         /* by default, generate another login form with an error */
-        *body  = xs_fmt(login_page, host, "LOGIN INCORRECT", host, redir, cid, USER_AGENT);
+        *body  = xs_fmt(login_page, host, "LOGIN INCORRECT", host, redir, cid, state, USER_AGENT);
         *ctype = "text/html";
         status = 200;
 
@@ -253,6 +259,12 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
                     xs_free(*body);
                     *body = xs_fmt("%s?code=%s", redir, code);
                     status = 303;
+
+                    /* if there is a state, add it */
+                    if (!xs_is_null(state) && *state) {
+                        *body = xs_str_cat(*body, "&state=");
+                        *body = xs_str_cat(*body, state);
+                    }
 
                     srv_debug(0, xs_fmt("oauth x-snac-login: success, redirect to %s", *body));
 
@@ -285,6 +297,28 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
         const char *cid   = xs_dict_get(msg, "client_id");
         const char *csec  = xs_dict_get(msg, "client_secret");
         const char *ruri  = xs_dict_get(msg, "redirect_uri");
+        xs *wrk = NULL;
+
+        /* no client_secret? check if it's inside an authorization header
+           (AndStatus does it this way) */
+        if (xs_is_null(csec)) {
+            const char *auhdr = xs_dict_get(req, "authorization");
+
+            if (!xs_is_null(auhdr) && xs_startswith(auhdr, "Basic ")) {
+                xs *s1 = xs_replace(auhdr, "Basic ", "");
+                int size;
+                xs *s2 = xs_base64_dec(s1, &size);
+
+                if (!xs_is_null(s2)) {
+                    xs *l1 = xs_split(s2, ":");
+
+                    if (xs_list_len(l1) == 2) {
+                        wrk = xs_dup(xs_list_get(l1, 1));
+                        csec = wrk;
+                    }
+                }
+            }
+        }
 
         if (gtype && code && cid && csec && ruri) {
             xs *app = app_get(cid);
