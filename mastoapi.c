@@ -410,8 +410,8 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         /* the private timeline */
         if (logged_in) {
             const char *max_id   = xs_dict_get(args, "max_id");
-            const char *since_id = xs_dict_get(args, "since_id");
-            const char *min_id   = xs_dict_get(args, "min_id");
+//            const char *since_id = xs_dict_get(args, "since_id");
+//            const char *min_id   = xs_dict_get(args, "min_id");
             const char *limit_s  = xs_dict_get(args, "limit");
             int limit = 20;
             int cnt = 0;
@@ -419,8 +419,9 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             if (!xs_is_null(limit_s))
                 limit = atoi(limit_s);
 
-            xs *out      = xs_list_new();
             xs *timeline = timeline_list(&snac, "private", 0, XS_ALL);
+
+            xs *out      = xs_list_new();
             xs_list *p   = timeline;
             xs_str *v;
 
@@ -476,17 +477,20 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
                 acct = xs_dict_append(acct, "avatar", avatar);
 
-                xs *f  = xs_val_new(XSTYPE_FALSE);
-                xs *t  = xs_val_new(XSTYPE_TRUE);
-                xs *n  = xs_val_new(XSTYPE_NULL);
-                xs *el = xs_list_new();
-                xs *ed = xs_dict_new();
+                xs *f   = xs_val_new(XSTYPE_FALSE);
+                xs *t   = xs_val_new(XSTYPE_TRUE);
+                xs *n   = xs_val_new(XSTYPE_NULL);
+                xs *el  = xs_list_new();
+                xs *idx = NULL;
+                xs *ixc = NULL;
+
                 char *tmp;
+                id = xs_dict_get(msg, "id");
 
                 xs *st = xs_dict_new();
 
                 st = xs_dict_append(st, "id",           v);
-                st = xs_dict_append(st, "uri",          xs_dict_get(msg, "id"));
+                st = xs_dict_append(st, "uri",          id);
                 st = xs_dict_append(st, "created_at",   xs_dict_get(msg, "published"));
                 st = xs_dict_append(st, "account",      acct);
                 st = xs_dict_append(st, "content",      xs_dict_get(msg, "content"));
@@ -497,28 +501,64 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     tmp = f;
 
                 st = xs_dict_append(st, "sensitive",    tmp);
-                st = xs_dict_append(st, "spoiler_text", "");
+
+                tmp = xs_dict_get(msg, "summary");
+                if (xs_is_null(tmp))
+                    tmp = "";
+
+                st = xs_dict_append(st, "spoiler_text", tmp);
 
                 st = xs_dict_append(st, "media_attachments", el);
                 st = xs_dict_append(st, "mentions",          el);
                 st = xs_dict_append(st, "tags",              el);
                 st = xs_dict_append(st, "emojis",            el);
 
-                st = xs_dict_append(st, "reblogs_count", xs_number_new(0));
-                st = xs_dict_append(st, "favourites_count", xs_number_new(0));
-                st = xs_dict_append(st, "replies_count", xs_number_new(0));
+                xs_free(idx);
+                xs_free(ixc);
+                idx = object_likes(id);
+                ixc = xs_number_new(xs_list_len(idx));
 
-                st = xs_dict_append(st, "url",          xs_dict_get(msg, "id"));
+                st = xs_dict_append(st, "favourites_count", ixc);
+                st = xs_dict_append(st, "favourited",
+                    xs_list_in(idx, snac.md5) != -1 ? t : f);
+
+                xs_free(idx);
+                xs_free(ixc);
+                idx = object_announces(id);
+                ixc = xs_number_new(xs_list_len(idx));
+
+                st = xs_dict_append(st, "reblogs_count", ixc);
+                st = xs_dict_append(st, "reblogged",
+                    xs_list_in(idx, snac.md5) != -1 ? t : f);
+
+                xs_free(idx);
+                xs_free(ixc);
+                idx = object_children(id);
+                ixc = xs_number_new(xs_list_len(idx));
+
+                st = xs_dict_append(st, "replies_count", ixc);
+
+                st = xs_dict_append(st, "url", id);
 
                 st = xs_dict_append(st, "in_reply_to_id",         n);
                 st = xs_dict_append(st, "in_reply_to_account_id", n);
                 st = xs_dict_append(st, "reblog",                 n);
                 st = xs_dict_append(st, "poll",                   n);
-                st = xs_dict_append(st, "card",                   ed);
+                st = xs_dict_append(st, "card",                   n);
 
-                st = xs_dict_append(st, "language",  "en");
-                st = xs_dict_append(st, "text",      "");
-                st = xs_dict_append(st, "edited_at", n);
+                st = xs_dict_append(st, "language", n);
+
+                tmp = xs_dict_get(msg, "sourceContent");
+                if (xs_is_null(tmp))
+                    tmp = "";
+
+                st = xs_dict_append(st, "text", tmp);
+
+                tmp = xs_dict_get(msg, "updated");
+                if (xs_is_null(tmp))
+                    tmp = n;
+
+                st = xs_dict_append(st, "edited_at", tmp);
 
                 out = xs_list_append(out, st);
 
