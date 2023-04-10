@@ -34,6 +34,9 @@ static xs_str *random_str(void)
 int app_add(const char *id, const xs_dict *app)
 /* stores an app */
 {
+    if (!xs_is_hex(id))
+        return 500;
+
     int status = 201;
     xs *fn     = xs_fmt("%s/app/", srv_basedir);
     FILE *f;
@@ -57,6 +60,9 @@ int app_add(const char *id, const xs_dict *app)
 xs_dict *app_get(const char *id)
 /* gets an app */
 {
+    if (!xs_is_hex(id))
+        return NULL;
+
     xs *fn       = xs_fmt("%s/app/%s.json", srv_basedir, id);
     xs_dict *app = NULL;
     FILE *f;
@@ -72,9 +78,24 @@ xs_dict *app_get(const char *id)
 }
 
 
+int app_del(const char *id)
+/* deletes an app */
+{
+    if (!xs_is_hex(id))
+        return -1;
+
+    xs *fn = xs_fmt("%s/app/%s.json", srv_basedir, id);
+
+    return unlink(fn);
+}
+
+
 int token_add(const char *id, const xs_dict *token)
 /* stores a token */
 {
+    if (!xs_is_hex(id))
+        return 500;
+
     int status = 201;
     xs *fn     = xs_fmt("%s/token/", srv_basedir);
     FILE *f;
@@ -98,6 +119,9 @@ int token_add(const char *id, const xs_dict *token)
 xs_dict *token_get(const char *id)
 /* gets a token */
 {
+    if (!xs_is_hex(id))
+        return NULL;
+
     xs *fn         = xs_fmt("%s/token/%s.json", srv_basedir, id);
     xs_dict *token = NULL;
     FILE *f;
@@ -116,6 +140,9 @@ xs_dict *token_get(const char *id)
 int token_del(const char *id)
 /* deletes a token */
 {
+    if (!xs_is_hex(id))
+        return -1;
+
     xs *fn = xs_fmt("%s/token/%s.json", srv_basedir, id);
 
     return unlink(fn);
@@ -324,6 +351,9 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
                 token_del(tokid);
                 srv_debug(0, xs_fmt("oauth revoke: revoked token %s", tokid));
                 status = 200;
+
+                /* also delete the app, as it serves no purpose from now on */
+                app_del(cid);
             }
         }
         else {
