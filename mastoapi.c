@@ -732,6 +732,35 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     if (strcmp(cmd, "/timelines/public") == 0) {
         /* the public timeline */
     }
+    else
+    if (strcmp(cmd, "/instance") == 0) {
+        /* returns an instance object */
+        xs *ins = xs_dict_new();
+        const char *host = xs_dict_get(srv_config, "host");
+
+        ins = xs_dict_append(ins, "domain",      host);
+        ins = xs_dict_append(ins, "title",       host);
+        ins = xs_dict_append(ins, "version",     "4.0.0 (not true; really " USER_AGENT ")");
+        ins = xs_dict_append(ins, "source_url",  "https:/" "/comam.es/snac-source");
+        ins = xs_dict_append(ins, "description", host);
+
+        xs *susie = xs_fmt("%s/susie.png", srv_baseurl);
+        xs *d1 = xs_dict_new();
+        d1 = xs_dict_append(d1, "url", susie);
+        ins = xs_dict_append(ins, "thumbnail", d1);
+
+        xs *d2 = xs_dict_new();
+        d2 = xs_dict_append(d2, "email", "admin@localhost");
+        ins = xs_dict_append(ins, "contact", d2);
+
+        xs *l1 = xs_list_new();
+        ins = xs_dict_append(ins, "rules",     l1);
+        ins = xs_dict_append(ins, "languages", l1);
+
+        *body  = xs_json_dumps_pp(ins, 4);
+        *ctype = "application/json";
+        status = 200;
+    }
 
     /* user cleanup */
     if (logged_in)
