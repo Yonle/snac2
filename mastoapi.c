@@ -366,6 +366,30 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
 }
 
 
+xs_str *mastoapi_id(const xs_dict *msg)
+/* returns a somewhat Mastodon-compatible status id */
+{
+    char tmp[256] = "";
+    int n = 0;
+    const char *id        = xs_dict_get(msg, "id");
+    const char *published = xs_dict_get(msg, "published");
+
+    if (!xs_is_null(published)) {
+        /* transfer all numbers from the published date */
+        while (*published && n < sizeof(tmp) - 1) {
+            if (*published >= '0' && *published <= '9')
+                tmp[n++] = *published;
+            published++;
+        }
+        tmp[n] = '\0';
+    }
+
+    xs *md5 = xs_md5_hex(id, strlen(id));
+
+    return xs_str_cat(xs_str_new(tmp), md5);
+}
+
+
 int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                          char **body, int *b_size, char **ctype)
 {
@@ -441,7 +465,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         if (logged_in) {
             const char *max_id   = xs_dict_get(args, "max_id");
             const char *since_id = xs_dict_get(args, "since_id");
-//            const char *min_id   = xs_dict_get(args, "min_id");
+            const char *min_id   = xs_dict_get(args, "min_id");
             const char *limit_s  = xs_dict_get(args, "limit");
             int limit = 0;
             int cnt   = 0;
@@ -472,6 +496,13 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 /* only returns entries newer than since_id */
                 if (since_id) {
                     if (strcmp(v, since_id) == 0)
+                        break;
+                }
+
+                /* only returns entries newer than min_id */
+                /* what does really "Return results immediately newer than ID" mean? */
+                if (min_id) {
+                    if (strcmp(v, min_id) == 0)
                         break;
                 }
 
@@ -531,10 +562,11 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
                 char *tmp;
                 id = xs_dict_get(msg, "id");
+                xs *mid = mastoapi_id(msg);
 
                 xs *st = xs_dict_new();
 
-                st = xs_dict_append(st, "id",           v);
+                st = xs_dict_append(st, "id",           mid);
                 st = xs_dict_append(st, "uri",          id);
                 st = xs_dict_append(st, "url",          id);
                 st = xs_dict_append(st, "created_at",   xs_dict_get(msg, "published"));
@@ -586,24 +618,24 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
                 st = xs_dict_append(st, "replies_count", ixc);
 
-                tmp = xs_dict_get(msg, "inReplyTo");
-                if (xs_is_null(tmp)) {
-                    st = xs_dict_append(st, "in_reply_to_id",         n);
-                    st = xs_dict_append(st, "in_reply_to_account_id", n);
-                }
-                else {
-                    xs *irt_md5 = xs_md5_hex(tmp, strlen(tmp));
-                    st = xs_dict_append(st, "in_reply_to_id", irt_md5);
+                /* default in_reply_to values */
+                st = xs_dict_append(st, "in_reply_to_id",         n);
+                st = xs_dict_append(st, "in_reply_to_account_id", n);
 
+                tmp = xs_dict_get(msg, "inReplyTo");
+                if (!xs_is_null(tmp)) {
                     xs *irto = NULL;
-                    char *at = NULL;
-                    if (valid_status(object_get(tmp, &irto)) &&
-                        !xs_is_null(at = xs_dict_get(irto, "attributedTo"))) {
-                        xs *at_md5 = xs_md5_hex(at, strlen(at));
-                        st = xs_dict_append(st, "in_reply_to_account_id", at_md5);
+
+                    if (valid_status(object_get(tmp, &irto))) {
+                        xs *irt_mid = mastoapi_id(irto);
+                        st = xs_dict_set(st, "in_reply_to_id", irt_mid);
+
+                        char *at = NULL;
+                        if (!xs_is_null(at = xs_dict_get(irto, "attributedTo"))) {
+                            xs *at_md5 = xs_md5_hex(at, strlen(at));
+                            st = xs_dict_set(st, "in_reply_to_account_id", at_md5);
+                        }
                     }
-                    else
-                        st = xs_dict_append(st, "in_reply_to_account_id", n);
                 }
 
                 st = xs_dict_append(st, "reblog",   n);
@@ -632,7 +664,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             *ctype = "application/json";
             status = 200;
 
-//            printf("%s\n", *body);
+            srv_debug(0, xs_fmt("mastoapi timeline: returned %d entries", xs_list_len(out)));
         }
         else {
             status = 401; // unauthorized
