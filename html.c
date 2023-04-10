@@ -332,7 +332,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
         "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
         "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
-        "<p><input type=\"file\" name=\"attach\">\n"
+        "<p>%s: <input type=\"file\" name=\"attach\">\n"
         "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
         "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
         "</form><p>\n"
@@ -425,6 +425,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         snac->actor,
         L("Sensitive content"),
         L("Only for mentioned people"),
+        L("Image"),
         L("Image description"),
         L("Post"),
 
@@ -593,7 +594,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
 
             "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
             "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
-            "<p><input type=\"file\" name=\"attach\">\n"
+            "<p>%s: <input type=\"file\" name=\"attach\">\n"
             "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
 
             "<input type=\"hidden\" name=\"redir\" value=\"%s_entry\">\n"
@@ -609,6 +610,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
             id,
             L("Sensitive content"),
             L("Only for mentioned people"),
+            L("Image"),
             L("Image description"),
             md5,
             L("Post")
@@ -632,7 +634,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
 
             "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
             "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
-            "<p><input type=\"file\" name=\"attach\">\n"
+            "<p>%s: <input type=\"file\" name=\"attach\">\n"
             "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
 
             "<input type=\"hidden\" name=\"redir\" value=\"%s_entry\">\n"
@@ -648,6 +650,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
             id,
             L("Sensitive content"),
             L("Only for mentioned people"),
+            L("Image"),
             L("Image description"),
             md5,
             L("Post")

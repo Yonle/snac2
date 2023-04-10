@@ -622,7 +622,31 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
                 st = xs_dict_append(st, "spoiler_text", tmp);
 
-                st = xs_dict_append(st, "media_attachments", el);
+                /* create the list of attachments */
+                xs *matt = xs_list_new();
+                xs_list *att = xs_dict_get(msg, "attachment");
+                xs_str *aobj;
+
+                while (xs_list_iter(&att, &aobj)) {
+                    const char *mtype = xs_dict_get(aobj, "mediaType");
+
+                    if (!xs_is_null(mtype) && xs_startswith(mtype, "image/")) {
+                        xs *matteid = xs_fmt("%s_%d", id, xs_list_len(matt));
+                        xs *matte   = xs_dict_new();
+
+                        matte = xs_dict_append(matte, "id",          matteid);
+                        matte = xs_dict_append(matte, "type",        "image");
+                        matte = xs_dict_append(matte, "url",         xs_dict_get(aobj, "url"));
+                        matte = xs_dict_append(matte, "preview_url", xs_dict_get(aobj, "url"));
+                        matte = xs_dict_append(matte, "remote_url",  xs_dict_get(aobj, "url"));
+                        matte = xs_dict_append(matte, "description", xs_dict_get(aobj, "name"));
+
+                        matt = xs_list_append(matt, matte);
+                    }
+                }
+
+                st = xs_dict_append(st, "media_attachments", matt);
+
                 st = xs_dict_append(st, "mentions",          el);
                 st = xs_dict_append(st, "tags",              el);
                 st = xs_dict_append(st, "emojis",            el);
