@@ -440,7 +440,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         /* the private timeline */
         if (logged_in) {
             const char *max_id   = xs_dict_get(args, "max_id");
-//            const char *since_id = xs_dict_get(args, "since_id");
+            const char *since_id = xs_dict_get(args, "since_id");
 //            const char *min_id   = xs_dict_get(args, "min_id");
             const char *limit_s  = xs_dict_get(args, "limit");
             int limit = 20;
@@ -449,7 +449,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             if (!xs_is_null(limit_s))
                 limit = atoi(limit_s);
 
-            xs *timeline = timeline_list(&snac, "private", 0, XS_ALL);
+            xs *timeline = timeline_simple_list(&snac, "private", 0, XS_ALL);
 
             xs *out      = xs_list_new();
             xs_list *p   = timeline;
@@ -466,11 +466,17 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     continue;
                 }
 
+                /* only returns entries newer than since_id */
+                if (since_id) {
+                    if (strcmp(v, since_id) == 0)
+                        break;
+                }
+
                 /* get the entry */
                 if (!valid_status(timeline_get_by_md5(&snac, v, &msg)))
                     continue;
 
-                /* discard not-Notes */
+                /* discard non-Notes */
                 if (strcmp(xs_dict_get(msg, "type"), "Note") != 0)
                     continue;
 
@@ -480,6 +486,8 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 /* if the author is not here, discard */
                 if (actor == NULL)
                     continue;
+
+                /** shave the yak converting an ActivityPub Note to a Mastodon status **/
 
                 xs *acct = xs_dict_new();
 
@@ -521,10 +529,13 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
                 st = xs_dict_append(st, "id",           v);
                 st = xs_dict_append(st, "uri",          id);
+                st = xs_dict_append(st, "url",          id);
                 st = xs_dict_append(st, "created_at",   xs_dict_get(msg, "published"));
                 st = xs_dict_append(st, "account",      acct);
                 st = xs_dict_append(st, "content",      xs_dict_get(msg, "content"));
-                st = xs_dict_append(st, "visibility",   "public");
+
+                st = xs_dict_append(st, "visibility",
+                    is_msg_public(&snac, msg) ? "public" : "private");
 
                 tmp = xs_dict_get(msg, "sensitive");
                 if (xs_is_null(tmp))
@@ -568,14 +579,29 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
                 st = xs_dict_append(st, "replies_count", ixc);
 
-                st = xs_dict_append(st, "url", id);
+                tmp = xs_dict_get(msg, "inReplyTo");
+                if (xs_is_null(tmp)) {
+                    st = xs_dict_append(st, "in_reply_to_id",         n);
+                    st = xs_dict_append(st, "in_reply_to_account_id", n);
+                }
+                else {
+                    xs *irt_md5 = xs_md5_hex(tmp, strlen(tmp));
+                    st = xs_dict_append(st, "in_reply_to_id", irt_md5);
 
-                st = xs_dict_append(st, "in_reply_to_id",         n);
-                st = xs_dict_append(st, "in_reply_to_account_id", n);
-                st = xs_dict_append(st, "reblog",                 n);
-                st = xs_dict_append(st, "poll",                   n);
-                st = xs_dict_append(st, "card",                   n);
+                    xs *irto = NULL;
+                    char *at = NULL;
+                    if (valid_status(object_get(tmp, &irto)) &&
+                        !xs_is_null(at = xs_dict_get(irto, "attributedTo"))) {
+                        xs *at_md5 = xs_md5_hex(at, strlen(at));
+                        st = xs_dict_append(st, "in_reply_to_account_id", at_md5);
+                    }
+                    else
+                        st = xs_dict_append(st, "in_reply_to_account_id", n);
+                }
 
+                st = xs_dict_append(st, "reblog",   n);
+                st = xs_dict_append(st, "poll",     n);
+                st = xs_dict_append(st, "card",     n);
                 st = xs_dict_append(st, "language", n);
 
                 tmp = xs_dict_get(msg, "sourceContent");
