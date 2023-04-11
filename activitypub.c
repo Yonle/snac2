@@ -242,7 +242,7 @@ int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_s
 }
 
 
-d_char *recipient_list(snac *snac, char *msg, int expand_public)
+xs_list *recipient_list(snac *snac, const xs_dict *msg, int expand_public)
 /* returns the list of recipients for a message */
 {
     char *to = xs_dict_get(msg, "to");
@@ -285,7 +285,7 @@ d_char *recipient_list(snac *snac, char *msg, int expand_public)
 }
 
 
-int is_msg_public(snac *snac, xs_dict *msg)
+int is_msg_public(snac *snac, const xs_dict *msg)
 /* checks if a message is public */
 {
     xs *rcpts = recipient_list(snac, msg, 0);
@@ -294,7 +294,7 @@ int is_msg_public(snac *snac, xs_dict *msg)
 }
 
 
-int is_msg_for_me(snac *snac, xs_dict *c_msg)
+int is_msg_for_me(snac *snac, const xs_dict *c_msg)
 /* checks if this message is for me */
 {
     const char *type = xs_dict_get(c_msg, "type");

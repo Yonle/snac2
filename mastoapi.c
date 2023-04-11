@@ -403,7 +403,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
 xs_str *mastoapi_id(const xs_dict *msg)
 /* returns a somewhat Mastodon-compatible status id */
 {
-    char tmp[256] = "";
+    char tmp[15] = "";
     int n = 0;
     const char *id        = xs_dict_get(msg, "id");
     const char *published = xs_dict_get(msg, "published");
@@ -421,6 +421,178 @@ xs_str *mastoapi_id(const xs_dict *msg)
     xs *md5 = xs_md5_hex(id, strlen(id));
 
     return xs_str_cat(xs_str_new(tmp), md5);
+}
+
+
+xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
+/* converts an ActivityPub note to a Mastodon status */
+{
+    xs *actor = NULL;
+    actor_get(snac, xs_dict_get(msg, "attributedTo"), &actor);
+
+    /* if the author is not here, discard */
+    if (actor == NULL)
+        return NULL;
+
+    /** shave the yak converting an ActivityPub Note to a Mastodon status **/
+
+    xs *acct = xs_dict_new();
+
+    const char *display_name = xs_dict_get(actor, "name");
+    if (xs_is_null(display_name) || *display_name == '\0')
+        display_name = xs_dict_get(actor, "preferredUsername");
+
+    const char *id  = xs_dict_get(actor, "id");
+    const char *pub = xs_dict_get(actor, "published");
+    xs *acct_md5 = xs_md5_hex(id, strlen(id));
+    acct = xs_dict_append(acct, "id",           acct_md5);
+    acct = xs_dict_append(acct, "username",     xs_dict_get(actor, "preferredUsername"));
+    acct = xs_dict_append(acct, "acct",         xs_dict_get(actor, "preferredUsername"));
+    acct = xs_dict_append(acct, "display_name", display_name);
+
+    if (pub)
+        acct = xs_dict_append(acct, "created_at", pub);
+
+    acct = xs_dict_append(acct, "note",         xs_dict_get(actor, "summary"));
+    acct = xs_dict_append(acct, "url",          id);
+
+    xs *avatar  = NULL;
+    xs_dict *av = xs_dict_get(actor, "icon");
+
+    if (xs_type(av) == XSTYPE_DICT)
+        avatar = xs_dup(xs_dict_get(av, "url"));
+    else
+        avatar = xs_fmt("%s/susie.png", srv_baseurl);
+
+    acct = xs_dict_append(acct, "avatar", avatar);
+
+    xs *f   = xs_val_new(XSTYPE_FALSE);
+    xs *t   = xs_val_new(XSTYPE_TRUE);
+    xs *n   = xs_val_new(XSTYPE_NULL);
+    xs *el  = xs_list_new();
+    xs *idx = NULL;
+    xs *ixc = NULL;
+
+    char *tmp;
+    id = xs_dict_get(msg, "id");
+    xs *mid = mastoapi_id(msg);
+
+    xs_dict *st = xs_dict_new();
+
+    st = xs_dict_append(st, "id",           mid);
+    st = xs_dict_append(st, "uri",          id);
+    st = xs_dict_append(st, "url",          id);
+    st = xs_dict_append(st, "created_at",   xs_dict_get(msg, "published"));
+    st = xs_dict_append(st, "account",      acct);
+    st = xs_dict_append(st, "content",      xs_dict_get(msg, "content"));
+
+    st = xs_dict_append(st, "visibility",
+        is_msg_public(snac, msg) ? "public" : "private");
+
+    tmp = xs_dict_get(msg, "sensitive");
+    if (xs_is_null(tmp))
+        tmp = f;
+
+    st = xs_dict_append(st, "sensitive",    tmp);
+
+    tmp = xs_dict_get(msg, "summary");
+    if (xs_is_null(tmp))
+        tmp = "";
+
+    st = xs_dict_append(st, "spoiler_text", tmp);
+
+    /* create the list of attachments */
+    xs *matt = xs_list_new();
+    xs_list *att = xs_dict_get(msg, "attachment");
+    xs_str *aobj;
+
+    while (xs_list_iter(&att, &aobj)) {
+        const char *mtype = xs_dict_get(aobj, "mediaType");
+
+        if (!xs_is_null(mtype) && xs_startswith(mtype, "image/")) {
+            xs *matteid = xs_fmt("%s_%d", id, xs_list_len(matt));
+            xs *matte   = xs_dict_new();
+
+            matte = xs_dict_append(matte, "id",          matteid);
+            matte = xs_dict_append(matte, "type",        "image");
+            matte = xs_dict_append(matte, "url",         xs_dict_get(aobj, "url"));
+            matte = xs_dict_append(matte, "preview_url", xs_dict_get(aobj, "url"));
+            matte = xs_dict_append(matte, "remote_url",  xs_dict_get(aobj, "url"));
+            matte = xs_dict_append(matte, "description", xs_dict_get(aobj, "name"));
+
+            matt = xs_list_append(matt, matte);
+        }
+    }
+
+    st = xs_dict_append(st, "media_attachments", matt);
+
+    st = xs_dict_append(st, "mentions",          el);
+    st = xs_dict_append(st, "tags",              el);
+    st = xs_dict_append(st, "emojis",            el);
+
+    xs_free(idx);
+    xs_free(ixc);
+    idx = object_likes(id);
+    ixc = xs_number_new(xs_list_len(idx));
+
+    st = xs_dict_append(st, "favourites_count", ixc);
+    st = xs_dict_append(st, "favourited",
+        xs_list_in(idx, snac->md5) != -1 ? t : f);
+
+    xs_free(idx);
+    xs_free(ixc);
+    idx = object_announces(id);
+    ixc = xs_number_new(xs_list_len(idx));
+
+    st = xs_dict_append(st, "reblogs_count", ixc);
+    st = xs_dict_append(st, "reblogged",
+        xs_list_in(idx, snac->md5) != -1 ? t : f);
+
+    xs_free(idx);
+    xs_free(ixc);
+    idx = object_children(id);
+    ixc = xs_number_new(xs_list_len(idx));
+
+    st = xs_dict_append(st, "replies_count", ixc);
+
+    /* default in_reply_to values */
+    st = xs_dict_append(st, "in_reply_to_id",         n);
+    st = xs_dict_append(st, "in_reply_to_account_id", n);
+
+    tmp = xs_dict_get(msg, "inReplyTo");
+    if (!xs_is_null(tmp)) {
+        xs *irto = NULL;
+
+        if (valid_status(object_get(tmp, &irto))) {
+            xs *irt_mid = mastoapi_id(irto);
+            st = xs_dict_set(st, "in_reply_to_id", irt_mid);
+
+            char *at = NULL;
+            if (!xs_is_null(at = xs_dict_get(irto, "attributedTo"))) {
+                xs *at_md5 = xs_md5_hex(at, strlen(at));
+                st = xs_dict_set(st, "in_reply_to_account_id", at_md5);
+            }
+        }
+    }
+
+    st = xs_dict_append(st, "reblog",   n);
+    st = xs_dict_append(st, "poll",     n);
+    st = xs_dict_append(st, "card",     n);
+    st = xs_dict_append(st, "language", n);
+
+    tmp = xs_dict_get(msg, "sourceContent");
+    if (xs_is_null(tmp))
+        tmp = "";
+
+    st = xs_dict_append(st, "text", tmp);
+
+    tmp = xs_dict_get(msg, "updated");
+    if (xs_is_null(tmp))
+        tmp = n;
+
+    st = xs_dict_append(st, "edited_at", tmp);
+
+    return st;
 }
 
 
@@ -548,172 +720,11 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 if (strcmp(xs_dict_get(msg, "type"), "Note") != 0)
                     continue;
 
-                xs *actor = NULL;
-                actor_get(&snac, xs_dict_get(msg, "attributedTo"), &actor);
+                /* convert the Note into a Mastodon status */
+                xs *st = mastoapi_status(&snac, msg);
 
-                /* if the author is not here, discard */
-                if (actor == NULL)
-                    continue;
-
-                /** shave the yak converting an ActivityPub Note to a Mastodon status **/
-
-                xs *acct = xs_dict_new();
-
-                const char *display_name = xs_dict_get(actor, "name");
-                if (xs_is_null(display_name) || *display_name == '\0')
-                    display_name = xs_dict_get(actor, "preferredUsername");
-
-                const char *id  = xs_dict_get(actor, "id");
-                const char *pub = xs_dict_get(actor, "published");
-                xs *acct_md5 = xs_md5_hex(id, strlen(id));
-                acct = xs_dict_append(acct, "id",           acct_md5);
-                acct = xs_dict_append(acct, "username",     xs_dict_get(actor, "preferredUsername"));
-                acct = xs_dict_append(acct, "acct",         xs_dict_get(actor, "preferredUsername"));
-                acct = xs_dict_append(acct, "display_name", display_name);
-
-                if (pub)
-                    acct = xs_dict_append(acct, "created_at", pub);
-
-                acct = xs_dict_append(acct, "note",         xs_dict_get(actor, "summary"));
-                acct = xs_dict_append(acct, "url",          id);
-
-                xs *avatar  = NULL;
-                xs_dict *av = xs_dict_get(actor, "icon");
-
-                if (xs_type(av) == XSTYPE_DICT)
-                    avatar = xs_dup(xs_dict_get(av, "url"));
-                else
-                    avatar = xs_fmt("%s/susie.png", srv_baseurl);
-
-                acct = xs_dict_append(acct, "avatar", avatar);
-
-                xs *f   = xs_val_new(XSTYPE_FALSE);
-                xs *t   = xs_val_new(XSTYPE_TRUE);
-                xs *n   = xs_val_new(XSTYPE_NULL);
-                xs *el  = xs_list_new();
-                xs *idx = NULL;
-                xs *ixc = NULL;
-
-                char *tmp;
-                id = xs_dict_get(msg, "id");
-                xs *mid = mastoapi_id(msg);
-
-                xs *st = xs_dict_new();
-
-                st = xs_dict_append(st, "id",           mid);
-                st = xs_dict_append(st, "uri",          id);
-                st = xs_dict_append(st, "url",          id);
-                st = xs_dict_append(st, "created_at",   xs_dict_get(msg, "published"));
-                st = xs_dict_append(st, "account",      acct);
-                st = xs_dict_append(st, "content",      xs_dict_get(msg, "content"));
-
-                st = xs_dict_append(st, "visibility",
-                    is_msg_public(&snac, msg) ? "public" : "private");
-
-                tmp = xs_dict_get(msg, "sensitive");
-                if (xs_is_null(tmp))
-                    tmp = f;
-
-                st = xs_dict_append(st, "sensitive",    tmp);
-
-                tmp = xs_dict_get(msg, "summary");
-                if (xs_is_null(tmp))
-                    tmp = "";
-
-                st = xs_dict_append(st, "spoiler_text", tmp);
-
-                /* create the list of attachments */
-                xs *matt = xs_list_new();
-                xs_list *att = xs_dict_get(msg, "attachment");
-                xs_str *aobj;
-
-                while (xs_list_iter(&att, &aobj)) {
-                    const char *mtype = xs_dict_get(aobj, "mediaType");
-
-                    if (!xs_is_null(mtype) && xs_startswith(mtype, "image/")) {
-                        xs *matteid = xs_fmt("%s_%d", id, xs_list_len(matt));
-                        xs *matte   = xs_dict_new();
-
-                        matte = xs_dict_append(matte, "id",          matteid);
-                        matte = xs_dict_append(matte, "type",        "image");
-                        matte = xs_dict_append(matte, "url",         xs_dict_get(aobj, "url"));
-                        matte = xs_dict_append(matte, "preview_url", xs_dict_get(aobj, "url"));
-                        matte = xs_dict_append(matte, "remote_url",  xs_dict_get(aobj, "url"));
-                        matte = xs_dict_append(matte, "description", xs_dict_get(aobj, "name"));
-
-                        matt = xs_list_append(matt, matte);
-                    }
-                }
-
-                st = xs_dict_append(st, "media_attachments", matt);
-
-                st = xs_dict_append(st, "mentions",          el);
-                st = xs_dict_append(st, "tags",              el);
-                st = xs_dict_append(st, "emojis",            el);
-
-                xs_free(idx);
-                xs_free(ixc);
-                idx = object_likes(id);
-                ixc = xs_number_new(xs_list_len(idx));
-
-                st = xs_dict_append(st, "favourites_count", ixc);
-                st = xs_dict_append(st, "favourited",
-                    xs_list_in(idx, snac.md5) != -1 ? t : f);
-
-                xs_free(idx);
-                xs_free(ixc);
-                idx = object_announces(id);
-                ixc = xs_number_new(xs_list_len(idx));
-
-                st = xs_dict_append(st, "reblogs_count", ixc);
-                st = xs_dict_append(st, "reblogged",
-                    xs_list_in(idx, snac.md5) != -1 ? t : f);
-
-                xs_free(idx);
-                xs_free(ixc);
-                idx = object_children(id);
-                ixc = xs_number_new(xs_list_len(idx));
-
-                st = xs_dict_append(st, "replies_count", ixc);
-
-                /* default in_reply_to values */
-                st = xs_dict_append(st, "in_reply_to_id",         n);
-                st = xs_dict_append(st, "in_reply_to_account_id", n);
-
-                tmp = xs_dict_get(msg, "inReplyTo");
-                if (!xs_is_null(tmp)) {
-                    xs *irto = NULL;
-
-                    if (valid_status(object_get(tmp, &irto))) {
-                        xs *irt_mid = mastoapi_id(irto);
-                        st = xs_dict_set(st, "in_reply_to_id", irt_mid);
-
-                        char *at = NULL;
-                        if (!xs_is_null(at = xs_dict_get(irto, "attributedTo"))) {
-                            xs *at_md5 = xs_md5_hex(at, strlen(at));
-                            st = xs_dict_set(st, "in_reply_to_account_id", at_md5);
-                        }
-                    }
-                }
-
-                st = xs_dict_append(st, "reblog",   n);
-                st = xs_dict_append(st, "poll",     n);
-                st = xs_dict_append(st, "card",     n);
-                st = xs_dict_append(st, "language", n);
-
-                tmp = xs_dict_get(msg, "sourceContent");
-                if (xs_is_null(tmp))
-                    tmp = "";
-
-                st = xs_dict_append(st, "text", tmp);
-
-                tmp = xs_dict_get(msg, "updated");
-                if (xs_is_null(tmp))
-                    tmp = n;
-
-                st = xs_dict_append(st, "edited_at", tmp);
-
-                out = xs_list_append(out, st);
+                if (st != NULL)
+                    out = xs_list_append(out, st);
 
                 cnt++;
             }
