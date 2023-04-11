@@ -789,11 +789,46 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             if (valid_status(timeline_get_by_md5(&snac, id, &msg))) {
                 if (op == NULL) {
                     /* return the status itself */
+                    out = mastoapi_status(&snac, msg);
                 }
                 else
                 if (strcmp(op, "context") == 0) {
                     /* return ancestors and children */
-                    srv_debug(0, xs_fmt("mastoapi status: context requested for %s", id));
+                    xs *anc = xs_list_new();
+                    xs *des = xs_list_new();
+                    xs_list *p;
+                    xs_str *v;
+                    char pid[64];
+
+                    /* build the [grand]parent list, moving up */
+                    strcpy(pid, id);
+
+                    while (object_parent(pid, pid, sizeof(pid))) {
+                        xs *m2 = NULL;
+
+                        if (valid_status(timeline_get_by_md5(&snac, pid, &m2))) {
+                            xs *st = mastoapi_status(&snac, m2);
+                            anc = xs_list_append(anc, st);
+                        }
+                        else
+                            break;
+                    }
+
+                    /* build the children list */
+                    xs *children = object_children(xs_dict_get(msg, "id"));
+                    p = children;
+                    while (xs_list_iter(&p, &v)) {
+                        xs *m2 = NULL;
+
+                        if (valid_status(timeline_get_by_md5(&snac, v, &m2))) {
+                            xs *st = mastoapi_status(&snac, m2);
+                            des = xs_list_append(des, st);
+                        }
+                    }
+
+                    out = xs_dict_new();
+                    out = xs_dict_append(out, "ancestors",   anc);
+                    out = xs_dict_append(out, "descendants", des);
                 }
                 else
                 if (strcmp(op, "reblogged_by") == 0) {
