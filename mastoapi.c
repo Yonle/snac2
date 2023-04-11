@@ -741,7 +741,75 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (strcmp(cmd, "/timelines/public") == 0) {
-        /* the public timeline */
+        /* the public timeline (public timelines for all users) */
+        /* TBD */
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
+    }
+    else
+    if (strcmp(cmd, "/conversations") == 0) {
+        /* TBD */
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
+    }
+    else
+    if (strcmp(cmd, "/notifications") == 0) {
+        /* TBD */
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
+    }
+    else
+    if (strcmp(cmd, "/filters") == 0) {
+        /* TBD */
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
+    }
+    else
+    if (strcmp(cmd, "/favourites") == 0) {
+        /* TBD */
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
+    }
+    else
+    if (strcmp(cmd, "/bookmarks") == 0) {
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
+    }
+    else
+    if (strcmp(cmd, "/lists") == 0) {
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
+    }
+    else
+    if (strcmp(cmd, "/scheduled_statuses") == 0) {
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
+    }
+    else
+    if (strcmp(cmd, "/follow_requests") == 0) {
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
+    }
+    else
+    if (strcmp(cmd, "/announcements") == 0) {
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
+    }
+    else
+    if (strcmp(cmd, "/custom_emojis") == 0) {
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
     }
     else
     if (strcmp(cmd, "/instance") == 0) {
