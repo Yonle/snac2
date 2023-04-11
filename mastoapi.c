@@ -603,10 +603,10 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         return 0;
 
     srv_debug(0, xs_fmt("mastoapi_get_handler %s", q_path));
-    {
+/*    {
         xs *j = xs_json_dumps_pp(req, 4);
         printf("mastoapi get:\n%s\n", j);
-    }
+    }*/
 
     int status    = 404;
     xs_dict *args = xs_dict_get(req, "q_vars");
@@ -771,6 +771,48 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         *body  = xs_json_dumps_pp(ins, 4);
         *ctype = "application/json";
         status = 200;
+    }
+    else
+    if (xs_startswith(cmd, "/statuses/")) {
+        /* operations on a status */
+        xs *l = xs_split(cmd, "/");
+        const char *id = xs_list_get(l, 2);
+        const char *op = xs_list_get(l, 3);
+
+        if (!xs_is_null(id)) {
+            xs *msg = NULL;
+            xs *out = NULL;
+
+            /* skip the fake part of the id (the date) */
+            id += 14;
+
+            if (valid_status(timeline_get_by_md5(&snac, id, &msg))) {
+                if (op == NULL) {
+                    /* return the status itself */
+                }
+                else
+                if (strcmp(op, "context") == 0) {
+                    /* return ancestors and children */
+                    srv_debug(0, xs_fmt("mastoapi status: context requested for %s", id));
+                }
+                else
+                if (strcmp(op, "reblogged_by") == 0) {
+                    /* return the list of boosts */
+                }
+                else
+                if (strcmp(op, "favourited_by") == 0) {
+                    /* return the list of likes */
+                }
+            }
+            else
+                srv_debug(0, xs_fmt("mastoapi status: bad id %s", id));
+
+            if (out != NULL) {
+                *body  = xs_json_dumps_pp(out, 4);
+                *ctype = "application/json";
+                status = 200;
+            }
+        }
     }
 
     /* user cleanup */
