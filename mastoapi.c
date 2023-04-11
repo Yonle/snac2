@@ -596,6 +596,35 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 }
 
 
+int process_auth_token(snac *snac, const xs_dict *req)
+/* processes an authorization token, if there is one */
+{
+    int logged_in = 0;
+    char *v;
+
+    /* if there is an authorization field, try to validate it */
+    if (!xs_is_null(v = xs_dict_get(req, "authorization")) && xs_startswith(v, "Bearer ")) {
+        xs *tokid = xs_replace(v, "Bearer ", "");
+        xs *token = token_get(tokid);
+
+        if (token != NULL) {
+            const char *uid = xs_dict_get(token, "uid");
+
+            if (!xs_is_null(uid) && user_open(snac, uid)) {
+                logged_in = 1;
+                srv_debug(0, xs_fmt("mastoapi auth: valid token for user %s", uid));
+            }
+            else
+                srv_log(xs_fmt("mastoapi auth: corrupted token %s", tokid));
+        }
+        else
+            srv_log(xs_fmt("mastoapi auth: invalid token %s", tokid));
+    }
+
+    return logged_in;
+}
+
+
 int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                          char **body, int *b_size, char **ctype)
 {
@@ -611,29 +640,9 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     int status    = 404;
     xs_dict *args = xs_dict_get(req, "q_vars");
     xs *cmd       = xs_replace(q_path, "/api/v1", "");
-    char *v;
 
     snac snac = {0};
-    int logged_in = 0;
-
-    /* if there is an authorization field, try to validate it */
-    if (!xs_is_null(v = xs_dict_get(req, "authorization")) && xs_startswith(v, "Bearer ")) {
-        xs *tokid = xs_replace(v, "Bearer ", "");
-        xs *token = token_get(tokid);
-
-        if (token != NULL) {
-            const char *uid = xs_dict_get(token, "uid");
-
-            if (!xs_is_null(uid) && user_open(&snac, uid)) {
-                logged_in = 1;
-                srv_debug(0, xs_fmt("mastoapi auth: valid token for user %s", uid));
-            }
-            else
-                srv_log(xs_fmt("mastoapi auth: corrupted token %s", tokid));
-        }
-        else
-            srv_log(xs_fmt("mastoapi auth: invalid token %s", tokid));
-    }
+    int logged_in = process_auth_token(&snac, req);;
 
     if (strcmp(cmd, "/accounts/verify_credentials") == 0) {
         if (logged_in) {
@@ -946,28 +955,31 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
     }
 
     int status    = 404;
-    xs *msg       = NULL;
+    xs *args      = NULL;
     char *i_ctype = xs_dict_get(req, "content-type");
 
-    if (xs_startswith(i_ctype, "application/json"))
-        msg = xs_json_loads(payload);
+    if (i_ctype && xs_startswith(i_ctype, "application/json"))
+        args = xs_json_loads(payload);
     else
-        msg = xs_dup(xs_dict_get(req, "p_vars"));
+        args = xs_dup(xs_dict_get(req, "p_vars"));
 
-    if (msg == NULL)
+    if (args == NULL)
         return 400;
 
     {
-        xs *j = xs_json_dumps_pp(msg, 4);
+        xs *j = xs_json_dumps_pp(args, 4);
         printf("%s\n", j);
     }
 
     xs *cmd = xs_replace(q_path, "/api/v1", "");
 
+    snac snac = {0};
+    int logged_in = process_auth_token(&snac, req);;
+
     if (strcmp(cmd, "/apps") == 0) {
-        const char *name  = xs_dict_get(msg, "client_name");
-        const char *ruri  = xs_dict_get(msg, "redirect_uris");
-        const char *scope = xs_dict_get(msg, "scope");
+        const char *name  = xs_dict_get(args, "client_name");
+        const char *ruri  = xs_dict_get(args, "redirect_uris");
+        const char *scope = xs_dict_get(args, "scope");
 
         if (xs_type(ruri) == XSTYPE_LIST)
             ruri = xs_dict_get(ruri, 0);
@@ -999,6 +1011,102 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
 
             srv_debug(0, xs_fmt("mastoapi apps: new app %s", cid));
         }
+    }
+    else
+    if (strcmp(cmd, "/statuses") == 0) {
+        if (logged_in) {
+            /* post a new Note */
+            /* TBD */
+        }
+        else
+            status = 401;
+    }
+    else
+    if (xs_startswith(cmd, "/statuses")) {
+        if (logged_in) {
+            /* operations on a status */
+            xs *l = xs_split(cmd, "/");
+            const char *mid = xs_list_get(l, 2);
+            const char *op  = xs_list_get(l, 3);
+
+            if (!xs_is_null(mid)) {
+                xs *msg = NULL;
+                xs *out = NULL;
+
+                /* skip the fake part of the id (the date) */
+                mid += 14;
+
+                if (valid_status(timeline_get_by_md5(&snac, mid, &msg))) {
+                    char *id = xs_dict_get(msg, "id");
+
+                    if (op == NULL) {
+                        /* no operation (?) */
+                    }
+                    else
+                    if (strcmp(op, "favourite") == 0) {
+                        xs *n_msg = msg_admiration(&snac, id, "Like");
+
+                        if (n_msg != NULL) {
+                            enqueue_message(&snac, n_msg);
+                            timeline_admire(&snac, xs_dict_get(n_msg, "object"), snac.actor, 1);
+
+                            out = mastoapi_status(&snac, msg);
+                        }
+                    }
+                    else
+                    if (strcmp(op, "unfavourite") == 0) {
+                        /* snac does not support Undo+Like */
+                    }
+                    else
+                    if (strcmp(op, "reblog") == 0) {
+                        xs *n_msg = msg_admiration(&snac, id, "Announce");
+
+                        if (n_msg != NULL) {
+                            enqueue_message(&snac, n_msg);
+                            timeline_admire(&snac, xs_dict_get(n_msg, "object"), snac.actor, 0);
+
+                            out = mastoapi_status(&snac, msg);
+                        }
+                    }
+                    else
+                    if (strcmp(op, "unreblog") == 0) {
+                        /* snac does not support Undo+Announce */
+                    }
+                    else
+                    if (strcmp(op, "bookmark") == 0) {
+                        /* snac does not support bookmarks */
+                    }
+                    else
+                    if (strcmp(op, "unbookmark") == 0) {
+                        /* snac does not support bookmarks */
+                    }
+                    else
+                    if (strcmp(op, "pin") == 0) {
+                        /* snac does not support pinning */
+                    }
+                    else
+                    if (strcmp(op, "unpin") == 0) {
+                        /* snac does not support pinning */
+                    }
+                    else
+                    if (strcmp(op, "mute") == 0) {
+                        /* Mastodon's mute is snac's hide */
+                    }
+                    else
+                    if (strcmp(op, "unmute") == 0) {
+                        /* Mastodon's unmute is snac's unhide */
+                    }
+                }
+
+                if (out != NULL) {
+                    *body  = xs_json_dumps_pp(out, 4);
+                    *ctype = "application/json";
+                    status = 200;
+                }
+            }
+        }
+        else
+            status = 401;
     }
 
     return status;

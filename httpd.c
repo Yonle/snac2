@@ -188,15 +188,15 @@ void httpd_connection(FILE *f)
     else
     if (strcmp(method, "POST") == 0) {
         if (status == 0)
-            status = activitypub_post_handler(req, q_path,
-                        payload, p_size, &body, &b_size, &ctype);
-
-        if (status == 0)
             status = oauth_post_handler(req, q_path,
                         payload, p_size, &body, &b_size, &ctype);
 
         if (status == 0)
             status = mastoapi_post_handler(req, q_path,
+                        payload, p_size, &body, &b_size, &ctype);
+
+        if (status == 0)
+            status = activitypub_post_handler(req, q_path,
                         payload, p_size, &body, &b_size, &ctype);
 
         if (status == 0)
