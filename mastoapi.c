@@ -169,10 +169,10 @@ int oauth_get_handler(const xs_dict *req, const char *q_path,
     if (!xs_startswith(q_path, "/oauth/"))
         return 0;
 
-    {
+/*    {
         xs *j = xs_json_dumps_pp(req, 4);
         printf("oauth get:\n%s\n", j);
-    }
+    }*/
 
     int status   = 404;
     xs_dict *msg = xs_dict_get(req, "q_vars");
@@ -221,10 +221,10 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
     if (!xs_startswith(q_path, "/oauth/"))
         return 0;
 
-    {
+/*    {
         xs *j = xs_json_dumps_pp(req, 4);
         printf("oauth post:\n%s\n", j);
-    }
+    }*/
 
     int status   = 404;
     xs_dict *msg = xs_dict_get(req, "p_vars");
@@ -949,10 +949,10 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
         return 0;
 
     srv_debug(0, xs_fmt("mastoapi_post_handler %s", q_path));
-    {
+/*    {
         xs *j = xs_json_dumps_pp(req, 4);
         printf("mastoapi post:\n%s\n", j);
-    }
+   }*/
 
     int status    = 404;
     xs *args      = NULL;
@@ -966,10 +966,10 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
     if (args == NULL)
         return 400;
 
-    {
+/*    {
         xs *j = xs_json_dumps_pp(args, 4);
         printf("%s\n", j);
-    }
+    }*/
 
     xs *cmd = xs_replace(q_path, "/api/v1", "");
 
