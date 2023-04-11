@@ -763,50 +763,56 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (strcmp(cmd, "/filters") == 0) {
-        /* TBD */
+        /* snac will never have filters */
         *body  = xs_dup("[]");
         *ctype = "application/json";
         status = 200;
     }
     else
     if (strcmp(cmd, "/favourites") == 0) {
-        /* TBD */
+        /* snac will never support a list of favourites */
         *body  = xs_dup("[]");
         *ctype = "application/json";
         status = 200;
     }
     else
     if (strcmp(cmd, "/bookmarks") == 0) {
+        /* snac does not support bookmarks */
         *body  = xs_dup("[]");
         *ctype = "application/json";
         status = 200;
     }
     else
     if (strcmp(cmd, "/lists") == 0) {
+        /* snac does not support lists */
         *body  = xs_dup("[]");
         *ctype = "application/json";
         status = 200;
     }
     else
     if (strcmp(cmd, "/scheduled_statuses") == 0) {
+        /* snac does not scheduled notes */
         *body  = xs_dup("[]");
         *ctype = "application/json";
         status = 200;
     }
     else
     if (strcmp(cmd, "/follow_requests") == 0) {
+        /* snac does not support optional follow confirmations */
         *body  = xs_dup("[]");
         *ctype = "application/json";
         status = 200;
     }
     else
     if (strcmp(cmd, "/announcements") == 0) {
+        /* snac has no announcements (yet?) */
         *body  = xs_dup("[]");
         *ctype = "application/json";
         status = 200;
     }
     else
     if (strcmp(cmd, "/custom_emojis") == 0) {
+        /* are you kidding me? */
         *body  = xs_dup("[]");
         *ctype = "application/json";
         status = 200;
