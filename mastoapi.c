@@ -677,19 +677,29 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         }
     }
     else
-    if (xs_startswith(cmd, "/accounts/") && xs_endswith(cmd, "/statuses")) {
-        /* the public list of posts of a user */
+    if (xs_startswith(cmd, "/accounts/")) {
+        /* account-related information */
         xs *l = xs_split(cmd, "/");
+        const char *uid = xs_list_get(l, 2);
+        const char *opt = xs_list_get(l, 3);
+        snac snac2;
 
-        if (xs_list_len(l) == 4) {
-            snac snac2;
-            const char *uid = xs_list_get(l, 2);
+        if (uid != NULL && user_open(&snac2, uid)) {
+            xs *out = NULL;
 
-            if (user_open(&snac2, uid)) {
+            if (opt == NULL) {
+                /* account information */
+                xs *actor = msg_actor(&snac2);
+                out = mastoapi_account(&snac2, actor);
+            }
+            else
+            if (strcmp(opt, "statuses") == 0) {
+                /* the public list of posts of a user */
                 xs *timeline = timeline_simple_list(&snac2, "public", 0, 256);
-                xs *out      = xs_list_new();
                 xs_list *p   = timeline;
                 xs_str *v;
+
+                out = xs_list_new();
 
                 while (xs_list_iter(&p, &v)) {
                     xs *msg = NULL;
@@ -704,15 +714,15 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                         }
                     }
                 }
+            }
 
+            if (out != NULL) {
                 *body  = xs_json_dumps_pp(out, 4);
                 *ctype = "application/json";
                 status = 200;
-
-                user_free(&snac2);
             }
-            else
-                srv_debug(0, xs_fmt("mastoapi account statuses: bad user '%s'", uid));
+
+            user_free(&snac2);
         }
     }
     else
