@@ -403,25 +403,13 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
 xs_str *mastoapi_id(const xs_dict *msg)
 /* returns a somewhat Mastodon-compatible status id */
 {
-    char tmp[15] = "";
-    int n = 0;
-    const char *id        = xs_dict_get(msg, "id");
-    const char *published = xs_dict_get(msg, "published");
+    const char *id = xs_dict_get(msg, "id");
+    xs *md5        = xs_md5_hex(id, strlen(id));
 
-    if (!xs_is_null(published)) {
-        /* transfer all numbers from the published date */
-        while (*published && n < sizeof(tmp) - 1) {
-            if (*published >= '0' && *published <= '9')
-                tmp[n++] = *published;
-            published++;
-        }
-        tmp[n] = '\0';
-    }
-
-    xs *md5 = xs_md5_hex(id, strlen(id));
-
-    return xs_str_cat(xs_str_new(tmp), md5);
+    return xs_fmt("%10.0f%s", object_ctime_by_md5(md5), md5);
 }
+
+#define MID_TO_MD5(id) (id + 10)
 
 
 xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
@@ -867,7 +855,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             xs *out = NULL;
 
             /* skip the fake part of the id (the date) */
-            id += 14;
+            id = MID_TO_MD5(id);
 
             if (valid_status(timeline_get_by_md5(&snac, id, &msg))) {
                 if (op == NULL) {
@@ -900,6 +888,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     /* build the children list */
                     xs *children = object_children(xs_dict_get(msg, "id"));
                     p = children;
+
                     while (xs_list_iter(&p, &v)) {
                         xs *m2 = NULL;
 
@@ -1034,7 +1023,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                 xs *out = NULL;
 
                 /* skip the fake part of the id (the date) */
-                mid += 14;
+                mid = MID_TO_MD5(mid);
 
                 if (valid_status(timeline_get_by_md5(&snac, mid, &msg))) {
                     char *id = xs_dict_get(msg, "id");
