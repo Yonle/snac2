@@ -77,6 +77,8 @@ int object_get_by_md5(const char *md5, xs_dict **obj);
 int object_get(const char *id, xs_dict **obj);
 int object_del(const char *id);
 int object_del_if_unref(const char *id);
+double object_ctime_by_md5(const char *md5);
+double object_ctime(const char *id);
 int object_admire(const char *id, const char *actor, int like);
 
 int object_likes_len(const char *id);

@@ -658,6 +658,20 @@ int object_del_if_unref(const char *id)
 }
 
 
+double object_ctime_by_md5(const char *md5)
+{
+    xs *fn = _object_fn_by_md5(md5);
+    return f_ctime(fn);
+}
+
+
+double object_ctime(const char *id)
+{
+    xs *md5 = xs_md5_hex(id, strlen(id));
+    return object_ctime_by_md5(md5);
+}
+
+
 d_char *_object_index_fn(const char *id, const char *idxsfx)
 /* returns the filename of an object's index */
 {
