@@ -867,7 +867,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             xs *msg = NULL;
             xs *out = NULL;
 
-            /* skip the fake part of the id (the date) */
+            /* skip the 'fake' part of the id */
             id = MID_TO_MD5(id);
 
             if (valid_status(timeline_get_by_md5(&snac, id, &msg))) {
@@ -976,7 +976,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
     xs *cmd = xs_replace(q_path, "/api/v1", "");
 
     snac snac = {0};
-    int logged_in = process_auth_token(&snac, req);;
+    int logged_in = process_auth_token(&snac, req);
 
     if (strcmp(cmd, "/apps") == 0) {
         const char *name  = xs_dict_get(args, "client_name");
@@ -1035,7 +1035,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                 xs *msg = NULL;
                 xs *out = NULL;
 
-                /* skip the fake part of the id (the date) */
+                /* skip the 'fake' part of the id */
                 mid = MID_TO_MD5(mid);
 
                 if (valid_status(timeline_get_by_md5(&snac, mid, &msg))) {
@@ -1110,6 +1110,10 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
         else
             status = 401;
     }
+
+    /* user cleanup */
+    if (logged_in)
+        user_free(&snac);
 
     return status;
 }
