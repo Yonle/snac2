@@ -679,10 +679,13 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     else
     if (strcmp(cmd, "/accounts/relationships") == 0) {
         /* find if an account is followed, blocked, etc. */
+        /* the account to get relationships about is in args "id[]" */
         /* dummy by now */
-        *body  = xs_dup("[]");
-        *ctype = "application/json";
-        status = 200;
+        if (logged_in) {
+            *body  = xs_dup("[]");
+            *ctype = "application/json";
+            status = 200;
+        }
     }
     else
     if (xs_startswith(cmd, "/accounts/")) {
