@@ -2,9 +2,11 @@
 
 ## 2.27
 
-Fixed overzealous rejection of some local boosts.
+Added (partial) support for the Mastodon API, so you can use Mastodon-compatible apps to access #snac accounts. What works by far: login, the personal timeline, full status (post) information (replies and ancestors), liking and boosting posts. What doesn't work yet but eventually will: posting and replying to messages (I still have to figure out how some things work, like posting images), notifications (needs some internal support), the instance timeline (snac does not have it, but it can be simulated with not much effort), probably many other things. What will never be implemented: bookmarks, pinning, a federated timeline, other things that I don't remember right now. Please note that if you want to use this API in your instance, you must add some lines to your HTTP proxy support, see the snac(8) (administrator documentation) manual page. I'm doing my tests using the #Tusky, #AndStatus, #Fedilab and #Husky Android apps.
 
 Fixed some buffer overflows (contributed by Saagar Jha).
+
+Fixed overzealous rejection of some local boosts.
 
 ## 2.26
 
