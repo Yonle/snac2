@@ -4,6 +4,8 @@
 
 Add a notification area, where recent events of interest would be easily seen.
 
+Post edits should keep the image and the image description.
+
 Add a list of hashtags to drop.
 
 Add a per-account toggle to [un]mute their Announces.
@@ -12,9 +14,7 @@ Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac
 
 ## Wishlist
 
-Implement the ActivityPub C2S (Client to Server) API: https://www.w3.org/TR/activitypub/#client-to-server-interactions . The Android client at http://andstatus.org/ implements it, or so it seems. UPDATE: Wrong, AndStatus starts doing an OAuth query, that is totally not ActivityPub C2S. The number of real ActivityPub C2S clients out there is probably zero.
-
-Implement HTTP caches (If-None-Match / ETag). I'm not sure if it's worth.
+Implement HTTP caches (If-None-Match / ETag). I'm not sure if it's worth the effort.
 
 The 'history' pages are just monthly HTML snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you e.g. intentionally delete a post because it will remain there in the history forever. If you activate local timeline purging, purged entries will remain in the history as 'ghosts', which may or may not be what the user wants.
 
@@ -221,3 +221,5 @@ Child indexes (*_c.idx) with a parent not present keep accumulating; not a real 
 There are some hosts that keep returning 400 Bad Request to snac posts (e.g. hachyderm.io). I've investigated but still don't know where the problem is (2023-03-07T10:28:21+0100).
 
 Fix `Like` and `Update` recipients (2023-03-07T10:28:36+0100).
+
+Implement the ActivityPub C2S (Client to Server) API: https://www.w3.org/TR/activitypub/#client-to-server-interactions . The Android client at http://andstatus.org/ implements it, or so it seems. UPDATE: Wrong, AndStatus starts doing an OAuth query, that is totally not ActivityPub C2S. The number of real ActivityPub C2S clients out there is probably zero. Abandoned now that I'm implementing the Mastodon API (2023-04-12T15:00:14+0200).
