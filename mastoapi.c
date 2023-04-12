@@ -412,19 +412,10 @@ xs_str *mastoapi_id(const xs_dict *msg)
 #define MID_TO_MD5(id) (id + 10)
 
 
-xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
-/* converts an ActivityPub note to a Mastodon status */
+xs_dict *mastoapi_account(snac *snac, const xs_dict *actor)
+/* converts an ActivityPub actor to a Mastodon account */
 {
-    xs *actor = NULL;
-    actor_get(snac, xs_dict_get(msg, "attributedTo"), &actor);
-
-    /* if the author is not here, discard */
-    if (actor == NULL)
-        return NULL;
-
-    /** shave the yak converting an ActivityPub Note to a Mastodon status **/
-
-    xs *acct = xs_dict_new();
+    xs_dict *acct = xs_dict_new();
 
     const char *display_name = xs_dict_get(actor, "name");
     if (xs_is_null(display_name) || *display_name == '\0')
@@ -454,6 +445,24 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 
     acct = xs_dict_append(acct, "avatar", avatar);
 
+    return acct;
+}
+
+
+xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
+/* converts an ActivityPub note to a Mastodon status */
+{
+    xs *actor = NULL;
+    actor_get(snac, xs_dict_get(msg, "attributedTo"), &actor);
+
+    /* if the author is not here, discard */
+    if (actor == NULL)
+        return NULL;
+
+    xs *acct = mastoapi_account(snac, actor);
+
+    /** shave the yak converting an ActivityPub Note to a Mastodon status **/
+
     xs *f   = xs_val_new(XSTYPE_FALSE);
     xs *t   = xs_val_new(XSTYPE_TRUE);
     xs *n   = xs_val_new(XSTYPE_NULL);
@@ -462,8 +471,8 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
     xs *ixc = NULL;
 
     char *tmp;
-    id = xs_dict_get(msg, "id");
-    xs *mid = mastoapi_id(msg);
+    char *id = xs_dict_get(msg, "id");
+    xs *mid  = mastoapi_id(msg);
 
     xs_dict *st = xs_dict_new();
 
@@ -916,12 +925,30 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     out = xs_dict_append(out, "descendants", des);
                 }
                 else
-                if (strcmp(op, "reblogged_by") == 0) {
-                    /* return the list of boosts */
-                }
-                else
-                if (strcmp(op, "favourited_by") == 0) {
-                    /* return the list of likes */
+                if (strcmp(op, "reblogged_by") == 0 ||
+                    strcmp(op, "favourited_by") == 0) {
+                    /* return the list of likes or boosts */
+                    out = xs_list_new();
+
+                    xs *l = NULL;
+
+                    if (op[0] == 'r')
+                        l = object_announces(xs_dict_get(msg, "id"));
+                    else
+                        l = object_likes(xs_dict_get(msg, "id"));
+
+                    xs_list *p = l;
+                    xs_str *v;
+
+                    while (xs_list_iter(&p, &v)) {
+                        xs *actor2 = NULL;
+
+                        if (valid_status(object_get_by_md5(v, &actor2))) {
+                            xs *acct2 = mastoapi_account(&snac, actor2);
+
+                            out = xs_list_append(out, acct2);
+                        }
+                    }
                 }
             }
             else
