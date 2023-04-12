@@ -643,23 +643,23 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     xs_dict *args = xs_dict_get(req, "q_vars");
     xs *cmd       = xs_replace(q_path, "/api/v1", "");
 
-    snac snac = {0};
-    int logged_in = process_auth_token(&snac, req);;
+    snac snac1 = {0};
+    int logged_in = process_auth_token(&snac1, req);
 
     if (strcmp(cmd, "/accounts/verify_credentials") == 0) {
         if (logged_in) {
             xs *acct = xs_dict_new();
 
-            acct = xs_dict_append(acct, "id",           xs_dict_get(snac.config, "uid"));
-            acct = xs_dict_append(acct, "username",     xs_dict_get(snac.config, "uid"));
-            acct = xs_dict_append(acct, "acct",         xs_dict_get(snac.config, "uid"));
-            acct = xs_dict_append(acct, "display_name", xs_dict_get(snac.config, "name"));
-            acct = xs_dict_append(acct, "created_at",   xs_dict_get(snac.config, "published"));
-            acct = xs_dict_append(acct, "note",         xs_dict_get(snac.config, "bio"));
-            acct = xs_dict_append(acct, "url",          snac.actor);
+            acct = xs_dict_append(acct, "id",           xs_dict_get(snac1.config, "uid"));
+            acct = xs_dict_append(acct, "username",     xs_dict_get(snac1.config, "uid"));
+            acct = xs_dict_append(acct, "acct",         xs_dict_get(snac1.config, "uid"));
+            acct = xs_dict_append(acct, "display_name", xs_dict_get(snac1.config, "name"));
+            acct = xs_dict_append(acct, "created_at",   xs_dict_get(snac1.config, "published"));
+            acct = xs_dict_append(acct, "note",         xs_dict_get(snac1.config, "bio"));
+            acct = xs_dict_append(acct, "url",          snac1.actor);
 
             xs *avatar = NULL;
-            char *av   = xs_dict_get(snac.config, "avatar");
+            char *av   = xs_dict_get(snac1.config, "avatar");
 
             if (xs_is_null(av) || *av == '\0')
                 avatar = xs_fmt("%s/susie.png", srv_baseurl);
@@ -674,6 +674,45 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         }
         else {
             status = 422;   // "Unprocessable entity" (no login)
+        }
+    }
+    else
+    if (xs_startswith(cmd, "/accounts/") && xs_endswith(cmd, "/statuses")) {
+        /* the public list of posts of a user */
+        xs *l = xs_split(cmd, "/");
+
+        if (xs_list_len(l) == 4) {
+            snac snac2;
+            const char *uid = xs_list_get(l, 2);
+
+            if (user_open(&snac2, uid)) {
+                xs *timeline = timeline_simple_list(&snac2, "public", 0, 256);
+                xs *out      = xs_list_new();
+                xs_list *p   = timeline;
+                xs_str *v;
+
+                while (xs_list_iter(&p, &v)) {
+                    xs *msg = NULL;
+
+                    if (valid_status(timeline_get_by_md5(&snac2, v, &msg))) {
+                        /* add only posts by the author */
+                        if (strcmp(xs_dict_get(msg, "type"), "Note") == 0 &&
+                            xs_startswith(xs_dict_get(msg, "id"), snac2.actor)) {
+                            xs *st = mastoapi_status(&snac2, msg);
+
+                            out = xs_list_append(out, st);
+                        }
+                    }
+                }
+
+                *body  = xs_json_dumps_pp(out, 4);
+                *ctype = "application/json";
+                status = 200;
+
+                user_free(&snac2);
+            }
+            else
+                srv_debug(0, xs_fmt("mastoapi account statuses: bad user '%s'", uid));
         }
     }
     else
@@ -693,7 +732,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             if (limit == 0)
                 limit = 20;
 
-            xs *timeline = timeline_simple_list(&snac, "private", 0, XS_ALL);
+            xs *timeline = timeline_simple_list(&snac1, "private", 0, XS_ALL);
 
             xs *out      = xs_list_new();
             xs_list *p   = timeline;
@@ -724,7 +763,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 }
 
                 /* get the entry */
-                if (!valid_status(timeline_get_by_md5(&snac, v, &msg)))
+                if (!valid_status(timeline_get_by_md5(&snac1, v, &msg)))
                     continue;
 
                 /* discard non-Notes */
@@ -732,7 +771,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     continue;
 
                 /* convert the Note into a Mastodon status */
-                xs *st = mastoapi_status(&snac, msg);
+                xs *st = mastoapi_status(&snac1, msg);
 
                 if (st != NULL)
                     out = xs_list_append(out, st);
@@ -879,10 +918,10 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             /* skip the 'fake' part of the id */
             id = MID_TO_MD5(id);
 
-            if (valid_status(timeline_get_by_md5(&snac, id, &msg))) {
+            if (valid_status(timeline_get_by_md5(&snac1, id, &msg))) {
                 if (op == NULL) {
                     /* return the status itself */
-                    out = mastoapi_status(&snac, msg);
+                    out = mastoapi_status(&snac1, msg);
                 }
                 else
                 if (strcmp(op, "context") == 0) {
@@ -899,8 +938,8 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     while (object_parent(pid, pid, sizeof(pid))) {
                         xs *m2 = NULL;
 
-                        if (valid_status(timeline_get_by_md5(&snac, pid, &m2))) {
-                            xs *st = mastoapi_status(&snac, m2);
+                        if (valid_status(timeline_get_by_md5(&snac1, pid, &m2))) {
+                            xs *st = mastoapi_status(&snac1, m2);
                             anc = xs_list_append(anc, st);
                         }
                         else
@@ -914,8 +953,8 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     while (xs_list_iter(&p, &v)) {
                         xs *m2 = NULL;
 
-                        if (valid_status(timeline_get_by_md5(&snac, v, &m2))) {
-                            xs *st = mastoapi_status(&snac, m2);
+                        if (valid_status(timeline_get_by_md5(&snac1, v, &m2))) {
+                            xs *st = mastoapi_status(&snac1, m2);
                             des = xs_list_append(des, st);
                         }
                     }
@@ -944,7 +983,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                         xs *actor2 = NULL;
 
                         if (valid_status(object_get_by_md5(v, &actor2))) {
-                            xs *acct2 = mastoapi_account(&snac, actor2);
+                            xs *acct2 = mastoapi_account(&snac1, actor2);
 
                             out = xs_list_append(out, acct2);
                         }
@@ -964,7 +1003,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
     /* user cleanup */
     if (logged_in)
-        user_free(&snac);
+        user_free(&snac1);
 
     return status;
 }
