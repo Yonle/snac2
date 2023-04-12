@@ -927,7 +927,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 else
                 if (strcmp(op, "reblogged_by") == 0 ||
                     strcmp(op, "favourited_by") == 0) {
-                    /* return the list of likes or boosts */
+                    /* return the list of people who liked or boosted this */
                     out = xs_list_new();
 
                     xs *l = NULL;
