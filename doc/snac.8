@@ -331,21 +331,32 @@ snac httpd /home/snacusr/fedidata
 Edit the nginx configuration and add the following snippet to the
 example.com server section:
 .Bd -literal -offset indent
+# main web access point
+location /fedi {
+    proxy_pass http://localhost:8001;
+    proxy_set_header Host $http_host;
+}
+# webfinger
 location /.well-known/webfinger {
     proxy_pass http://localhost:8001;
     proxy_set_header Host $http_host;
 }
-
+# Mastodon API (entry point)
+location /api/v1/ {
+    proxy_pass http://localhost:8001;
+    proxy_set_header Host $http_host;
+}
+# Mastodon API (OAuth support)
+location /oauth {
+    proxy_pass http://localhost:8001;
+    proxy_set_header Host $http_host;
+}
 # optional
 location /.well-known/nodeinfo {
     proxy_pass http://localhost:8001;
     proxy_set_header Host $http_host;
 }
 
-location /fedi {
-    proxy_pass http://localhost:8001;
-    proxy_set_header Host $http_host;
-}
 .Ed
 .Pp
 Restart the nginx daemon and connect to https://example.com/fedi/walter.

@@ -205,10 +205,21 @@ argument is -e,  the external editor defined by the EDITOR
 environment variable will be invoked to prepare a message; if
 it's - (a lonely hyphen), the post content will be read from stdin.
 .El
-.Ss Migrating from Mastodon
+.Ss Migrating an account from Mastodon
 See 
 .Xr snac 8
 for details.
+.Ss Using Mastodon-compatible apps
+Since version 2.27,
+.Nm
+includes support for the Mastodon API, so you can use Mastodon-compatible
+mobile and desktop applications to access your account. Given a correctly
+configured server, the usage of these programs should be straightforward.
+Please take note that they will show your timeline in a 'Mastodon fashion'
+(i.e., as a plain list of posts), so you will lose the fancy, nested thread
+post display with the most active threads at the top that the web interface of
+.Nm
+provides.
 .Sh ENVIRONMENT
 .Bl -tag -width Ds
 .It Ev DEBUG
