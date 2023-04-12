@@ -412,7 +412,7 @@ xs_str *mastoapi_id(const xs_dict *msg)
 #define MID_TO_MD5(id) (id + 10)
 
 
-xs_dict *mastoapi_account(snac *snac, const xs_dict *actor)
+xs_dict *mastoapi_account(const xs_dict *actor)
 /* converts an ActivityPub actor to a Mastodon account */
 {
     xs_dict *acct = xs_dict_new();
@@ -459,7 +459,7 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
     if (actor == NULL)
         return NULL;
 
-    xs *acct = mastoapi_account(snac, actor);
+    xs *acct = mastoapi_account(actor);
 
     /** shave the yak converting an ActivityPub Note to a Mastodon status **/
 
@@ -682,36 +682,56 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         xs *l = xs_split(cmd, "/");
         const char *uid = xs_list_get(l, 2);
         const char *opt = xs_list_get(l, 3);
-        snac snac2;
 
-        if (uid != NULL && user_open(&snac2, uid)) {
-            xs *out = NULL;
+        if (uid != NULL) {
+            snac snac2;
+            xs *out   = NULL;
+            xs *actor = NULL;
 
-            if (opt == NULL) {
-                /* account information */
-                xs *actor = msg_actor(&snac2);
-                out = mastoapi_account(&snac2, actor);
-            }
-            else
-            if (strcmp(opt, "statuses") == 0) {
-                /* the public list of posts of a user */
-                xs *timeline = timeline_simple_list(&snac2, "public", 0, 256);
-                xs_list *p   = timeline;
-                xs_str *v;
+            /* is it a local user? */
+            if (user_open(&snac2, uid)) {
+                if (opt == NULL) {
+                    /* account information */
+                    actor = msg_actor(&snac2);
+                    out   = mastoapi_account(actor);
+                }
+                else
+                if (strcmp(opt, "statuses") == 0) {
+                    /* the public list of posts of a user */
+                    xs *timeline = timeline_simple_list(&snac2, "public", 0, 256);
+                    xs_list *p   = timeline;
+                    xs_str *v;
 
-                out = xs_list_new();
+                    out = xs_list_new();
 
-                while (xs_list_iter(&p, &v)) {
-                    xs *msg = NULL;
+                    while (xs_list_iter(&p, &v)) {
+                        xs *msg = NULL;
 
-                    if (valid_status(timeline_get_by_md5(&snac2, v, &msg))) {
-                        /* add only posts by the author */
-                        if (strcmp(xs_dict_get(msg, "type"), "Note") == 0 &&
-                            xs_startswith(xs_dict_get(msg, "id"), snac2.actor)) {
-                            xs *st = mastoapi_status(&snac2, msg);
+                        if (valid_status(timeline_get_by_md5(&snac2, v, &msg))) {
+                            /* add only posts by the author */
+                            if (strcmp(xs_dict_get(msg, "type"), "Note") == 0 &&
+                                xs_startswith(xs_dict_get(msg, "id"), snac2.actor)) {
+                                xs *st = mastoapi_status(&snac2, msg);
 
-                            out = xs_list_append(out, st);
+                                out = xs_list_append(out, st);
+                            }
                         }
+                    }
+                }
+
+                user_free(&snac2);
+            }
+            else {
+                /* try the uid as the md5 of a possibly loaded actor */
+                if (logged_in && valid_status(object_get_by_md5(uid, &actor))) {
+                    if (opt == NULL) {
+                        /* account information */
+                        out = mastoapi_account(actor);
+                    }
+                    else
+                    if (strcmp(opt, "statuses") == 0) {
+                        /* we don't serve statuses of others; return the empty list */
+                        out = xs_list_new();
                     }
                 }
             }
@@ -721,8 +741,6 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 *ctype = "application/json";
                 status = 200;
             }
-
-            user_free(&snac2);
         }
     }
     else
@@ -993,7 +1011,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                         xs *actor2 = NULL;
 
                         if (valid_status(object_get_by_md5(v, &actor2))) {
-                            xs *acct2 = mastoapi_account(&snac1, actor2);
+                            xs *acct2 = mastoapi_account(actor2);
 
                             out = xs_list_append(out, acct2);
                         }
