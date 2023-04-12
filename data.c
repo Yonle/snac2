@@ -1971,7 +1971,7 @@ void srv_archive(const char *direction, const char *url, xs_dict *req,
 
 
 void srv_archive_error(const char *prefix, const xs_str *err,
-                       const xs_dict *req, const xs_dict *data)
+                       const xs_dict *req, const xs_val *data)
 /* archives an error */
 {
     xs *ntid = tid(0);
@@ -1993,8 +1993,12 @@ void srv_archive_error(const char *prefix, const xs_str *err,
         if (data) {
             fprintf(f, "Data:\n");
 
-            xs *j = xs_json_dumps_pp(data, 4);
-            fwrite(j, strlen(j), 1, f);
+            if (xs_type(data) == XSTYPE_LIST || xs_type(data) == XSTYPE_DICT) {
+                xs *j = xs_json_dumps_pp(data, 4);
+                fwrite(j, strlen(j), 1, f);
+            }
+            else
+                fprintf(f, "%s", data);
 
             fprintf(f, "\n");
         }

@@ -506,7 +506,12 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
             matte = xs_dict_append(matte, "url",         xs_dict_get(aobj, "url"));
             matte = xs_dict_append(matte, "preview_url", xs_dict_get(aobj, "url"));
             matte = xs_dict_append(matte, "remote_url",  xs_dict_get(aobj, "url"));
-            matte = xs_dict_append(matte, "description", xs_dict_get(aobj, "name"));
+
+            const char *name = xs_dict_get(aobj, "name");
+            if (xs_is_null(name))
+                name = "";
+
+            matte = xs_dict_append(matte, "description", name);
 
             matt = xs_list_append(matt, matte);
         }
@@ -729,6 +734,14 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             *body  = xs_json_dumps_pp(out, 4);
             *ctype = "application/json";
             status = 200;
+
+            {
+                xs *j = xs_json_loads(*body);
+                if (j == NULL) {
+                    srv_debug(0, xs_fmt("mastoapi timeline: bad JSON"));
+                    srv_archive_error("mastoapi_timeline", "bad JSON", req, *body);
+                }
+            }
 
             srv_debug(0, xs_fmt("mastoapi timeline: returned %d entries", xs_list_len(out)));
         }
