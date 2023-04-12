@@ -60,6 +60,7 @@ void srv_archive_error(const char *prefix, const xs_str *err,
 
 double mtime_nl(const char *fn, int *n_link);
 #define mtime(fn) mtime_nl(fn, NULL)
+double f_ctime(const char *fn);
 
 int index_add(const char *fn, const char *md5);
 int index_gc(const char *fn);

@@ -249,6 +249,19 @@ double mtime_nl(const char *fn, int *n_link)
 }
 
 
+double f_ctime(const char *fn)
+/* returns the ctime of a file or directory, or 0.0 */
+{
+    struct stat st;
+    double r = 0.0;
+
+    if (fn && stat(fn, &st) != -1)
+        r = (double) st.st_ctim.tv_sec;
+
+    return r;
+}
+
+
 /** database 2.1+ **/
 
 /** indexes **/
