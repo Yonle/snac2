@@ -1525,8 +1525,10 @@ void notify_add(snac *snac, const char *type, const char *utype,
     noti = xs_dict_append(noti, "type",  type);
     noti = xs_dict_append(noti, "utype", utype);
     noti = xs_dict_append(noti, "actor", actor);
-    noti = xs_dict_append(noti, "objid", objid);
     noti = xs_dict_append(noti, "date",  date);
+
+    if (!xs_is_null(objid))
+        noti = xs_dict_append(noti, "objid", objid);
 
     if ((f = fopen(fn, "w")) != NULL) {
         xs *j = xs_json_dumps_pp(noti, 4);

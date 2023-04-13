@@ -854,11 +854,60 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (strcmp(cmd, "/notifications") == 0) {
-        /* TBD */
         if (logged_in) {
-            xs *l = notify_list(&snac1, 0);
+            xs *l      = notify_list(&snac1, 0);
+            xs *out    = xs_list_new();
+            xs_list *p = l;
+            xs_dict *v;
 
-            *body  = xs_dup("[]");
+            while (xs_list_iter(&p, &v)) {
+                const char *type = xs_dict_get(v, "type");
+                const char *objid = xs_dict_get(v, "objid");
+                xs *actor = NULL;
+                xs *entry = NULL;
+
+                if (!valid_status(object_get(xs_dict_get(v, "actor"), &actor)))
+                    continue;
+
+                if (objid != NULL && !valid_status(object_get(objid, &entry)))
+                    continue;
+
+                /* convert the type */
+                if (strcmp(type, "Like") == 0)
+                    type = "favourite";
+                else
+                if (strcmp(type, "Announce") == 0)
+                    type = "reblog";
+                else
+                if (strcmp(type, "Follow") == 0)
+                    type = "follow";
+                else
+                if (strcmp(type, "Create") == 0)
+                    type = "mention";
+                else
+                    continue;
+
+                xs *mn = xs_dict_new();
+
+                mn = xs_dict_append(mn, "type", type);
+
+                xs *id = xs_replace(xs_dict_get(v, "id"), ".", "");
+                mn = xs_dict_append(mn, "id", id);
+
+                mn = xs_dict_append(mn, "created_at", xs_dict_get(v, "date"));
+
+                xs *acct = mastoapi_account(actor);
+                mn = xs_dict_append(mn, "account", acct);
+
+                if (objid != NULL) {
+                    xs *st = mastoapi_status(&snac1, entry);
+                    mn = xs_dict_append(mn, "status", st);
+                }
+
+                out = xs_list_append(out, mn);
+            }
+
+            *body  = xs_json_dumps_pp(out, 4);
             *ctype = "application/json";
             status = 200;
         }
