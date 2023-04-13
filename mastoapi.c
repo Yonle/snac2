@@ -855,6 +855,11 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     else
     if (strcmp(cmd, "/notifications") == 0) {
         /* TBD */
+        {
+            xs *j = xs_json_dumps_pp(args, 4);
+            printf("notification args:\n%s\n", j);
+        }
+
         *body  = xs_dup("[]");
         *ctype = "application/json";
         status = 200;

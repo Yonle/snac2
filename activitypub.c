@@ -846,8 +846,6 @@ xs_dict *msg_note(snac *snac, xs_str *content, xs_val *rcpts,
 void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg)
 /* notifies the user of relevant events */
 {
-    xs_val *object = NULL;
-
     if (strcmp(type, "Create") == 0) {
         /* only notify of notes specifically for us */
         xs *rcpts = recipient_list(snac, msg, 0);
@@ -859,20 +857,19 @@ void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg
     if (strcmp(type, "Undo") == 0 && strcmp(utype, "Follow") != 0)
         return;
 
+    /* get the object id */
+    const char *objid = xs_dict_get(msg, "object");
+
+    if (xs_type(objid) == XSTYPE_DICT)
+        objid = xs_dict_get(objid, "id");
+
     if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
-        object = xs_dict_get(msg, "object");
-
-        if (xs_is_null(object))
+        /* if it's not an admiration about something by us, done */
+        if (xs_is_null(objid) || !xs_startswith(objid, snac->actor))
             return;
-        else {
-            if (xs_type(object) == XSTYPE_DICT)
-                object = xs_dict_get(object, "id");
-
-            /* if it's not an admiration about something by us, done */
-            if (xs_is_null(object) || !xs_startswith(object, snac->actor))
-                return;
-        }
     }
+
+    /* user will love to know about this! */
 
     /* prepare message body */
     xs *body = xs_fmt("User  : @%s@%s\n",
@@ -894,8 +891,8 @@ void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg
         body = xs_str_cat(body, s1);
     }
 
-    if (object != NULL) {
-        xs *s1 = xs_fmt("Object: %s\n", object);
+    if (objid != NULL) {
+        xs *s1 = xs_fmt("Object: %s\n", objid);
         body = xs_str_cat(body, s1);
     }
 
