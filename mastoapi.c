@@ -1039,6 +1039,12 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             }
         }
     }
+    else
+    if (strcmp(cmd, "/filters") == 0) {
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
+    }
 
     /* user cleanup */
     if (logged_in)
