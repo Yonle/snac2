@@ -137,6 +137,7 @@ d_char *history_list(snac *snac);
 
 void lastlog_write(snac *snac);
 
+xs_str *notify_check_time(snac *snac, int reset);
 void notify_add(snac *snac, const char *type, const char *utype,
                 const char *actor, const char *objid);
 

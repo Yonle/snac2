@@ -1477,6 +1477,34 @@ xs_list *inbox_list(void)
 
 /** notifications **/
 
+xs_str *notify_check_time(snac *snac, int reset)
+/* gets or resets the latest notification check time */
+{
+    xs_str *t = NULL;
+    xs *fn    = xs_fmt("%s/notifydate.txt", snac->basedir);
+    FILE *f;
+
+    if (reset) {
+        if ((f = fopen(fn, "w")) != NULL) {
+            t = tid(0);
+            fprintf(f, "%s\n", t);
+            fclose(f);
+        }
+    }
+    else {
+        if ((f = fopen(fn, "r")) != NULL) {
+            t = xs_readline(f);
+            fclose(f);
+        }
+        else
+            /* never set before */
+            t = xs_fmt("%16.6f", 0.0);
+    }
+
+    return t;
+}
+
+
 void notify_add(snac *snac, const char *type, const char *utype,
                 const char *actor, const char *objid)
 /* adds a new notification */
