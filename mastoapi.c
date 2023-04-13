@@ -178,7 +178,7 @@ int oauth_get_handler(const xs_dict *req, const char *q_path,
     xs_dict *msg = xs_dict_get(req, "q_vars");
     xs *cmd      = xs_replace(q_path, "/oauth", "");
 
-    srv_debug(0, xs_fmt("oauth_get_handler %s", q_path));
+    srv_debug(1, xs_fmt("oauth_get_handler %s", q_path));
 
     if (strcmp(cmd, "/authorize") == 0) {
         const char *cid   = xs_dict_get(msg, "client_id");
@@ -230,7 +230,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
     xs_dict *msg = xs_dict_get(req, "p_vars");
     xs *cmd      = xs_replace(q_path, "/oauth", "");
 
-    srv_debug(0, xs_fmt("oauth_post_handler %s", q_path));
+    srv_debug(1, xs_fmt("oauth_post_handler %s", q_path));
 
     if (strcmp(cmd, "/x-snac-login") == 0) {
         const char *login  = xs_dict_get(msg, "login");
@@ -266,7 +266,8 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
                         *body = xs_str_cat(*body, state);
                     }
 
-                    srv_debug(0, xs_fmt("oauth x-snac-login: success, redirect to %s", *body));
+                    srv_log(xs_fmt("oauth x-snac-login: '%s' success, redirect to %s",
+                                   login, *body));
 
                     /* assign the login to the app */
                     xs *app = app_get(cid);
@@ -280,15 +281,15 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
                         srv_log(xs_fmt("oauth x-snac-login: error getting app %s", cid));
                 }
                 else
-                    srv_debug(0, xs_fmt("oauth x-snac-login: login '%s' incorrect", login));
+                    srv_debug(1, xs_fmt("oauth x-snac-login: login '%s' incorrect", login));
 
                 user_free(&snac);
             }
             else
-                srv_debug(0, xs_fmt("oauth x-snac-login: bad user '%s'", login));
+                srv_debug(1, xs_fmt("oauth x-snac-login: bad user '%s'", login));
         }
         else
-            srv_debug(0, xs_fmt("oauth x-snac-login: invalid or unset arguments"));
+            srv_debug(1, xs_fmt("oauth x-snac-login: invalid or unset arguments"));
     }
     else
     if (strcmp(cmd, "/token") == 0) {
@@ -378,7 +379,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
             *ctype = "application/json";
 
             if (token == NULL || strcmp(csec, xs_dict_get(token, "client_secret")) != 0) {
-                srv_debug(0, xs_fmt("oauth revoke: bad secret for token %s", tokid));
+                srv_debug(1, xs_fmt("oauth revoke: bad secret for token %s", tokid));
                 status = 403;
             }
             else {
@@ -614,7 +615,7 @@ int process_auth_token(snac *snac, const xs_dict *req)
 
             if (!xs_is_null(uid) && user_open(snac, uid)) {
                 logged_in = 1;
-                srv_debug(0, xs_fmt("mastoapi auth: valid token for user %s", uid));
+                srv_debug(1, xs_fmt("mastoapi auth: valid token for user %s", uid));
             }
             else
                 srv_log(xs_fmt("mastoapi auth: corrupted token %s", tokid));
@@ -633,7 +634,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     if (!xs_startswith(q_path, "/api/v1/"))
         return 0;
 
-    srv_debug(0, xs_fmt("mastoapi_get_handler %s", q_path));
+    srv_debug(1, xs_fmt("mastoapi_get_handler %s", q_path));
 /*    {
         xs *j = xs_json_dumps_pp(req, 4);
         printf("mastoapi get:\n%s\n", j);
@@ -825,12 +826,12 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             {
                 xs *j = xs_json_loads(*body);
                 if (j == NULL) {
-                    srv_debug(0, xs_fmt("mastoapi timeline: bad JSON"));
+                    srv_log(xs_fmt("mastoapi timeline: bad JSON"));
                     srv_archive_error("mastoapi_timeline", "bad JSON", req, *body);
                 }
             }
 
-            srv_debug(0, xs_fmt("mastoapi timeline: returned %d entries", xs_list_len(out)));
+            srv_debug(2, xs_fmt("mastoapi timeline: returned %d entries", xs_list_len(out)));
         }
         else {
             status = 401; // unauthorized
@@ -1030,7 +1031,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 }
             }
             else
-                srv_debug(0, xs_fmt("mastoapi status: bad id %s", id));
+                srv_debug(1, xs_fmt("mastoapi status: bad id %s", id));
 
             if (out != NULL) {
                 *body  = xs_json_dumps_pp(out, 4);
@@ -1061,7 +1062,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
     if (!xs_startswith(q_path, "/api/v1/"))
         return 0;
 
-    srv_debug(0, xs_fmt("mastoapi_post_handler %s", q_path));
+    srv_debug(1, xs_fmt("mastoapi_post_handler %s", q_path));
 /*    {
         xs *j = xs_json_dumps_pp(req, 4);
         printf("mastoapi post:\n%s\n", j);
