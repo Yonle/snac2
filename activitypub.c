@@ -935,6 +935,9 @@ void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg
 
     if (!xs_is_null(bot) && !xs_is_null(chat_id) && *bot && *chat_id)
         enqueue_telegram(body, bot, chat_id);
+
+    /* finally, store it in the notification folder */
+    notify_add(snac, type, utype, actor, objid);
 }
 
 

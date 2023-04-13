@@ -1,7 +1,7 @@
 /* snac - A simple, minimalistic ActivityPub instance */
 /* copyright (c) 2022 - 2023 grunfink / MIT license */
 
-#define VERSION "2.27"
+#define VERSION "2.28-dev"
 
 #define USER_AGENT "snac/" VERSION
 
@@ -136,6 +136,9 @@ int history_del(snac *snac, char *id);
 d_char *history_list(snac *snac);
 
 void lastlog_write(snac *snac);
+
+void notify_add(snac *snac, const char *type, const char *utype,
+                const char *actor, const char *objid);
 
 void inbox_add(const char *inbox);
 void inbox_add_by_actor(const xs_dict *actor);

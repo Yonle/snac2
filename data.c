@@ -7,6 +7,7 @@
 #include "xs_openssl.h"
 #include "xs_glob.h"
 #include "xs_set.h"
+#include "xs_time.h"
 
 #include "snac.h"
 
@@ -1471,6 +1472,40 @@ xs_list *inbox_list(void)
     }
 
     return ibl;
+}
+
+
+/** notifications **/
+
+void notify_add(snac *snac, const char *type, const char *utype,
+                const char *actor, const char *objid)
+/* adds a new notification */
+{
+    xs *ntid = tid(0);
+    xs *fn   = xs_fmt("%s/notify/", snac->basedir);
+    xs *date = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
+    FILE *f;
+
+    /* create the directory */
+    mkdirx(fn);
+    fn = xs_str_cat(fn, ntid);
+    fn = xs_str_cat(fn, ".json");
+
+    xs *noti = xs_dict_new();
+
+    noti = xs_dict_append(noti, "id",    ntid);
+    noti = xs_dict_append(noti, "type",  type);
+    noti = xs_dict_append(noti, "utype", utype);
+    noti = xs_dict_append(noti, "actor", actor);
+    noti = xs_dict_append(noti, "objid", objid);
+    noti = xs_dict_append(noti, "date",  date);
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        xs *j = xs_json_dumps_pp(noti, 4);
+
+        fwrite(j, strlen(j), 1, f);
+        fclose(f);
+    }
 }
 
 
