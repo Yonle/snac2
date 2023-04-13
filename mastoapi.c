@@ -855,9 +855,15 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     else
     if (strcmp(cmd, "/notifications") == 0) {
         /* TBD */
-        *body  = xs_dup("[]");
-        *ctype = "application/json";
-        status = 200;
+        if (logged_in) {
+            xs *l = notify_list(&snac1, 0);
+
+            *body  = xs_dup("[]");
+            *ctype = "application/json";
+            status = 200;
+        }
+        else
+            status = 401;
     }
     else
     if (strcmp(cmd, "/filters") == 0) {

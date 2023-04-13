@@ -1537,6 +1537,55 @@ void notify_add(snac *snac, const char *type, const char *utype,
 }
 
 
+xs_dict *notify_get(snac *snac, const char *id)
+/* gets a notification */
+{
+    xs *fn = xs_fmt("%s/notify/%s.json", snac->basedir);
+    FILE *f;
+    xs_dict *out = NULL;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        xs *j = xs_readall(f);
+        fclose(f);
+
+        out = xs_json_loads(j);
+    }
+
+    return out;
+}
+
+
+xs_list *notify_list(snac *snac, int new_only)
+/* returns a list of notifications, optionally only the new ones */
+{
+    xs *t = NULL;
+
+    /* if only new ones are requested, get the last time */
+    if (new_only)
+        t = notify_check_time(snac, 0);
+
+    xs *spec     = xs_fmt("%s/notify/" "*.json", snac->basedir);
+    xs *lst      = xs_glob(spec, 1, 0);
+    xs_list *out = xs_list_new();
+    xs_list *p   = lst;
+    xs_str *v;
+
+    while (xs_list_iter(&p, &v)) {
+        xs *id = xs_replace(v, ".json", "");
+
+        /* old? */
+        if (t != NULL && strcmp(id, t) < 0)
+            continue;
+
+        xs *noti = notify_get(snac, id);
+
+        out = xs_list_append(out, noti);
+    }
+
+    return out;
+}
+
+
 /** the queue **/
 
 static xs_dict *_enqueue_put(const char *fn, xs_dict *msg)
