@@ -249,14 +249,19 @@ double mtime_nl(const char *fn, int *n_link)
 }
 
 
+#define MIN(v1, v2) ((v1) < (v2) ? (v1) : (v2))
+
 double f_ctime(const char *fn)
 /* returns the ctime of a file or directory, or 0.0 */
 {
     struct stat st;
     double r = 0.0;
 
-    if (fn && stat(fn, &st) != -1)
-        r = (double) st.st_ctim.tv_sec;
+    if (fn && stat(fn, &st) != -1) {
+        /* return the lowest of ctime and mtime;
+           there are operations that change the ctime, like link() */
+        r = (double) MIN(st.st_ctim.tv_sec, st.st_mtim.tv_sec);
+    }
 
     return r;
 }
