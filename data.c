@@ -1542,7 +1542,7 @@ void notify_add(snac *snac, const char *type, const char *utype,
 xs_dict *notify_get(snac *snac, const char *id)
 /* gets a notification */
 {
-    xs *fn = xs_fmt("%s/notify/%s.json", snac->basedir);
+    xs *fn = xs_fmt("%s/notify/%s.json", snac->basedir, id);
     FILE *f;
     xs_dict *out = NULL;
 
