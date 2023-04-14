@@ -4,6 +4,8 @@
 
 The Mastodon API now supports notifications.
 
+Fixed an HTML cache bug (was not refreshed after editing a post).
+
 ## 2.27
 
 Started Mastodon API support, so you can use Mastodon-compatible apps to access #snac accounts. What works so far: login, private and public timelines, full post information (replies and ancestors), liking and boosting posts. Things that don't work yet but eventually will: following accounts, posting and replying to messages (I still have to figure out how some things work, like posting images), notifications (needs some internal support), the instance timeline (snac does not have one, but it can be simulated with not much effort) and probably many other things. Things that will never work: bookmarks, pinning, a federated timeline, many other things that I don't remember right now. Please note that if you want to use this API in your instance, you must add some lines to your HTTP proxy configuration, see the snac(8) (administrator documentation) manual page. I'm doing my tests using the #Tusky (which sometimes crashes, surely my fault), #AndStatus, #Fedilab and #Husky Android apps. Success or failure reports will be appreciated.
