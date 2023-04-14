@@ -10,7 +10,7 @@ Edits do not refresh the HTML cache.
 
 Add a list of hashtags to drop.
 
-Implement the 'search by tag' operation instead of just pretending that it works.
+Implement the 'search by tag' operation instead of just pretending that it does something.
 
 Add a per-account toggle to [un]mute their Announces.
 
