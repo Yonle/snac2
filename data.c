@@ -1595,6 +1595,19 @@ xs_list *notify_list(snac *snac, int new_only)
 }
 
 
+void notify_clear(snac *snac)
+/* clears all notifications */
+{
+    xs *spec   = xs_fmt("%s/notify/" "*", snac->basedir);
+    xs *lst    = xs_glob(spec, 0, 0);
+    xs_list *p = lst;
+    xs_str *v;
+
+    while (xs_list_iter(&p, &v))
+        unlink(v);
+}
+
+
 /** the queue **/
 
 static xs_dict *_enqueue_put(const char *fn, xs_dict *msg)

@@ -1290,6 +1290,19 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
         else
             status = 401;
     }
+    else
+    if (strcmp(cmd, "/notifications/clear") == 0) {
+        if (logged_in) {
+            notify_clear(&snac);
+            timeline_touch(&snac);
+
+            *body  = xs_dup("{}");
+            *ctype = "application/json";
+            status = 200;
+        }
+        else
+            status = 401;
+    }
 
     /* user cleanup */
     if (logged_in)
