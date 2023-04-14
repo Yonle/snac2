@@ -1244,7 +1244,7 @@ xs_str *html_notifications(snac *snac)
 
         s = xs_str_cat(s, "<div>\n");
 
-        xs *s1 = xs_fmt("<p>%s by <a href=\"%s\">%s</a>:</p>\n",
+        xs *s1 = xs_fmt("<p><b>%s by <a href=\"%s\">%s</a></b>:</p>\n",
             strcmp(type, "Create") == 0 ? "Mention" : type, actor_id, a_name);
         s = xs_str_cat(s, s1);
 
