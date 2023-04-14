@@ -1567,7 +1567,7 @@ xs_list *notify_list(snac *snac, int new_only)
         t = notify_check_time(snac, 0);
 
     xs *spec     = xs_fmt("%s/notify/" "*.json", snac->basedir);
-    xs *lst      = xs_glob(spec, 1, 0);
+    xs *lst      = xs_glob(spec, 1, 1);
     xs_list *out = xs_list_new();
     xs_list *p   = lst;
     xs_str *v;
