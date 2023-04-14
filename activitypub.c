@@ -1147,8 +1147,11 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
     else
         snac_debug(snac, 1, xs_fmt("process_message type '%s' ignored", type));
 
-    if (do_notify)
+    if (do_notify) {
         notify(snac, type, utype, actor, msg);
+
+        timeline_touch(snac);
+    }
 
     return 1;
 }

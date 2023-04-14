@@ -14,6 +14,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/file.h>
+#include <sys/time.h>
 #include <fcntl.h>
 #include <pthread.h>
 
@@ -867,6 +868,14 @@ double timeline_mtime(snac *snac)
 {
     xs *fn = xs_fmt("%s/private.idx", snac->basedir);
     return mtime(fn);
+}
+
+
+int timeline_touch(snac *snac)
+/* changes the date of the timeline index */
+{
+    xs *fn = xs_fmt("%s/private.idx", snac->basedir);
+    return utimes(fn, NULL);
 }
 
 
