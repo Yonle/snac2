@@ -1558,7 +1558,7 @@ xs_dict *notify_get(snac *snac, const char *id)
 
 
 xs_list *notify_list(snac *snac, int new_only)
-/* returns a list of notifications, optionally only the new ones */
+/* returns a list of notification ids, optionally only the new ones */
 {
     xs *t = NULL;
 
@@ -1579,9 +1579,7 @@ xs_list *notify_list(snac *snac, int new_only)
         if (t != NULL && strcmp(id, t) < 0)
             continue;
 
-        xs *noti = notify_get(snac, id);
-
-        out = xs_list_append(out, noti);
+        out = xs_list_append(out, id);
     }
 
     return out;
