@@ -287,7 +287,7 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
             int n_len  = xs_list_len(n_list);
             xs *n_str  = NULL;
 
-            /* show the notification number, if there are any */
+            /* show the number of new notifications, if there are any */
             if (n_len)
                 n_str = xs_fmt("<sup style=\"background-color: red; "
                                "color: white;\"> %d </sup> ", n_len);
@@ -1215,6 +1215,14 @@ xs_str *html_notifications(snac *snac)
         if (is_hidden(snac, id))
             continue;
 
+        const char *actor_id = xs_dict_get(noti, "actor");
+        xs *actor = NULL;
+
+        if (!valid_status(object_get(actor_id, &actor)))
+            continue;
+
+        xs *a_name = actor_name(actor);
+
         if (strcmp(v, n_time) > 0) {
             /* unseen notification */
             if (stage == NHDR_NONE) {
@@ -1236,7 +1244,8 @@ xs_str *html_notifications(snac *snac)
 
         s = xs_str_cat(s, "<div>\n");
 
-        xs *s1 = xs_fmt("<p><b>%s</b>:</p>\n", strcmp(type, "Create") == 0 ? "Mention" : type);
+        xs *s1 = xs_fmt("<p>%s by <a href=\"%s\">%s</a>:</p>\n",
+            strcmp(type, "Create") == 0 ? "Mention" : type, actor_id, a_name);
         s = xs_str_cat(s, s1);
 
         if (strcmp(type, "Follow") == 0) {
@@ -1248,6 +1257,7 @@ xs_str *html_notifications(snac *snac)
         }
         else {
             xs *md5 = xs_md5_hex(id, strlen(id));
+
             s = html_entry(snac, s, obj, 0, 0, md5, 1);
         }
 
