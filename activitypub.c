@@ -937,6 +937,9 @@ void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg
         enqueue_telegram(body, bot, chat_id);
 
     /* finally, store it in the notification folder */
+    if (strcmp(type, "Follow") == 0)
+        objid = xs_dict_get(msg, "id");
+
     notify_add(snac, type, utype, actor, objid);
 }
 

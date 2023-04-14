@@ -679,7 +679,8 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
 }
 
 
-d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, const char *md5)
+d_char *html_entry(snac *snac, d_char *os, char *msg, int local,
+                   int level, const char *md5, int hide_children)
 {
     char *id    = xs_dict_get(msg, "id");
     char *type  = xs_dict_get(msg, "type");
@@ -922,56 +923,58 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local, int level, cons
         s = html_entry_controls(snac, s, msg, md5);
 
     /** children **/
-    xs *children = object_children(id);
-    int left     = xs_list_len(children);
+    if (!hide_children) {
+        xs *children = object_children(id);
+        int left     = xs_list_len(children);
 
-    if (left) {
-        char *p, *cmd5;
-        int older_open = 0;
-        xs *ss = xs_str_new(NULL);
-        int n_children = 0;
+        if (left) {
+            char *p, *cmd5;
+            int older_open = 0;
+            xs *ss = xs_str_new(NULL);
+            int n_children = 0;
 
-        ss = xs_str_cat(ss, "<details open><summary>...</summary><p>\n");
+            ss = xs_str_cat(ss, "<details open><summary>...</summary><p>\n");
 
-        if (level < 4)
-            ss = xs_str_cat(ss, "<div class=\"snac-children\">\n");
-        else
-            ss = xs_str_cat(ss, "<div>\n");
-
-        if (left > 3) {
-            xs *s1 = xs_fmt("<details><summary>%s</summary>\n", L("Older..."));
-            ss = xs_str_cat(ss, s1);
-            older_open = 1;
-        }
-
-        p = children;
-        while (xs_list_iter(&p, &cmd5)) {
-            xs *chd = NULL;
-            timeline_get_by_md5(snac, cmd5, &chd);
-
-            if (older_open && left <= 3) {
-                ss = xs_str_cat(ss, "</details>\n");
-                older_open = 0;
-            }
-
-            if (chd != NULL) {
-                ss = html_entry(snac, ss, chd, local, level + 1, cmd5);
-                n_children++;
-            }
+            if (level < 4)
+                ss = xs_str_cat(ss, "<div class=\"snac-children\">\n");
             else
-                snac_debug(snac, 2, xs_fmt("cannot read from timeline child %s", cmd5));
+                ss = xs_str_cat(ss, "<div>\n");
 
-            left--;
-        }
+            if (left > 3) {
+                xs *s1 = xs_fmt("<details><summary>%s</summary>\n", L("Older..."));
+                ss = xs_str_cat(ss, s1);
+                older_open = 1;
+            }
 
-        if (older_open)
+            p = children;
+            while (xs_list_iter(&p, &cmd5)) {
+                xs *chd = NULL;
+                timeline_get_by_md5(snac, cmd5, &chd);
+
+                if (older_open && left <= 3) {
+                    ss = xs_str_cat(ss, "</details>\n");
+                    older_open = 0;
+                }
+
+                if (chd != NULL) {
+                    ss = html_entry(snac, ss, chd, local, level + 1, cmd5, hide_children);
+                    n_children++;
+                }
+                else
+                    snac_debug(snac, 2, xs_fmt("cannot read from timeline child %s", cmd5));
+
+                left--;
+            }
+
+            if (older_open)
+                ss = xs_str_cat(ss, "</details>\n");
+
+            ss = xs_str_cat(ss, "</div>\n");
             ss = xs_str_cat(ss, "</details>\n");
 
-        ss = xs_str_cat(ss, "</div>\n");
-        ss = xs_str_cat(ss, "</details>\n");
-
-        if (n_children)
-            s = xs_str_cat(s, ss);
+            if (n_children)
+                s = xs_str_cat(s, ss);
+        }
     }
 
     s = xs_str_cat(s, "</div>\n</div>\n");
@@ -1015,7 +1018,7 @@ d_char *html_timeline(snac *snac, char *list, int local, int skip, int show, int
         if (!valid_status(timeline_get_by_md5(snac, v, &msg)))
             continue;
 
-        s = html_entry(snac, s, msg, local, 0, v);
+        s = html_entry(snac, s, msg, local, 0, v, 0);
     }
 
     s = xs_str_cat(s, "</div>\n");
@@ -1204,7 +1207,7 @@ xs_str *html_notifications(snac *snac)
 
         xs *obj = NULL;
         const char *type = xs_dict_get(noti, "type");
-        const char *id   = xs_dict_get(noti, strcmp(type, "Follow") == 0 ? "actor" : "objid");
+        const char *id   = xs_dict_get(noti, "objid");
 
         if (!valid_status(object_get(id, &obj)))
             continue;
@@ -1224,7 +1227,7 @@ xs_str *html_notifications(snac *snac)
         else {
             /* already seen notification */
             if (stage != NHDR_OLD) {
-                xs *s1 = xs_fmt("<h2>%s</h2>\n", L("Older"));
+                xs *s1 = xs_fmt("<h2>%s</h2>\n", L("Already seen"));
                 s = xs_str_cat(s, s1);
 
                 stage = NHDR_OLD;
@@ -1233,11 +1236,20 @@ xs_str *html_notifications(snac *snac)
 
         s = xs_str_cat(s, "<div>\n");
 
-        xs *s1 = xs_fmt("<p><b>%s</b>:</p>\n", strcmp("Create", type) == 0 ? "Mention" : type);
+        xs *s1 = xs_fmt("<p><b>%s</b>:</p>\n", strcmp(type, "Create") == 0 ? "Mention" : type);
         s = xs_str_cat(s, s1);
 
-        xs *md5 = xs_md5_hex(id, strlen(id));
-        s = html_entry(snac, s, obj, 0, 0, md5);
+        if (strcmp(type, "Follow") == 0) {
+            s = xs_str_cat(s, "<div class=\"snac-post\">\n");
+
+            s = html_msg_icon(snac, s, obj);
+
+            s = xs_str_cat(s, "</div>\n");
+        }
+        else {
+            xs *md5 = xs_md5_hex(id, strlen(id));
+            s = html_entry(snac, s, obj, 0, 0, md5, 1);
+        }
 
         s = xs_str_cat(s, "</div>\n");
     }
