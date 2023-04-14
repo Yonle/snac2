@@ -289,14 +289,15 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
 
             /* show the notification number, if there are any */
             if (n_len)
-                n_str = xs_fmt("<sup style=\"background-color: red; color: white;\"> %d </sup> ", n_len);
+                n_str = xs_fmt("<sup style=\"background-color: red; "
+                               "color: white;\"> %d </sup> ", n_len);
             else
                 n_str = xs_str_new("");
 
             s1 = xs_fmt(
                 "<a href=\"%s\">%s</a> - "
                 "<a href=\"%s/admin\">%s</a> - "
-                "<a href=\"%s/admin\">%s</a>%s - "
+                "<a href=\"%s/notifications\">%s</a>%s - "
                 "<a href=\"%s/people\">%s</a></nav>\n",
                 snac->actor, L("public"),
                 snac->actor, L("private"),
@@ -1184,6 +1185,76 @@ d_char *html_people(snac *snac)
 }
 
 
+xs_str *html_notifications(snac *snac)
+{
+    xs_str *s  = xs_str_new(NULL);
+    xs *n_list = notify_list(snac, 0);
+    xs *n_time = notify_check_time(snac, 0);
+    xs_list *p = n_list;
+    xs_str *v;
+    enum { NHDR_NONE, NHDR_NEW, NHDR_OLD } stage = NHDR_NONE;
+
+    s = html_user_header(snac, s, 0);
+
+    while (xs_list_iter(&p, &v)) {
+        xs *noti = notify_get(snac, v);
+
+        if (noti == NULL)
+            continue;
+
+        xs *obj = NULL;
+        const char *type = xs_dict_get(noti, "type");
+        const char *id   = xs_dict_get(noti, strcmp(type, "Follow") == 0 ? "actor" : "objid");
+
+        if (!valid_status(object_get(id, &obj)))
+            continue;
+
+        if (is_hidden(snac, id))
+            continue;
+
+        if (strcmp(v, n_time) > 0) {
+            /* unseen notification */
+            if (stage == NHDR_NONE) {
+                xs *s1 = xs_fmt("<h2>%s</h2>\n", L("New"));
+                s = xs_str_cat(s, s1);
+
+                stage = NHDR_NEW;
+            }
+        }
+        else {
+            /* already seen notification */
+            if (stage != NHDR_OLD) {
+                xs *s1 = xs_fmt("<h2>%s</h2>\n", L("Older"));
+                s = xs_str_cat(s, s1);
+
+                stage = NHDR_OLD;
+            }
+        }
+
+        s = xs_str_cat(s, "<div>\n");
+
+        xs *s1 = xs_fmt("<p><b>%s</b>:</p>\n", strcmp("Create", type) == 0 ? "Mention" : type);
+        s = xs_str_cat(s, s1);
+
+        xs *md5 = xs_md5_hex(id, strlen(id));
+        s = html_entry(snac, s, obj, 0, 0, md5);
+
+        s = xs_str_cat(s, "</div>\n");
+    }
+
+    if (stage == NHDR_NONE) {
+        xs *s1 = xs_fmt("<h2>%s</h2>\n", L("None"));
+         s = xs_str_cat(s, s1);
+    }
+
+    s = html_user_footer(snac, s);
+
+    s = xs_str_cat(s, "</body>\n</html>\n");
+
+    return s;
+}
+
+
 int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char **ctype)
 {
     char *accept = xs_dict_get(req, "accept");
@@ -1300,6 +1371,18 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
             status = 401;
         else {
             *body   = html_people(&snac);
+            *b_size = strlen(*body);
+            status  = 200;
+        }
+    }
+    else
+    if (strcmp(p_path, "notifications") == 0) {
+        /* the list of notifications */
+
+        if (!login(&snac, req))
+            status = 401;
+        else {
+            *body   = html_notifications(&snac);
             *b_size = strlen(*body);
             status  = 200;
         }

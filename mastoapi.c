@@ -882,6 +882,9 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 if (objid != NULL && !valid_status(object_get(objid, &entry)))
                     continue;
 
+                if (is_hidden(&snac1, objid))
+                    continue;
+
                 /* convert the type */
                 if (strcmp(type, "Like") == 0)
                     type = "favourite";
