@@ -282,14 +282,27 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
                 "<a href=\"%s/admin\" rel=\"nofollow\">%s</a></nav>\n",
                 snac->actor, L("RSS"),
                 snac->actor, L("private"));
-        else
+        else {
+            xs *n_list = notify_list(snac, 1);
+            int n_len  = xs_list_len(n_list);
+            xs *n_str  = NULL;
+
+            /* show the notification number, if there are any */
+            if (n_len)
+                n_str = xs_fmt("<sup style=\"background-color: red; color: white;\"> %d </sup> ", n_len);
+            else
+                n_str = xs_str_new("");
+
             s1 = xs_fmt(
                 "<a href=\"%s\">%s</a> - "
                 "<a href=\"%s/admin\">%s</a> - "
+                "<a href=\"%s/admin\">%s</a>%s - "
                 "<a href=\"%s/people\">%s</a></nav>\n",
                 snac->actor, L("public"),
                 snac->actor, L("private"),
+                snac->actor, L("notifications"), n_str,
                 snac->actor, L("people"));
+        }
 
         s = xs_str_cat(s, s1);
     }
