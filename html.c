@@ -1273,6 +1273,11 @@ xs_str *html_notifications(snac *snac)
 
     s = xs_str_cat(s, "</body>\n</html>\n");
 
+    /* set the check time to now */
+    xs *dummy = notify_check_time(snac, 1);
+
+    timeline_touch(snac);
+
     return s;
 }
 
