@@ -1670,6 +1670,7 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
             if (c_msg != NULL)
                 enqueue_message(&snac, c_msg);
 
+            history_del(&snac, "timeline.html_");
         }
 
         status = 303;
