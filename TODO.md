@@ -6,7 +6,11 @@ Add a notification area, where recent events of interest would be easily seen.
 
 Post edits should keep the image and the image description.
 
+Edits do not refresh the HTML cache.
+
 Add a list of hashtags to drop.
+
+Implement the 'search by tag' operation instead of just pretending that it works.
 
 Add a per-account toggle to [un]mute their Announces.
 
