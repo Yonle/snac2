@@ -1126,6 +1126,24 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         *ctype = "application/json";
         status = 200;
     }
+    else
+    if (strcmp(cmd, "/preferences") == 0) {
+        *body  = xs_dup("{}");
+        *ctype = "application/json";
+        status = 200;
+    }
+    else
+    if (strcmp(cmd, "/markers") == 0) {
+        *body  = xs_dup("{}");
+        *ctype = "application/json";
+        status = 200;
+    }
+    else
+    if (strcmp(cmd, "/followed_tags") == 0) {
+        *body  = xs_dup("[]");
+        *ctype = "application/json";
+        status = 200;
+    }
 
     /* user cleanup */
     if (logged_in)
