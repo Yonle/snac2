@@ -227,17 +227,25 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
     }*/
 
     int status   = 404;
-    xs_dict *msg = xs_dict_get(req, "p_vars");
-    xs *cmd      = xs_replace(q_path, "/oauth", "");
+
+    char *i_ctype = xs_dict_get(req, "content-type");
+    xs *args      = NULL;
+
+    if (i_ctype && xs_startswith(i_ctype, "application/json"))
+        args = xs_json_loads(payload);
+    else
+        args = xs_dup(xs_dict_get(req, "p_vars"));
+
+    xs *cmd = xs_replace(q_path, "/oauth", "");
 
     srv_debug(1, xs_fmt("oauth_post_handler %s", q_path));
 
     if (strcmp(cmd, "/x-snac-login") == 0) {
-        const char *login  = xs_dict_get(msg, "login");
-        const char *passwd = xs_dict_get(msg, "passwd");
-        const char *redir  = xs_dict_get(msg, "redir");
-        const char *cid    = xs_dict_get(msg, "cid");
-        const char *state  = xs_dict_get(msg, "state");
+        const char *login  = xs_dict_get(args, "login");
+        const char *passwd = xs_dict_get(args, "passwd");
+        const char *redir  = xs_dict_get(args, "redir");
+        const char *cid    = xs_dict_get(args, "cid");
+        const char *state  = xs_dict_get(args, "state");
 
         const char *host = xs_dict_get(srv_config, "host");
 
@@ -293,11 +301,12 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (strcmp(cmd, "/token") == 0) {
-        const char *gtype = xs_dict_get(msg, "grant_type");
-        const char *code  = xs_dict_get(msg, "code");
-        const char *cid   = xs_dict_get(msg, "client_id");
-        const char *csec  = xs_dict_get(msg, "client_secret");
-        const char *ruri  = xs_dict_get(msg, "redirect_uri");
+        const char *gtype = xs_dict_get(args, "grant_type");
+        const char *code  = xs_dict_get(args, "code");
+        const char *cid   = xs_dict_get(args, "client_id");
+        const char *csec  = xs_dict_get(args, "client_secret");
+        const char *ruri  = xs_dict_get(args, "redirect_uri");
+        const char *scope = xs_dict_get(args, "scope");
         xs *wrk = NULL;
 
         /* no client_secret? check if it's inside an authorization header
@@ -342,6 +351,9 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
                 rsp = xs_dict_append(rsp, "token_type",   "Bearer");
                 rsp = xs_dict_append(rsp, "created_at",   cat);
 
+                if (!xs_is_null(scope))
+                    rsp = xs_dict_append(rsp, "scope", scope);
+
                 *body  = xs_json_dumps_pp(rsp, 4);
                 *ctype = "application/json";
                 status = 200;
@@ -368,9 +380,9 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (strcmp(cmd, "/revoke") == 0) {
-        const char *cid   = xs_dict_get(msg, "client_id");
-        const char *csec  = xs_dict_get(msg, "client_secret");
-        const char *tokid = xs_dict_get(msg, "token");
+        const char *cid   = xs_dict_get(args, "client_id");
+        const char *csec  = xs_dict_get(args, "client_secret");
+        const char *tokid = xs_dict_get(args, "token");
 
         if (cid && csec && tokid) {
             xs *token = token_get(tokid);
@@ -989,6 +1001,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         xs *ins = xs_dict_new();
         const char *host = xs_dict_get(srv_config, "host");
 
+        ins = xs_dict_append(ins, "uri",         host);
         ins = xs_dict_append(ins, "domain",      host);
         ins = xs_dict_append(ins, "title",       host);
         ins = xs_dict_append(ins, "version",     "4.0.0 (not true; really " USER_AGENT ")");
@@ -996,9 +1009,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         ins = xs_dict_append(ins, "description", host);
 
         xs *susie = xs_fmt("%s/susie.png", srv_baseurl);
-        xs *d1 = xs_dict_new();
-        d1 = xs_dict_append(d1, "url", susie);
-        ins = xs_dict_append(ins, "thumbnail", d1);
+        ins = xs_dict_append(ins, "thumbnail", susie);
 
         xs *d2 = xs_dict_new();
         d2 = xs_dict_append(d2, "email", "admin@localhost");
