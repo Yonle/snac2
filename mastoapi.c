@@ -301,13 +301,17 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (strcmp(cmd, "/token") == 0) {
+        xs *wrk = NULL;
         const char *gtype = xs_dict_get(args, "grant_type");
         const char *code  = xs_dict_get(args, "code");
         const char *cid   = xs_dict_get(args, "client_id");
         const char *csec  = xs_dict_get(args, "client_secret");
         const char *ruri  = xs_dict_get(args, "redirect_uri");
-        const char *scope = xs_dict_get(args, "scope");
-        xs *wrk = NULL;
+        /* FIXME: this 'scope' parameter is mandatory for the official Mastodon API,
+           but if it's enabled, it makes it crash after some more steps, which
+           is FAR WORSE */
+//        const char *scope = xs_dict_get(args, "scope");
+        const char *scope = NULL;
 
         /* no client_secret? check if it's inside an authorization header
            (AndStatus does it this way) */
