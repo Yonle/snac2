@@ -695,7 +695,7 @@ d_char *msg_follow(snac *snac, char *url_or_uid)
 }
 
 
-xs_dict *msg_note(snac *snac, xs_str *content, xs_val *rcpts,
+xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
                   xs_str *in_reply_to, xs_list *attach, int priv)
 /* creates a 'Note' message */
 {

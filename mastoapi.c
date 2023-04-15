@@ -1239,7 +1239,52 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
     if (strcmp(cmd, "/statuses") == 0) {
         if (logged_in) {
             /* post a new Note */
-            /* TBD */
+/*    {
+        xs *j = xs_json_dumps_pp(args, 4);
+        printf("%s\n", j);
+    }*/
+            const char *content    = xs_dict_get(args, "status");
+            const char *mid        = xs_dict_get(args, "in_reply_to_id");
+            const char *visibility = xs_dict_get(args, "visibility");
+            const char *summary    = xs_dict_get(args, "spoiler_text");
+
+            xs *attach_list = xs_list_new();
+            char *irt = NULL;
+
+            /* is it a reply? */
+            if (mid != NULL) {
+                xs *r_msg = NULL;
+                const char *md5 = MID_TO_MD5(mid);
+
+                if (valid_status(object_get_by_md5(md5, &r_msg)))
+                    irt = xs_dict_get(r_msg, "id");
+            }
+
+            /* prepare the message */
+            xs *msg = msg_note(&snac, content, NULL, irt, attach_list,
+                        strcmp(visibility, "public") == 0 ? 0 : 1);
+
+            if (!xs_is_null(summary) && *summary) {
+                xs *t = xs_val_new(XSTYPE_TRUE);
+                msg = xs_dict_set(msg, "sensitive", t);
+                msg = xs_dict_set(msg, "summary",   summary);
+            }
+
+            /* store */
+            timeline_add(&snac, xs_dict_get(msg, "id"), msg);
+
+            /* 'Create' message */
+            xs *c_msg = msg_create(&snac, msg);
+            enqueue_message(&snac, c_msg);
+
+            timeline_touch(&snac);
+
+            /* convert to a mastodon status as a response code */
+            xs *st = mastoapi_status(&snac, msg);
+
+            *body  = xs_json_dumps_pp(st, 4);
+            *ctype = "application/json";
+            status = 200;
         }
         else
             status = 401;
