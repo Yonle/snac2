@@ -675,6 +675,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             acct = xs_dict_append(acct, "created_at",   xs_dict_get(snac1.config, "published"));
             acct = xs_dict_append(acct, "note",         xs_dict_get(snac1.config, "bio"));
             acct = xs_dict_append(acct, "url",          snac1.actor);
+            acct = xs_dict_append(acct, "header",       "");
 
             xs *avatar = NULL;
             char *av   = xs_dict_get(snac1.config, "avatar");
