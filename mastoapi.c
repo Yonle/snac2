@@ -1009,16 +1009,23 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         ins = xs_dict_append(ins, "source_url",  "https:/" "/comam.es/what-is-snac");
         ins = xs_dict_append(ins, "description", host);
 
+        ins = xs_dict_append(ins, "short_description", host);
+
         xs *susie = xs_fmt("%s/susie.png", srv_baseurl);
         ins = xs_dict_append(ins, "thumbnail", susie);
 
-        xs *d2 = xs_dict_new();
-        d2 = xs_dict_append(d2, "email", "admin@localhost");
-        ins = xs_dict_append(ins, "contact", d2);
+        ins = xs_dict_append(ins, "email", "admin@localhost");
 
         xs *l1 = xs_list_new();
         ins = xs_dict_append(ins, "rules",     l1);
+
+        l1 = xs_list_append(l1, "en");
         ins = xs_dict_append(ins, "languages", l1);
+
+        xs *d1 = xs_dict_new();
+        ins = xs_dict_append(ins, "urls",            d1);
+        ins = xs_dict_append(ins, "stats",           d1);
+        ins = xs_dict_append(ins, "configuration",   d1);
 
         *body  = xs_json_dumps_pp(ins, 4);
         *ctype = "application/json";
@@ -1164,7 +1171,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
 /*    {
         xs *j = xs_json_dumps_pp(req, 4);
         printf("mastoapi post:\n%s\n", j);
-   }*/
+    }*/
 
     int status    = 404;
     xs *args      = NULL;
@@ -1332,6 +1339,35 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
         }
         else
             status = 401;
+    }
+    else
+    if (strcmp(cmd, "/push/subscription") == 0) {
+        /* I don't know what I'm doing */
+        if (logged_in) {
+            char *v;
+
+            xs *wpush = xs_dict_new();
+
+            wpush = xs_dict_append(wpush, "id", "1");
+
+            v = xs_dict_get(args, "data");
+            v = xs_dict_get(v, "alerts");
+            wpush = xs_dict_append(wpush, "alerts", v);
+
+            v = xs_dict_get(args, "subscription");
+            v = xs_dict_get(v, "endpoint");
+            wpush = xs_dict_append(wpush, "endpoint", v);
+
+            xs *server_key = random_str();
+            wpush = xs_dict_append(wpush, "server_key", server_key);
+
+            *body  = xs_json_dumps_pp(wpush, 4);
+            *ctype = "application/json";
+            status = 200;
+        }
+        else
+            status = 401;
+
     }
 
     /* user cleanup */
