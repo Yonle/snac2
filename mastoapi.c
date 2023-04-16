@@ -1071,7 +1071,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
                         if (valid_status(timeline_get_by_md5(&snac1, pid, &m2))) {
                             xs *st = mastoapi_status(&snac1, m2);
-                            anc = xs_list_append(anc, st);
+                            anc = xs_list_insert(anc, 0, st);
                         }
                         else
                             break;
