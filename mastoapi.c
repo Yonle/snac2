@@ -1194,12 +1194,12 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
         printf("%s\n", j);
     }*/
 
-    xs *cmd = xs_replace(q_path, "/api/v1", "");
+    xs *cmd = xs_replace(q_path, "/api", "");
 
     snac snac = {0};
     int logged_in = process_auth_token(&snac, req);
 
-    if (strcmp(cmd, "/apps") == 0) {
+    if (strcmp(cmd, "/v1/apps") == 0) {
         const char *name  = xs_dict_get(args, "client_name");
         const char *ruri  = xs_dict_get(args, "redirect_uris");
         const char *scope = xs_dict_get(args, "scope");
@@ -1236,7 +1236,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
         }
     }
     else
-    if (strcmp(cmd, "/statuses") == 0) {
+    if (strcmp(cmd, "/v1/statuses") == 0) {
         if (logged_in) {
             /* post a new Note */
 /*    {
@@ -1290,7 +1290,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
             status = 401;
     }
     else
-    if (xs_startswith(cmd, "/statuses")) {
+    if (xs_startswith(cmd, "/v1/statuses")) {
         if (logged_in) {
             /* operations on a status */
             xs *l = xs_split(cmd, "/");
@@ -1377,7 +1377,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
             status = 401;
     }
     else
-    if (strcmp(cmd, "/notifications/clear") == 0) {
+    if (strcmp(cmd, "/v1/notifications/clear") == 0) {
         if (logged_in) {
             notify_clear(&snac);
             timeline_touch(&snac);
@@ -1390,7 +1390,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
             status = 401;
     }
     else
-    if (strcmp(cmd, "/push/subscription") == 0) {
+    if (strcmp(cmd, "/v1/push/subscription") == 0) {
         /* I don't know what I'm doing */
         if (logged_in) {
             char *v;
