@@ -1199,6 +1199,12 @@ xs_str *html_notifications(snac *snac)
 
     s = html_user_header(snac, s, 0);
 
+    xs *s1 = xs_fmt(
+        "<form method=\"post\" action=\"%s/admin/clear-notifications\" id=\"clear\">\n"
+        "<input type=\"submit\" class=\"snac-btn-like\" value=\"%s\">\n"
+        "</form><p>", snac->actor, L("Clear all"));
+    s = xs_str_cat(s, s1);
+
     while (xs_list_iter(&p, &v)) {
         xs *noti = notify_get(snac, v);
 
@@ -1862,6 +1868,13 @@ int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
         xs *u_msg = msg_update(&snac, a_msg);
 
         enqueue_message(&snac, u_msg);
+
+        status = 303;
+    }
+    else
+    if (p_path && strcmp(p_path, "admin/clear-notifications") == 0) {
+        notify_clear(&snac);
+        timeline_touch(&snac);
 
         status = 303;
     }
