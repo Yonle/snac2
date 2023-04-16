@@ -1064,7 +1064,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     char pid[64];
 
                     /* build the [grand]parent list, moving up */
-                    strcpy(pid, id);
+                    strncpy(pid, id, sizeof(pid));
 
                     while (object_parent(pid, pid, sizeof(pid))) {
                         xs *m2 = NULL;

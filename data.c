@@ -1017,7 +1017,7 @@ xs_list *timeline_top_level(snac *snac, xs_list *list)
     while (xs_list_iter(&p, &v)) {
         char line[256] = "";
 
-        strcpy(line, v);
+        strncpy(line, v, sizeof(line));
 
         for (;;) {
             char line2[256];
@@ -1031,7 +1031,7 @@ xs_list *timeline_top_level(snac *snac, xs_list *list)
                 break;
 
             /* it's here! try again with its own parent */
-            strcpy(line, line2);
+            strncpy(line, line2, sizeof(line));
         }
 
         xs_set_add(&seen, line);
