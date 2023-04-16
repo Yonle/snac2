@@ -2,9 +2,11 @@
 
 ## 2.28
 
-The Mastodon API now supports notifications.
+Added a new notification area, accessible from a link at the top. The number of unseen new events is marked in the link itself.
 
-Fixed an HTML cache bug (was not refreshed after editing a post).
+More work in the Mastodon API. The new supported features are: notificaciones, post new and reply messages. The official app and close relatives like Megalodon still don't work, though.
+
+Fixed an HTML cache bug (it was not refreshed after editing a post).
 
 ## 2.27
 
