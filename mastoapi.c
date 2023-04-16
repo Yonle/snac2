@@ -21,10 +21,10 @@ static xs_str *random_str(void)
         fclose(f);
     }
     else {
-        data[0] = arc4random();
-        data[1] = arc4random();
-        data[2] = arc4random();
-        data[3] = arc4random();
+        data[0] = random() % 0xffffffff;
+        data[1] = random() % 0xffffffff;
+        data[2] = random() % 0xffffffff;
+        data[3] = random() % 0xffffffff;
     }
 
     return xs_hex_enc((char *)data, sizeof(data));

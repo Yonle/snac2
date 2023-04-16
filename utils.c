@@ -198,9 +198,10 @@ void new_password(const char *uid, d_char **clear_pwd, d_char **hashed_pwd)
 {
     int rndbuf[3];
 
-    rndbuf[0] = arc4random();
-    rndbuf[1] = arc4random();
-    rndbuf[2] = arc4random();
+    srandom(time(NULL) ^ getpid());
+    rndbuf[0] = random() & 0xffffffff;
+    rndbuf[1] = random() & 0xffffffff;
+    rndbuf[2] = random() & 0xffffffff;
 
     *clear_pwd  = xs_base64_enc((char *)rndbuf, sizeof(rndbuf));
     *hashed_pwd = hash_password(uid, *clear_pwd, NULL);

@@ -123,7 +123,7 @@ d_char *hash_password(const char *uid, const char *passwd, const char *nonce)
     xs *hash;
 
     if (nonce == NULL) {
-        d_nonce = xs_fmt("%08x", arc4random());
+        d_nonce = xs_fmt("%08x", random());
         nonce = d_nonce;
     }
 
