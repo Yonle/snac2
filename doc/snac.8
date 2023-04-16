@@ -341,8 +341,12 @@ location /.well-known/webfinger {
     proxy_pass http://localhost:8001;
     proxy_set_header Host $http_host;
 }
-# Mastodon API (entry point)
+# Mastodon API (entry points)
 location /api/v1/ {
+    proxy_pass http://localhost:8001;
+    proxy_set_header Host $http_host;
+}
+location /api/v2/ {
     proxy_pass http://localhost:8001;
     proxy_set_header Host $http_host;
 }
