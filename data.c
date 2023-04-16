@@ -232,6 +232,26 @@ d_char *user_list(void)
 }
 
 
+int user_open_by_md5(snac *snac, const char *md5)
+/* iterates all users searching by md5 */
+{
+    xs *ulist  = user_list();
+    xs_list *p = ulist;
+    xs_str *v;
+
+    while (xs_list_iter(&p, &v)) {
+        user_open(snac, v);
+
+        if (strcmp(snac->md5, md5) == 0)
+            return 1;
+
+        user_free(snac);
+    }
+
+    return 0;
+}
+
+
 double mtime_nl(const char *fn, int *n_link)
 /* returns the mtime and number of links of a file or directory, or 0.0 */
 {

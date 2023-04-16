@@ -722,12 +722,8 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             xs *out   = NULL;
             xs *actor = NULL;
 
-            /* if uid it's the md5 of this actor, transform into a real uid */
-            if (strcmp(uid, snac1.md5) == 0)
-                uid = xs_dict_get(snac1.config, "uid");
-
             /* is it a local user? */
-            if (user_open(&snac2, uid)) {
+            if (user_open(&snac2, uid) || user_open_by_md5(&snac2, uid)) {
                 if (opt == NULL) {
                     /* account information */
                     actor = msg_actor(&snac2);
