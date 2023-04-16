@@ -652,7 +652,7 @@ int process_auth_token(snac *snac, const xs_dict *req)
 int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                          char **body, int *b_size, char **ctype)
 {
-    if (!xs_startswith(q_path, "/api/v1/"))
+    if (!xs_startswith(q_path, "/api/v1/") && !xs_startswith(q_path, "/api/v2/"))
         return 0;
 
     srv_debug(1, xs_fmt("mastoapi_get_handler %s", q_path));
@@ -1168,7 +1168,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                           const char *payload, int p_size,
                           char **body, int *b_size, char **ctype)
 {
-    if (!xs_startswith(q_path, "/api/v1/"))
+    if (!xs_startswith(q_path, "/api/v1/") && !xs_startswith(q_path, "/api/v2/"))
         return 0;
 
     srv_debug(1, xs_fmt("mastoapi_post_handler %s", q_path));
@@ -1416,7 +1416,13 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
         }
         else
             status = 401;
-
+    }
+    else
+    if (strcmp(cmd, "/v1/media") == 0 || strcmp(cmd, "/v2/media") == 0) {
+        if (logged_in) {
+        }
+        else
+            status = 401;
     }
 
     /* user cleanup */
