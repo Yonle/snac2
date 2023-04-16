@@ -2,9 +2,9 @@
 
 ## 2.28
 
-Added a new notification area, accessible from a link at the top. The number of unseen new events is marked in the link itself.
+Added a new notification area, accessible from a link at the top. The number of unseen new events is marked in the link itself. The area shows all notifications in reverse chronological order and provides a button to clear all.
 
-More work in the Mastodon API. The new supported features are: notificaciones, post new and reply messages. The official app and close relatives like Megalodon still don't work, though.
+More work in the Mastodon API. The new supported features are: notifications, post of new and reply messages (still no images). The official app and close relatives like Megalodon still don't work, though.
 
 Fixed an HTML cache bug (it was not refreshed after editing a post).
 
