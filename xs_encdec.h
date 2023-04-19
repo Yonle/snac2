@@ -24,7 +24,7 @@ xs_str *xs_hex_enc(const xs_val *data, int size)
     p = s = xs_realloc(NULL, _xs_blk_size(size * 2 + 1));
 
     for (n = 0; n < size; n++) {
-        sprintf(p, "%02x", (unsigned char)data[n]);
+        snprintf(p, 3, "%02x", (unsigned char)data[n]);
         p += 2;
     }
 

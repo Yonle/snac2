@@ -40,7 +40,7 @@ static xs_str *_xs_json_dumps_str(xs_str *s, const char *data)
         if (c < 32) {
             char tmp[10];
 
-            sprintf(tmp, "\\u%04x", (unsigned int) c);
+            snprintf(tmp, sizeof(tmp), "\\u%04x", (unsigned int) c);
             s = xs_str_cat(s, tmp);
         }
         else
