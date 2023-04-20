@@ -1032,12 +1032,32 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
         xs *d1 = xs_dict_new();
         ins = xs_dict_append(ins, "urls",            d1);
-        ins = xs_dict_append(ins, "stats",           d1);
         ins = xs_dict_append(ins, "configuration",   d1);
 
+        xs *z = xs_number_new(0);
+        d1 = xs_dict_append(d1, "user_count", z);
+        d1 = xs_dict_append(d1, "status_count", z);
+        d1 = xs_dict_append(d1, "domain_count", z);
+        ins = xs_dict_append(ins, "stats", d1);
+
+        xs *f = xs_val_new(XSTYPE_FALSE);
+        ins = xs_dict_append(ins, "registrations", f);
+        ins = xs_dict_append(ins, "approval_required", f);
+        ins = xs_dict_append(ins, "invites_enabled", f);
+
+        {
+            snac snac;
+            user_open(&snac, "test1");
+            xs *actor = msg_actor(&snac);
+            xs *acc = mastoapi_account(actor);
+            ins = xs_dict_append(ins, "contact_account", acc);
+            user_free(&snac);
+        }
         *body  = xs_json_dumps_pp(ins, 4);
         *ctype = "application/json";
         status = 200;
+
+        printf("%s\n", *body);
     }
     else
     if (xs_startswith(cmd, "/v1/statuses/")) {
