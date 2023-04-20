@@ -64,6 +64,13 @@ int server_get_handler(d_char *req, char *q_path,
             /* replace %host% */
             s = xs_replace_i(s, "%host%", xs_dict_get(srv_config, "host"));
 
+            const char *adm_email = xs_dict_get(srv_config, "admin_email");
+            if (xs_is_null(adm_email) || *adm_email == '\0')
+                adm_email = "the administrator of this instance";
+
+            /* replace %admin_email */
+            s = xs_replace_i(s, "%admin_email%", adm_email);
+
             /* does it have a %userlist% mark? */
             if (xs_str_in(s, "%userlist%") != -1) {
                 char *host = xs_dict_get(srv_config, "host");
