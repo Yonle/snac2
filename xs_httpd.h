@@ -236,12 +236,12 @@ xs_dict *xs_httpd_request(FILE *f, xs_str **payload, int *p_size)
 
     v = xs_dict_get(req, "content-type");
 
-    if (v && strcmp(v, "application/x-www-form-urlencoded") == 0) {
+    if (*payload && v && strcmp(v, "application/x-www-form-urlencoded") == 0) {
         xs *upl = xs_url_dec(*payload);
         p_vars  = xs_url_vars(upl);
     }
     else
-    if (v && xs_startswith(v, "multipart/form-data")) {
+    if (*payload && v && xs_startswith(v, "multipart/form-data")) {
         p_vars = _xs_multipart_form_data(*payload, *p_size, v);
     }
     else
