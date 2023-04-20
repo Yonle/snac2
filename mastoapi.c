@@ -1056,8 +1056,6 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         *body  = xs_json_dumps_pp(ins, 4);
         *ctype = "application/json";
         status = 200;
-
-        printf("%s\n", *body);
     }
     else
     if (xs_startswith(cmd, "/v1/statuses/")) {
