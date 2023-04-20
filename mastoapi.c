@@ -1018,7 +1018,11 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         xs *susie = xs_fmt("%s/susie.png", srv_baseurl);
         ins = xs_dict_append(ins, "thumbnail", susie);
 
-        ins = xs_dict_append(ins, "email", "admin@localhost");
+        const char *v = xs_dict_get(srv_config, "admin_email");
+        if (xs_is_null(v) || *v == '\0')
+            v = "admin@localhost";
+
+        ins = xs_dict_append(ins, "email", v);
 
         xs *l1 = xs_list_new();
         ins = xs_dict_append(ins, "rules",     l1);
@@ -1034,6 +1038,8 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         *body  = xs_json_dumps_pp(ins, 4);
         *ctype = "application/json";
         status = 200;
+
+        printf("%s\n", *body);
     }
     else
     if (xs_startswith(cmd, "/v1/statuses/")) {
