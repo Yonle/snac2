@@ -140,6 +140,13 @@ int snac_init(const char *basedir)
         }
     }
 
+    printf("Admin email address (optional):\n");
+    {
+        xs *i = xs_strip_i(xs_readline(stdin));
+
+        srv_config = xs_dict_set(srv_config, "admin_email", i);
+    }
+
     if (mkdirx(srv_basedir) == -1) {
         printf("ERROR: cannot create directory '%s'\n", srv_basedir);
         return 1;
