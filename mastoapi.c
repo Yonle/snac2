@@ -1045,14 +1045,14 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         ins = xs_dict_append(ins, "approval_required", f);
         ins = xs_dict_append(ins, "invites_enabled", f);
 
-        {
+/*        {
             snac snac;
             user_open(&snac, "test1");
             xs *actor = msg_actor(&snac);
             xs *acc = mastoapi_account(actor);
             ins = xs_dict_append(ins, "contact_account", acc);
             user_free(&snac);
-        }
+        }*/
         *body  = xs_json_dumps_pp(ins, 4);
         *ctype = "application/json";
         status = 200;
