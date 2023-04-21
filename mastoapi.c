@@ -1303,11 +1303,12 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                 xs_str *v;
 
                 while (xs_list_iter(&p, &v)) {
-                    xs *l   = xs_list_new();
-                    xs *url = xs_fmt("%s/s/%s", snac.actor, v);
+                    xs *l    = xs_list_new();
+                    xs *url  = xs_fmt("%s/s/%s", snac.actor, v);
+                    xs *desc = static_get_meta(&snac, v);
 
                     l = xs_list_append(l, url);
-                    l = xs_list_append(l, "");
+                    l = xs_list_append(l, desc);
 
                     attach_list = xs_list_append(attach_list, l);
                 }
@@ -1498,6 +1499,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
 
                     /* store */
                     static_put(&snac, id, payload + fo, fs);
+                    static_put_meta(&snac, id, desc);
 
                     /* prepare a response */
                     xs *rsp = xs_dict_new();

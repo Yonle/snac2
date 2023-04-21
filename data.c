@@ -1366,7 +1366,7 @@ void static_put(snac *snac, const char *id, const char *data, int size)
 }
 
 
-void status_put_meta(snac *snac, const char *id, const char *str)
+void static_put_meta(snac *snac, const char *id, const char *str)
 /* puts metadata (i.e. a media description string) to id */
 {
     xs *fn = _static_fn(snac, id);
@@ -1380,7 +1380,7 @@ void status_put_meta(snac *snac, const char *id, const char *str)
 }
 
 
-xs_str *status_get_meta(snac *snac, const char *id)
+xs_str *static_get_meta(snac *snac, const char *id)
 /* gets metadata from a media */
 {
     xs *fn    = _static_fn(snac, id);
