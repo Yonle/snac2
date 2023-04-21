@@ -2,9 +2,9 @@
 
 ## 2.28
 
-Added a new notification area, accessible from a link at the top. The number of unseen new events is marked in the link itself. The area shows all notifications in reverse chronological order and provides a button to clear all.
+Added a new notification area to the web interface, accessible from a link at the top, that also shows the number of unseen events. This area lists all notifications in reverse chronological order and provides a button to clear all.
 
-More work in the Mastodon API. The new supported features are: notifications, post of new and reply messages (still no images). The official app and close relatives like Megalodon still don't work, though.
+More work in the Mastodon API. The new supported features are: notifications, post of new and reply messages (including images). #Tusky no longer crashes, as far as I have detected. The official app and close relatives like #Megalodon still don't work, though.
 
 If you are not interested in the Mastodon API, you can compile it out of your #snac by defining the `NO_MASTODON_API` preprocessor directive.
 
