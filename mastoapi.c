@@ -1271,6 +1271,10 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
             const char *mid        = xs_dict_get(args, "in_reply_to_id");
             const char *visibility = xs_dict_get(args, "visibility");
             const char *summary    = xs_dict_get(args, "spoiler_text");
+            const char *media_ids  = xs_dict_get(args, "media_ids");
+
+            if (xs_is_null(media_ids))
+                media_ids = xs_dict_get(args, "media_ids[]");
 
             xs *attach_list = xs_list_new();
             xs *irt         = NULL;
@@ -1282,6 +1286,31 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
 
                 if (valid_status(object_get_by_md5(md5, &r_msg)))
                     irt = xs_dup(xs_dict_get(r_msg, "id"));
+            }
+
+            /* does it have attachments? */
+            if (!xs_is_null(media_ids)) {
+                xs *mi = NULL;
+
+                if (xs_type(media_ids) == XSTYPE_LIST)
+                    mi = xs_dup(media_ids);
+                else {
+                    mi = xs_list_new();
+                    mi = xs_list_append(mi, media_ids);
+                }
+
+                xs_list *p = mi;
+                xs_str *v;
+
+                while (xs_list_iter(&p, &v)) {
+                    xs *l   = xs_list_new();
+                    xs *url = xs_fmt("%s/s/%s", snac.actor, v);
+
+                    l = xs_list_append(l, url);
+                    l = xs_list_append(l, "");
+
+                    attach_list = xs_list_append(attach_list, l);
+                }
             }
 
             /* prepare the message */
@@ -1444,6 +1473,47 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
     else
     if (strcmp(cmd, "/v1/media") == 0 || strcmp(cmd, "/v2/media") == 0) {
         if (logged_in) {
+/*    {
+        xs *j = xs_json_dumps_pp(args, 4);
+        printf("%s\n", j);
+    }*/
+            const xs_list *file = xs_dict_get(args, "file");
+            const char *desc    = xs_dict_get(args, "description");
+
+            if (xs_is_null(desc))
+                desc = "";
+
+            status = 400;
+
+            if (xs_type(file) == XSTYPE_LIST) {
+                const char *fn = xs_list_get(file, 0);
+
+                if (*fn != '\0') {
+                    char *ext = strrchr(fn, '.');
+                    xs *hash  = xs_md5_hex(fn, strlen(fn));
+                    xs *id    = xs_fmt("%s%s", hash, ext);
+                    xs *url   = xs_fmt("%s/s/%s", snac.actor, id);
+                    int fo    = xs_number_get(xs_list_get(file, 1));
+                    int fs    = xs_number_get(xs_list_get(file, 2));
+
+                    /* store */
+                    static_put(&snac, id, payload + fo, fs);
+
+                    /* prepare a response */
+                    xs *rsp = xs_dict_new();
+
+                    rsp = xs_dict_append(rsp, "id",          id);
+                    rsp = xs_dict_append(rsp, "type",        "image");
+                    rsp = xs_dict_append(rsp, "url",         url);
+                    rsp = xs_dict_append(rsp, "preview_url", url);
+                    rsp = xs_dict_append(rsp, "remote_url",  url);
+                    rsp = xs_dict_append(rsp, "description", desc);
+
+                    *body  = xs_json_dumps_pp(rsp, 4);
+                    *ctype = "application/json";
+                    status = 200;
+                }
+            }
         }
         else
             status = 401;
