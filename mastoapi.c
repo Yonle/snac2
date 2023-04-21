@@ -1,6 +1,8 @@
 /* snac - A simple, minimalistic ActivityPub instance */
 /* copyright (c) 2022 - 2023 grunfink / MIT license */
 
+#ifndef NO_MASTODON_API
+
 #include "xs.h"
 #include "xs_encdec.h"
 #include "xs_openssl.h"
@@ -1453,3 +1455,5 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
 
     return status;
 }
+
+#endif /* #ifndef NO_MASTODON_API */

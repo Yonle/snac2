@@ -183,17 +183,21 @@ void httpd_connection(FILE *f)
         if (status == 0)
             status = activitypub_get_handler(req, q_path, &body, &b_size, &ctype);
 
+#ifndef NO_MASTODON_API
         if (status == 0)
             status = oauth_get_handler(req, q_path, &body, &b_size, &ctype);
 
         if (status == 0)
             status = mastoapi_get_handler(req, q_path, &body, &b_size, &ctype);
+#endif /* NO_MASTODON_API */
 
         if (status == 0)
             status = html_get_handler(req, q_path, &body, &b_size, &ctype);
     }
     else
     if (strcmp(method, "POST") == 0) {
+
+#ifndef NO_MASTODON_API
         if (status == 0)
             status = oauth_post_handler(req, q_path,
                         payload, p_size, &body, &b_size, &ctype);
@@ -201,6 +205,7 @@ void httpd_connection(FILE *f)
         if (status == 0)
             status = mastoapi_post_handler(req, q_path,
                         payload, p_size, &body, &b_size, &ctype);
+#endif
 
         if (status == 0)
             status = activitypub_post_handler(req, q_path,
