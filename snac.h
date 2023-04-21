@@ -130,6 +130,8 @@ int actor_get(snac *snac, const char *actor, d_char **data);
 
 int static_get(snac *snac, const char *id, d_char **data, int *size);
 void static_put(snac *snac, const char *id, const char *data, int size);
+void status_put_meta(snac *snac, const char *id, const char *str);
+xs_str *status_get_meta(snac *snac, const char *id);
 
 double history_mtime(snac *snac, char *id);
 void history_add(snac *snac, char *id, char *content, int size);

@@ -1366,6 +1366,39 @@ void static_put(snac *snac, const char *id, const char *data, int size)
 }
 
 
+void status_put_meta(snac *snac, const char *id, const char *str)
+/* puts metadata (i.e. a media description string) to id */
+{
+    xs *fn = _static_fn(snac, id);
+    fn     = xs_str_cat(fn, ".txt");
+    FILE *f;
+
+    if ((f = fopen(fn, "w")) != NULL) {
+        fprintf(f, "%s\n", str);
+        fclose(f);
+    }
+}
+
+
+xs_str *status_get_meta(snac *snac, const char *id)
+/* gets metadata from a media */
+{
+    xs *fn    = _static_fn(snac, id);
+    fn        = xs_str_cat(fn, ".txt");
+    xs_str *r = NULL;
+    FILE *f;
+
+    if ((f = fopen(fn, "r")) != NULL) {
+        r = xs_strip_i(xs_readline(f));
+        fclose(f);
+    }
+    else
+        r = xs_str_new("");
+
+    return r;
+}
+
+
 d_char *_history_fn(snac *snac, char *id)
 /* gets the filename for the history */
 {
