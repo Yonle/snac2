@@ -6,6 +6,8 @@ Added a new notification area, accessible from a link at the top. The number of 
 
 More work in the Mastodon API. The new supported features are: notifications, post of new and reply messages (still no images). The official app and close relatives like Megalodon still don't work, though.
 
+If you are not interested in the Mastodon API, you can compile it out of your #snac by defining the `NO_MASTODON_API` preprocessor directive.
+
 Fixed an HTML cache bug (it was not refreshed after editing a post).
 
 ## 2.27
