@@ -215,6 +215,16 @@ void httpd_connection(FILE *f)
             status = html_post_handler(req, q_path,
                         payload, p_size, &body, &b_size, &ctype);
     }
+    else
+    if (strcmp(method, "PUT") == 0) {
+
+#ifndef NO_MASTODON_API
+        if (status == 0)
+            status = mastoapi_put_handler(req, q_path,
+                        payload, p_size, &body, &b_size, &ctype);
+#endif
+
+    }
 
     /* let's go */
     headers = xs_dict_new();

@@ -1528,4 +1528,74 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
     return status;
 }
 
+
+int mastoapi_put_handler(const xs_dict *req, const char *q_path,
+                          const char *payload, int p_size,
+                          char **body, int *b_size, char **ctype)
+{
+    if (!xs_startswith(q_path, "/api/v1/") && !xs_startswith(q_path, "/api/v2/"))
+        return 0;
+
+    srv_debug(1, xs_fmt("mastoapi_post_handler %s", q_path));
+/*    {
+        xs *j = xs_json_dumps_pp(req, 4);
+        printf("mastoapi put:\n%s\n", j);
+    }*/
+
+    int status    = 404;
+    xs *args      = NULL;
+    char *i_ctype = xs_dict_get(req, "content-type");
+
+    if (i_ctype && xs_startswith(i_ctype, "application/json"))
+        args = xs_json_loads(payload);
+    else
+        args = xs_dup(xs_dict_get(req, "p_vars"));
+
+    if (args == NULL)
+        return 400;
+
+    xs *cmd = xs_replace(q_path, "/api", "");
+
+    snac snac = {0};
+    int logged_in = process_auth_token(&snac, req);
+
+    if (xs_startswith(cmd, "/v1/media") || xs_startswith(cmd, "/v2/media")) {
+        if (logged_in) {
+            xs *l = xs_split(cmd, "/");
+            const char *stid = xs_list_get(l, 3);
+
+            if (!xs_is_null(stid)) {
+                const char *desc = xs_dict_get(args, "description");
+
+                /* set the image metadata */
+                static_put_meta(&snac, stid, desc);
+
+                /* prepare a response */
+                xs *rsp = xs_dict_new();
+                xs *url = xs_fmt("%s/s/%s", snac.actor, stid);
+
+                rsp = xs_dict_append(rsp, "id",          stid);
+                rsp = xs_dict_append(rsp, "type",        "image");
+                rsp = xs_dict_append(rsp, "url",         url);
+                rsp = xs_dict_append(rsp, "preview_url", url);
+                rsp = xs_dict_append(rsp, "remote_url",  url);
+                rsp = xs_dict_append(rsp, "description", desc);
+
+                *body  = xs_json_dumps_pp(rsp, 4);
+                *ctype = "application/json";
+                status = 200;
+            }
+        }
+        else
+            status = 401;
+    }
+
+    /* user cleanup */
+    if (logged_in)
+        user_free(&snac);
+
+    return status;
+}
+
+
 #endif /* #ifndef NO_MASTODON_API */
