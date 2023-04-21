@@ -2,8 +2,6 @@
 
 ## Open
 
-Add a notification area, where recent events of interest would be easily seen.
-
 Post edits should keep the image and the image description.
 
 Add a list of hashtags to drop.
@@ -227,3 +225,5 @@ Fix `Like` and `Update` recipients (2023-03-07T10:28:36+0100).
 Implement the ActivityPub C2S (Client to Server) API: https://www.w3.org/TR/activitypub/#client-to-server-interactions . The Android client at http://andstatus.org/ implements it, or so it seems. UPDATE: Wrong, AndStatus starts doing an OAuth query, that is totally not ActivityPub C2S. The number of real ActivityPub C2S clients out there is probably zero. Abandoned now that I'm implementing the Mastodon API (2023-04-12T15:00:14+0200).
 
 Edits do not refresh the HTML cache (2023-04-14T19:05:27+0200).
+
+Add a notification area, where recent events of interest would be easily seen (2023-04-21T23:20:27+0200).
