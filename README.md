@@ -42,6 +42,12 @@ On OpenBSD you also need to install `curl`:
 
 Run `make` and then `make install` as root.
 
+From version 2.27, `snac` includes support for the Mastodon API; if you are not interested on it, you can compile it out by running
+
+```
+make CFLAGS=-DNO_MASTODON_API
+```
+
 See the administrator manual on how to proceed from here.
 
 ## Testing via Docker
