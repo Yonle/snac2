@@ -1326,10 +1326,15 @@ int actor_get(snac *snac, const char *actor, d_char **data)
 }
 
 
+/** static data **/
+
 d_char *_static_fn(snac *snac, const char *id)
 /* gets the filename for a static file */
 {
-    return xs_fmt("%s/static/%s", snac->basedir, id);
+    if (strchr(id, '/'))
+        return NULL;
+    else
+        return xs_fmt("%s/static/%s", snac->basedir, id);
 }
 
 
@@ -1340,9 +1345,8 @@ int static_get(snac *snac, const char *id, d_char **data, int *size)
     FILE *f;
     int status = 404;
 
-    *size = XS_ALL;
-
-    if ((f = fopen(fn, "rb")) != NULL) {
+    if (fn && (f = fopen(fn, "rb")) != NULL) {
+        *size = XS_ALL;
         *data = xs_read(f, size);
         fclose(f);
 
@@ -1359,7 +1363,7 @@ void static_put(snac *snac, const char *id, const char *data, int size)
     xs *fn = _static_fn(snac, id);
     FILE *f;
 
-    if ((f = fopen(fn, "wb")) != NULL) {
+    if (fn && (f = fopen(fn, "wb")) != NULL) {
         fwrite(data, size, 1, f);
         fclose(f);
     }
@@ -1370,12 +1374,15 @@ void static_put_meta(snac *snac, const char *id, const char *str)
 /* puts metadata (i.e. a media description string) to id */
 {
     xs *fn = _static_fn(snac, id);
-    fn     = xs_str_cat(fn, ".txt");
-    FILE *f;
 
-    if ((f = fopen(fn, "w")) != NULL) {
-        fprintf(f, "%s\n", str);
-        fclose(f);
+    if (fn) {
+        fn = xs_str_cat(fn, ".txt");
+        FILE *f;
+
+        if ((f = fopen(fn, "w")) != NULL) {
+            fprintf(f, "%s\n", str);
+            fclose(f);
+        }
     }
 }
 
@@ -1384,13 +1391,16 @@ xs_str *static_get_meta(snac *snac, const char *id)
 /* gets metadata from a media */
 {
     xs *fn    = _static_fn(snac, id);
-    fn        = xs_str_cat(fn, ".txt");
     xs_str *r = NULL;
-    FILE *f;
 
-    if ((f = fopen(fn, "r")) != NULL) {
-        r = xs_strip_i(xs_readline(f));
-        fclose(f);
+    if (fn) {
+        fn = xs_str_cat(fn, ".txt");
+        FILE *f;
+
+        if ((f = fopen(fn, "r")) != NULL) {
+            r = xs_strip_i(xs_readline(f));
+            fclose(f);
+        }
     }
     else
         r = xs_str_new("");
