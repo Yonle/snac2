@@ -24,9 +24,9 @@ This is not the manual; man pages `snac(1)` (user manual), `snac(5)` (formats) a
 
 `snac` stands for Social Networks Are Crap.
 
-## Installation
+## Building and installation
 
-This 2.x release is written in C (unlike the 1.x prototype, which was written in Python). The only external dependencies are `openssl` and `curl`.
+This program is written in highly portable ANSI C. The only external dependencies are `openssl` and `curl`.
 
 On Debian/Ubuntu, you can satisfy these requirements by running
 
@@ -34,7 +34,7 @@ On Debian/Ubuntu, you can satisfy these requirements by running
     apt install libssl-dev libcurl4-openssl-dev
 ```
 
-On OpenBSD you also need to install `curl`:
+On OpenBSD you just need to install `curl`:
 
 ```
     pkg_add curl
