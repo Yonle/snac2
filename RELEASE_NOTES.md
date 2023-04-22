@@ -4,15 +4,15 @@
 
 Added a new notification area to the web interface, accessible from a link at the top, that also shows the number of unseen events. This area lists all notifications in reverse chronological order and provides a button to clear all.
 
-More work in the Mastodon API. The new supported features are: notifications, post of new and reply messages (including images). #Tusky no longer crashes, as far as I have detected. The official app and close relatives like #Megalodon still don't work, though.
+More work in the Mastodon API. The new supported features are: notifications, post of new and reply messages (including attached images). Some API v2 entry points had to be implemented, so you'll need to update your HTTPS proxy configuration again, see `snac(8)`. #Tusky no longer crashes, or so I think. The official app and close relatives like #Megalodon still don't work, though.
 
-If you are not interested in the Mastodon API, you can compile it out of your #snac by defining the `NO_MASTODON_API` preprocessor directive.
+If you are not interested in this Mastodon API crap, you can compile it out of your #snac by defining the `NO_MASTODON_API` preprocessor directive and forget about it.
 
 Fixed an HTML cache bug (it was not refreshed after editing a post).
 
 ## 2.27
 
-Started Mastodon API support, so you can use Mastodon-compatible apps to access #snac accounts. What works so far: login, private and public timelines, full post information (replies and ancestors), liking and boosting posts. Things that don't work yet but eventually will: following accounts, posting and replying to messages (I still have to figure out how some things work, like posting images), notifications (needs some internal support), the instance timeline (snac does not have one, but it can be simulated with not much effort) and probably many other things. Things that will never work: bookmarks, pinning, a federated timeline, many other things that I don't remember right now. Please note that if you want to use this API in your instance, you must add some lines to your HTTP proxy configuration, see the snac(8) (administrator documentation) manual page. I'm doing my tests using the #Tusky (which sometimes crashes, surely my fault), #AndStatus, #Fedilab and #Husky Android apps. Success or failure reports will be appreciated.
+Started Mastodon API support, so you can use Mastodon-compatible apps to access #snac accounts. What works so far: login, private and public timelines, full post information (replies and ancestors), liking and boosting posts. Things that don't work yet but eventually will: following accounts, posting and replying to messages (I still have to figure out how some things work, like posting images), notifications (needs some internal support), the instance timeline (snac does not have one, but it can be simulated with not much effort) and probably many other things. Things that will never work: bookmarks, pinning, a federated timeline, many other things that I don't remember right now. Please note that if you want to use this API in your instance, you must add some lines to your HTTP proxy configuration, see the `snac(8)` (administrator documentation) manual page. I'm doing my tests using the #Tusky (which sometimes crashes, surely my fault), #AndStatus, #Fedilab and #Husky Android apps. Success or failure reports will be appreciated.
 
 Fixed some buffer overflows (contributed by Saagar Jha).
 
