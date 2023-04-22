@@ -1409,14 +1409,19 @@ xs_str *static_get_meta(snac *snac, const char *id)
 }
 
 
-d_char *_history_fn(snac *snac, char *id)
+/** history **/
+
+xs_str *_history_fn(snac *snac, const char *id)
 /* gets the filename for the history */
 {
-    return xs_fmt("%s/history/%s", snac->basedir, id);
+    if (strchr(id, '/'))
+        return NULL;
+    else
+        return xs_fmt("%s/history/%s", snac->basedir, id);
 }
 
 
-double history_mtime(snac *snac, char * id)
+double history_mtime(snac *snac, const char *id)
 {
     double t = 0.0;
     xs *fn = _history_fn(snac, id);
@@ -1428,26 +1433,26 @@ double history_mtime(snac *snac, char * id)
 }
 
 
-void history_add(snac *snac, char *id, char *content, int size)
+void history_add(snac *snac, const char *id, const char *content, int size)
 /* adds something to the history */
 {
     xs *fn = _history_fn(snac, id);
     FILE *f;
 
-    if ((f = fopen(fn, "w")) != NULL) {
+    if (fn && (f = fopen(fn, "w")) != NULL) {
         fwrite(content, size, 1, f);
         fclose(f);
     }
 }
 
 
-d_char *history_get(snac *snac, char *id)
+xs_str *history_get(snac *snac, const char *id)
 {
-    d_char *content = NULL;
+    xs_str *content = NULL;
     xs *fn = _history_fn(snac, id);
     FILE *f;
 
-    if ((f = fopen(fn, "r")) != NULL) {
+    if (fn && (f = fopen(fn, "r")) != NULL) {
         content = xs_readall(f);
         fclose(f);
     }
@@ -1456,14 +1461,18 @@ d_char *history_get(snac *snac, char *id)
 }
 
 
-int history_del(snac *snac, char *id)
+int history_del(snac *snac, const char *id)
 {
     xs *fn = _history_fn(snac, id);
-    return unlink(fn);
+
+    if (fn)
+        return unlink(fn);
+    else
+        return -1;
 }
 
 
-d_char *history_list(snac *snac)
+xs_list *history_list(snac *snac)
 {
     xs *spec = xs_fmt("%s/history/" "*.html", snac->basedir);
 

@@ -133,11 +133,11 @@ void static_put(snac *snac, const char *id, const char *data, int size);
 void static_put_meta(snac *snac, const char *id, const char *str);
 xs_str *static_get_meta(snac *snac, const char *id);
 
-double history_mtime(snac *snac, char *id);
-void history_add(snac *snac, char *id, char *content, int size);
-d_char *history_get(snac *snac, char *id);
-int history_del(snac *snac, char *id);
-d_char *history_list(snac *snac);
+double history_mtime(snac *snac, const char *id);
+void history_add(snac *snac, const char *id, const char *content, int size);
+xs_str *history_get(snac *snac, const char *id);
+int history_del(snac *snac, const char *id);
+xs_list *history_list(snac *snac);
 
 void lastlog_write(snac *snac);
 
