@@ -4,15 +4,21 @@
 
 Post edits should keep the image and the image description.
 
-Add a list of hashtags to drop.
-
 Implement the 'search by tag' operation instead of just pretending that it does something.
+
+Mastodon API: add search by account (webfinger).
+
+Mastodon API: add an instance timeline by combining the timelines of all users.
+
+Mastodon API: fix whatever the fuck is making the official app and Megalodon to crash.
+
+## Wishlist
+
+Add a list of hashtags to drop.
 
 Add a per-account toggle to [un]mute their Announces.
 
 Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac2/issues/3
-
-## Wishlist
 
 Implement HTTP caches (If-None-Match / ETag). I'm not sure if it's worth the effort.
 
