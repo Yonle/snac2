@@ -913,7 +913,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     if (strcmp(cmd, "/v1/timelines/public") == 0) {
         /* the public timeline (public timelines for all users) */
 
-        /* this is a kludge: first users in the list get all the fame */
+        /* this is an ugly kludge: first users in the list get all the fame */
 
         const char *limit_s  = xs_dict_get(args, "limit");
         int limit = 0;
@@ -934,7 +934,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             snac user;
 
             if (user_open(&user, uid)) {
-                xs *timeline = timeline_simple_list(&snac1, "public", 0, 4);
+                xs *timeline = timeline_simple_list(&user, "public", 0, 4);
                 xs_list *p2  = timeline;
                 xs_str *v;
 
@@ -954,7 +954,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                         continue;
 
                     /* convert the Note into a Mastodon status */
-                    xs *st = mastoapi_status(&snac1, msg);
+                    xs *st = mastoapi_status(&user, msg);
 
                     if (st != NULL) {
                         out = xs_list_append(out, st);
