@@ -266,6 +266,16 @@ void httpd_connection(FILE *f)
 
     srv_archive("RECV", NULL, req, payload, p_size, status, headers, body, b_size);
 
+    /* JSON validation check */
+    if (strcmp(ctype, "application/json") == 0) {
+        xs *j = xs_json_loads(body);
+
+        if (j == NULL) {
+            srv_log(xs_fmt("bad JSON"));
+            srv_archive_error("bad_json", "bad JSON", req, body);
+        }
+    }
+
     xs_free(body);
 }
 

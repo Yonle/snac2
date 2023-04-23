@@ -900,14 +900,6 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             *ctype = "application/json";
             status = 200;
 
-            {
-                xs *j = xs_json_loads(*body);
-                if (j == NULL) {
-                    srv_log(xs_fmt("mastoapi timeline: bad JSON"));
-                    srv_archive_error("mastoapi_timeline", "bad JSON", req, *body);
-                }
-            }
-
             srv_debug(2, xs_fmt("mastoapi timeline: returned %d entries", xs_list_len(out)));
         }
         else {
