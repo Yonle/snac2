@@ -912,8 +912,61 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     else
     if (strcmp(cmd, "/v1/timelines/public") == 0) {
         /* the public timeline (public timelines for all users) */
-        /* TBD */
-        *body  = xs_dup("[]");
+
+        /* this is a kludge: first users in the list get all the fame */
+
+        const char *limit_s  = xs_dict_get(args, "limit");
+        int limit = 0;
+        int cnt   = 0;
+
+        if (!xs_is_null(limit_s))
+            limit = atoi(limit_s);
+
+        if (limit == 0)
+            limit = 20;
+
+        xs *out    = xs_list_new();
+        xs *users  = user_list();
+        xs_list *p = users;
+        xs_str *uid;
+
+        while (xs_list_iter(&p, &uid) && cnt < limit) {
+            snac user;
+
+            if (user_open(&user, uid)) {
+                xs *timeline = timeline_simple_list(&snac1, "public", 0, 4);
+                xs_list *p2  = timeline;
+                xs_str *v;
+
+                while (xs_list_iter(&p2, &v) && cnt < limit) {
+                    xs *msg = NULL;
+
+                    /* get the entry */
+                    if (!valid_status(timeline_get_by_md5(&user, v, &msg)))
+                        continue;
+
+                    /* discard non-Notes */
+                    if (strcmp(xs_dict_get(msg, "type"), "Note") != 0)
+                        continue;
+
+                    /* discard entries not by this user */
+                    if (!xs_startswith(xs_dict_get(msg, "id"), user.actor))
+                        continue;
+
+                    /* convert the Note into a Mastodon status */
+                    xs *st = mastoapi_status(&snac1, msg);
+
+                    if (st != NULL) {
+                        out = xs_list_append(out, st);
+                        cnt++;
+                    }
+                }
+
+                user_free(&user);
+            }
+        }
+
+        *body  = xs_json_dumps_pp(out, 4);
         *ctype = "application/json";
         status = 200;
     }
