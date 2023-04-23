@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.29
+
+New Mastodon API features: account search, relationships (so the Follow/Unfollow buttons now appear for each account).
+
 ## 2.28
 
 Added a new notification area to the web interface, accessible from a link at the top, that also shows the number of unseen events. This area lists all notifications in reverse chronological order and provides a button to clear all.
