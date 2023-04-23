@@ -1074,7 +1074,7 @@ d_char *timeline_list(snac *snac, const char *idx_name, int skip, int show)
    with a link to a cached author, because we need the Follow object
    in case we need to unfollow (Undo + original Follow) */
 
-d_char *_following_fn(snac *snac, char *actor)
+d_char *_following_fn(snac *snac, const char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
     return xs_fmt("%s/following/%s.json", snac->basedir, md5);
@@ -1116,7 +1116,7 @@ int following_del(snac *snac, char *actor)
 }
 
 
-int following_check(snac *snac, char *actor)
+int following_check(snac *snac, const char *actor)
 /* checks if we are following this actor */
 {
     xs *fn = _following_fn(snac, actor);
@@ -1185,14 +1185,14 @@ d_char *following_list(snac *snac)
 }
 
 
-d_char *_muted_fn(snac *snac, char *actor)
+d_char *_muted_fn(snac *snac, const char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
     return xs_fmt("%s/muted/%s", snac->basedir, md5);
 }
 
 
-void mute(snac *snac, char *actor)
+void mute(snac *snac, const char *actor)
 /* mutes a moron */
 {
     xs *fn = _muted_fn(snac, actor);
@@ -1207,7 +1207,7 @@ void mute(snac *snac, char *actor)
 }
 
 
-void unmute(snac *snac, char *actor)
+void unmute(snac *snac, const char *actor)
 /* actor is no longer a moron */
 {
     xs *fn = _muted_fn(snac, actor);
@@ -1218,7 +1218,7 @@ void unmute(snac *snac, char *actor)
 }
 
 
-int is_muted(snac *snac, char *actor)
+int is_muted(snac *snac, const char *actor)
 /* check if someone is muted */
 {
     xs *fn = _muted_fn(snac, actor);

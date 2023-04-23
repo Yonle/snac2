@@ -1,7 +1,7 @@
 /* snac - A simple, minimalistic ActivityPub instance */
 /* copyright (c) 2022 - 2023 grunfink / MIT license */
 
-#define VERSION "2.28"
+#define VERSION "2.29-dev"
 
 #define USER_AGENT "snac/" VERSION
 
@@ -114,13 +114,13 @@ d_char *local_list(snac *snac, int max);
 
 int following_add(snac *snac, char *actor, char *msg);
 int following_del(snac *snac, char *actor);
-int following_check(snac *snac, char *actor);
+int following_check(snac *snac, const char *actor);
 int following_get(snac *snac, char *actor, d_char **data);
 d_char *following_list(snac *snac);
 
-void mute(snac *snac, char *actor);
-void unmute(snac *snac, char *actor);
-int is_muted(snac *snac, char *actor);
+void mute(snac *snac, const char *actor);
+void unmute(snac *snac, const char *actor);
+int is_muted(snac *snac, const char *actor);
 
 void hide(snac *snac, const char *id);
 int is_hidden(snac *snac, const char *id);

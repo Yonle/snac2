@@ -705,12 +705,47 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     if (strcmp(cmd, "/v1/accounts/relationships") == 0) {
         /* find if an account is followed, blocked, etc. */
         /* the account to get relationships about is in args "id[]" */
-        /* dummy by now */
+
         if (logged_in) {
-            *body  = xs_dup("[]");
+            xs *res         = xs_list_new();
+            const char *md5 = xs_dict_get(args, "id[]");
+            xs *actor_o     = NULL;
+
+            if (!xs_is_null(md5) && valid_status(object_get_by_md5(md5, &actor_o))) {
+                xs *rel = xs_dict_new();
+                xs *t   = xs_val_new(XSTYPE_TRUE);
+                xs *f   = xs_val_new(XSTYPE_FALSE);
+
+                const char *actor = xs_dict_get(actor_o, "id");
+
+                rel = xs_dict_append(rel, "id",                   md5);
+                rel = xs_dict_append(rel, "following",
+                    following_check(&snac1, actor) ? t : f);
+
+                rel = xs_dict_append(rel, "showing_reblogs",      t);
+                rel = xs_dict_append(rel, "notifying",            f);
+                rel = xs_dict_append(rel, "followed_by",
+                    follower_check(&snac1, actor) ? t : f);
+
+                rel = xs_dict_append(rel, "blocking",
+                    is_muted(&snac1, actor) ? t : f);
+
+                rel = xs_dict_append(rel, "muting",               f);
+                rel = xs_dict_append(rel, "muting_notifications", f);
+                rel = xs_dict_append(rel, "requested",            f);
+                rel = xs_dict_append(rel, "domain_blocking",      f);
+                rel = xs_dict_append(rel, "endorsed",             f);
+                rel = xs_dict_append(rel, "note",                 "");
+
+                res = xs_list_append(res, rel);
+            }
+
+            *body  = xs_json_dumps_pp(res, 4);
             *ctype = "application/json";
             status = 200;
         }
+        else
+            status = 422;
     }
     else
     if (xs_startswith(cmd, "/v1/accounts/")) {
