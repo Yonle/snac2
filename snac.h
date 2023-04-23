@@ -113,7 +113,7 @@ xs_list *timeline_top_level(snac *snac, xs_list *list);
 d_char *local_list(snac *snac, int max);
 
 int following_add(snac *snac, const char *actor, const xs_dict *msg);
-int following_del(snac *snac, char *actor);
+int following_del(snac *snac, const char *actor);
 int following_check(snac *snac, const char *actor);
 int following_get(snac *snac, const char *actor, d_char **data);
 d_char *following_list(snac *snac);

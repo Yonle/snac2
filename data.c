@@ -1103,7 +1103,7 @@ int following_add(snac *snac, const char *actor, const xs_dict *msg)
 }
 
 
-int following_del(snac *snac, char *actor)
+int following_del(snac *snac, const char *actor)
 /* we're not following this actor any longer */
 {
     xs *fn = _following_fn(snac, actor);
