@@ -1644,6 +1644,22 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                 }
                 else
                 if (strcmp(opt, "unfollow") == 0) {
+                    if (valid_status(object_get_by_md5(md5, &actor_o))) {
+                        const char *actor = xs_dict_get(actor_o, "id");
+
+                        /* get the following object */
+                        xs *object = NULL;
+
+                        if (valid_status(following_get(&snac, actor, &object))) {
+                            xs *msg = msg_undo(&snac, xs_dict_get(object, "object"));
+
+                            following_del(&snac, actor);
+
+                            enqueue_output_by_actor(&snac, msg, actor, 0);
+
+                            rsp = mastoapi_relationship(&snac, md5);
+                        }
+                    }
                 }
             }
 

@@ -1125,7 +1125,7 @@ int following_check(snac *snac, const char *actor)
 }
 
 
-int following_get(snac *snac, char *actor, d_char **data)
+int following_get(snac *snac, const char *actor, d_char **data)
 /* returns the 'Follow' object */
 {
     xs *fn = _following_fn(snac, actor);
