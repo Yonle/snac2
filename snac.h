@@ -183,7 +183,7 @@ int check_signature(snac *snac, xs_dict *req, xs_str **err);
 
 void httpd(void);
 
-int webfinger_request(char *qs, char **actor, char **user);
+int webfinger_request(const char *qs, char **actor, char **user);
 int webfinger_get_handler(d_char *req, char *q_path,
                           char **body, int *b_size, char **ctype);
 
@@ -201,8 +201,8 @@ d_char *msg_delete(snac *snac, char *id);
 d_char *msg_actor(snac *snac);
 xs_dict *msg_update(snac *snac, xs_dict *object);
 
-int activitypub_request(snac *snac, char *url, d_char **data);
-int actor_request(snac *snac, char *actor, d_char **data);
+int activitypub_request(snac *snac, const char *url, xs_dict **data);
+int actor_request(snac *snac, const char *actor, xs_dict **data);
 int send_to_inbox_raw(const char *keyid, const char *seckey,
                   const xs_str *inbox, const xs_dict *msg,
                   xs_val **payload, int *p_size, int timeout);

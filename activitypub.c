@@ -46,7 +46,7 @@ const char *default_avatar_base64(void)
 }
 
 
-int activitypub_request(snac *snac, char *url, d_char **data)
+int activitypub_request(snac *snac, const char *url, xs_dict **data)
 /* request an object */
 {
     int status;
@@ -91,7 +91,7 @@ int activitypub_request(snac *snac, char *url, d_char **data)
 }
 
 
-int actor_request(snac *snac, char *actor, d_char **data)
+int actor_request(snac *snac, const char *actor, xs_dict **data)
 /* request an actor */
 {
     int status, status2;

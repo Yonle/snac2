@@ -8,7 +8,7 @@
 
 #include "snac.h"
 
-int webfinger_request(char *qs, char **actor, char **user)
+int webfinger_request(const char *qs, char **actor, char **user)
 /* queries the webfinger for qs and fills the required fields */
 {
     int status;

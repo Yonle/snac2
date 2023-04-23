@@ -1179,6 +1179,46 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         *ctype = "application/json";
         status = 200;
     }
+    else
+    if (strcmp(cmd, "/v2/search") == 0) {
+        const char *q      = xs_dict_get(args, "q");
+        const char *type   = xs_dict_get(args, "type");
+        const char *offset = xs_dict_get(args, "offset");
+
+        xs *acl = xs_list_new();
+        xs *stl = xs_list_new();
+        xs *htl = xs_list_new();
+        xs *res = xs_dict_new();
+
+        if (xs_is_null(offset) || strcmp(offset, "0") == 0) {
+            /* reply something only for offset 0; otherwise,
+               apps like Tusky keep asking again and again */
+
+            if (!xs_is_null(q) && strcmp(type, "accounts") == 0) {
+                /* do a webfinger query */
+                char *actor = NULL;
+                char *user  = NULL;
+
+                if (valid_status(webfinger_request(q, &actor, &user))) {
+                    xs *actor_o = NULL;
+
+                    if (valid_status(actor_request(&snac1, actor, &actor_o))) {
+                        xs *acct = mastoapi_account(actor_o);
+
+                        acl = xs_list_append(acl, acct);
+                    }
+                }
+            }
+        }
+
+        res = xs_dict_append(res, "accounts", acl);
+        res = xs_dict_append(res, "statuses", stl);
+        res = xs_dict_append(res, "hashtags", htl);
+
+        *body  = xs_json_dumps_pp(res, 4);
+        *ctype = "application/json";
+        status = 200;
+    }
 
     /* user cleanup */
     if (logged_in)
