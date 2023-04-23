@@ -659,13 +659,15 @@ d_char *msg_delete(snac *snac, char *id)
 }
 
 
-xs_dict *msg_follow(snac *snac, const char *url_or_uid)
+xs_dict *msg_follow(snac *snac, const char *q)
 /* creates a 'Follow' message */
 {
     xs *actor_o = NULL;
     xs *actor   = NULL;
     d_char *msg = NULL;
     int status;
+
+    xs *url_or_uid = xs_strip_i(xs_str_new(q));
 
     if (xs_startswith(url_or_uid, "https:/"))
         actor = xs_dup(url_or_uid);
