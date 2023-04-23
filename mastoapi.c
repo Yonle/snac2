@@ -844,7 +844,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             if (limit == 0)
                 limit = 20;
 
-            xs *timeline = timeline_simple_list(&snac1, "private", 0, XS_ALL);
+            xs *timeline = timeline_simple_list(&snac1, "private", 0, 256);
 
             xs *out      = xs_list_new();
             xs_list *p   = timeline;
