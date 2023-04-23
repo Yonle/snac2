@@ -622,6 +622,42 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 }
 
 
+xs_dict *mastoapi_relationship(snac *snac, const char *md5)
+{
+    xs_dict *rel = NULL;
+    xs *actor_o  = NULL;
+
+    if (valid_status(object_get_by_md5(md5, &actor_o))) {
+        xs *t   = xs_val_new(XSTYPE_TRUE);
+        xs *f   = xs_val_new(XSTYPE_FALSE);
+        rel = xs_dict_new();
+
+        const char *actor = xs_dict_get(actor_o, "id");
+
+        rel = xs_dict_append(rel, "id",                   md5);
+        rel = xs_dict_append(rel, "following",
+            following_check(snac, actor) ? t : f);
+
+        rel = xs_dict_append(rel, "showing_reblogs",      t);
+        rel = xs_dict_append(rel, "notifying",            f);
+        rel = xs_dict_append(rel, "followed_by",
+            follower_check(snac, actor) ? t : f);
+
+        rel = xs_dict_append(rel, "blocking",
+            is_muted(snac, actor) ? t : f);
+
+        rel = xs_dict_append(rel, "muting",               f);
+        rel = xs_dict_append(rel, "muting_notifications", f);
+        rel = xs_dict_append(rel, "requested",            f);
+        rel = xs_dict_append(rel, "domain_blocking",      f);
+        rel = xs_dict_append(rel, "endorsed",             f);
+        rel = xs_dict_append(rel, "note",                 "");
+    }
+
+    return rel;
+}
+
+
 int process_auth_token(snac *snac, const xs_dict *req)
 /* processes an authorization token, if there is one */
 {
@@ -709,35 +745,12 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         if (logged_in) {
             xs *res         = xs_list_new();
             const char *md5 = xs_dict_get(args, "id[]");
-            xs *actor_o     = NULL;
 
-            if (!xs_is_null(md5) && valid_status(object_get_by_md5(md5, &actor_o))) {
-                xs *rel = xs_dict_new();
-                xs *t   = xs_val_new(XSTYPE_TRUE);
-                xs *f   = xs_val_new(XSTYPE_FALSE);
+            if (!xs_is_null(md5)) {
+                xs *rel = mastoapi_relationship(&snac1, md5);
 
-                const char *actor = xs_dict_get(actor_o, "id");
-
-                rel = xs_dict_append(rel, "id",                   md5);
-                rel = xs_dict_append(rel, "following",
-                    following_check(&snac1, actor) ? t : f);
-
-                rel = xs_dict_append(rel, "showing_reblogs",      t);
-                rel = xs_dict_append(rel, "notifying",            f);
-                rel = xs_dict_append(rel, "followed_by",
-                    follower_check(&snac1, actor) ? t : f);
-
-                rel = xs_dict_append(rel, "blocking",
-                    is_muted(&snac1, actor) ? t : f);
-
-                rel = xs_dict_append(rel, "muting",               f);
-                rel = xs_dict_append(rel, "muting_notifications", f);
-                rel = xs_dict_append(rel, "requested",            f);
-                rel = xs_dict_append(rel, "domain_blocking",      f);
-                rel = xs_dict_append(rel, "endorsed",             f);
-                rel = xs_dict_append(rel, "note",                 "");
-
-                res = xs_list_append(res, rel);
+                if (rel != NULL)
+                    res = xs_list_append(res, rel);
             }
 
             *body  = xs_json_dumps_pp(res, 4);
@@ -1590,6 +1603,54 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                     *ctype = "application/json";
                     status = 200;
                 }
+            }
+        }
+        else
+            status = 401;
+    }
+    else
+    if (xs_startswith(cmd, "/v1/accounts")) {
+        if (logged_in) {
+            /* account-related information */
+            xs *l = xs_split(cmd, "/");
+            const char *md5 = xs_list_get(l, 3);
+            const char *opt = xs_list_get(l, 4);
+            xs *rsp = NULL;
+
+            if (!xs_is_null(md5) && *md5) {
+                xs *actor_o = NULL;
+
+                if (xs_is_null(opt)) {
+                    /* ? */
+                }
+                else
+                if (strcmp(opt, "follow") == 0) {
+                    if (valid_status(object_get_by_md5(md5, &actor_o))) {
+                        const char *actor = xs_dict_get(actor_o, "id");
+
+                        xs *msg = msg_follow(&snac, actor);
+
+                        if (msg != NULL) {
+                            /* reload the actor from the message, in may be different */
+                            actor = xs_dict_get(msg, "object");
+
+                            following_add(&snac, actor, msg);
+
+                            enqueue_output_by_actor(&snac, msg, actor, 0);
+
+                            rsp = mastoapi_relationship(&snac, md5);
+                        }
+                    }
+                }
+                else
+                if (strcmp(opt, "unfollow") == 0) {
+                }
+            }
+
+            if (rsp != NULL) {
+                *body  = xs_json_dumps_pp(rsp, 4);
+                *ctype = "application/json";
+                status = 200;
             }
         }
         else

@@ -112,7 +112,7 @@ xs_list *timeline_top_level(snac *snac, xs_list *list);
 
 d_char *local_list(snac *snac, int max);
 
-int following_add(snac *snac, char *actor, char *msg);
+int following_add(snac *snac, const char *actor, const xs_dict *msg);
 int following_del(snac *snac, char *actor);
 int following_check(snac *snac, const char *actor);
 int following_get(snac *snac, char *actor, d_char **data);
@@ -156,7 +156,7 @@ void enqueue_input(snac *snac, xs_dict *msg, xs_dict *req, int retries);
 void enqueue_output_raw(const char *keyid, const char *seckey,
                         xs_dict *msg, xs_str *inbox, int retries);
 void enqueue_output(snac *snac, xs_dict *msg, xs_str *inbox, int retries);
-void enqueue_output_by_actor(snac *snac, xs_dict *msg, xs_str *actor, int retries);
+void enqueue_output_by_actor(snac *snac, xs_dict *msg, const xs_str *actor, int retries);
 void enqueue_email(xs_str *msg, int retries);
 void enqueue_telegram(const xs_str *msg, const char *bot, const char *chat_id);
 void enqueue_message(snac *snac, char *msg);
@@ -191,7 +191,7 @@ const char *default_avatar_base64(void);
 
 d_char *msg_admiration(snac *snac, char *object, char *type);
 d_char *msg_create(snac *snac, char *object);
-d_char *msg_follow(snac *snac, char *actor);
+xs_dict *msg_follow(snac *snac, const char *actor);
 
 xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
                   xs_str *in_reply_to, xs_list *attach, int priv);
@@ -208,7 +208,7 @@ int send_to_inbox_raw(const char *keyid, const char *seckey,
                   xs_val **payload, int *p_size, int timeout);
 int send_to_inbox(snac *snac, const xs_str *inbox, const xs_dict *msg,
                   xs_val **payload, int *p_size, int timeout);
-d_char *get_actor_inbox(snac *snac, char *actor);
+d_char *get_actor_inbox(snac *snac, const char *actor);
 int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size, int timeout);
 int is_msg_public(snac *snac, const xs_dict *msg);
 int is_msg_for_me(snac *snac, const xs_dict *msg);

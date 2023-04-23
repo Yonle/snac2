@@ -209,7 +209,7 @@ int send_to_inbox(snac *snac, const xs_str *inbox, const xs_dict *msg,
 }
 
 
-d_char *get_actor_inbox(snac *snac, char *actor)
+d_char *get_actor_inbox(snac *snac, const char *actor)
 /* gets an actor's inbox */
 {
     xs *data = NULL;
@@ -659,7 +659,7 @@ d_char *msg_delete(snac *snac, char *id)
 }
 
 
-d_char *msg_follow(snac *snac, char *url_or_uid)
+xs_dict *msg_follow(snac *snac, const char *url_or_uid)
 /* creates a 'Follow' message */
 {
     xs *actor_o = NULL;

@@ -1081,7 +1081,7 @@ d_char *_following_fn(snac *snac, const char *actor)
 }
 
 
-int following_add(snac *snac, char *actor, char *msg)
+int following_add(snac *snac, const char *actor, const xs_dict *msg)
 /* adds to the following list */
 {
     int ret = 201; /* created */
@@ -1770,7 +1770,7 @@ void enqueue_output(snac *snac, xs_dict *msg, xs_str *inbox, int retries)
 }
 
 
-void enqueue_output_by_actor(snac *snac, xs_dict *msg, xs_str *actor, int retries)
+void enqueue_output_by_actor(snac *snac, xs_dict *msg, const xs_str *actor, int retries)
 /* enqueues an output message for an actor */
 {
     xs *inbox = get_actor_inbox(snac, actor);
