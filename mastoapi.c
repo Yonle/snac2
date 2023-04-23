@@ -456,7 +456,12 @@ xs_dict *mastoapi_account(const xs_dict *actor)
         acct = xs_dict_append(acct, "created_at", date);
     }
 
-    acct = xs_dict_append(acct, "note",         xs_dict_get(actor, "summary"));
+    const char *note = xs_dict_get(actor, "summary");
+    if (xs_is_null(note))
+        note = "";
+
+    acct = xs_dict_append(acct, "note", note);
+
     acct = xs_dict_append(acct, "url",          id);
 
     xs *avatar  = NULL;
