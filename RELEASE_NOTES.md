@@ -2,7 +2,7 @@
 
 ## 2.29
 
-New Mastodon API features: account search, relationships (so the Follow/Unfollow buttons now appear for each account).
+New Mastodon API features: account search, relationships (so the Follow/Unfollow buttons now appear for each account), follow and unfollow accounts.
 
 ## 2.28
 
