@@ -12,6 +12,8 @@ Mastodon API: add an instance timeline by combining the timelines of all users.
 
 Mastodon API: fix whatever the fuck is making the official app and Megalodon to crash.
 
+Improve support for audio attachments.
+
 ## Wishlist
 
 Add a list of hashtags to drop.
@@ -29,6 +31,8 @@ Implement bulleted lists. Mastodon is crap and won't show them, but other implem
 Add (back) the possibility to attach an image by URL.
 
 With this new disk layout, hidden posts (and their children) can be directly skipped when rendering the HTML timeline (are there any other implications?).
+
+Do something with @mentions without host; complete with followed people, or with local users. Or just do nothing. I'm not sure.
 
 ## Closed
 
