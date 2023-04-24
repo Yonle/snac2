@@ -1125,14 +1125,13 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         ins = xs_dict_append(ins, "email", v);
 
         xs *l1 = xs_list_new();
-        ins = xs_dict_append(ins, "rules",     l1);
+        ins = xs_dict_append(ins, "rules", l1);
 
         l1 = xs_list_append(l1, "en");
         ins = xs_dict_append(ins, "languages", l1);
 
         xs *d1 = xs_dict_new();
-        ins = xs_dict_append(ins, "urls",            d1);
-        ins = xs_dict_append(ins, "configuration",   d1);
+        ins = xs_dict_append(ins, "urls", d1);
 
         xs *z = xs_number_new(0);
         d1 = xs_dict_append(d1, "user_count", z);
@@ -1145,14 +1144,23 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         ins = xs_dict_append(ins, "approval_required", f);
         ins = xs_dict_append(ins, "invites_enabled", f);
 
-/*        {
-            snac snac;
-            user_open(&snac, "test1");
-            xs *actor = msg_actor(&snac);
-            xs *acc = mastoapi_account(actor);
-            ins = xs_dict_append(ins, "contact_account", acc);
-            user_free(&snac);
-        }*/
+        xs *cfg = xs_dict_new();
+
+        {
+            xs *d11 = xs_dict_new();
+            xs *mc  = xs_number_new(100000);
+            xs *mm  = xs_number_new(8);
+            xs *cr  = xs_number_new(32);
+
+            d11 = xs_dict_append(d11, "max_characters", mc);
+            d11 = xs_dict_append(d11, "max_media_attachments", mm);
+            d11 = xs_dict_append(d11, "characters_reserved_per_url", cr);
+
+            cfg = xs_dict_append(cfg, "statuses", d11);
+        }
+
+        ins = xs_dict_append(ins, "configuration", cfg);
+
         *body  = xs_json_dumps_pp(ins, 4);
         *ctype = "application/json";
         status = 200;
