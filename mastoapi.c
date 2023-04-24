@@ -1159,6 +1159,25 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             cfg = xs_dict_append(cfg, "statuses", d11);
         }
 
+        {
+            xs *d11 = xs_dict_new();
+            xs *mt  = xs_list_new();
+
+            mt = xs_list_append(mt, "image/jpeg");
+            mt = xs_list_append(mt, "image/png");
+            mt = xs_list_append(mt, "image/gif");
+
+            d11 = xs_dict_append(d11, "supported_mime_types", mt);
+
+            d11 = xs_dict_append(d11, "image_size_limit", z);
+            d11 = xs_dict_append(d11, "image_matrix_limit", z);
+            d11 = xs_dict_append(d11, "video_size_limit", z);
+            d11 = xs_dict_append(d11, "video_matrix_limit", z);
+            d11 = xs_dict_append(d11, "video_frame_rate_limit", z);
+
+            cfg = xs_dict_append(cfg, "media_attachments", d11);
+        }
+
         ins = xs_dict_append(ins, "configuration", cfg);
 
         *body  = xs_json_dumps_pp(ins, 4);
