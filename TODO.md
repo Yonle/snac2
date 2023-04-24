@@ -2,13 +2,13 @@
 
 ## Open
 
-Post edits should keep the image and the image description.
+Post edits should preserve the image and the image description somewhat.
 
-Implement the 'search by tag' operation instead of just pretending that it does something.
+Implement real tag links instead of just pretending that it's something that exists.
 
-Mastodon API: add search by account (webfinger).
+Mastodon API: implement 'unfavourite'.
 
-Mastodon API: add an instance timeline by combining the timelines of all users.
+Mastodon API: implement 'unreblog' (unboost).
 
 Mastodon API: fix whatever the fuck is making the official app and Megalodon to crash.
 
@@ -237,3 +237,7 @@ Implement the ActivityPub C2S (Client to Server) API: https://www.w3.org/TR/acti
 Edits do not refresh the HTML cache (2023-04-14T19:05:27+0200).
 
 Add a notification area, where recent events of interest would be easily seen (2023-04-21T23:20:27+0200).
+
+Mastodon API: add search by account (webfinger) (2023-04-24T05:01:03+0200).
+
+Mastodon API: add an instance timeline by combining the timelines of all users (2023-04-24T05:01:14+0200).
