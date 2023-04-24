@@ -994,6 +994,10 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 if (strcmp(xs_dict_get(msg, "type"), "Note") != 0)
                     continue;
 
+                /* drop notes from muted morons */
+                if (is_muted(&snac1, xs_dict_get(msg, "attributedTo")))
+                    continue;
+
                 /* convert the Note into a Mastodon status */
                 xs *st = mastoapi_status(&snac1, msg);
 
@@ -1293,7 +1297,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (xs_startswith(cmd, "/v1/statuses/")) {
-        /* operations on a status */
+        /* information about a status */
         xs *l = xs_split(cmd, "/");
         const char *id = xs_list_get(l, 3);
         const char *op = xs_list_get(l, 4);
@@ -1307,8 +1311,10 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
             if (valid_status(timeline_get_by_md5(&snac1, id, &msg))) {
                 if (op == NULL) {
-                    /* return the status itself */
-                    out = mastoapi_status(&snac1, msg);
+                    if (!is_muted(&snac1, xs_dict_get(msg, "attributedTo"))) {
+                        /* return the status itself */
+                        out = mastoapi_status(&snac1, msg);
+                    }
                 }
                 else
                 if (strcmp(op, "context") == 0) {
