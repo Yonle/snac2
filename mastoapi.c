@@ -557,9 +557,45 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 
     st = xs_dict_append(st, "media_attachments", matt);
 
-    st = xs_dict_append(st, "mentions",          el);
-    st = xs_dict_append(st, "tags",              el);
-    st = xs_dict_append(st, "emojis",            el);
+    {
+        xs *ml  = xs_list_new();
+        xs *htl = xs_list_new();
+        xs *eml = xs_list_new();
+        xs_list *p = xs_dict_get(msg, "tag");
+        xs_dict *v;
+        int n = 0;
+
+        while (xs_list_iter(&p, &v)) {
+            const char *type = xs_dict_get(v, "type");
+
+            if (xs_is_null(type))
+                continue;
+
+            xs *d1 = xs_dict_new();
+
+            if (strcmp(type, "Mention") == 0) {
+                const char *name = xs_dict_get(v, "name");
+                const char *href = xs_dict_get(v, "href");
+
+                if (!xs_is_null(name) && !xs_is_null(href) &&
+                    strcmp(href, snac->actor) != 0) {
+                    xs *nm = xs_strip_chars_i(xs_dup(name), "@");
+
+                    xs *id = xs_fmt("%d", n++);
+                    d1 = xs_dict_append(d1, "id", id);
+                    d1 = xs_dict_append(d1, "username", nm);
+                    d1 = xs_dict_append(d1, "acct", nm);
+                    d1 = xs_dict_append(d1, "url", href);
+
+                    ml = xs_list_append(ml, d1);
+                }
+            }
+        }
+
+        st = xs_dict_append(st, "mentions", ml);
+        st = xs_dict_append(st, "tags",     htl);
+        st = xs_dict_append(st, "emojis",   eml);
+    }
 
     xs_free(idx);
     xs_free(ixc);
