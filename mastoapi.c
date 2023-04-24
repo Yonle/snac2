@@ -604,6 +604,28 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
                     htl = xs_list_append(htl, d1);
                 }
             }
+            else
+            if (strcmp(type, "Emoji") == 0) {
+                const char *name    = xs_dict_get(v, "name");
+                const xs_dict *icon = xs_dict_get(v, "icon");
+
+                if (!xs_is_null(name) && !xs_is_null(icon)) {
+                    const char *url = xs_dict_get(icon, "url");
+
+                    if (!xs_is_null(url)) {
+                        xs *nm = xs_strip_chars_i(xs_dup(name), ":");
+                        xs *t  = xs_val_new(XSTYPE_TRUE);
+
+                        d1 = xs_dict_append(d1, "shortcode", nm);
+                        d1 = xs_dict_append(d1, "url", url);
+                        d1 = xs_dict_append(d1, "static_url", url);
+                        d1 = xs_dict_append(d1, "visible_in_picker", t);
+                        d1 = xs_dict_append(d1, "category", "Emojis");
+
+                        eml = xs_list_append(eml, d1);
+                    }
+                }
+            }
         }
 
         st = xs_dict_append(st, "mentions", ml);
