@@ -590,6 +590,20 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
                     ml = xs_list_append(ml, d1);
                 }
             }
+            else
+            if (strcmp(type, "Hashtag") == 0) {
+                const char *name = xs_dict_get(v, "name");
+                const char *href = xs_dict_get(v, "href");
+
+                if (!xs_is_null(name) && !xs_is_null(href)) {
+                    xs *nm = xs_strip_chars_i(xs_dup(name), "#");
+
+                    d1 = xs_dict_append(d1, "name", nm);
+                    d1 = xs_dict_append(d1, "url", href);
+
+                    htl = xs_list_append(htl, d1);
+                }
+            }
         }
 
         st = xs_dict_append(st, "mentions", ml);
