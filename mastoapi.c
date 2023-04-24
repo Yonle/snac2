@@ -462,7 +462,7 @@ xs_dict *mastoapi_account(const xs_dict *actor)
 
     acct = xs_dict_append(acct, "note", note);
 
-    acct = xs_dict_append(acct, "url",          id);
+    acct = xs_dict_append(acct, "url", id);
 
     xs *avatar  = NULL;
     xs_dict *av = xs_dict_get(actor, "icon");
@@ -473,6 +473,41 @@ xs_dict *mastoapi_account(const xs_dict *actor)
         avatar = xs_fmt("%s/susie.png", srv_baseurl);
 
     acct = xs_dict_append(acct, "avatar", avatar);
+
+    /* emojis */
+    xs_list *p;
+    if (!xs_is_null(p = xs_dict_get(actor, "tag"))) {
+        xs *eml = xs_list_new();
+        xs_dict *v;
+        xs *t = xs_val_new(XSTYPE_TRUE);
+
+        while (xs_list_iter(&p, &v)) {
+            const char *type = xs_dict_get(v, "type");
+
+            if (!xs_is_null(type) && strcmp(type, "Emoji") == 0) {
+                const char *name    = xs_dict_get(v, "name");
+                const xs_dict *icon = xs_dict_get(v, "icon");
+
+                if (!xs_is_null(name) && !xs_is_null(icon)) {
+                    const char *url = xs_dict_get(icon, "url");
+
+                    if (!xs_is_null(url)) {
+                        xs *nm = xs_strip_chars_i(xs_dup(name), ":");
+                        xs *d1 = xs_dict_new();
+
+                        d1 = xs_dict_append(d1, "shortcode",         nm);
+                        d1 = xs_dict_append(d1, "url",               url);
+                        d1 = xs_dict_append(d1, "static_url",        url);
+                        d1 = xs_dict_append(d1, "visible_in_picker", t);
+
+                        eml = xs_list_append(eml, d1);
+                    }
+                }
+            }
+        }
+
+        acct = xs_dict_append(acct, "emojis", eml);
+    }
 
     return acct;
 }
