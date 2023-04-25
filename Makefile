@@ -30,7 +30,7 @@ install:
 activitypub.o: activitypub.c xs.h xs_encdec.h xs_json.h xs_curl.h \
  xs_mime.h xs_openssl.h xs_regex.h xs_time.h xs_set.h snac.h
 data.o: data.c xs.h xs_io.h xs_json.h xs_openssl.h xs_glob.h xs_set.h \
- snac.h
+ xs_time.h snac.h
 format.o: format.c xs.h xs_regex.h snac.h
 html.o: html.c xs.h xs_io.h xs_encdec.h xs_json.h xs_regex.h xs_set.h \
  xs_openssl.h xs_time.h xs_mime.h snac.h
@@ -39,6 +39,8 @@ http.o: http.c xs.h xs_io.h xs_encdec.h xs_openssl.h xs_curl.h xs_time.h \
 httpd.o: httpd.c xs.h xs_io.h xs_encdec.h xs_json.h xs_socket.h \
  xs_httpd.h xs_mime.h snac.h
 main.o: main.c xs.h xs_io.h xs_encdec.h xs_json.h snac.h
+mastoapi.o: mastoapi.c xs.h xs_encdec.h xs_openssl.h xs_json.h xs_io.h \
+ xs_time.h snac.h
 snac.o: snac.c xs.h xs_io.h xs_encdec.h xs_json.h xs_curl.h xs_openssl.h \
  xs_socket.h xs_httpd.h xs_mime.h xs_regex.h xs_set.h xs_time.h xs_glob.h \
  snac.h
