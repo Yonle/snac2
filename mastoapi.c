@@ -1221,7 +1221,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         ins = xs_dict_append(ins, "domain",      host);
         ins = xs_dict_append(ins, "title",       host);
         ins = xs_dict_append(ins, "version",     "4.0.0 (not true; really " USER_AGENT ")");
-        ins = xs_dict_append(ins, "source_url",  "https:/" "/comam.es/what-is-snac");
+        ins = xs_dict_append(ins, "source_url",  WHAT_IS_SNAC_URL);
         ins = xs_dict_append(ins, "description", host);
 
         ins = xs_dict_append(ins, "short_description", host);

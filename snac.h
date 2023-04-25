@@ -5,6 +5,8 @@
 
 #define USER_AGENT "snac/" VERSION
 
+#define WHAT_IS_SNAC_URL "https:/" "/comam.es/what-is-snac"
+
 #define DIR_PERM 02770
 
 extern double disk_layout;

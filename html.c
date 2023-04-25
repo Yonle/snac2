@@ -988,9 +988,11 @@ d_char *html_user_footer(snac *snac, d_char *s)
     xs *s1 = xs_fmt(
         "<div class=\"snac-footer\">\n"
         "<a href=\"%s\">%s</a> - "
-        "powered by <abbr title=\"Social Networks Are Crap\">snac</abbr></div>\n",
+        "powered by <a href=\"%s\""
+        "<abbr title=\"Social Networks Are Crap\">snac</abbr></div></a>\n",
         srv_baseurl,
-        L("about this site")
+        L("about this site"),
+        WHAT_IS_SNAC_URL
     );
 
     return xs_str_cat(s, s1);
