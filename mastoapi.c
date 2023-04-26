@@ -1436,7 +1436,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             /* reply something only for offset 0; otherwise,
                apps like Tusky keep asking again and again */
 
-            if (!xs_is_null(q) && strcmp(type, "accounts") == 0) {
+            if (!xs_is_null(q) && !xs_is_null(type) && strcmp(type, "accounts") == 0) {
                 /* do a webfinger query */
                 char *actor = NULL;
                 char *user  = NULL;
