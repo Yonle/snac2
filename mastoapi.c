@@ -786,6 +786,10 @@ int process_auth_token(snac *snac, const xs_dict *req)
 
             if (!xs_is_null(uid) && user_open(snac, uid)) {
                 logged_in = 1;
+
+                /* this counts as a 'login' */
+                lastlog_write(snac);
+
                 srv_debug(2, xs_fmt("mastoapi auth: valid token for user %s", uid));
             }
             else
