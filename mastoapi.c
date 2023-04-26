@@ -570,23 +570,25 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
     while (xs_list_iter(&att, &aobj)) {
         const char *mtype = xs_dict_get(aobj, "mediaType");
 
-        if (!xs_is_null(mtype) && xs_startswith(mtype, "image/")) {
-            xs *matteid = xs_fmt("%s_%d", id, xs_list_len(matt));
-            xs *matte   = xs_dict_new();
+        if (!xs_is_null(mtype)) {
+            if (xs_startswith(mtype, "image/") || xs_startswith(mtype, "video/")) {
+                xs *matteid = xs_fmt("%s_%d", id, xs_list_len(matt));
+                xs *matte   = xs_dict_new();
 
-            matte = xs_dict_append(matte, "id",          matteid);
-            matte = xs_dict_append(matte, "type",        "image");
-            matte = xs_dict_append(matte, "url",         xs_dict_get(aobj, "url"));
-            matte = xs_dict_append(matte, "preview_url", xs_dict_get(aobj, "url"));
-            matte = xs_dict_append(matte, "remote_url",  xs_dict_get(aobj, "url"));
+                matte = xs_dict_append(matte, "id",          matteid);
+                matte = xs_dict_append(matte, "type",        *mtype == 'i' ? "image" : "video");
+                matte = xs_dict_append(matte, "url",         xs_dict_get(aobj, "url"));
+                matte = xs_dict_append(matte, "preview_url", xs_dict_get(aobj, "url"));
+                matte = xs_dict_append(matte, "remote_url",  xs_dict_get(aobj, "url"));
 
-            const char *name = xs_dict_get(aobj, "name");
-            if (xs_is_null(name))
-                name = "";
+                const char *name = xs_dict_get(aobj, "name");
+                if (xs_is_null(name))
+                    name = "";
 
-            matte = xs_dict_append(matte, "description", name);
+                matte = xs_dict_append(matte, "description", name);
 
-            matt = xs_list_append(matt, matte);
+                matt = xs_list_append(matt, matte);
+            }
         }
     }
 
