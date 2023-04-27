@@ -1000,8 +1000,12 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 if (strcmp(xs_dict_get(msg, "type"), "Note") != 0)
                     continue;
 
-                /* drop notes from muted morons */
+                /* discard notes from muted morons */
                 if (is_muted(&snac1, xs_dict_get(msg, "attributedTo")))
+                    continue;
+
+                /* discard hidden notes */
+                if (is_hidden(&snac1, xs_dict_get(msg, "id")))
                     continue;
 
                 /* convert the Note into a Mastodon status */
