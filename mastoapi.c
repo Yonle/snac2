@@ -9,6 +9,7 @@
 #include "xs_json.h"
 #include "xs_io.h"
 #include "xs_time.h"
+#include "xs_glob.h"
 
 #include "snac.h"
 
@@ -59,13 +60,19 @@ int app_add(const char *id, const xs_dict *app)
 }
 
 
+xs_str *_app_fn(const char *id)
+{
+    return xs_fmt("%s/app/%s.json", srv_basedir, id);
+}
+
+
 xs_dict *app_get(const char *id)
 /* gets an app */
 {
     if (!xs_is_hex(id))
         return NULL;
 
-    xs *fn       = xs_fmt("%s/app/%s.json", srv_basedir, id);
+    xs *fn       = _app_fn(id);
     xs_dict *app = NULL;
     FILE *f;
 
@@ -86,7 +93,7 @@ int app_del(const char *id)
     if (!xs_is_hex(id))
         return -1;
 
-    xs *fn = xs_fmt("%s/app/%s.json", srv_basedir, id);
+    xs *fn = _app_fn(id);
 
     return unlink(fn);
 }
@@ -1963,6 +1970,32 @@ int mastoapi_put_handler(const xs_dict *req, const char *q_path,
 
 void mastoapi_purge(void)
 {
+    xs *spec   = xs_fmt("%s/app/" "*.json", srv_basedir);
+    xs *files  = xs_glob(spec, 1, 0);
+    xs_list *p = files;
+    xs_str *v;
+
+    time_t mt = time(NULL) - 3600;
+
+    while (xs_list_iter(&p, &v)) {
+        xs *cid = xs_replace(v, ".json", "");
+        xs *fn  = _app_fn(cid);
+
+        if (mtime(fn) < mt) {
+            /* get the app */
+            xs *app = app_get(cid);
+
+            if (app) {
+                /* old apps with no uid are incomplete cruft */
+                const char *uid = xs_dict_get(app, "uid");
+
+                if (xs_is_null(uid) || *uid == '\0') {
+                    unlink(fn);
+                    srv_debug(2, xs_fmt("purged %s", fn));
+                }
+            }
+        }
+    }
 }
 
 
