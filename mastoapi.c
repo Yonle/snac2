@@ -1522,9 +1522,20 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
         if (name && ruri) {
             xs *app  = xs_dict_new();
             xs *id   = xs_replace_i(tid(0), ".", "");
-            xs *cid  = random_str();
             xs *csec = random_str();
             xs *vkey = random_str();
+            xs *cid  = NULL;
+
+            /* pick a non-existent random cid */
+            for (;;) {
+                cid = random_str();
+                xs *p_app = app_get(cid);
+
+                if (p_app == NULL)
+                    break;
+
+                xs_free(cid);
+            }
 
             app = xs_dict_append(app, "name",          name);
             app = xs_dict_append(app, "redirect_uri",  ruri);
