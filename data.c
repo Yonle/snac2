@@ -2078,6 +2078,10 @@ void purge_all(void)
     }
 
     purge_server();
+
+#ifndef NO_MASTODON_API
+    mastoapi_purge();
+#endif
 }
 
 

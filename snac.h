@@ -253,3 +253,4 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
 int mastoapi_put_handler(const xs_dict *req, const char *q_path,
                           const char *payload, int p_size,
                           char **body, int *b_size, char **ctype);
+void mastoapi_purge(void);

@@ -1961,4 +1961,9 @@ int mastoapi_put_handler(const xs_dict *req, const char *q_path,
 }
 
 
+void mastoapi_purge(void)
+{
+}
+
+
 #endif /* #ifndef NO_MASTODON_API */
