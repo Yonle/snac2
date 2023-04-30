@@ -105,14 +105,14 @@ int timeline_touch(snac *snac);
 int timeline_here(snac *snac, const char *md5);
 int timeline_get_by_md5(snac *snac, const char *md5, xs_dict **msg);
 int timeline_del(snac *snac, char *id);
-d_char *timeline_simple_list(snac *snac, const char *idx_name, int skip, int show);
-d_char *timeline_list(snac *snac, const char *idx_name, int skip, int show);
+xs_list *timeline_simple_list(snac *snac, const char *idx_name, int skip, int show);
+xs_list *timeline_list(snac *snac, const char *idx_name, int skip, int show);
 int timeline_add(snac *snac, char *id, char *o_msg);
 void timeline_admire(snac *snac, char *id, char *admirer, int like);
 
 xs_list *timeline_top_level(snac *snac, xs_list *list);
-
-d_char *local_list(snac *snac, int max);
+xs_list *local_list(snac *snac, int max);
+xs_list *timeline_instance_list(int skip, int show);
 
 int following_add(snac *snac, const char *actor, const xs_dict *msg);
 int following_del(snac *snac, const char *actor);

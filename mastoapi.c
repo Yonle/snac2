@@ -1038,9 +1038,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     if (strcmp(cmd, "/v1/timelines/public") == 0) {
         /* the public timeline (public timelines for all users) */
 
-        /* this is an ugly kludge: first users in the list get all the fame */
-
-        const char *limit_s  = xs_dict_get(args, "limit");
+        const char *limit_s = xs_dict_get(args, "limit");
         int limit = 0;
         int cnt   = 0;
 
@@ -1050,44 +1048,40 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         if (limit == 0)
             limit = 20;
 
-        xs *out    = xs_list_new();
-        xs *users  = user_list();
-        xs_list *p = users;
-        xs_str *uid;
+        xs *timeline = timeline_instance_list(0, limit);
+        xs *out      = xs_list_new();
+        xs_list *p   = timeline;
+        xs_str *md5;
 
-        while (xs_list_iter(&p, &uid) && cnt < limit) {
-            snac user;
+        while (xs_list_iter(&p, &md5) && cnt < limit) {
+            xs *msg = NULL;
 
-            if (user_open(&user, uid)) {
-                xs *timeline = timeline_simple_list(&user, "public", 0, 4);
-                xs_list *p2  = timeline;
-                xs_str *v;
+            /* get the entry */
+            if (!valid_status(object_get_by_md5(md5, &msg)))
+                continue;
 
-                while (xs_list_iter(&p2, &v) && cnt < limit) {
-                    xs *msg = NULL;
+            /* discard non-Notes */
+            if (strcmp(xs_dict_get(msg, "type"), "Note") != 0)
+                continue;
 
-                    /* get the entry */
-                    if (!valid_status(timeline_get_by_md5(&user, v, &msg)))
-                        continue;
+            /* get the uid */
+            xs *l = xs_split(xs_dict_get(msg, "attributedTo"), "/");
+            const char *uid = xs_list_get(l, -1);
 
-                    /* discard non-Notes */
-                    if (strcmp(xs_dict_get(msg, "type"), "Note") != 0)
-                        continue;
+            if (!xs_is_null(uid)) {
+                snac user;
 
-                    /* discard entries not by this user */
-                    if (!xs_startswith(xs_dict_get(msg, "id"), user.actor))
-                        continue;
-
+                if (user_open(&user, uid)) {
                     /* convert the Note into a Mastodon status */
                     xs *st = mastoapi_status(&user, msg);
 
-                    if (st != NULL) {
+                    if (st != NULL)
                         out = xs_list_append(out, st);
-                        cnt++;
-                    }
+
+                    user_free(&user);
                 }
 
-                user_free(&user);
+                cnt++;
             }
         }
 

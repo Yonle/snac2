@@ -1046,7 +1046,7 @@ xs_list *timeline_top_level(snac *snac, xs_list *list)
 }
 
 
-d_char *timeline_simple_list(snac *snac, const char *idx_name, int skip, int show)
+xs_list *timeline_simple_list(snac *snac, const char *idx_name, int skip, int show)
 /* returns a timeline (with all entries) */
 {
     int c_max;
@@ -1064,12 +1064,21 @@ d_char *timeline_simple_list(snac *snac, const char *idx_name, int skip, int sho
 }
 
 
-d_char *timeline_list(snac *snac, const char *idx_name, int skip, int show)
+xs_list *timeline_list(snac *snac, const char *idx_name, int skip, int show)
 /* returns a timeline (only top level entries) */
 {
     xs *list = timeline_simple_list(snac, idx_name, skip, show);
 
     return timeline_top_level(snac, list);
+}
+
+
+xs_list *timeline_instance_list(int skip, int show)
+/* returns the timeline for the full instance */
+{
+    xs *idx = xs_fmt("%s/public.idx", srv_basedir);
+
+    return index_list_desc(idx, skip, show);
 }
 
 
