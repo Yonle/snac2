@@ -1319,6 +1319,7 @@ int actor_get(snac *snac1, const char *actor, xs_dict **data)
                 *data = msg_actor(&user);
 
             user_free(&user);
+            return 200;
         }
         else
             return 404;
