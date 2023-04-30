@@ -1036,7 +1036,12 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (strcmp(cmd, "/v1/timelines/public") == 0) {
-        /* the public timeline (public timelines for all users) */
+        /* the instance public timeline (public timelines for all users) */
+
+        /* NOTE: this api call needs no authorization; but,
+           I need a logged-in user in mastoapi_status() for
+           is_msg_public() and the liked/boosted flags,
+           so it will silently fail for pure public access */
 
         const char *limit_s = xs_dict_get(args, "limit");
         int limit = 0;
@@ -1053,7 +1058,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         xs_list *p   = timeline;
         xs_str *md5;
 
-        while (xs_list_iter(&p, &md5) && cnt < limit) {
+        while (logged_in && xs_list_iter(&p, &md5) && cnt < limit) {
             xs *msg = NULL;
 
             /* get the entry */
@@ -1064,23 +1069,11 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             if (strcmp(xs_dict_get(msg, "type"), "Note") != 0)
                 continue;
 
-            /* get the uid */
-            xs *l = xs_split(xs_dict_get(msg, "attributedTo"), "/");
-            const char *uid = xs_list_get(l, -1);
+            /* convert the Note into a Mastodon status */
+            xs *st = mastoapi_status(&snac1, msg);
 
-            if (!xs_is_null(uid)) {
-                snac user;
-
-                if (user_open(&user, uid)) {
-                    /* convert the Note into a Mastodon status */
-                    xs *st = mastoapi_status(&user, msg);
-
-                    if (st != NULL)
-                        out = xs_list_append(out, st);
-
-                    user_free(&user);
-                }
-
+            if (st != NULL) {
+                out = xs_list_append(out, st);
                 cnt++;
             }
         }
