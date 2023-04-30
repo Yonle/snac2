@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.30
+
+New Mastodon API features: the instance public timeline is now a real one.
+
 ## 2.29
 
 New Mastodon API features: account search, relationships (so the Follow/Unfollow buttons now appear for each account), follow and unfollow accounts, an instance-level timeline (very kludgy), custom emojis for accounts and statuses, many bug fixes (sadly, the Mastodon official app still does not work).
