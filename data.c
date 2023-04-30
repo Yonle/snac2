@@ -1287,25 +1287,41 @@ int is_hidden(snac *snac, const char *id)
 }
 
 
-int actor_add(snac *snac, const char *actor, d_char *msg)
+int actor_add(snac *snac, const char *actor, xs_dict *msg)
 /* adds an actor */
 {
     return object_add_ow(actor, msg);
 }
 
 
-int actor_get(snac *snac, const char *actor, d_char **data)
+int actor_get(snac *snac1, const char *actor, xs_dict **data)
 /* returns an already downloaded actor */
 {
     int status = 200;
-    d_char *d;
+    xs_dict *d;
 
-    if (strcmp(actor, snac->actor) == 0) {
+    if (strcmp(actor, snac1->actor) == 0) {
         /* this actor */
         if (data)
-            *data = msg_actor(snac);
+            *data = msg_actor(snac1);
 
         return status;
+    }
+
+    if (xs_startswith(actor, srv_baseurl)) {
+        /* it's a (possible) local user */
+        xs *l = xs_split(actor, "/");
+        const char *uid = xs_list_get(l, -1);
+        snac user;
+
+        if (!xs_is_null(uid) && user_open(&user, uid)) {
+            if (data)
+                *data = msg_actor(&user);
+
+            user_free(&user);
+        }
+        else
+            return 404;
     }
 
     /* read the object */
