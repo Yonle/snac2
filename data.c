@@ -2051,7 +2051,11 @@ void purge_server(void)
     xs *ib_dir = xs_fmt("%s/inbox", srv_basedir);
     _purge_dir(ib_dir, 7);
 
-    srv_debug(1, xs_fmt("purge: global (obj: %d, idx: %d)", cnt, icnt));
+    /* purge the instance timeline */
+    xs *itl_fn = xs_fmt("%s/public.idx", srv_basedir);
+    int itl_gc = index_gc(itl_fn);
+
+    srv_debug(1, xs_fmt("purge: global (obj: %d, idx: %d, itl: %d)", cnt, icnt, itl_gc));
 }
 
 
