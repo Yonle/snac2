@@ -1313,7 +1313,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             /* skip the 'fake' part of the id */
             id = MID_TO_MD5(id);
 
-            if (valid_status(timeline_get_by_md5(&snac1, id, &msg))) {
+            if (valid_status(object_get_by_md5(id, &msg))) {
                 if (op == NULL) {
                     if (!is_muted(&snac1, xs_dict_get(msg, "attributedTo"))) {
                         /* return the status itself */
