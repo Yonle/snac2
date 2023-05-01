@@ -2,7 +2,7 @@
 
 ## 2.30
 
-New Mastodon API features: the instance public timeline is now a real one.
+New Mastodon API features: the instance public timeline is now a real one, unfavourite / unreblog is supported (somewhat).
 
 ## 2.29
 
