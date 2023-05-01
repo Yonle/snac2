@@ -328,6 +328,51 @@ int index_add(const char *fn, const char *id)
 }
 
 
+int index_del_md5(const char *fn, const char *md5)
+/* deletes an md5 from an index */
+{
+    int status = 404;
+    FILE *f;
+
+    pthread_mutex_lock(&data_mutex);
+
+    if ((f = fopen(fn, "r+")) != NULL) {
+        char line[256];
+
+        while (fgets(line, sizeof(line), f) != NULL) {
+            line[32] = '\0';
+
+            if (strcmp(line, md5) == 0) {
+                /* found! just rewind, overwrite it with garbage
+                   and an eventual call to index_gc() will clean it
+                   [yes: this breaks index_len()] */
+                fseek(f, -33, SEEK_CUR);
+                fwrite("-", 1, 1, f);
+                status = 200;
+
+                break;
+            }
+        }
+
+        fclose(f);
+    }
+    else
+        status = 500;
+
+    pthread_mutex_unlock(&data_mutex);
+
+    return status;
+}
+
+
+int index_del(const char *fn, const char *id)
+/* deletes an id from an index */
+{
+    xs *md5 = xs_md5_hex(id, strlen(id));
+    return index_del_md5(fn, md5);
+}
+
+
 int index_gc(const char *fn)
 /* garbage-collects an index, deleting objects that are not here */
 {
@@ -767,6 +812,23 @@ int object_admire(const char *id, const char *actor, int like)
 
         srv_debug(1, xs_fmt("object_admire (%s) %s %s", like ? "Like" : "Announce", actor, fn));
     }
+
+    return status;
+}
+
+
+int object_unadmire(const char *id, const char *actor, int like)
+/* actor no longer likes or announces this object */
+{
+    int status;
+    xs *fn = _object_fn(id);
+
+    fn = xs_replace_i(fn, ".json", like ? "_l.idx" : "_a.idx");
+
+    status = index_del(fn, actor);
+
+    srv_debug(1,
+        xs_fmt("object_unadmire (%s) %s %s %d", like ? "Like" : "Announce", actor, fn, status));
 
     return status;
 }
