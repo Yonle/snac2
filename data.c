@@ -827,7 +827,7 @@ int object_unadmire(const char *id, const char *actor, int like)
 
     status = index_del(fn, actor);
 
-    srv_debug(1,
+    srv_debug(0,
         xs_fmt("object_unadmire (%s) %s %s %d", like ? "Like" : "Announce", actor, fn, status));
 
     return status;

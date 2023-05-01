@@ -83,6 +83,7 @@ int object_del_if_unref(const char *id);
 double object_ctime_by_md5(const char *md5);
 double object_ctime(const char *id);
 int object_admire(const char *id, const char *actor, int like);
+int object_unadmire(const char *id, const char *actor, int like);
 
 int object_likes_len(const char *id);
 int object_announces_len(const char *id);

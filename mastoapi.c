@@ -1670,7 +1670,11 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                     }
                     else
                     if (strcmp(op, "unfavourite") == 0) {
-                        /* snac does not support Undo+Like */
+                        /* partial support: as the original Like message
+                           is not stored anywhere here, it's not possible
+                           to send an Undo + Like; the only thing done here
+                           is to delete the actor from the list of likes */
+                        object_unadmire(id, snac.actor, 1);
                     }
                     else
                     if (strcmp(op, "reblog") == 0) {
@@ -1685,7 +1689,8 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                     }
                     else
                     if (strcmp(op, "unreblog") == 0) {
-                        /* snac does not support Undo+Announce */
+                        /* partial support: see comment in 'unfavourite' */
+                        object_unadmire(id, snac.actor, 0);
                     }
                     else
                     if (strcmp(op, "bookmark") == 0) {
