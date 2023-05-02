@@ -65,8 +65,10 @@ xs_str *xs_str_new(const char *str);
 xs_str *xs_str_wrap_i(const char *prefix, xs_str *str, const char *suffix);
 #define xs_str_prepend_i(str, prefix) xs_str_wrap_i(prefix, str, NULL)
 #define xs_str_cat(str, suffix) xs_str_wrap_i(NULL, str, suffix)
-xs_str *xs_replace_i(xs_str *str, const char *sfrom, const char *sto);
-#define xs_replace(str, sfrom, sto) xs_replace_i(xs_dup(str), sfrom, sto)
+xs_str *xs_replace_in(xs_str *str, const char *sfrom, const char *sto, int times);
+#define xs_replace_i(str, sfrom, sto) xs_replace_in(str, sfrom, sto, XS_ALL)
+#define xs_replace(str, sfrom, sto) xs_replace_in(xs_dup(str), sfrom, sto, XS_ALL)
+#define xs_replace_n(str, sfrom, sto, times) xs_replace_in(xs_dup(str), sfrom, sto, times)
 xs_str *xs_fmt(const char *fmt, ...);
 int xs_str_in(const char *haystack, const char *needle);
 int _xs_startsorends(const char *str, const char *xfix, int ends);
@@ -416,7 +418,7 @@ xs_str *xs_str_wrap_i(const char *prefix, xs_str *str, const char *suffix)
 }
 
 
-xs_str *xs_replace_i(xs_str *str, const char *sfrom, const char *sto)
+xs_str *xs_replace_in(xs_str *str, const char *sfrom, const char *sto, int times)
 /* replaces inline all sfrom with sto */
 {
     XS_ASSERT_TYPE(str, XSTYPE_STRING);
@@ -426,7 +428,7 @@ xs_str *xs_replace_i(xs_str *str, const char *sfrom, const char *sto)
     char *ss;
     int offset = 0;
 
-    while ((ss = strstr(str + offset, sfrom)) != NULL) {
+    while (times > 0 && (ss = strstr(str + offset, sfrom)) != NULL) {
         int n_offset = ss - str;
 
         str = xs_collapse(str, n_offset, sfsz);
@@ -434,6 +436,8 @@ xs_str *xs_replace_i(xs_str *str, const char *sfrom, const char *sto)
         memcpy(str + n_offset, sto, stsz);
 
         offset = n_offset + stsz;
+
+        times--;
     }
 
     return str;
