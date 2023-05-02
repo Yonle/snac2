@@ -21,7 +21,7 @@ int webfinger_request(const char *qs, char **actor, char **user)
 
     if (xs_startswith(qs, "https:/" "/")) {
         /* actor query: pick the host */
-        xs *s = xs_replace(qs, "https:/" "/", "");
+        xs *s = xs_replace_n(qs, "https:/" "/", "", 1);
 
         l = xs_split_n(s, "/", 1);
 
@@ -74,7 +74,7 @@ int webfinger_request(const char *qs, char **actor, char **user)
             char *subject = xs_dict_get(obj, "subject");
 
             if (subject)
-                *user = xs_replace(subject, "acct:", "");
+                *user = xs_replace_n(subject, "acct:", "", 1);
         }
 
         if (actor != NULL) {
@@ -136,7 +136,7 @@ int webfinger_get_handler(d_char *req, char *q_path,
     else
     if (xs_startswith(resource, "acct:")) {
         /* it's an account name */
-        xs *an = xs_replace(resource, "acct:", "");
+        xs *an = xs_replace_n(resource, "acct:", "", 1);
         xs *l = NULL;
 
         /* strip a possible leading @ */

@@ -185,7 +185,7 @@ int oauth_get_handler(const xs_dict *req, const char *q_path,
 
     int status   = 404;
     xs_dict *msg = xs_dict_get(req, "q_vars");
-    xs *cmd      = xs_replace(q_path, "/oauth", "");
+    xs *cmd      = xs_replace_n(q_path, "/oauth", "", 1);
 
     srv_debug(1, xs_fmt("oauth_get_handler %s", q_path));
 
@@ -245,7 +245,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
     else
         args = xs_dup(xs_dict_get(req, "p_vars"));
 
-    xs *cmd = xs_replace(q_path, "/oauth", "");
+    xs *cmd = xs_replace_n(q_path, "/oauth", "", 1);
 
     srv_debug(1, xs_fmt("oauth_post_handler %s", q_path));
 
@@ -328,7 +328,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
             const char *auhdr = xs_dict_get(req, "authorization");
 
             if (!xs_is_null(auhdr) && xs_startswith(auhdr, "Basic ")) {
-                xs *s1 = xs_replace(auhdr, "Basic ", "");
+                xs *s1 = xs_replace_n(auhdr, "Basic ", "", 1);
                 int size;
                 xs *s2 = xs_base64_dec(s1, &size);
 
@@ -787,7 +787,7 @@ int process_auth_token(snac *snac, const xs_dict *req)
 
     /* if there is an authorization field, try to validate it */
     if (!xs_is_null(v = xs_dict_get(req, "authorization")) && xs_startswith(v, "Bearer ")) {
-        xs *tokid = xs_replace(v, "Bearer ", "");
+        xs *tokid = xs_replace_n(v, "Bearer ", "", 1);
         xs *token = token_get(tokid);
 
         if (token != NULL) {
@@ -826,7 +826,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
     int status    = 404;
     xs_dict *args = xs_dict_get(req, "q_vars");
-    xs *cmd       = xs_replace(q_path, "/api", "");
+    xs *cmd       = xs_replace_n(q_path, "/api", "", 1);
 
     snac snac1 = {0};
     int logged_in = process_auth_token(&snac1, req);
@@ -1500,7 +1500,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
         printf("%s\n", j);
     }*/
 
-    xs *cmd = xs_replace(q_path, "/api", "");
+    xs *cmd = xs_replace_n(q_path, "/api", "", 1);
 
     snac snac = {0};
     int logged_in = process_auth_token(&snac, req);
@@ -1916,7 +1916,7 @@ int mastoapi_put_handler(const xs_dict *req, const char *q_path,
     if (args == NULL)
         return 400;
 
-    xs *cmd = xs_replace(q_path, "/api", "");
+    xs *cmd = xs_replace_n(q_path, "/api", "", 1);
 
     snac snac = {0};
     int logged_in = process_auth_token(&snac, req);
