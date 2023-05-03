@@ -2,6 +2,8 @@
 
 ## 2.30
 
+Fixed a bug that made some notifications to be missed.
+
 New Mastodon API features: the instance public timeline is now a real one, unfavourite / unreblog is supported (somewhat).
 
 ## 2.29
