@@ -1226,7 +1226,7 @@ xs_str *html_notifications(snac *snac)
         const char *actor_id = xs_dict_get(noti, "actor");
         xs *actor = NULL;
 
-        if (!valid_status(object_get(actor_id, &actor)))
+        if (!valid_status(actor_get(snac, actor_id, &actor)))
             continue;
 
         xs *a_name = actor_name(actor);

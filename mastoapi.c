@@ -1108,7 +1108,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 xs *actor = NULL;
                 xs *entry = NULL;
 
-                if (!valid_status(object_get(xs_dict_get(noti, "actor"), &actor)))
+                if (!valid_status(actor_get(&snac1, xs_dict_get(noti, "actor"), &actor)))
                     continue;
 
                 if (objid != NULL && !valid_status(object_get(objid, &entry)))
