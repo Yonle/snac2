@@ -1360,7 +1360,7 @@ int actor_get(snac *snac1, const char *actor, xs_dict **data)
 /* returns an already downloaded actor */
 {
     int status = 200;
-    xs_dict *d;
+    xs_dict *d = NULL;
 
     if (strcmp(actor, snac1->actor) == 0) {
         /* this actor */
@@ -1388,8 +1388,10 @@ int actor_get(snac *snac1, const char *actor, xs_dict **data)
     }
 
     /* read the object */
-    if (!valid_status(status = object_get(actor, &d)))
+    if (!valid_status(status = object_get(actor, &d))) {
+        d = xs_free(d);
         return status;
+    }
 
     if (data)
         *data = d;
