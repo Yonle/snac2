@@ -175,6 +175,8 @@ const char *login_page = ""
 int oauth_get_handler(const xs_dict *req, const char *q_path,
                       char **body, int *b_size, char **ctype)
 {
+    (void)b_size;
+
     if (!xs_startswith(q_path, "/oauth/"))
         return 0;
 
@@ -227,6 +229,9 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
                        const char *payload, int p_size,
                        char **body, int *b_size, char **ctype)
 {
+    (void)p_size;
+    (void)b_size;
+
     if (!xs_startswith(q_path, "/oauth/"))
         return 0;
 
@@ -815,6 +820,8 @@ int process_auth_token(snac *snac, const xs_dict *req)
 int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                          char **body, int *b_size, char **ctype)
 {
+    (void)b_size;
+
     if (!xs_startswith(q_path, "/api/v1/") && !xs_startswith(q_path, "/api/v2/"))
         return 0;
 
@@ -1474,6 +1481,9 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                           const char *payload, int p_size,
                           char **body, int *b_size, char **ctype)
 {
+    (void)p_size;
+    (void)b_size;
+
     if (!xs_startswith(q_path, "/api/v1/") && !xs_startswith(q_path, "/api/v2/"))
         return 0;
 
@@ -1898,6 +1908,9 @@ int mastoapi_put_handler(const xs_dict *req, const char *q_path,
                           const char *payload, int p_size,
                           char **body, int *b_size, char **ctype)
 {
+    (void)p_size;
+    (void)b_size;
+
     if (!xs_startswith(q_path, "/api/v1/") && !xs_startswith(q_path, "/api/v2/"))
         return 0;
 

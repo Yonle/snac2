@@ -49,6 +49,8 @@ int server_get_handler(xs_dict *req, char *q_path,
 {
     int status = 0;
 
+    (void)req;
+
     /* is it the server root? */
     if (*q_path == '\0') {
         /* try to open greeting.html */
@@ -285,6 +287,8 @@ static jmp_buf on_break;
 
 void term_handler(int s)
 {
+    (void)s;
+
     longjmp(on_break, 1);
 }
 
@@ -400,6 +404,8 @@ static void *background_thread(void *arg)
 /* background thread (queue management and other things) */
 {
     time_t purge_time;
+
+    (void)arg;
 
     /* first purge time */
     purge_time = time(NULL) + 10 * 60;

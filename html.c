@@ -1551,6 +1551,9 @@ int html_post_handler(const xs_dict *req, const char *q_path,
                       char *payload, int p_size,
                       char **body, int *b_size, char **ctype)
 {
+    (void)p_size;
+    (void)ctype;
+
     int status = 0;
     snac snac;
     char *uid, *p_path;

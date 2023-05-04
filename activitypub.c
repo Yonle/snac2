@@ -1524,6 +1524,8 @@ int activitypub_post_handler(const xs_dict *req, const char *q_path,
                              char **body, int *b_size, char **ctype)
 /* processes an input message */
 {
+    (void)b_size;
+
     int status = 202; /* accepted */
     char *i_ctype = xs_dict_get(req, "content-type");
     snac snac;

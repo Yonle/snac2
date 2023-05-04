@@ -104,6 +104,8 @@ int webfinger_get_handler(d_char *req, char *q_path,
 {
     int status;
 
+    (void)b_size;
+
     if (strcmp(q_path, "/.well-known/webfinger") != 0)
         return 0;
 
