@@ -43,7 +43,7 @@ d_char *nodeinfo_2_0(void)
 }
 
 
-int server_get_handler(d_char *req, char *q_path,
+int server_get_handler(xs_dict *req, char *q_path,
                        char **body, int *b_size, char **ctype)
 /* basic server services */
 {

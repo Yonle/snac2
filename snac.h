@@ -155,7 +155,7 @@ void inbox_add(const char *inbox);
 void inbox_add_by_actor(const xs_dict *actor);
 xs_list *inbox_list(void);
 
-void enqueue_input(snac *snac, xs_dict *msg, xs_dict *req, int retries);
+void enqueue_input(snac *snac, const xs_dict *msg, const xs_dict *req, int retries);
 void enqueue_output_raw(const char *keyid, const char *seckey,
                         xs_dict *msg, xs_str *inbox, int retries);
 void enqueue_output(snac *snac, xs_dict *msg, xs_str *inbox, int retries);
@@ -187,7 +187,7 @@ int check_signature(snac *snac, xs_dict *req, xs_str **err);
 void httpd(void);
 
 int webfinger_request(const char *qs, char **actor, char **user);
-int webfinger_get_handler(d_char *req, char *q_path,
+int webfinger_get_handler(xs_dict *req, char *q_path,
                           char **body, int *b_size, char **ctype);
 
 const char *default_avatar_base64(void);
@@ -220,17 +220,19 @@ int process_user_queue(snac *snac);
 void process_queue_item(xs_dict *q_item);
 int process_queue(void);
 
-int activitypub_get_handler(d_char *req, char *q_path,
+int activitypub_get_handler(const xs_dict *req, const char *q_path,
                             char **body, int *b_size, char **ctype);
-int activitypub_post_handler(d_char *req, char *q_path,
+int activitypub_post_handler(const xs_dict *req, const char *q_path,
                              char *payload, int p_size,
                              char **body, int *b_size, char **ctype);
 
 d_char *not_really_markdown(const char *content);
 d_char *sanitize(const char *str);
 
-int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char **ctype);
-int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
+int html_get_handler(const xs_dict *req, const char *q_path,
+                     char **body, int *b_size, char **ctype);
+int html_post_handler(const xs_dict *req, const char *q_path,
+                      char *payload, int p_size,
                       char **body, int *b_size, char **ctype);
 
 int snac_init(const char *_basedir);

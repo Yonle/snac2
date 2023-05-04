@@ -1814,7 +1814,7 @@ static xs_dict *_new_qmsg(const char *type, const xs_val *msg, int retries)
 }
 
 
-void enqueue_input(snac *snac, xs_dict *msg, xs_dict *req, int retries)
+void enqueue_input(snac *snac, const xs_dict *msg, const xs_dict *req, int retries)
 /* enqueues an input message */
 {
     xs *qmsg   = _new_qmsg("input", msg, retries);

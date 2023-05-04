@@ -1289,7 +1289,8 @@ xs_str *html_notifications(snac *snac)
 }
 
 
-int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char **ctype)
+int html_get_handler(const xs_dict *req, const char *q_path,
+                     char **body, int *b_size, char **ctype)
 {
     char *accept = xs_dict_get(req, "accept");
     int status = 404;
@@ -1546,7 +1547,8 @@ int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char *
 }
 
 
-int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
+int html_post_handler(const xs_dict *req, const char *q_path,
+                      char *payload, int p_size,
                       char **body, int *b_size, char **ctype)
 {
     int status = 0;

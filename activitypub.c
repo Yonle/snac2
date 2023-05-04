@@ -1426,7 +1426,7 @@ int process_queue(void)
 
 /** HTTP handlers */
 
-int activitypub_get_handler(d_char *req, char *q_path,
+int activitypub_get_handler(const xs_dict *req, const char *q_path,
                             char **body, int *b_size, char **ctype)
 {
     int status = 200;
@@ -1519,8 +1519,8 @@ int activitypub_get_handler(d_char *req, char *q_path,
 }
 
 
-int activitypub_post_handler(d_char *req, char *q_path,
-                             d_char *payload, int p_size,
+int activitypub_post_handler(const xs_dict *req, const char *q_path,
+                             char *payload, int p_size,
                              char **body, int *b_size, char **ctype)
 /* processes an input message */
 {
