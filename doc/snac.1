@@ -241,10 +241,11 @@ http tool like
 or similar. This has the advantage that you can do it remotely from any host,
 anywhere; the only thing you need is an API Token. This is an example:
 .Bd -literal -offset indent
-curl -X POST https://snac.example.com/api/v1/statuses \ 
+curl -X POST https://snac.example.com/api/v1/statuses \\
 --header "Authorization: Bearer ${TOKEN}" -d "status=$(uptime)"
 .Ed
 .Pp
+You can obtain an API Token from a mobile app.
 .Sh ENVIRONMENT
 .Bl -tag -width Ds
 .It Ev DEBUG
