@@ -221,6 +221,16 @@ int oauth_get_handler(const xs_dict *req, const char *q_path,
         else
             srv_debug(0, xs_fmt("oauth authorize: invalid or unset arguments"));
     }
+    else
+    if (strcmp(cmd, "/x-snac-get-token") == 0) {
+        const char *host = xs_dict_get(srv_config, "host");
+
+        *body  = xs_fmt(login_page, host, "", host, "oauth/x-snac-get-token",
+                        "", "", "", USER_AGENT);
+        *ctype = "text/html";
+        status = 200;
+
+    }
 
     return status;
 }
@@ -425,6 +435,48 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
         else {
             srv_debug(0, xs_fmt("oauth revoke: invalid or unset arguments"));
             status = 403;
+        }
+    }
+    if (strcmp(cmd, "/x-snac-get-token") == 0) {
+        const char *login  = xs_dict_get(args, "login");
+        const char *passwd = xs_dict_get(args, "passwd");
+
+        const char *host = xs_dict_get(srv_config, "host");
+
+        /* by default, generate another login form with an error */
+        *body  = xs_fmt(login_page, host, "LOGIN INCORRECT", host, "oauth/x-snac-get-token",
+                        "", "", "", USER_AGENT);
+        *ctype = "text/html";
+        status = 200;
+
+        if (login && passwd) {
+            snac user;
+
+            if (user_open(&user, login)) {
+                /* check the login + password */
+                if (check_password(login, passwd, xs_dict_get(user.config, "passwd"))) {
+                    /* success! create a new token */
+                    xs *tokid = random_str();
+
+                    srv_debug(1, xs_fmt("x-snac-new-token: "
+                                    "successful login for %s, new token %s", login, tokid));
+
+                    xs *token = xs_dict_new();
+                    token = xs_dict_append(token, "token",         tokid);
+                    token = xs_dict_append(token, "client_id",     "snac-client");
+                    token = xs_dict_append(token, "client_secret", "");
+                    token = xs_dict_append(token, "uid",           login);
+                    token = xs_dict_append(token, "code",          "");
+
+                    token_add(tokid, token);
+
+                    *ctype = "text/plain";
+                    xs_free(*body);
+                    *body = xs_dup(tokid);
+                }
+
+                user_free(&user);
+            }
         }
     }
 
