@@ -1384,8 +1384,9 @@ void process_queue_item(xs_dict *q_item)
         xs *headers = xs_dict_new();
         headers = xs_dict_append(headers, "content-type", "application/json");
 
-        xs *rsp  = xs_http_request("POST", url, headers,
+        xs *rsp = xs_http_request("POST", url, headers,
                                    body, strlen(body), &status, NULL, NULL, 0);
+        rsp = xs_free(rsp);
 
         srv_debug(0, xs_fmt("telegram post %d", status));
     }

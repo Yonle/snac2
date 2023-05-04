@@ -542,7 +542,6 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
     xs *f   = xs_val_new(XSTYPE_FALSE);
     xs *t   = xs_val_new(XSTYPE_TRUE);
     xs *n   = xs_val_new(XSTYPE_NULL);
-    xs *el  = xs_list_new();
     xs *idx = NULL;
     xs *ixc = NULL;
 

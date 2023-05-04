@@ -1282,6 +1282,7 @@ xs_str *html_notifications(snac *snac)
 
     /* set the check time to now */
     xs *dummy = notify_check_time(snac, 1);
+    dummy = xs_free(dummy);
 
     timeline_touch(snac);
 
