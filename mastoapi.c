@@ -1569,6 +1569,9 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
             if (xs_is_null(media_ids))
                 media_ids = xs_dict_get(args, "media_ids[]");
 
+            if (xs_is_null(visibility))
+                visibility = "public";
+
             xs *attach_list = xs_list_new();
             xs *irt         = NULL;
 
