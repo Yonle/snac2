@@ -213,13 +213,13 @@ int oauth_get_handler(const xs_dict *req, const char *q_path,
                 *ctype = "text/html";
                 status = 200;
 
-                srv_debug(0, xs_fmt("oauth authorize: generating login page"));
+                srv_debug(1, xs_fmt("oauth authorize: generating login page"));
             }
             else
-                srv_debug(0, xs_fmt("oauth authorize: bad client_id %s", cid));
+                srv_debug(1, xs_fmt("oauth authorize: bad client_id %s", cid));
         }
         else
-            srv_debug(0, xs_fmt("oauth authorize: invalid or unset arguments"));
+            srv_debug(1, xs_fmt("oauth authorize: invalid or unset arguments"));
     }
     else
     if (strcmp(cmd, "/x-snac-get-token") == 0) {
@@ -389,7 +389,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
 
                 const char *uid = xs_dict_get(app, "uid");
 
-                srv_debug(0, xs_fmt("oauth token: "
+                srv_debug(1, xs_fmt("oauth token: "
                                 "successful login for %s, new token %s", uid, tokid));
 
                 xs *token = xs_dict_new();
@@ -403,7 +403,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
             }
         }
         else {
-            srv_debug(0, xs_fmt("oauth token: invalid or unset arguments"));
+            srv_debug(1, xs_fmt("oauth token: invalid or unset arguments"));
             status = 400;
         }
     }
@@ -425,7 +425,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
             }
             else {
                 token_del(tokid);
-                srv_debug(0, xs_fmt("oauth revoke: revoked token %s", tokid));
+                srv_debug(1, xs_fmt("oauth revoke: revoked token %s", tokid));
                 status = 200;
 
                 /* also delete the app, as it serves no purpose from now on */
@@ -433,7 +433,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
             }
         }
         else {
-            srv_debug(0, xs_fmt("oauth revoke: invalid or unset arguments"));
+            srv_debug(1, xs_fmt("oauth revoke: invalid or unset arguments"));
             status = 403;
         }
     }
@@ -1611,7 +1611,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
 
             app_add(cid, app);
 
-            srv_debug(0, xs_fmt("mastoapi apps: new app %s", cid));
+            srv_debug(1, xs_fmt("mastoapi apps: new app %s", cid));
         }
     }
     else
