@@ -220,6 +220,20 @@ Please take note that they will show your timeline in a 'Mastodon fashion'
 post display with the most active threads at the top that the web interface of
 .Nm
 provides.
+.Ss Implementing post bots
+.Nm
+makes very easy to post messages in a non-interactive manner. This example
+posts a string:
+.Bd -literal -offset indent
+uptime | snac note $SNAC_BASEDIR $SNAC_USER -
+.Ed
+.Pp
+You can setup a line like this from a
+.Xr crontab 5
+or similar. Take note that you need a) command-line access to the same machine
+that hosts the
+.Nm
+instance, and b) write permissions to the storage directories and files.
 .Sh ENVIRONMENT
 .Bl -tag -width Ds
 .It Ev DEBUG
