@@ -79,7 +79,7 @@ xs_str *actor_name(xs_dict *actor)
 }
 
 
-d_char *html_actor_icon(snac *snac, d_char *os, char *actor,
+xs_str *html_actor_icon(xs_str *os, char *actor,
     const char *date, const char *udate, const char *url, int priv)
 {
     xs *s = xs_str_new(NULL);
@@ -168,7 +168,7 @@ d_char *html_msg_icon(snac *snac, d_char *os, char *msg)
         date  = xs_dict_get(msg, "published");
         udate = xs_dict_get(msg, "updated");
 
-        os = html_actor_icon(snac, os, actor, date, udate, url, priv);
+        os = html_actor_icon(os, actor, date, udate, url, priv);
     }
 
     return os;
@@ -983,7 +983,7 @@ d_char *html_entry(snac *snac, d_char *os, char *msg, int local,
 }
 
 
-d_char *html_user_footer(snac *snac, d_char *s)
+xs_str *html_user_footer(xs_str *s)
 {
     xs *s1 = xs_fmt(
         "<div class=\"snac-footer\">\n"
@@ -1064,7 +1064,7 @@ d_char *html_timeline(snac *snac, char *list, int local, int skip, int show, int
         s = xs_str_cat(s, s1);
     }
 
-    s = html_user_footer(snac, s);
+    s = html_user_footer(s);
 
     s = xs_str_cat(s, "</body>\n</html>\n");
 
@@ -1088,8 +1088,7 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
         if (valid_status(actor_get(snac, actor_id, &actor))) {
             s = xs_str_cat(s, "<div class=\"snac-post\">\n");
 
-            s = html_actor_icon(snac, s, actor, xs_dict_get(actor, "published"), NULL, NULL, 0);
-
+            s = html_actor_icon(s, actor, xs_dict_get(actor, "published"), NULL, NULL, 0);
 
             /* content (user bio) */
             char *c = xs_dict_get(actor, "summary");
@@ -1182,7 +1181,7 @@ d_char *html_people(snac *snac)
 
     s = html_people_list(snac, s, wers, L("People that follows you"), "e");
 
-    s = html_user_footer(snac, s);
+    s = html_user_footer(s);
 
     s = xs_str_cat(s, "</body>\n</html>\n");
 
@@ -1277,7 +1276,7 @@ xs_str *html_notifications(snac *snac)
          s = xs_str_cat(s, s1);
     }
 
-    s = html_user_footer(snac, s);
+    s = html_user_footer(s);
 
     s = xs_str_cat(s, "</body>\n</html>\n");
 

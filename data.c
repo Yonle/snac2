@@ -1349,7 +1349,7 @@ int is_hidden(snac *snac, const char *id)
 }
 
 
-int actor_add(snac *snac, const char *actor, xs_dict *msg)
+int actor_add(const char *actor, xs_dict *msg)
 /* adds an actor */
 {
     return object_add_ow(actor, msg);

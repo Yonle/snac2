@@ -109,7 +109,7 @@ int actor_request(snac *snac, const char *actor, xs_dict **data)
 
         if (valid_status(status2)) {
             /* renew data */
-            status = actor_add(snac, actor, payload);
+            status = actor_add(actor, payload);
 
             if (data != NULL) {
                 *data   = payload;
@@ -1121,7 +1121,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
     else
     if (strcmp(type, "Update") == 0) {
         if (strcmp(utype, "Person") == 0) {
-            actor_add(snac, actor, xs_dict_get(msg, "object"));
+            actor_add(actor, xs_dict_get(msg, "object"));
 
             snac_log(snac, xs_fmt("updated actor %s", actor));
         }
