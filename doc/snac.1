@@ -234,6 +234,17 @@ or similar. Take note that you need a) command-line access to the same machine
 that hosts the
 .Nm
 instance, and b) write permissions to the storage directories and files.
+.Pp
+You can also post non-interactively using the Mastodon API and a command-line
+http tool like
+.Xr curl 1
+or similar. This has the advantage that you can do it remotely from any host,
+anywhere; the only thing you need is an API Token. This is an example:
+.Bd -literal -offset indent
+curl -X POST https://snac.example.com/api/v1/statuses \ 
+--header "Authorization: Bearer ${TOKEN}" -d "status=$(uptime)"
+.Ed
+.Pp
 .Sh ENVIRONMENT
 .Bl -tag -width Ds
 .It Ev DEBUG
