@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
 
         if (dbglevel) {
             xs *j = xs_json_dumps_pp(msg, 4);
-            printf("%s\n", msg);
+            printf("%s\n", j);
         }
 
         return 0;
