@@ -230,13 +230,21 @@ int main(int argc, char *argv[])
     }
 
     if (strcmp(cmd, "ping") == 0) {
-        xs *msg = msg_ping(&snac, url);
+        xs *actor_o = NULL;
 
-        enqueue_output_by_actor(&snac, msg, url, 0);
+        if (valid_status(actor_request(&snac, url, &actor_o))) {
+            xs *msg = msg_ping(&snac, url);
 
-        if (dbglevel) {
-            xs *j = xs_json_dumps_pp(msg, 4);
-            printf("%s\n", j);
+            enqueue_output_by_actor(&snac, msg, url, 0);
+
+            if (dbglevel) {
+                xs *j = xs_json_dumps_pp(msg, 4);
+                printf("%s\n", j);
+            }
+        }
+        else {
+            srv_log(xs_fmt("Error getting actor %s", url));
+            return 1;
         }
 
         return 0;
