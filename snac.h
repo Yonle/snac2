@@ -203,6 +203,8 @@ d_char *msg_undo(snac *snac, char *object);
 d_char *msg_delete(snac *snac, char *id);
 d_char *msg_actor(snac *snac);
 xs_dict *msg_update(snac *snac, xs_dict *object);
+xs_dict *msg_ping(snac *user, const char *rcpt);
+xs_dict *msg_pong(snac *user, const char *rcpt, const char *object);
 
 int activitypub_request(snac *snac, const char *url, xs_dict **data);
 int actor_request(snac *snac, const char *actor, xs_dict **data);

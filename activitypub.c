@@ -437,7 +437,8 @@ void process_tags(snac *snac, const char *content, d_char **n_content, d_char **
 
 /** messages **/
 
-d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date, char *object)
+xs_dict *msg_base(snac *snac, const char *type, const char *id,
+                  const char *actor, const char *date, const char *object)
 /* creates a base ActivityPub message */
 {
     xs *did       = NULL;
@@ -467,7 +468,7 @@ d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date, char
         }
     }
 
-    d_char *msg = xs_dict_new();
+    xs_dict *msg = xs_dict_new();
 
     msg = xs_dict_append(msg, "@context", "https:/" "/www.w3.org/ns/activitystreams");
     msg = xs_dict_append(msg, "type",     type);
@@ -845,6 +846,28 @@ xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
 }
 
 
+xs_dict *msg_ping(snac *user, const char *rcpt)
+/* creates a Ping message (https://humungus.tedunangst.com/r/honk/v/tip/f/docs/ping.txt) */
+{
+    xs_dict *msg = msg_base(user, "Ping", "@dummy", user->actor, NULL, NULL);
+
+    msg = xs_dict_append(msg, "to", rcpt);
+
+    return msg;
+}
+
+
+xs_dict *msg_pong(snac *user, const char *rcpt, const char *object)
+/* creates a Pong message (https://humungus.tedunangst.com/r/honk/v/tip/f/docs/ping.txt) */
+{
+    xs_dict *msg = msg_base(user, "Pong", "@dummy", user->actor, NULL, object);
+
+    msg = xs_dict_append(msg, "to", rcpt);
+
+    return msg;
+}
+
+
 void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg)
 /* notifies the user of relevant events */
 {
@@ -1147,7 +1170,19 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             snac_debug(snac, 1, xs_fmt("ignored 'Delete' for unknown object %s", object));
     }
     else
-        snac_debug(snac, 1, xs_fmt("process_message type '%s' ignored", type));
+    if (strcmp(type, "Pong") == 0) {
+        snac_log(snac, xs_fmt("'Pong' received from %s", actor));
+    }
+    else
+    if (strcmp(type, "Ping") == 0) {
+        snac_log(snac, xs_fmt("'Ping' requested from %s", actor));
+
+        xs *rsp = msg_pong(snac, actor, xs_dict_get(msg, "id"));
+
+        enqueue_output_by_actor(snac, rsp, actor, 0);
+    }
+    else
+        snac_debug(snac, 1, xs_fmt("process_input_message type '%s' ignored", type));
 
     if (do_notify) {
         notify(snac, type, utype, actor, msg);
