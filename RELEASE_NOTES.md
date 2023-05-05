@@ -6,6 +6,8 @@ Fixed a bug that made some notifications to be missed.
 
 New Mastodon API features: the instance public timeline is now a real one, unfavourite / unreblog is supported (somewhat).
 
+The non-standard `Ping` and `Pong` #ActivityPub activities have been implemented as proposed by @tedu@honk.tedunangst.com in the https://humungus.tedunangst.com/r/honk/v/tip/f/docs/ping.txt document (with a minor diversion: retries are managed in the same way as the rest of #snac messages).
+
 ## 2.29
 
 New Mastodon API features: account search, relationships (so the Follow/Unfollow buttons now appear for each account), follow and unfollow accounts, an instance-level timeline (very kludgy), custom emojis for accounts and statuses, many bug fixes (sadly, the Mastodon official app still does not work).
