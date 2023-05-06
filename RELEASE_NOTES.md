@@ -4,9 +4,11 @@
 
 Fixed a bug that made some notifications to be missed.
 
-New Mastodon API features: the instance public timeline is now a real one, unfavourite / unreblog is supported (somewhat).
+New Mastodon API features: the instance public timeline is now a real one, unfavourite / unreblog is supported (somewhat). Some regression bugs regarding image posting were also fixed.
 
 The non-standard `Ping` and `Pong` #ActivityPub activities have been implemented as proposed by @tedu@honk.tedunangst.com in the https://humungus.tedunangst.com/r/honk/v/tip/f/docs/ping.txt document (with a minor diversion: retries are managed in the same way as the rest of #snac messages).
+
+The build process now includes the `-Wextra` flag.
 
 ## 2.29
 
