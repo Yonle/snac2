@@ -366,7 +366,7 @@ void job_wait(xs_val **job)
 static void *job_thread(void *arg)
 /* job thread */
 {
-    int pid = (char *) arg - (char *) 0x0;
+    int pid = (int)(uintptr_t)arg;
 
     srv_debug(1, xs_fmt("job thread %d started", pid));
 
