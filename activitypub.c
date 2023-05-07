@@ -673,7 +673,7 @@ xs_dict *msg_follow(snac *snac, const char *q)
     if (xs_startswith(url_or_uid, "https:/"))
         actor = xs_dup(url_or_uid);
     else
-    if (!valid_status(webfinger_request(url_or_uid, &actor, NULL))) {
+    if (!valid_status(webfinger_request(url_or_uid, &actor, NULL)) || actor == NULL) {
         snac_log(snac, xs_fmt("cannot resolve user %s to follow", url_or_uid));
         return NULL;
     }

@@ -127,14 +127,15 @@ xs_dict *xs_http_request(const char *method, const char *url,
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION,  _data_callback);
 
     if (strcmp(method, "POST") == 0 || strcmp(method, "PUT") == 0) {
-        curl_easy_setopt(curl, method[1] == 'O' ? CURLOPT_POST : CURLOPT_UPLOAD, 1L);
+        CURLoption curl_method = method[1] == 'O' ? CURLOPT_POST : CURLOPT_UPLOAD;
+        curl_easy_setopt(curl, curl_method, 1L);
 
         if (body != NULL) {
             if (b_size <= 0)
                 b_size = xs_size(body);
 
             /* add the content-length header */
-            curl_easy_setopt(curl, CURLOPT_INFILESIZE, b_size);
+            curl_easy_setopt(curl, curl_method == CURLOPT_POST ? CURLOPT_POSTFIELDSIZE : CURLOPT_INFILESIZE, b_size);
 
             pd.data = (char *)body;
             pd.size = b_size;
