@@ -299,7 +299,7 @@ void term_handler(int s)
 static pthread_mutex_t job_mutex;
 
 /* semaphre to trigger job processing */
-static sem_t job_sem;
+static sem_t *job_sem;
 
 /* fifo of jobs */
 xs_list *job_fifo = NULL;
@@ -332,7 +332,7 @@ void job_post(const xs_val *job, int urgent)
     }
 
     /* ask for someone to attend it */
-    sem_post(&job_sem);
+    sem_post(job_sem);
 }
 
 
@@ -341,7 +341,7 @@ void job_wait(xs_val **job)
 {
     *job = NULL;
 
-    if (sem_wait(&job_sem) == 0) {
+    if (sem_wait(job_sem) == 0) {
         /* lock the mutex */
         pthread_mutex_lock(&job_mutex);
 
@@ -351,6 +351,10 @@ void job_wait(xs_val **job)
 
         /* unlock the mutex */
         pthread_mutex_unlock(&job_mutex);
+    }
+
+    if (!*job) {
+        sem_close(job_sem);
     }
 }
 
@@ -503,7 +507,7 @@ void httpd(void)
 
     /* initialize the job control engine */
     pthread_mutex_init(&job_mutex, NULL);
-    sem_init(&job_sem, 0, 0);
+    job_sem = sem_open("/job", O_CREAT, 0644, 0);
     job_fifo = xs_list_new();
 
     /* initialize sleep control */
