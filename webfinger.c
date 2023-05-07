@@ -85,7 +85,8 @@ int webfinger_request(const char *qs, char **actor, char **user)
                 if (xs_type(v) == XSTYPE_DICT) {
                     char *type = xs_dict_get(v, "type");
 
-                    if (type && strcmp(type, "application/activity+json") == 0) {
+                    if (type && (strcmp(type, "application/activity+json") == 0 ||
+                                strcmp(type, "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"") == 0)) {
                         *actor = xs_dup(xs_dict_get(v, "href"));
                         break;
                     }
