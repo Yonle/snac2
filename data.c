@@ -328,6 +328,51 @@ int index_add(const char *fn, const char *id)
 }
 
 
+int index_del_md5(const char *fn, const char *md5)
+/* deletes an md5 from an index */
+{
+    int status = 404;
+    FILE *f;
+
+    pthread_mutex_lock(&data_mutex);
+
+    if ((f = fopen(fn, "r+")) != NULL) {
+        char line[256];
+
+        while (fgets(line, sizeof(line), f) != NULL) {
+            line[32] = '\0';
+
+            if (strcmp(line, md5) == 0) {
+                /* found! just rewind, overwrite it with garbage
+                   and an eventual call to index_gc() will clean it
+                   [yes: this breaks index_len()] */
+                fseek(f, -33, SEEK_CUR);
+                fwrite("-", 1, 1, f);
+                status = 200;
+
+                break;
+            }
+        }
+
+        fclose(f);
+    }
+    else
+        status = 500;
+
+    pthread_mutex_unlock(&data_mutex);
+
+    return status;
+}
+
+
+int index_del(const char *fn, const char *id)
+/* deletes an id from an index */
+{
+    xs *md5 = xs_md5_hex(id, strlen(id));
+    return index_del_md5(fn, md5);
+}
+
+
 int index_gc(const char *fn)
 /* garbage-collects an index, deleting objects that are not here */
 {
@@ -772,6 +817,23 @@ int object_admire(const char *id, const char *actor, int like)
 }
 
 
+int object_unadmire(const char *id, const char *actor, int like)
+/* actor no longer likes or announces this object */
+{
+    int status;
+    xs *fn = _object_fn(id);
+
+    fn = xs_replace_i(fn, ".json", like ? "_l.idx" : "_a.idx");
+
+    status = index_del(fn, actor);
+
+    srv_debug(0,
+        xs_fmt("object_unadmire (%s) %s %s %d", like ? "Like" : "Announce", actor, fn, status));
+
+    return status;
+}
+
+
 int _object_user_cache(snac *snac, const char *id, const char *cachedir, int del)
 /* adds or deletes from a user cache */
 {
@@ -969,8 +1031,13 @@ void timeline_update_indexes(snac *snac, const char *id)
 
         if (valid_status(object_get(id, &msg))) {
             /* if its ours and is public, also store in public */
-            if (is_msg_public(snac, msg))
+            if (is_msg_public(snac, msg)) {
                 object_user_cache_add(snac, id, "public");
+
+                /* also add it to the instance public timeline */
+                xs *ipt = xs_fmt("%s/public.idx", srv_basedir);
+                index_add(ipt, id);
+            }
         }
     }
 }
@@ -1041,7 +1108,7 @@ xs_list *timeline_top_level(snac *snac, xs_list *list)
 }
 
 
-d_char *timeline_simple_list(snac *snac, const char *idx_name, int skip, int show)
+xs_list *timeline_simple_list(snac *snac, const char *idx_name, int skip, int show)
 /* returns a timeline (with all entries) */
 {
     int c_max;
@@ -1059,12 +1126,21 @@ d_char *timeline_simple_list(snac *snac, const char *idx_name, int skip, int sho
 }
 
 
-d_char *timeline_list(snac *snac, const char *idx_name, int skip, int show)
+xs_list *timeline_list(snac *snac, const char *idx_name, int skip, int show)
 /* returns a timeline (only top level entries) */
 {
     xs *list = timeline_simple_list(snac, idx_name, skip, show);
 
     return timeline_top_level(snac, list);
+}
+
+
+xs_list *timeline_instance_list(int skip, int show)
+/* returns the timeline for the full instance */
+{
+    xs *idx = xs_fmt("%s/public.idx", srv_basedir);
+
+    return index_list_desc(idx, skip, show);
 }
 
 
@@ -1273,30 +1349,49 @@ int is_hidden(snac *snac, const char *id)
 }
 
 
-int actor_add(snac *snac, const char *actor, d_char *msg)
+int actor_add(const char *actor, xs_dict *msg)
 /* adds an actor */
 {
     return object_add_ow(actor, msg);
 }
 
 
-int actor_get(snac *snac, const char *actor, d_char **data)
+int actor_get(snac *snac1, const char *actor, xs_dict **data)
 /* returns an already downloaded actor */
 {
     int status = 200;
-    d_char *d;
+    xs_dict *d = NULL;
 
-    if (strcmp(actor, snac->actor) == 0) {
+    if (strcmp(actor, snac1->actor) == 0) {
         /* this actor */
         if (data)
-            *data = msg_actor(snac);
+            *data = msg_actor(snac1);
 
         return status;
     }
 
+    if (xs_startswith(actor, srv_baseurl)) {
+        /* it's a (possible) local user */
+        xs *l = xs_split(actor, "/");
+        const char *uid = xs_list_get(l, -1);
+        snac user;
+
+        if (!xs_is_null(uid) && user_open(&user, uid)) {
+            if (data)
+                *data = msg_actor(&user);
+
+            user_free(&user);
+            return 200;
+        }
+        else
+            return 404;
+    }
+
     /* read the object */
-    if (!valid_status(status = object_get(actor, &d)))
+    if (!valid_status(status = object_get(actor, &d))) {
+        d = xs_free(d);
         return status;
+    }
 
     if (data)
         *data = d;
@@ -1719,7 +1814,7 @@ static xs_dict *_new_qmsg(const char *type, const xs_val *msg, int retries)
 }
 
 
-void enqueue_input(snac *snac, xs_dict *msg, xs_dict *req, int retries)
+void enqueue_input(snac *snac, const xs_dict *msg, const xs_dict *req, int retries)
 /* enqueues an input message */
 {
     xs *qmsg   = _new_qmsg("input", msg, retries);
@@ -2020,7 +2115,11 @@ void purge_server(void)
     xs *ib_dir = xs_fmt("%s/inbox", srv_basedir);
     _purge_dir(ib_dir, 7);
 
-    srv_debug(1, xs_fmt("purge: global (obj: %d, idx: %d)", cnt, icnt));
+    /* purge the instance timeline */
+    xs *itl_fn = xs_fmt("%s/public.idx", srv_basedir);
+    int itl_gc = index_gc(itl_fn);
+
+    srv_debug(1, xs_fmt("purge: global (obj: %d, idx: %d, itl: %d)", cnt, icnt, itl_gc));
 }
 
 

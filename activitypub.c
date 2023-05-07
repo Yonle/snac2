@@ -109,7 +109,7 @@ int actor_request(snac *snac, const char *actor, xs_dict **data)
 
         if (valid_status(status2)) {
             /* renew data */
-            status = actor_add(snac, actor, payload);
+            status = actor_add(actor, payload);
 
             if (data != NULL) {
                 *data   = payload;
@@ -437,7 +437,8 @@ void process_tags(snac *snac, const char *content, d_char **n_content, d_char **
 
 /** messages **/
 
-d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date, char *object)
+xs_dict *msg_base(snac *snac, const char *type, const char *id,
+                  const char *actor, const char *date, const char *object)
 /* creates a base ActivityPub message */
 {
     xs *did       = NULL;
@@ -467,7 +468,7 @@ d_char *msg_base(snac *snac, char *type, char *id, char *actor, char *date, char
         }
     }
 
-    d_char *msg = xs_dict_new();
+    xs_dict *msg = xs_dict_new();
 
     msg = xs_dict_append(msg, "@context", "https:/" "/www.w3.org/ns/activitystreams");
     msg = xs_dict_append(msg, "type",     type);
@@ -845,6 +846,28 @@ xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
 }
 
 
+xs_dict *msg_ping(snac *user, const char *rcpt)
+/* creates a Ping message (https://humungus.tedunangst.com/r/honk/v/tip/f/docs/ping.txt) */
+{
+    xs_dict *msg = msg_base(user, "Ping", "@dummy", user->actor, NULL, NULL);
+
+    msg = xs_dict_append(msg, "to", rcpt);
+
+    return msg;
+}
+
+
+xs_dict *msg_pong(snac *user, const char *rcpt, const char *object)
+/* creates a Pong message (https://humungus.tedunangst.com/r/honk/v/tip/f/docs/ping.txt) */
+{
+    xs_dict *msg = msg_base(user, "Pong", "@dummy", user->actor, NULL, object);
+
+    msg = xs_dict_append(msg, "to", rcpt);
+
+    return msg;
+}
+
+
 void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg)
 /* notifies the user of relevant events */
 {
@@ -1121,7 +1144,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
     else
     if (strcmp(type, "Update") == 0) {
         if (strcmp(utype, "Person") == 0) {
-            actor_add(snac, actor, xs_dict_get(msg, "object"));
+            actor_add(actor, xs_dict_get(msg, "object"));
 
             snac_log(snac, xs_fmt("updated actor %s", actor));
         }
@@ -1147,7 +1170,19 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             snac_debug(snac, 1, xs_fmt("ignored 'Delete' for unknown object %s", object));
     }
     else
-        snac_debug(snac, 1, xs_fmt("process_message type '%s' ignored", type));
+    if (strcmp(type, "Pong") == 0) {
+        snac_log(snac, xs_fmt("'Pong' received from %s", actor));
+    }
+    else
+    if (strcmp(type, "Ping") == 0) {
+        snac_log(snac, xs_fmt("'Ping' requested from %s", actor));
+
+        xs *rsp = msg_pong(snac, actor, xs_dict_get(msg, "id"));
+
+        enqueue_output_by_actor(snac, rsp, actor, 0);
+    }
+    else
+        snac_debug(snac, 1, xs_fmt("process_input_message type '%s' ignored", type));
 
     if (do_notify) {
         notify(snac, type, utype, actor, msg);
@@ -1384,8 +1419,9 @@ void process_queue_item(xs_dict *q_item)
         xs *headers = xs_dict_new();
         headers = xs_dict_append(headers, "content-type", "application/json");
 
-        xs *rsp  = xs_http_request("POST", url, headers,
+        xs *rsp = xs_http_request("POST", url, headers,
                                    body, strlen(body), &status, NULL, NULL, 0);
+        rsp = xs_free(rsp);
 
         srv_debug(0, xs_fmt("telegram post %d", status));
     }
@@ -1426,7 +1462,7 @@ int process_queue(void)
 
 /** HTTP handlers */
 
-int activitypub_get_handler(d_char *req, char *q_path,
+int activitypub_get_handler(const xs_dict *req, const char *q_path,
                             char **body, int *b_size, char **ctype)
 {
     int status = 200;
@@ -1519,11 +1555,13 @@ int activitypub_get_handler(d_char *req, char *q_path,
 }
 
 
-int activitypub_post_handler(d_char *req, char *q_path,
-                             d_char *payload, int p_size,
+int activitypub_post_handler(const xs_dict *req, const char *q_path,
+                             char *payload, int p_size,
                              char **body, int *b_size, char **ctype)
 /* processes an input message */
 {
+    (void)b_size;
+
     int status = 202; /* accepted */
     char *i_ctype = xs_dict_get(req, "content-type");
     snac snac;

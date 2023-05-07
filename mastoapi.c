@@ -162,7 +162,7 @@ const char *login_page = ""
 "<!DOCTYPE html>\n"
 "<body><h1>%s OAuth identify</h1>\n"
 "<div style=\"background-color: red; color: white\">%s</div>\n"
-"<form method=\"post\" action=\"https:/" "/%s/oauth/x-snac-login\">\n"
+"<form method=\"post\" action=\"https:/" "/%s/%s\">\n"
 "<p>Login: <input type=\"text\" name=\"login\"></p>\n"
 "<p>Password: <input type=\"password\" name=\"passwd\"></p>\n"
 "<input type=\"hidden\" name=\"redir\" value=\"%s\">\n"
@@ -175,6 +175,8 @@ const char *login_page = ""
 int oauth_get_handler(const xs_dict *req, const char *q_path,
                       char **body, int *b_size, char **ctype)
 {
+    (void)b_size;
+
     if (!xs_startswith(q_path, "/oauth/"))
         return 0;
 
@@ -185,7 +187,7 @@ int oauth_get_handler(const xs_dict *req, const char *q_path,
 
     int status   = 404;
     xs_dict *msg = xs_dict_get(req, "q_vars");
-    xs *cmd      = xs_replace(q_path, "/oauth", "");
+    xs *cmd      = xs_replace_n(q_path, "/oauth", "", 1);
 
     srv_debug(1, xs_fmt("oauth_get_handler %s", q_path));
 
@@ -206,17 +208,28 @@ int oauth_get_handler(const xs_dict *req, const char *q_path,
                 if (xs_is_null(state))
                     state = "";
 
-                *body  = xs_fmt(login_page, host, "", host, ruri, cid, state, USER_AGENT);
+                *body  = xs_fmt(login_page, host, "", host, "oauth/x-snac-login",
+                                ruri, cid, state, USER_AGENT);
                 *ctype = "text/html";
                 status = 200;
 
-                srv_debug(0, xs_fmt("oauth authorize: generating login page"));
+                srv_debug(1, xs_fmt("oauth authorize: generating login page"));
             }
             else
-                srv_debug(0, xs_fmt("oauth authorize: bad client_id %s", cid));
+                srv_debug(1, xs_fmt("oauth authorize: bad client_id %s", cid));
         }
         else
-            srv_debug(0, xs_fmt("oauth authorize: invalid or unset arguments"));
+            srv_debug(1, xs_fmt("oauth authorize: invalid or unset arguments"));
+    }
+    else
+    if (strcmp(cmd, "/x-snac-get-token") == 0) {
+        const char *host = xs_dict_get(srv_config, "host");
+
+        *body  = xs_fmt(login_page, host, "", host, "oauth/x-snac-get-token",
+                        "", "", "", USER_AGENT);
+        *ctype = "text/html";
+        status = 200;
+
     }
 
     return status;
@@ -227,6 +240,9 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
                        const char *payload, int p_size,
                        char **body, int *b_size, char **ctype)
 {
+    (void)p_size;
+    (void)b_size;
+
     if (!xs_startswith(q_path, "/oauth/"))
         return 0;
 
@@ -245,7 +261,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
     else
         args = xs_dup(xs_dict_get(req, "p_vars"));
 
-    xs *cmd = xs_replace(q_path, "/oauth", "");
+    xs *cmd = xs_replace_n(q_path, "/oauth", "", 1);
 
     srv_debug(1, xs_fmt("oauth_post_handler %s", q_path));
 
@@ -259,7 +275,8 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
         const char *host = xs_dict_get(srv_config, "host");
 
         /* by default, generate another login form with an error */
-        *body  = xs_fmt(login_page, host, "LOGIN INCORRECT", host, redir, cid, state, USER_AGENT);
+        *body  = xs_fmt(login_page, host, "LOGIN INCORRECT", host, "oauth/x-snac-login",
+                        redir, cid, state, USER_AGENT);
         *ctype = "text/html";
         status = 200;
 
@@ -268,8 +285,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
 
             if (user_open(&snac, login)) {
                 /* check the login + password */
-                if (check_password(login, passwd,
-                    xs_dict_get(snac.config, "passwd"))) {
+                if (check_password(login, passwd, xs_dict_get(snac.config, "passwd"))) {
                     /* success! redirect to the desired uri */
                     xs *code = random_str();
 
@@ -328,7 +344,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
             const char *auhdr = xs_dict_get(req, "authorization");
 
             if (!xs_is_null(auhdr) && xs_startswith(auhdr, "Basic ")) {
-                xs *s1 = xs_replace(auhdr, "Basic ", "");
+                xs *s1 = xs_replace_n(auhdr, "Basic ", "", 1);
                 int size;
                 xs *s2 = xs_base64_dec(s1, &size);
 
@@ -373,7 +389,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
 
                 const char *uid = xs_dict_get(app, "uid");
 
-                srv_debug(0, xs_fmt("oauth token: "
+                srv_debug(1, xs_fmt("oauth token: "
                                 "successful login for %s, new token %s", uid, tokid));
 
                 xs *token = xs_dict_new();
@@ -387,7 +403,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
             }
         }
         else {
-            srv_debug(0, xs_fmt("oauth token: invalid or unset arguments"));
+            srv_debug(1, xs_fmt("oauth token: invalid or unset arguments"));
             status = 400;
         }
     }
@@ -409,7 +425,7 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
             }
             else {
                 token_del(tokid);
-                srv_debug(0, xs_fmt("oauth revoke: revoked token %s", tokid));
+                srv_debug(1, xs_fmt("oauth revoke: revoked token %s", tokid));
                 status = 200;
 
                 /* also delete the app, as it serves no purpose from now on */
@@ -417,8 +433,50 @@ int oauth_post_handler(const xs_dict *req, const char *q_path,
             }
         }
         else {
-            srv_debug(0, xs_fmt("oauth revoke: invalid or unset arguments"));
+            srv_debug(1, xs_fmt("oauth revoke: invalid or unset arguments"));
             status = 403;
+        }
+    }
+    if (strcmp(cmd, "/x-snac-get-token") == 0) {
+        const char *login  = xs_dict_get(args, "login");
+        const char *passwd = xs_dict_get(args, "passwd");
+
+        const char *host = xs_dict_get(srv_config, "host");
+
+        /* by default, generate another login form with an error */
+        *body  = xs_fmt(login_page, host, "LOGIN INCORRECT", host, "oauth/x-snac-get-token",
+                        "", "", "", USER_AGENT);
+        *ctype = "text/html";
+        status = 200;
+
+        if (login && passwd) {
+            snac user;
+
+            if (user_open(&user, login)) {
+                /* check the login + password */
+                if (check_password(login, passwd, xs_dict_get(user.config, "passwd"))) {
+                    /* success! create a new token */
+                    xs *tokid = random_str();
+
+                    srv_debug(1, xs_fmt("x-snac-new-token: "
+                                    "successful login for %s, new token %s", login, tokid));
+
+                    xs *token = xs_dict_new();
+                    token = xs_dict_append(token, "token",         tokid);
+                    token = xs_dict_append(token, "client_id",     "snac-client");
+                    token = xs_dict_append(token, "client_secret", "");
+                    token = xs_dict_append(token, "uid",           login);
+                    token = xs_dict_append(token, "code",          "");
+
+                    token_add(tokid, token);
+
+                    *ctype = "text/plain";
+                    xs_free(*body);
+                    *body = xs_dup(tokid);
+                }
+
+                user_free(&user);
+            }
         }
     }
 
@@ -537,7 +595,6 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
     xs *f   = xs_val_new(XSTYPE_FALSE);
     xs *t   = xs_val_new(XSTYPE_TRUE);
     xs *n   = xs_val_new(XSTYPE_NULL);
-    xs *el  = xs_list_new();
     xs *idx = NULL;
     xs *ixc = NULL;
 
@@ -787,7 +844,7 @@ int process_auth_token(snac *snac, const xs_dict *req)
 
     /* if there is an authorization field, try to validate it */
     if (!xs_is_null(v = xs_dict_get(req, "authorization")) && xs_startswith(v, "Bearer ")) {
-        xs *tokid = xs_replace(v, "Bearer ", "");
+        xs *tokid = xs_replace_n(v, "Bearer ", "", 1);
         xs *token = token_get(tokid);
 
         if (token != NULL) {
@@ -815,6 +872,8 @@ int process_auth_token(snac *snac, const xs_dict *req)
 int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                          char **body, int *b_size, char **ctype)
 {
+    (void)b_size;
+
     if (!xs_startswith(q_path, "/api/v1/") && !xs_startswith(q_path, "/api/v2/"))
         return 0;
 
@@ -826,7 +885,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
     int status    = 404;
     xs_dict *args = xs_dict_get(req, "q_vars");
-    xs *cmd       = xs_replace(q_path, "/api", "");
+    xs *cmd       = xs_replace_n(q_path, "/api", "", 1);
 
     snac snac1 = {0};
     int logged_in = process_auth_token(&snac1, req);
@@ -1036,11 +1095,14 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (strcmp(cmd, "/v1/timelines/public") == 0) {
-        /* the public timeline (public timelines for all users) */
+        /* the instance public timeline (public timelines for all users) */
 
-        /* this is an ugly kludge: first users in the list get all the fame */
+        /* NOTE: this api call needs no authorization; but,
+           I need a logged-in user in mastoapi_status() for
+           is_msg_public() and the liked/boosted flags,
+           so it will silently fail for pure public access */
 
-        const char *limit_s  = xs_dict_get(args, "limit");
+        const char *limit_s = xs_dict_get(args, "limit");
         int limit = 0;
         int cnt   = 0;
 
@@ -1050,44 +1112,28 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         if (limit == 0)
             limit = 20;
 
-        xs *out    = xs_list_new();
-        xs *users  = user_list();
-        xs_list *p = users;
-        xs_str *uid;
+        xs *timeline = timeline_instance_list(0, limit);
+        xs *out      = xs_list_new();
+        xs_list *p   = timeline;
+        xs_str *md5;
 
-        while (xs_list_iter(&p, &uid) && cnt < limit) {
-            snac user;
+        while (logged_in && xs_list_iter(&p, &md5) && cnt < limit) {
+            xs *msg = NULL;
 
-            if (user_open(&user, uid)) {
-                xs *timeline = timeline_simple_list(&user, "public", 0, 4);
-                xs_list *p2  = timeline;
-                xs_str *v;
+            /* get the entry */
+            if (!valid_status(object_get_by_md5(md5, &msg)))
+                continue;
 
-                while (xs_list_iter(&p2, &v) && cnt < limit) {
-                    xs *msg = NULL;
+            /* discard non-Notes */
+            if (strcmp(xs_dict_get(msg, "type"), "Note") != 0)
+                continue;
 
-                    /* get the entry */
-                    if (!valid_status(timeline_get_by_md5(&user, v, &msg)))
-                        continue;
+            /* convert the Note into a Mastodon status */
+            xs *st = mastoapi_status(&snac1, msg);
 
-                    /* discard non-Notes */
-                    if (strcmp(xs_dict_get(msg, "type"), "Note") != 0)
-                        continue;
-
-                    /* discard entries not by this user */
-                    if (!xs_startswith(xs_dict_get(msg, "id"), user.actor))
-                        continue;
-
-                    /* convert the Note into a Mastodon status */
-                    xs *st = mastoapi_status(&user, msg);
-
-                    if (st != NULL) {
-                        out = xs_list_append(out, st);
-                        cnt++;
-                    }
-                }
-
-                user_free(&user);
+            if (st != NULL) {
+                out = xs_list_append(out, st);
+                cnt++;
             }
         }
 
@@ -1121,7 +1167,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 xs *actor = NULL;
                 xs *entry = NULL;
 
-                if (!valid_status(object_get(xs_dict_get(noti, "actor"), &actor)))
+                if (!valid_status(actor_get(&snac1, xs_dict_get(noti, "actor"), &actor)))
                     continue;
 
                 if (objid != NULL && !valid_status(object_get(objid, &entry)))
@@ -1287,25 +1333,6 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             cfg = xs_dict_append(cfg, "statuses", d11);
         }
 
-        {
-            xs *d11 = xs_dict_new();
-            xs *mt  = xs_list_new();
-
-            mt = xs_list_append(mt, "image/jpeg");
-            mt = xs_list_append(mt, "image/png");
-            mt = xs_list_append(mt, "image/gif");
-
-            d11 = xs_dict_append(d11, "supported_mime_types", mt);
-
-            d11 = xs_dict_append(d11, "image_size_limit", z);
-            d11 = xs_dict_append(d11, "image_matrix_limit", z);
-            d11 = xs_dict_append(d11, "video_size_limit", z);
-            d11 = xs_dict_append(d11, "video_matrix_limit", z);
-            d11 = xs_dict_append(d11, "video_frame_rate_limit", z);
-
-            cfg = xs_dict_append(cfg, "media_attachments", d11);
-        }
-
         ins = xs_dict_append(ins, "configuration", cfg);
 
         *body  = xs_json_dumps_pp(ins, 4);
@@ -1326,7 +1353,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             /* skip the 'fake' part of the id */
             id = MID_TO_MD5(id);
 
-            if (valid_status(timeline_get_by_md5(&snac1, id, &msg))) {
+            if (valid_status(object_get_by_md5(id, &msg))) {
                 if (op == NULL) {
                     if (!is_muted(&snac1, xs_dict_get(msg, "attributedTo"))) {
                         /* return the status itself */
@@ -1487,6 +1514,9 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                           const char *payload, int p_size,
                           char **body, int *b_size, char **ctype)
 {
+    (void)p_size;
+    (void)b_size;
+
     if (!xs_startswith(q_path, "/api/v1/") && !xs_startswith(q_path, "/api/v2/"))
         return 0;
 
@@ -1513,7 +1543,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
         printf("%s\n", j);
     }*/
 
-    xs *cmd = xs_replace(q_path, "/api", "");
+    xs *cmd = xs_replace_n(q_path, "/api", "", 1);
 
     snac snac = {0};
     int logged_in = process_auth_token(&snac, req);
@@ -1562,7 +1592,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
 
             app_add(cid, app);
 
-            srv_debug(0, xs_fmt("mastoapi apps: new app %s", cid));
+            srv_debug(1, xs_fmt("mastoapi apps: new app %s", cid));
         }
     }
     else
@@ -1581,6 +1611,9 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
 
             if (xs_is_null(media_ids))
                 media_ids = xs_dict_get(args, "media_ids[]");
+
+            if (xs_is_null(visibility))
+                visibility = "public";
 
             xs *attach_list = xs_list_new();
             xs *irt         = NULL;
@@ -1683,7 +1716,11 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                     }
                     else
                     if (strcmp(op, "unfavourite") == 0) {
-                        /* snac does not support Undo+Like */
+                        /* partial support: as the original Like message
+                           is not stored anywhere here, it's not possible
+                           to send an Undo + Like; the only thing done here
+                           is to delete the actor from the list of likes */
+                        object_unadmire(id, snac.actor, 1);
                     }
                     else
                     if (strcmp(op, "reblog") == 0) {
@@ -1698,7 +1735,8 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                     }
                     else
                     if (strcmp(op, "unreblog") == 0) {
-                        /* snac does not support Undo+Announce */
+                        /* partial support: see comment in 'unfavourite' */
+                        object_unadmire(id, snac.actor, 0);
                     }
                     else
                     if (strcmp(op, "bookmark") == 0) {
@@ -1903,6 +1941,9 @@ int mastoapi_put_handler(const xs_dict *req, const char *q_path,
                           const char *payload, int p_size,
                           char **body, int *b_size, char **ctype)
 {
+    (void)p_size;
+    (void)b_size;
+
     if (!xs_startswith(q_path, "/api/v1/") && !xs_startswith(q_path, "/api/v2/"))
         return 0;
 
@@ -1924,7 +1965,7 @@ int mastoapi_put_handler(const xs_dict *req, const char *q_path,
     if (args == NULL)
         return 400;
 
-    xs *cmd = xs_replace(q_path, "/api", "");
+    xs *cmd = xs_replace_n(q_path, "/api", "", 1);
 
     snac snac = {0};
     int logged_in = process_auth_token(&snac, req);

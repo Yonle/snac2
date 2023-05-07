@@ -1,7 +1,7 @@
 /* snac - A simple, minimalistic ActivityPub instance */
 /* copyright (c) 2022 - 2023 grunfink / MIT license */
 
-#define VERSION "2.29"
+#define VERSION "2.30"
 
 #define USER_AGENT "snac/" VERSION
 
@@ -83,6 +83,7 @@ int object_del_if_unref(const char *id);
 double object_ctime_by_md5(const char *md5);
 double object_ctime(const char *id);
 int object_admire(const char *id, const char *actor, int like);
+int object_unadmire(const char *id, const char *actor, int like);
 
 int object_likes_len(const char *id);
 int object_announces_len(const char *id);
@@ -105,14 +106,14 @@ int timeline_touch(snac *snac);
 int timeline_here(snac *snac, const char *md5);
 int timeline_get_by_md5(snac *snac, const char *md5, xs_dict **msg);
 int timeline_del(snac *snac, char *id);
-d_char *timeline_simple_list(snac *snac, const char *idx_name, int skip, int show);
-d_char *timeline_list(snac *snac, const char *idx_name, int skip, int show);
+xs_list *timeline_simple_list(snac *snac, const char *idx_name, int skip, int show);
+xs_list *timeline_list(snac *snac, const char *idx_name, int skip, int show);
 int timeline_add(snac *snac, char *id, char *o_msg);
 void timeline_admire(snac *snac, char *id, char *admirer, int like);
 
 xs_list *timeline_top_level(snac *snac, xs_list *list);
-
-d_char *local_list(snac *snac, int max);
+xs_list *local_list(snac *snac, int max);
+xs_list *timeline_instance_list(int skip, int show);
 
 int following_add(snac *snac, const char *actor, const xs_dict *msg);
 int following_del(snac *snac, const char *actor);
@@ -127,8 +128,8 @@ int is_muted(snac *snac, const char *actor);
 void hide(snac *snac, const char *id);
 int is_hidden(snac *snac, const char *id);
 
-int actor_add(snac *snac, const char *actor, d_char *msg);
-int actor_get(snac *snac, const char *actor, d_char **data);
+int actor_add(const char *actor, xs_dict *msg);
+int actor_get(snac *snac, const char *actor, xs_dict **data);
 
 int static_get(snac *snac, const char *id, d_char **data, int *size);
 void static_put(snac *snac, const char *id, const char *data, int size);
@@ -154,7 +155,7 @@ void inbox_add(const char *inbox);
 void inbox_add_by_actor(const xs_dict *actor);
 xs_list *inbox_list(void);
 
-void enqueue_input(snac *snac, xs_dict *msg, xs_dict *req, int retries);
+void enqueue_input(snac *snac, const xs_dict *msg, const xs_dict *req, int retries);
 void enqueue_output_raw(const char *keyid, const char *seckey,
                         xs_dict *msg, xs_str *inbox, int retries);
 void enqueue_output(snac *snac, xs_dict *msg, xs_str *inbox, int retries);
@@ -186,7 +187,7 @@ int check_signature(snac *snac, xs_dict *req, xs_str **err);
 void httpd(void);
 
 int webfinger_request(const char *qs, char **actor, char **user);
-int webfinger_get_handler(d_char *req, char *q_path,
+int webfinger_get_handler(xs_dict *req, char *q_path,
                           char **body, int *b_size, char **ctype);
 
 const char *default_avatar_base64(void);
@@ -202,6 +203,8 @@ d_char *msg_undo(snac *snac, char *object);
 d_char *msg_delete(snac *snac, char *id);
 d_char *msg_actor(snac *snac);
 xs_dict *msg_update(snac *snac, xs_dict *object);
+xs_dict *msg_ping(snac *user, const char *rcpt);
+xs_dict *msg_pong(snac *user, const char *rcpt, const char *object);
 
 int activitypub_request(snac *snac, const char *url, xs_dict **data);
 int actor_request(snac *snac, const char *actor, xs_dict **data);
@@ -219,17 +222,19 @@ int process_user_queue(snac *snac);
 void process_queue_item(xs_dict *q_item);
 int process_queue(void);
 
-int activitypub_get_handler(d_char *req, char *q_path,
+int activitypub_get_handler(const xs_dict *req, const char *q_path,
                             char **body, int *b_size, char **ctype);
-int activitypub_post_handler(d_char *req, char *q_path,
+int activitypub_post_handler(const xs_dict *req, const char *q_path,
                              char *payload, int p_size,
                              char **body, int *b_size, char **ctype);
 
 d_char *not_really_markdown(const char *content);
 d_char *sanitize(const char *str);
 
-int html_get_handler(d_char *req, char *q_path, char **body, int *b_size, char **ctype);
-int html_post_handler(d_char *req, char *q_path, d_char *payload, int p_size,
+int html_get_handler(const xs_dict *req, const char *q_path,
+                     char **body, int *b_size, char **ctype);
+int html_post_handler(const xs_dict *req, const char *q_path,
+                      char *payload, int p_size,
                       char **body, int *b_size, char **ctype);
 
 int snac_init(const char *_basedir);
