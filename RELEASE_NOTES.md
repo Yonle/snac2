@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2.31
+
+Use named semaphores instead of anonymous ones, to make it work under MacOS (contributed by Saagar Jha).
+
+Fix warning in ugly pointer substraction (contributed by Saagar Jha).
+
+Fixed webfinger and curl issues, which crashed snac while trying to follow Mitra users (contributed by Poesty).
+
 ## 2.30
 
 Fixed a bug that made some notifications to be missed.
