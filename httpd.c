@@ -14,6 +14,8 @@
 #include <setjmp.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <fcntl.h>
+#include <stdint.h>
 
 #include <sys/resource.h> // for getrlimit()
 
