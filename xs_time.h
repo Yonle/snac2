@@ -12,6 +12,7 @@ xs_str *xs_str_time(time_t t, const char *fmt, int local);
 time_t xs_parse_time(const char *str, const char *fmt, int local);
 #define xs_parse_localtime(str, fmt) xs_parse_time(str, fmt, 1)
 #define xs_parse_utctime(str, fmt) xs_parse_time(str, fmt, 0)
+xs_str *xs_str_time_diff(time_t time_diff);
 
 #ifdef XS_IMPLEMENTATION
 
@@ -34,6 +35,18 @@ xs_str *xs_str_time(time_t t, const char *fmt, int local)
 //    printf("%d %d\n", local, t - xs_parse_time(tmp, fmt, local));
 
     return xs_str_new(tmp);
+}
+
+
+xs_str *xs_str_time_diff(time_t time_diff)
+/* returns time_diff in seconds to 'human' units (d:hh:mm:ss) */
+{
+    int secs  = time_diff % 60;
+    int mins  = (time_diff /= 60) % 60;
+    int hours = (time_diff /= 60) % 24;
+    int days  = (time_diff /= 24);
+
+    return xs_fmt("%d:%02d:%02d:%02d", days, hours, mins, secs);
 }
 
 
