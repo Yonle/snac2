@@ -8,6 +8,7 @@
 #include "xs_socket.h"
 #include "xs_httpd.h"
 #include "xs_mime.h"
+#include "xs_time.h"
 
 #include "snac.h"
 
@@ -480,6 +481,7 @@ void httpd(void)
     pthread_t threads[MAX_THREADS] = {0};
     int n_threads = 0;
     int n;
+    time_t start_time = time(NULL);
 
     address = xs_dict_get(srv_config, "address");
     port    = xs_number_get(xs_dict_get(srv_config, "port"));
@@ -566,5 +568,7 @@ void httpd(void)
 
     sem_close(job_sem);
 
-    srv_log(xs_fmt("httpd stop %s:%d", address, port));
+    xs *uptime = xs_str_time_diff(time(NULL) - start_time);
+
+    srv_log(xs_fmt("httpd stop %s:%d (run time: %s)", address, port, uptime));
 }
