@@ -25,7 +25,9 @@ const char *default_srv_config = "{"
     "\"cssurls\":              [\"\"],"
     "\"max_timeline_entries\": 128,"
     "\"timeline_purge_days\":  120,"
-    "\"local_purge_days\":     0"
+    "\"local_purge_days\":     0,"
+    "\"admin_email\":          \"\","
+    "\"admin_account\":        \"\""
     "}";
 
 const char *default_css =

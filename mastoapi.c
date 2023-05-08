@@ -1335,6 +1335,21 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
         ins = xs_dict_append(ins, "configuration", cfg);
 
+        const char *admin_account = xs_dict_get(srv_config, "admin_account");
+
+        if (!xs_is_null(admin_account) && *admin_account) {
+            snac admin;
+
+            if (user_open(&admin, admin_account)) {
+                xs *actor = msg_actor(&admin);
+                xs *acct  = mastoapi_account(actor);
+
+                ins = xs_dict_append(ins, "contact_account", acct);
+
+                user_free(&admin);
+            }
+        }
+
         *body  = xs_json_dumps_pp(ins, 4);
         *ctype = "application/json";
         status = 200;
