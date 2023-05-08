@@ -34,7 +34,7 @@ int login(snac *snac, const xs_dict *headers)
     }
 
     if (logged_in)
-        lastlog_write(snac);
+        lastlog_write(snac, "web");
 
     return logged_in;
 }

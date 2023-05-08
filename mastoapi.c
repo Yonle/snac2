@@ -854,7 +854,7 @@ int process_auth_token(snac *snac, const xs_dict *req)
                 logged_in = 1;
 
                 /* this counts as a 'login' */
-                lastlog_write(snac);
+                lastlog_write(snac, "mastoapi");
 
                 srv_debug(2, xs_fmt("mastoapi auth: valid token for user %s", uid));
             }

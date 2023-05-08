@@ -1575,14 +1575,14 @@ xs_list *history_list(snac *snac)
 }
 
 
-void lastlog_write(snac *snac)
+void lastlog_write(snac *snac, const char *source)
 /* writes the last time the user logged in */
 {
     xs *fn = xs_fmt("%s/lastlog.txt", snac->basedir);
     FILE *f;
 
     if ((f = fopen(fn, "w")) != NULL) {
-        fprintf(f, "%lf\n", ftime());
+        fprintf(f, "%lf %s\n", ftime(), source);
         fclose(f);
     }
 }

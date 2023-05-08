@@ -142,7 +142,7 @@ xs_str *history_get(snac *snac, const char *id);
 int history_del(snac *snac, const char *id);
 xs_list *history_list(snac *snac);
 
-void lastlog_write(snac *snac);
+void lastlog_write(snac *snac, const char *source);
 
 xs_str *notify_check_time(snac *snac, int reset);
 void notify_add(snac *snac, const char *type, const char *utype,

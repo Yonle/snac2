@@ -145,6 +145,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    lastlog_write(&snac, "cmdline");
+
     if (strcmp(cmd, "resetpwd") == 0) {
         return resetpwd(&snac);
     }
