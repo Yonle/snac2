@@ -354,10 +354,6 @@ void job_wait(xs_val **job)
         /* unlock the mutex */
         pthread_mutex_unlock(&job_mutex);
     }
-
-    if (!*job) {
-        sem_close(job_sem);
-    }
 }
 
 
@@ -567,6 +563,8 @@ void httpd(void)
     pthread_mutex_lock(&job_mutex);
     job_fifo = xs_free(job_fifo);
     pthread_mutex_unlock(&job_mutex);
+
+    sem_close(job_sem);
 
     srv_log(xs_fmt("httpd stop %s:%d", address, port));
 }
