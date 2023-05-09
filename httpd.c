@@ -480,6 +480,7 @@ void httpd(void)
     pthread_t threads[MAX_THREADS] = {0};
     int n_threads = 0;
     int n;
+    char sem_name[24];
 
     address = xs_dict_get(srv_config, "address");
     port    = xs_number_get(xs_dict_get(srv_config, "port"));
@@ -505,7 +506,8 @@ void httpd(void)
 
     /* initialize the job control engine */
     pthread_mutex_init(&job_mutex, NULL);
-    job_sem = sem_open("/job", O_CREAT, 0644, 0);
+    sprintf(sem_name, "/job_%d", getpid());
+    job_sem = sem_open(sem_name, O_CREAT, 0644, 0);
     job_fifo = xs_list_new();
 
     /* initialize sleep control */
@@ -565,6 +567,7 @@ void httpd(void)
     pthread_mutex_unlock(&job_mutex);
 
     sem_close(job_sem);
+    sem_unlink(sem_name);
 
     srv_log(xs_fmt("httpd stop %s:%d", address, port));
 }
