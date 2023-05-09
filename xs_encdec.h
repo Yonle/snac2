@@ -14,7 +14,6 @@
  xs_str *xs_base64_enc(const xs_val *data, int sz);
  xs_val *xs_base64_dec(const xs_str *data, int *size);
  int xs_is_base64(const char *str);
- xs_str *xs_utf8_enc(xs_str *str, unsigned int cpoint);
 
 
 #ifdef XS_IMPLEMENTATION
@@ -382,38 +381,6 @@ int xs_is_base64(const char *str)
     return xs_is_base64_tbl(str, xs_b64_tbl);
 }
 
-
-/** utf-8 **/
-
-xs_str *xs_utf8_enc(xs_str *str, unsigned int cpoint)
-/* encodes an Unicode codepoint to utf8 */
-{
-    unsigned char tmp[4];
-    int n = 0;
-
-    if (cpoint < 0x80)
-        tmp[n++] = cpoint & 0xff;
-    else
-    if (cpoint < 0x800) {
-        tmp[n++] = 0xc0 | (cpoint >> 6);
-        tmp[n++] = 0x80 | (cpoint & 0x3f);
-    }
-    else
-    if (cpoint < 0x10000) {
-        tmp[n++] = 0xe0 | (cpoint >> 12);
-        tmp[n++] = 0x80 | ((cpoint >> 6) & 0x3f);
-        tmp[n++] = 0x80 | (cpoint & 0x3f);
-    }
-    else
-    if (cpoint < 0x200000) {
-        tmp[n++] = 0xf0 | (cpoint >> 18);
-        tmp[n++] = 0x80 | ((cpoint >> 12) & 0x3f);
-        tmp[n++] = 0x80 | ((cpoint >> 6) & 0x3f);
-        tmp[n++] = 0x80 | (cpoint & 0x3f);
-    }
-
-    return xs_append_m(str, (char *)tmp, n);
-}
 
 #endif /* XS_IMPLEMENTATION */
 

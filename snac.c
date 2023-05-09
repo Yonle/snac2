@@ -5,8 +5,9 @@
 
 #include "xs.h"
 #include "xs_io.h"
-#include "xs_encdec.h"
+#include "xs_unicode.h"
 #include "xs_json.h"
+#include "xs_encdec.h"
 #include "xs_curl.h"
 #include "xs_openssl.h"
 #include "xs_socket.h"
