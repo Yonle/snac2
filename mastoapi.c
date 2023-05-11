@@ -931,6 +931,9 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             const char *md5 = xs_dict_get(args, "id[]");
 
             if (!xs_is_null(md5)) {
+                if (xs_type(md5) == XSTYPE_LIST)
+                    md5 = xs_list_get(md5, 0);
+
                 xs *rel = mastoapi_relationship(&snac1, md5);
 
                 if (rel != NULL)
