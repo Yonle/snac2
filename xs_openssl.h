@@ -22,6 +22,64 @@ int xs_evp_verify(const char *pubkey, const char *mem, int size, const char *b64
 #include "openssl/pem.h"
 #include "openssl/evp.h"
 
+#if 0
+xs_str *xs_base64_enc(const xs_val *data, int sz)
+/* encodes data to base64 */
+{
+    BIO *mem, *b64;
+    BUF_MEM *bptr;
+ 
+    b64 = BIO_new(BIO_f_base64());
+    mem = BIO_new(BIO_s_mem());
+    b64 = BIO_push(b64, mem);
+
+    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
+
+    BIO_write(b64, data, sz);
+    BIO_flush(b64);
+    BIO_get_mem_ptr(b64, &bptr);
+
+    int n = bptr->length;
+    xs_str *s = xs_realloc(NULL, _xs_blk_size(n + 1));
+
+    memcpy(s, bptr->data, n);
+    s[n] = '\0';
+
+    BIO_free_all(b64);
+
+    return s;
+}
+
+
+xs_val *xs_base64_dec(const xs_str *data, int *size)
+/* decodes data from base64 */
+{
+    BIO *b64, *mem;
+
+    *size = strlen(data);
+
+    b64 = BIO_new(BIO_f_base64());
+    mem = BIO_new_mem_buf(data, *size);
+    b64 = BIO_push(b64, mem);
+
+    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
+
+    /* alloc a very big buffer */
+    xs_str *s = xs_realloc(NULL, *size);
+
+    *size = BIO_read(b64, s, *size);
+
+    /* adjust to current size */
+    s = xs_realloc(s, _xs_blk_size(*size + 1));
+    s[*size] = '\0';
+
+    BIO_free_all(mem);
+
+    return s;
+}
+#endif
+
+
 xs_str *_xs_digest(const xs_val *input, int size, const char *digest, int as_hex)
 /* generic function for generating and encoding digests */
 {

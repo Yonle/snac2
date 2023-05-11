@@ -4,15 +4,15 @@
 
 #define _XS_HTTPD_H
 
-xs_str *xs_url_dec(char *str);
-xs_dict *xs_url_vars(char *str);
+xs_str *xs_url_dec(const char *str);
+xs_dict *xs_url_vars(const char *str);
 xs_dict *xs_httpd_request(FILE *f, xs_str **payload, int *p_size);
 void xs_httpd_response(FILE *f, int status, xs_dict *headers, xs_str *body, int b_size);
 
 
 #ifdef XS_IMPLEMENTATION
 
-xs_str *xs_url_dec(char *str)
+xs_str *xs_url_dec(const char *str)
 /* decodes an URL */
 {
     xs_str *s = xs_str_new(NULL);
@@ -41,7 +41,7 @@ xs_str *xs_url_dec(char *str)
 }
 
 
-xs_dict *xs_url_vars(char *str)
+xs_dict *xs_url_vars(const char *str)
 /* parse url variables */
 {
     xs_dict *vars;
@@ -59,9 +59,34 @@ xs_dict *xs_url_vars(char *str)
         while (xs_list_iter(&l, &v)) {
             xs *kv = xs_split_n(v, "=", 2);
 
-            if (xs_list_len(kv) == 2)
-                vars = xs_dict_append(vars,
-                    xs_list_get(kv, 0), xs_list_get(kv, 1));
+            if (xs_list_len(kv) == 2) {
+                const char *key = xs_list_get(kv, 0);
+                const char *pv  = xs_dict_get(vars, key);
+
+                if (!xs_is_null(pv)) {
+                    /* there is a previous value: convert to a list and append */
+                    xs *vlist = NULL;
+                    if (xs_type(pv) == XSTYPE_LIST)
+                        vlist = xs_dup(pv);
+                    else {
+                        vlist = xs_list_new();
+                        vlist = xs_list_append(vlist, pv);
+                    }
+
+                    vlist = xs_list_append(vlist, xs_list_get(kv, 1));
+                    vars  = xs_dict_set(vars, key, vlist);
+                }
+                else {
+                    /* ends with []? force to always be a list */
+                    if (xs_endswith(key, "[]")) {
+                        xs *vlist = xs_list_new();
+                        vlist = xs_list_append(vlist, xs_list_get(kv, 1));
+                        vars = xs_dict_append(vars, key, vlist);
+                    }
+                    else
+                        vars = xs_dict_append(vars, key, xs_list_get(kv, 1));
+                }
+            }
         }
     }
 
