@@ -1158,6 +1158,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             xs *out    = xs_list_new();
             xs_list *p = l;
             xs_dict *v;
+            xs_list *excl = xs_dict_get(args, "exclude_types[]");
 
             while (xs_list_iter(&p, &v)) {
                 xs *noti = notify_get(&snac1, v);
@@ -1192,6 +1193,10 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 if (strcmp(type, "Create") == 0)
                     type = "mention";
                 else
+                    continue;
+
+                /* excluded type? */
+                if (!xs_is_null(excl) && xs_list_in(excl, type) != -1)
                     continue;
 
                 xs *mn = xs_dict_new();
