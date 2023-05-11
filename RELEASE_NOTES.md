@@ -10,6 +10,8 @@ Fixed semaphore name conflicts (contributed by Poesty).
 
 Fix warning in ugly pointer substraction (contributed by Saagar Jha).
 
+Mastodon API: implemented notification type filters.
+
 ## 2.30
 
 Fixed a bug that made some notifications to be missed.
