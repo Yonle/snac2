@@ -1382,7 +1382,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     }
                 }
                 else
-                if (strcmp(op, "context") == 0) {
+                if (strcmp(op, "context") == 0) { /** **/
                     /* return ancestors and children */
                     xs *anc = xs_list_new();
                     xs *des = xs_list_new();
@@ -1422,8 +1422,8 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     out = xs_dict_append(out, "descendants", des);
                 }
                 else
-                if (strcmp(op, "reblogged_by") == 0 ||
-                    strcmp(op, "favourited_by") == 0) {
+                if (strcmp(op, "reblogged_by") == 0 || /** **/
+                    strcmp(op, "favourited_by") == 0) { /** **/
                     /* return the list of people who liked or boosted this */
                     out = xs_list_new();
 
@@ -1719,7 +1719,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                         /* no operation (?) */
                     }
                     else
-                    if (strcmp(op, "favourite") == 0) {
+                    if (strcmp(op, "favourite") == 0) { /** **/
                         xs *n_msg = msg_admiration(&snac, id, "Like");
 
                         if (n_msg != NULL) {
@@ -1730,7 +1730,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                         }
                     }
                     else
-                    if (strcmp(op, "unfavourite") == 0) {
+                    if (strcmp(op, "unfavourite") == 0) { /** **/
                         /* partial support: as the original Like message
                            is not stored anywhere here, it's not possible
                            to send an Undo + Like; the only thing done here
@@ -1738,7 +1738,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                         object_unadmire(id, snac.actor, 1);
                     }
                     else
-                    if (strcmp(op, "reblog") == 0) {
+                    if (strcmp(op, "reblog") == 0) { /** **/
                         xs *n_msg = msg_admiration(&snac, id, "Announce");
 
                         if (n_msg != NULL) {
@@ -1749,32 +1749,32 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                         }
                     }
                     else
-                    if (strcmp(op, "unreblog") == 0) {
+                    if (strcmp(op, "unreblog") == 0) { /** **/
                         /* partial support: see comment in 'unfavourite' */
                         object_unadmire(id, snac.actor, 0);
                     }
                     else
-                    if (strcmp(op, "bookmark") == 0) {
+                    if (strcmp(op, "bookmark") == 0) { /** **/
                         /* snac does not support bookmarks */
                     }
                     else
-                    if (strcmp(op, "unbookmark") == 0) {
+                    if (strcmp(op, "unbookmark") == 0) { /** **/
                         /* snac does not support bookmarks */
                     }
                     else
-                    if (strcmp(op, "pin") == 0) {
+                    if (strcmp(op, "pin") == 0) { /** **/
                         /* snac does not support pinning */
                     }
                     else
-                    if (strcmp(op, "unpin") == 0) {
+                    if (strcmp(op, "unpin") == 0) { /** **/
                         /* snac does not support pinning */
                     }
                     else
-                    if (strcmp(op, "mute") == 0) {
+                    if (strcmp(op, "mute") == 0) { /** **/
                         /* Mastodon's mute is snac's hide */
                     }
                     else
-                    if (strcmp(op, "unmute") == 0) {
+                    if (strcmp(op, "unmute") == 0) { /** **/
                         /* Mastodon's unmute is snac's unhide */
                     }
                 }
@@ -1895,7 +1895,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                     /* ? */
                 }
                 else
-                if (strcmp(opt, "follow") == 0) {
+                if (strcmp(opt, "follow") == 0) { /** **/
                     if (valid_status(object_get_by_md5(md5, &actor_o))) {
                         const char *actor = xs_dict_get(actor_o, "id");
 
@@ -1914,7 +1914,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                     }
                 }
                 else
-                if (strcmp(opt, "unfollow") == 0) {
+                if (strcmp(opt, "unfollow") == 0) { /** **/
                     if (valid_status(object_get_by_md5(md5, &actor_o))) {
                         const char *actor = xs_dict_get(actor_o, "id");
 
