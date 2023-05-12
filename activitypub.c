@@ -362,7 +362,7 @@ void process_tags(snac *snac, const char *content, xs_str **n_content, xs_list *
 /* parses mentions and tags from content */
 {
     xs_str *nc  = xs_str_new(NULL);
-    xs_list *tl = xs_list_new();
+    xs_list *tl = *tag;
     xs *split;
     xs_list *p;
     xs_val *v;
@@ -711,7 +711,7 @@ xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
     xs *to   = NULL;
     xs *cc   = xs_list_new();
     xs *irt  = NULL;
-    xs *tag  = NULL;
+    xs *tag  = xs_list_new();
     xs *atls = NULL;
     xs_dict *msg = msg_base(snac, "Note", id, NULL, "@now", NULL);
     xs_list *p;
@@ -730,12 +730,6 @@ xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
 
     /* format the content */
     fc2 = not_really_markdown(content);
-
-    /* extract the tags */
-    process_tags(snac, fc2, &fc1, &tag);
-
-    if (tag == NULL)
-        tag = xs_list_new();
 
     if (in_reply_to != NULL && *in_reply_to) {
         xs *p_msg = NULL;
@@ -778,6 +772,9 @@ xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
     }
     else
         irt = xs_val_new(XSTYPE_NULL);
+
+    /* extract the mentions and hashtags and convert the content */
+    process_tags(snac, fc2, &fc1, &tag);
 
     /* create the attachment list, if there are any */
     if (!xs_is_null(attach)) {
