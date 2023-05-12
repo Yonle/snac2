@@ -30,10 +30,7 @@ int webfinger_request(const char *qs, char **actor, char **user)
     }
     else {
         /* it's a user */
-        xs *s = xs_dup(qs);
-
-        if (xs_startswith(s, "@"))
-            s = xs_crop_i(s, 1, 0);
+        xs *s = xs_strip_chars_i(xs_dup(qs), "@.");
 
         l = xs_split_n(s, "@", 1);
 

@@ -368,6 +368,31 @@ void process_tags(snac *snac, const char *content, xs_str **n_content, xs_list *
     xs_val *v;
     int n = 0;
 
+    /* create a default server for incomplete mentions */
+    xs *def_srv = NULL;
+
+    if (xs_list_len(tl)) {
+        /* if there are any mentions, get the server from
+           the first one, which is the inReplyTo author */
+        p = tl;
+        while (xs_list_iter(&p, &v)) {
+            const char *type = xs_dict_get(v, "type");
+            const char *name = xs_dict_get(v, "name");
+
+            if (type && name && strcmp(type, "Mention") == 0) {
+                xs *l = xs_split(name, "@");
+
+                def_srv = xs_dup(xs_list_get(l, -1));
+
+                break;
+            }
+        }
+    }
+
+    if (xs_is_null(def_srv))
+        /* use this same server */
+        def_srv = xs_dup(xs_dict_get(srv_config, "host"));
+
     split = xs_regex_split(content, "(@[A-Za-z0-9_]+(@[A-Za-z0-9\\.-]+)?|&#[0-9]+;|#[^ ,\\.:;<]+)");
 
     p = split;
@@ -375,57 +400,36 @@ void process_tags(snac *snac, const char *content, xs_str **n_content, xs_list *
         if ((n & 0x1)) {
             if (*v == '@') {
                 xs *link = NULL;
+                xs *wuid = NULL;
 
                 if (strchr(v + 1, '@') == NULL) {
                     /* only one @? it's a dumb Mastodon-like mention
-                       without server; check if there is anybody
-                       whose name starts with this in the tag list */
-                    xs_list *p2 = tl;
-                    xs_dict *v2;
-                    xs *pname = xs_fmt("%s@", v);
+                       without server; add the default one */
+                    wuid = xs_fmt("%s@%s", v, def_srv);
 
-                    while (xs_list_iter(&p2, &v2)) {
-                        const char *type = xs_dict_get(v2, "type");
-
-                        if (type && strcmp(type, "Mention") == 0) {
-                            const char *name = xs_dict_get(v2, "name");
-                            const char *href = xs_dict_get(v2, "href");
-
-                            if (name && href && (xs_startswith(name, pname) ||
-                                                 xs_startswith(name, pname + 1))) {
-                                /* good enough :shrug2: */
-                                link = xs_fmt(
-                                    "<a href=\"%s\" class=\"u-url mention\">%s</a>", href, name);
-
-                                break;
-                            }
-                        }
-                    }
-
-                    snac_debug(snac, 2, xs_fmt(
-                        "mention without server '%s' (%s)", v, link ? link : "none"));
+                    snac_debug(snac, 2, xs_fmt("mention without server '%s' '%s'", v, wuid));
                 }
-                else {
-                    /* query the webfinger about this fellow */
-                    xs *v2    = xs_strip_chars_i(xs_dup(v), "@.");
-                    xs *actor = NULL;
-                    xs *uid   = NULL;
-                    int status;
+                else
+                    wuid = xs_dup(v);
 
-                    status = webfinger_request(v2, &actor, &uid);
+                /* query the webfinger about this fellow */
+                xs *actor = NULL;
+                xs *uid   = NULL;
+                int status;
 
-                    if (valid_status(status)) {
-                        xs *d = xs_dict_new();
-                        xs *n = xs_fmt("@%s", uid);
+                status = webfinger_request(wuid, &actor, &uid);
 
-                        d = xs_dict_append(d, "type",   "Mention");
-                        d = xs_dict_append(d, "href",   actor);
-                        d = xs_dict_append(d, "name",   n);
+                if (valid_status(status)) {
+                    xs *d = xs_dict_new();
+                    xs *n = xs_fmt("@%s", uid);
 
-                        tl = xs_list_append(tl, d);
+                    d = xs_dict_append(d, "type",   "Mention");
+                    d = xs_dict_append(d, "href",   actor);
+                    d = xs_dict_append(d, "name",   n);
 
-                        link = xs_fmt("<a href=\"%s\" class=\"u-url mention\">%s</a>", actor, n);
-                    }
+                    tl = xs_list_append(tl, d);
+
+                    link = xs_fmt("<a href=\"%s\" class=\"u-url mention\">%s</a>", actor, n);
                 }
 
                 if (!xs_is_null(link))
