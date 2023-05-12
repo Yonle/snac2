@@ -358,13 +358,14 @@ int is_msg_for_me(snac *snac, const xs_dict *c_msg)
 }
 
 
-void process_tags(snac *snac, const char *content, d_char **n_content, d_char **tag)
+void process_tags(snac *snac, const char *content, xs_str **n_content, xs_list **tag)
 /* parses mentions and tags from content */
 {
-    d_char *nc = xs_str_new(NULL);
-    d_char *tl = xs_list_new();
+    xs_str *nc  = xs_str_new(NULL);
+    xs_list *tl = xs_list_new();
     xs *split;
-    char *p, *v;
+    xs_list *p;
+    xs_val *v;
     int n = 0;
 
     split = xs_regex_split(content, "(@[A-Za-z0-9_]+@[A-Za-z0-9\\.-]+|&#[0-9]+;|#[^ ,\\.:;<]+)");
