@@ -368,36 +368,69 @@ void process_tags(snac *snac, const char *content, xs_str **n_content, xs_list *
     xs_val *v;
     int n = 0;
 
-    split = xs_regex_split(content, "(@[A-Za-z0-9_]+@[A-Za-z0-9\\.-]+|&#[0-9]+;|#[^ ,\\.:;<]+)");
+    split = xs_regex_split(content, "(@[A-Za-z0-9_]+(@[A-Za-z0-9\\.-]+)?|&#[0-9]+;|#[^ ,\\.:;<]+)");
 
     p = split;
     while (xs_list_iter(&p, &v)) {
         if ((n & 0x1)) {
             if (*v == '@') {
-                /* query the webfinger about this fellow */
-                xs *v2    = xs_strip_chars_i(xs_dup(v), "@.");
-                xs *actor = NULL;
-                xs *uid   = NULL;
-                int status;
+                xs *link = NULL;
 
-                status = webfinger_request(v2, &actor, &uid);
+                if (strchr(v + 1, '@') == NULL) {
+                    /* only one @? it's a dumb Mastodon-like mention
+                       without server; check if there is anybody
+                       whose name starts with this in the tag list */
+                    xs_list *p2 = tl;
+                    xs_dict *v2;
+                    xs *pname = xs_fmt("%s@", v);
 
-                if (valid_status(status)) {
-                    xs *d = xs_dict_new();
-                    xs *n = xs_fmt("@%s", uid);
-                    xs *l = xs_fmt("<a href=\"%s\" class=\"u-url mention\">%s</a>", actor, n);
+                    while (xs_list_iter(&p2, &v2)) {
+                        const char *type = xs_dict_get(v2, "type");
 
-                    d = xs_dict_append(d, "type",   "Mention");
-                    d = xs_dict_append(d, "href",   actor);
-                    d = xs_dict_append(d, "name",   n);
+                        if (type && strcmp(type, "Mention") == 0) {
+                            const char *name = xs_dict_get(v2, "name");
+                            const char *href = xs_dict_get(v2, "href");
 
-                    tl = xs_list_append(tl, d);
+                            if (name && href && (xs_startswith(name, pname) ||
+                                                 xs_startswith(name, pname + 1))) {
+                                /* good enough :shrug2: */
+                                link = xs_fmt(
+                                    "<a href=\"%s\" class=\"u-url mention\">%s</a>", href, name);
 
-                    /* add the code */
-                    nc = xs_str_cat(nc, l);
+                                break;
+                            }
+                        }
+                    }
+
+                    snac_debug(snac, 2, xs_fmt(
+                        "mention without server '%s' (%s)", v, link ? link : "none"));
                 }
+                else {
+                    /* query the webfinger about this fellow */
+                    xs *v2    = xs_strip_chars_i(xs_dup(v), "@.");
+                    xs *actor = NULL;
+                    xs *uid   = NULL;
+                    int status;
+
+                    status = webfinger_request(v2, &actor, &uid);
+
+                    if (valid_status(status)) {
+                        xs *d = xs_dict_new();
+                        xs *n = xs_fmt("@%s", uid);
+
+                        d = xs_dict_append(d, "type",   "Mention");
+                        d = xs_dict_append(d, "href",   actor);
+                        d = xs_dict_append(d, "name",   n);
+
+                        tl = xs_list_append(tl, d);
+
+                        link = xs_fmt("<a href=\"%s\" class=\"u-url mention\">%s</a>", actor, n);
+                    }
+                }
+
+                if (!xs_is_null(link))
+                    nc = xs_str_cat(nc, link);
                 else
-                    /* store as is */
                     nc = xs_str_cat(nc, v);
             }
             else
