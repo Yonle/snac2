@@ -224,7 +224,7 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
         xs *s_bio = xs_dup(xs_dict_get(snac->config, "bio"));
         int n;
 
-        /* sorten a bio */
+        /* shorten the bio */
         for (n = 0; s_bio[n] && s_bio[n] != '&' &&
                     s_bio[n] != '\r' && s_bio[n] != '\n' && n < 128; n++);
         s_bio[n] = '\0';
@@ -310,23 +310,26 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
 
     /* user info */
     {
-        xs *bio = NULL;
         char *_tmpl =
             "<div class=\"h-card snac-top-user\">\n"
             "<p class=\"p-name snac-top-user-name\">%s</p>\n"
-            "<p class=\"snac-top-user-id\">@%s@%s</p>\n"
-            "<div class=\"p-note snac-top-user-bio\">%s</div>\n"
-            "</div>\n";
-
-        bio = not_really_markdown(xs_dict_get(snac->config, "bio"));
+            "<p class=\"snac-top-user-id\">@%s@%s</p>\n";
 
         xs *s1 = xs_fmt(_tmpl,
             xs_dict_get(snac->config, "name"),
-            xs_dict_get(snac->config, "uid"), xs_dict_get(srv_config, "host"),
-            bio
+            xs_dict_get(snac->config, "uid"), xs_dict_get(srv_config, "host")
         );
 
         s = xs_str_cat(s, s1);
+
+        if (local) {
+            xs *bio = not_really_markdown(xs_dict_get(snac->config, "bio"));
+            xs *s1  = xs_fmt("<div class=\"p-note snac-top-user-bio\">%s</div>\n", bio);
+
+            s = xs_str_cat(s, s1);
+        }
+
+        s = xs_str_cat(s, "</div>\n");
     }
 
     return s;
