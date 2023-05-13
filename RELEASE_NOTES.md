@@ -10,6 +10,8 @@ Fixed semaphore name conflicts (contributed by Poesty).
 
 Fix warning in ugly pointer substraction (contributed by Saagar Jha).
 
+Added user-agent to webfinger queries (contributed by Poesty).
+
 Mastodon API: implemented notification type filters, fixed (partially) the issue with mentions without server.
 
 ## 2.30
