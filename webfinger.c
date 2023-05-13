@@ -43,7 +43,8 @@ int webfinger_request(const char *qs, char **actor, char **user)
     if (host == NULL || resource == NULL)
         return 400;
 
-    headers = xs_dict_append(headers, "accept", "application/json");
+    headers = xs_dict_append(headers, "accept",     "application/json");
+    headers = xs_dict_append(headers, "user-agent", USER_AGENT);
 
     /* is it a query about one of us? */
     if (strcmp(host, xs_dict_get(srv_config, "host")) == 0) {
