@@ -43,7 +43,7 @@ typedef struct _snac {
 
 int user_open(snac *snac, const char *uid);
 void user_free(snac *snac);
-d_char *user_list(void);
+xs_list *user_list(void);
 int user_open_by_md5(snac *snac, const char *md5);
 
 void snac_debug(snac *snac, int level, d_char *str);

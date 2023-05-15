@@ -224,7 +224,7 @@ int user_open(snac *snac, const char *uid)
 }
 
 
-d_char *user_list(void)
+xs_list *user_list(void)
 /* returns the list of user ids */
 {
     xs *spec = xs_fmt("%s/user/" "*", srv_basedir);
