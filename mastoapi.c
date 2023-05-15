@@ -960,9 +960,10 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
             if (logged_in && strcmp(uid, "search") == 0) { /** **/
                 /* search for accounts starting with q */
-                const char *q = xs_dict_get(args, "q");
+                const char *aq = xs_dict_get(args, "q");
 
-                if (!xs_is_null(q)) {
+                if (!xs_is_null(aq)) {
+                    xs *q    = xs_tolower_i(xs_dup(aq));
                     out      = xs_list_new();
                     xs *wing = following_list(&snac1);
                     xs *wers = follower_list(&snac1);
@@ -986,10 +987,14 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                             if (valid_status(object_get(v, &actor))) {
                                 const char *uname = xs_dict_get(actor, "preferredUsername");
 
-                                if (!xs_is_null(uname) && xs_startswith(uname, q)) {
-                                    xs *acct = mastoapi_account(actor);
+                                if (!xs_is_null(uname)) {
+                                    xs *luname = xs_tolower_i(xs_dup(uname));
 
-                                    out = xs_list_append(out, acct);
+                                    if (xs_startswith(luname, q)) {
+                                        xs *acct = mastoapi_account(actor);
+
+                                        out = xs_list_append(out, acct);
+                                    }
                                 }
                             }
                         }
