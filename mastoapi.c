@@ -511,8 +511,14 @@ xs_dict *mastoapi_account(const xs_dict *actor)
     xs *acct_md5 = xs_md5_hex(id, strlen(id));
     acct = xs_dict_append(acct, "id",           acct_md5);
     acct = xs_dict_append(acct, "username",     xs_dict_get(actor, "preferredUsername"));
-    acct = xs_dict_append(acct, "acct",         xs_dict_get(actor, "preferredUsername"));
     acct = xs_dict_append(acct, "display_name", display_name);
+
+    {
+        /* create the acct field as user@host */
+        xs *l     = xs_split(id, "/");
+        xs *fquid = xs_fmt("%s@%s", xs_dict_get(actor, "preferredUsername"), xs_list_get(l, 2));
+        acct      = xs_dict_append(acct, "acct", fquid);
+    }
 
     if (pub)
         acct = xs_dict_append(acct, "created_at", pub);
