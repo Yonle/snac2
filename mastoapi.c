@@ -10,6 +10,7 @@
 #include "xs_io.h"
 #include "xs_time.h"
 #include "xs_glob.h"
+#include "xs_set.h"
 
 #include "snac.h"
 
@@ -966,6 +967,9 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     xs *wing = following_list(&snac1);
                     xs *wers = follower_list(&snac1);
                     xs_list *p;
+                    xs_set seen;
+
+                    xs_set_init(&seen);
 
                     xs_list *lsts[] = { wing, wers, NULL };
                     int n;
@@ -973,6 +977,10 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                         xs_str *v;
 
                         while (xs_list_iter(&p, &v)) {
+                            /* already seen? skip */
+                            if (xs_set_add(&seen, v) == 0)
+                                continue;
+
                             xs *actor = NULL;
 
                             if (valid_status(object_get(v, &actor))) {
@@ -986,6 +994,8 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                             }
                         }
                     }
+
+                    xs_set_free(&seen);
                 }
             }
             else
