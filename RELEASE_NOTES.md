@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.32
+
+Mastodon API: account search has been implemented, so mention completion works from apps.
+
 ## 2.31
 
 Fixed webfinger and curl issues, which crashed snac while trying to follow Mitra users (contributed by Poesty).
