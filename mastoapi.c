@@ -500,23 +500,24 @@ xs_str *mastoapi_id(const xs_dict *msg)
 xs_dict *mastoapi_account(const xs_dict *actor)
 /* converts an ActivityPub actor to a Mastodon account */
 {
-    xs_dict *acct = xs_dict_new();
+    xs_dict *acct     = xs_dict_new();
+    const char *prefu = xs_dict_get(actor, "preferredUsername");
 
     const char *display_name = xs_dict_get(actor, "name");
     if (xs_is_null(display_name) || *display_name == '\0')
-        display_name = xs_dict_get(actor, "preferredUsername");
+        display_name = prefu;
 
     const char *id  = xs_dict_get(actor, "id");
     const char *pub = xs_dict_get(actor, "published");
     xs *acct_md5 = xs_md5_hex(id, strlen(id));
     acct = xs_dict_append(acct, "id",           acct_md5);
-    acct = xs_dict_append(acct, "username",     xs_dict_get(actor, "preferredUsername"));
+    acct = xs_dict_append(acct, "username",     prefu);
     acct = xs_dict_append(acct, "display_name", display_name);
 
     {
         /* create the acct field as user@host */
         xs *l     = xs_split(id, "/");
-        xs *fquid = xs_fmt("%s@%s", xs_dict_get(actor, "preferredUsername"), xs_list_get(l, 2));
+        xs *fquid = xs_fmt("%s@%s", prefu, xs_list_get(l, 2));
         acct      = xs_dict_append(acct, "acct", fquid);
     }
 
