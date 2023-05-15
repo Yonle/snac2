@@ -238,9 +238,15 @@ static xs_val *_xs_json_loads_lexer(const char **json, js_type *t)
                 case 't': c = '\t'; break;
                 case 'u': /* Unicode codepoint as an hex char */
                     s++;
-                    memcpy(tmp, s, 4);
-                    s += 3;
+                    strncpy(tmp, s, 4);
                     tmp[4] = '\0';
+
+                    if (strlen(tmp) != 4) {
+                        *t = JS_ERROR;
+                        break;
+                    }
+
+                    s += 3; /* skip as it was one byte */
 
                     sscanf(tmp, "%04x", &i);
 
@@ -248,10 +254,23 @@ static xs_val *_xs_json_loads_lexer(const char **json, js_type *t)
                         /* it's a surrogate pair */
                         cp = (i & 0x3ff) << 10;
 
-                        /* skip to the next value */
-                        s += 3;
-                        memcpy(tmp, s, 4);
-                        s += 3;
+                        /* skip to the next value (last char + \ + u)  */
+                        s++;
+                        if (memcmp(s, "\\u", 2) != 0) {
+                            *t = JS_ERROR;
+                            break;
+                        }
+                        s += 2;
+
+                        strncpy(tmp, s, 4);
+                        tmp[4] = '\0';
+
+                        if (strlen(tmp) != 4) {
+                            *t = JS_ERROR;
+                            break;
+                        }
+
+                        s += 3; /* skip as it was one byte */
 
                         sscanf(tmp, "%04x", &i);
                         cp |= (i & 0x3ff);
