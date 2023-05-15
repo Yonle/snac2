@@ -1222,13 +1222,14 @@ int following_get(snac *snac, const char *actor, d_char **data)
 }
 
 
-d_char *following_list(snac *snac)
+xs_list *following_list(snac *snac)
 /* returns the list of people being followed */
 {
     xs *spec = xs_fmt("%s/following/" "*.json", snac->basedir);
     xs *glist = xs_glob(spec, 0, 0);
-    char *p, *v;
-    d_char *list = xs_list_new();
+    xs_list *p;
+    xs_str *v;
+    xs_list *list = xs_list_new();
 
     /* iterate the list of files */
     p = glist;

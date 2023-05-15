@@ -119,7 +119,7 @@ int following_add(snac *snac, const char *actor, const xs_dict *msg);
 int following_del(snac *snac, const char *actor);
 int following_check(snac *snac, const char *actor);
 int following_get(snac *snac, const char *actor, d_char **data);
-d_char *following_list(snac *snac);
+xs_list *following_list(snac *snac);
 
 void mute(snac *snac, const char *actor);
 void unmute(snac *snac, const char *actor);

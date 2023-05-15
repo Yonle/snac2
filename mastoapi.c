@@ -957,6 +957,38 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
             xs *out   = NULL;
             xs *actor = NULL;
 
+            if (logged_in && strcmp(uid, "search") == 0) { /** **/
+                /* search for accounts starting with q */
+                const char *q = xs_dict_get(args, "q");
+
+                if (!xs_is_null(q)) {
+                    out      = xs_list_new();
+                    xs *wing = following_list(&snac1);
+                    xs *wers = follower_list(&snac1);
+                    xs_list *p;
+
+                    xs_list *lsts[] = { wing, wers, NULL };
+                    int n;
+                    for (n = 0; (p = lsts[n]) != NULL; n++) {
+                        xs_str *v;
+
+                        while (xs_list_iter(&p, &v)) {
+                            xs *actor = NULL;
+
+                            if (valid_status(object_get(v, &actor))) {
+                                const char *uname = xs_dict_get(actor, "preferredUsername");
+
+                                if (!xs_is_null(uname) && xs_startswith(uname, q)) {
+                                    xs *acct = mastoapi_account(actor);
+
+                                    out = xs_list_append(out, acct);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
             /* is it a local user? */
             if (user_open(&snac2, uid) || user_open_by_md5(&snac2, uid)) {
                 if (opt == NULL) {
@@ -965,7 +997,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     out   = mastoapi_account(actor);
                 }
                 else
-                if (strcmp(opt, "statuses") == 0) {
+                if (strcmp(opt, "statuses") == 0) { /** **/
                     /* the public list of posts of a user */
                     xs *timeline = timeline_simple_list(&snac2, "public", 0, 256);
                     xs_list *p   = timeline;
