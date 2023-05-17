@@ -392,6 +392,9 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<p>%s:<br>\n"
         "<input type=\"number\" name=\"purge_days\" value=\"%s\"></p>\n"
 
+        "<p><input type=\"checkbox\" name=\"drop_dm_from_unknown\" id=\"drop_dm_from_unknown\" %s>\n"
+        "<label for=\"drop_dm_from_unknown\">%s</label></p>\n"
+
         "<p>%s:<br>\n"
         "<input type=\"password\" name=\"passwd1\" value=\"\"></p>\n"
 
@@ -437,6 +440,8 @@ d_char *html_top_controls(snac *snac, d_char *s)
     else
         purge_days = "0";
 
+    const char *d_dm_f_u = xs_dict_get(snac->config, "drop_dm_from_unknown");
+
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
         L("Sensitive content"),
@@ -469,6 +474,8 @@ d_char *html_top_controls(snac *snac, d_char *s)
         telegram_chat_id,
         L("Maximum days to keep posts (0: server settings)"),
         purge_days,
+        xs_type(d_dm_f_u) == XSTYPE_TRUE ? "checked" : "",
+        L("Block direct messages from people you don't follow"),
         L("Password (only to change it)"),
         L("Repeat Password"),
         L("Update user info")
@@ -1817,6 +1824,10 @@ int html_post_handler(const xs_dict *req, const char *q_path,
         if ((v = xs_dict_get(p_vars, "purge_days")) != NULL) {
             xs *days    = xs_number_new(atof(v));
             snac.config = xs_dict_set(snac.config, "purge_days", days);
+        }
+        if ((v = xs_dict_get(p_vars, "drop_dm_from_unknown")) != NULL) {
+            xs *yn = xs_val_new(v && strcmp(v, "on") == 0 ? XSTYPE_TRUE : XSTYPE_FALSE);
+            snac.config = xs_dict_set(snac.config, "drop_dm_from_unknown", yn);
         }
 
         /* avatar upload */
