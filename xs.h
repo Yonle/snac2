@@ -118,6 +118,10 @@ void xs_data_get(const xs_data *value, void *data);
 
 void *xs_memmem(const char *haystack, int h_size, const char *needle, int n_size);
 
+xs_str *xs_hex_enc(const xs_val *data, int size);
+xs_val *xs_hex_dec(const xs_str *hex, int *size);
+int xs_is_hex(const char *str);
+
 
 #ifdef XS_ASSERT
 #include <assert.h>
@@ -1053,7 +1057,7 @@ const char *xs_number_str(const xs_number *v)
 }
 
 
-/* raw data blocks */
+/** raw data blocks **/
 
 xs_data *xs_data_new(const void *data, int size)
 /* returns a new raw data value */
@@ -1104,6 +1108,72 @@ void *xs_memmem(const char *haystack, int h_size, const char *needle, int n_size
     }
 
     return r;
+}
+
+
+/** hex **/
+
+xs_str *xs_hex_enc(const xs_val *data, int size)
+/* returns an hexdump of data */
+{
+    xs_str *s;
+    char *p;
+    int n;
+
+    p = s = xs_realloc(NULL, _xs_blk_size(size * 2 + 1));
+
+    for (n = 0; n < size; n++) {
+        snprintf(p, 3, "%02x", (unsigned char)data[n]);
+        p += 2;
+    }
+
+    *p = '\0';
+
+    return s;
+}
+
+
+xs_val *xs_hex_dec(const xs_str *hex, int *size)
+/* decodes an hexdump into data */
+{
+    int sz = strlen(hex);
+    xs_val *s = NULL;
+    char *p;
+    int n;
+
+    if (sz % 2)
+        return NULL;
+
+    p = s = xs_realloc(NULL, _xs_blk_size(sz / 2 + 1));
+
+    for (n = 0; n < sz; n += 2) {
+        int i;
+        if (sscanf(&hex[n], "%02x", &i) == 0) {
+            /* decoding error */
+            return xs_free(s);
+        }
+        else
+            *p = i;
+
+        p++;
+    }
+
+    *p = '\0';
+    *size = sz / 2;
+
+    return s;
+}
+
+
+int xs_is_hex(const char *str)
+/* returns 1 if str is an hex string */
+{
+    while (*str) {
+        if (strchr("0123456789abcdefABCDEF", *str++) == NULL)
+            return 0;
+    }
+
+    return 1;
 }
 
 
