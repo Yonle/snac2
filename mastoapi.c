@@ -981,30 +981,6 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
                     xs_set_init(&seen);
 
-                    /* local users */
-                    p = ulst;
-                    while (xs_list_iter(&p, &v)) {
-                        snac user;
-
-                        if (strcmp(v, xs_dict_get(snac1.config, "uid")) == 0)
-                            continue;
-
-                        if (user_open(&user, v)) {
-                            xs *v2 = xs_tolower_i(xs_dup(v));
-
-                            if (xs_startswith(v2, q)) {
-                                xs *actor = msg_actor(&user);
-                                xs *acct  = mastoapi_account(actor);
-
-                                out = xs_list_append(out, acct);
-                            }
-
-                            xs_set_add(&seen, user.actor);
-
-                            user_free(&user);
-                        }
-                    }
-
                     /* user relations */
                     xs_list *lsts[] = { wing, wers, NULL };
                     int n;
@@ -1030,6 +1006,30 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                                     }
                                 }
                             }
+                        }
+                    }
+
+                    /* local users */
+                    p = ulst;
+                    while (xs_list_iter(&p, &v)) {
+                        snac user;
+
+                        if (strcmp(v, xs_dict_get(snac1.config, "uid")) == 0)
+                            continue;
+
+                        if (user_open(&user, v)) {
+                            xs *v2 = xs_tolower_i(xs_dup(v));
+
+                            if (xs_startswith(v2, q)) {
+                                xs *actor = msg_actor(&user);
+                                xs *acct  = mastoapi_account(actor);
+
+                                out = xs_list_append(out, acct);
+                            }
+
+                            xs_set_add(&seen, user.actor);
+
+                            user_free(&user);
                         }
                     }
 
