@@ -1802,6 +1802,8 @@ int html_post_handler(const xs_dict *req, const char *q_path,
         /* change of user data */
         char *v;
         char *p1, *p2;
+        xs *byes = xs_val_new(XSTYPE_TRUE);
+        xs *bno  = xs_val_new(XSTYPE_FALSE);
 
         if ((v = xs_dict_get(p_vars, "name")) != NULL)
             snac.config = xs_dict_set(snac.config, "name", v);
@@ -1825,10 +1827,10 @@ int html_post_handler(const xs_dict *req, const char *q_path,
             xs *days    = xs_number_new(atof(v));
             snac.config = xs_dict_set(snac.config, "purge_days", days);
         }
-        if ((v = xs_dict_get(p_vars, "drop_dm_from_unknown")) != NULL) {
-            xs *yn = xs_val_new(v && strcmp(v, "on") == 0 ? XSTYPE_TRUE : XSTYPE_FALSE);
-            snac.config = xs_dict_set(snac.config, "drop_dm_from_unknown", yn);
-        }
+        if ((v = xs_dict_get(p_vars, "drop_dm_from_unknown")) != NULL && strcmp(v, "on") == 0)
+            snac.config = xs_dict_set(snac.config, "drop_dm_from_unknown", byes);
+        else
+            snac.config = xs_dict_set(snac.config, "drop_dm_from_unknown", bno);
 
         /* avatar upload */
         xs_list *avatar_file = xs_dict_get(p_vars, "avatar_file");
