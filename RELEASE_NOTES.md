@@ -2,6 +2,8 @@
 
 ## 2.32
 
+When updating user information, the changes are also sent to the people being followed (so they have an updated description about who the user is).
+
 Mastodon API: account search has been implemented, so mention completion works from apps.
 
 ## 2.31
