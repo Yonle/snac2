@@ -3,12 +3,12 @@
 
 #include "xs.h"
 #include "xs_io.h"
-#include "xs_encdec.h"
 #include "xs_json.h"
 #include "xs_socket.h"
 #include "xs_httpd.h"
 #include "xs_mime.h"
 #include "xs_time.h"
+#include "xs_openssl.h"
 
 #include "snac.h"
 

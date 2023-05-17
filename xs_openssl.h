@@ -6,7 +6,15 @@
 
 xs_str *_xs_digest(const xs_val *input, int size, const char *digest, int as_hex);
 
+#ifndef _XS_MD5_H
 #define xs_md5_hex(input, size)       _xs_digest(input, size, "md5",    1)
+#endif /* XS_MD5_H */
+
+#ifndef _XS_BASE64_H
+xs_str *xs_base64_enc(const xs_val *data, int sz);
+xs_val *xs_base64_dec(const xs_str *data, int *size);
+#endif /* XS_BASE64_H */
+
 #define xs_sha1_hex(input, size)      _xs_digest(input, size, "sha1",   1)
 #define xs_sha256_hex(input, size)    _xs_digest(input, size, "sha256", 1)
 #define xs_sha256_base64(input, size) _xs_digest(input, size, "sha256", 0)
@@ -22,7 +30,9 @@ int xs_evp_verify(const char *pubkey, const char *mem, int size, const char *b64
 #include "openssl/pem.h"
 #include "openssl/evp.h"
 
-#if 0
+
+#ifndef _XS_BASE64_H
+
 xs_str *xs_base64_enc(const xs_val *data, int sz)
 /* encodes data to base64 */
 {
@@ -77,7 +87,8 @@ xs_val *xs_base64_dec(const xs_str *data, int *size)
 
     return s;
 }
-#endif
+
+#endif /* _XS_BASE64_H */
 
 
 xs_str *_xs_digest(const xs_val *input, int size, const char *digest, int as_hex)

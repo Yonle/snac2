@@ -3,7 +3,6 @@
 
 #include "xs.h"
 #include "xs_io.h"
-#include "xs_encdec.h"
 #include "xs_json.h"
 
 #include "snac.h"
