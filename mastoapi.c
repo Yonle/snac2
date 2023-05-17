@@ -1014,20 +1014,23 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     while (xs_list_iter(&p, &v)) {
                         snac user;
 
+                        /* skip this same user */
                         if (strcmp(v, xs_dict_get(snac1.config, "uid")) == 0)
                             continue;
 
-                        if (user_open(&user, v)) {
-                            xs *v2 = xs_tolower_i(xs_dup(v));
+                        /* skip if the uid does not start with the query */
+                        xs *v2 = xs_tolower_i(xs_dup(v));
+                        if (!xs_startswith(v2, q))
+                            continue;
 
-                            if (xs_startswith(v2, q)) {
+                        if (user_open(&user, v)) {
+                            /* if it's not already seen, add it */
+                            if (xs_set_add(&seen, user.actor) == 1) {
                                 xs *actor = msg_actor(&user);
                                 xs *acct  = mastoapi_account(actor);
 
                                 out = xs_list_append(out, acct);
                             }
-
-                            xs_set_add(&seen, user.actor);
 
                             user_free(&user);
                         }
