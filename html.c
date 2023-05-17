@@ -475,7 +475,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         L("Maximum days to keep posts (0: server settings)"),
         purge_days,
         xs_type(d_dm_f_u) == XSTYPE_TRUE ? "checked" : "",
-        L("Block direct messages from people you don't follow"),
+        L("Drop direct messages from people you don't follow"),
         L("Password (only to change it)"),
         L("Repeat Password"),
         L("Update user info")
