@@ -555,13 +555,23 @@ d_char *msg_accept(snac *snac, char *object, char *to)
 xs_dict *msg_update(snac *snac, xs_dict *object)
 /* creates an Update message */
 {
-    d_char *msg = msg_base(snac, "Update", "@object", snac->actor, "@now", object);
+    xs_dict *msg = msg_base(snac, "Update", "@object", snac->actor, "@now", object);
 
     char *type = xs_dict_get(object, "type");
 
     if (strcmp(type, "Note") == 0) {
         msg = xs_dict_append(msg, "to", xs_dict_get(object, "to"));
         msg = xs_dict_append(msg, "cc", xs_dict_get(object, "cc"));
+    }
+    else
+    if (strcmp(type, "Person") == 0) {
+        msg = xs_dict_append(msg, "to", public_address);
+
+        /* also spam the people being followed, so that
+           they have the newest information about who we are */
+        xs *cc = following_list(snac);
+
+        msg = xs_dict_append(msg, "cc", cc);
     }
     else
         msg = xs_dict_append(msg, "to", public_address);
