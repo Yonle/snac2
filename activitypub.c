@@ -1045,6 +1045,16 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
         return 1;
     }
 
+    /* if it's a DM from someone we don't follow, reject the message */
+    if (xs_type(xs_dict_get(snac->config, "drop_dm_from_unknown")) == XSTYPE_TRUE) {
+        if (strcmp(utype, "Note") == 0 && !is_msg_public(snac, msg) &&
+            !following_check(snac, actor)) {
+            snac_log(snac, xs_fmt("DM rejected from unknown actor %s", actor));
+
+            return 1;
+        }
+    }
+
     /* bring the actor */
     a_status = actor_request(snac, actor, &actor_o);
 
