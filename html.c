@@ -1347,8 +1347,7 @@ int html_get_handler(const xs_dict *req, const char *q_path,
     if ((v = xs_dict_get(q_vars, "show")) != NULL)
         show = atoi(v), cache = 0, save = 0;
 
-    if (p_path == NULL) {
-        /* public timeline */
+    if (p_path == NULL) { /** public timeline **/
         xs *h = xs_str_localtime(0, "%Y-%m.html");
 
         if (cache && history_mtime(&snac, h) > timeline_mtime(&snac)) {
@@ -1372,9 +1371,7 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         }
     }
     else
-    if (strcmp(p_path, "admin") == 0) {
-        /* private timeline */
-
+    if (strcmp(p_path, "admin") == 0) { /** private timeline **/
         if (!login(&snac, req))
             status = 401;
         else {
@@ -1402,9 +1399,7 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         }
     }
     else
-    if (strcmp(p_path, "people") == 0) {
-        /* the list of people */
-
+    if (strcmp(p_path, "people") == 0) { /** the list of people **/
         if (!login(&snac, req))
             status = 401;
         else {
@@ -1414,9 +1409,7 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         }
     }
     else
-    if (strcmp(p_path, "notifications") == 0) {
-        /* the list of notifications */
-
+    if (strcmp(p_path, "notifications") == 0) { /** the list of notifications **/
         if (!login(&snac, req))
             status = 401;
         else {
@@ -1426,8 +1419,7 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         }
     }
     else
-    if (xs_startswith(p_path, "p/")) {
-        /* a timeline with just one entry */
+    if (xs_startswith(p_path, "p/")) { /** a timeline with just one entry **/
         xs *id  = xs_fmt("%s/%s", snac.actor, p_path);
         xs *msg = NULL;
 
@@ -1443,8 +1435,7 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         }
     }
     else
-    if (xs_startswith(p_path, "s/")) {
-        /* a static file */
+    if (xs_startswith(p_path, "s/")) { /** a static file **/
         xs *l    = xs_split(p_path, "/");
         char *id = xs_list_get(l, 1);
         int sz;
@@ -1456,8 +1447,7 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         }
     }
     else
-    if (xs_startswith(p_path, "h/")) {
-        /* an entry from the history */
+    if (xs_startswith(p_path, "h/")) { /** an entry from the history **/
         xs *l    = xs_split(p_path, "/");
         char *id = xs_list_get(l, 1);
 
@@ -1467,8 +1457,7 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         }
     }
     else
-    if (strcmp(p_path, ".rss") == 0) {
-        /* public timeline in RSS format */
+    if (strcmp(p_path, ".rss") == 0) { /** public timeline in RSS format **/
         d_char *rss;
         xs *elems = timeline_simple_list(&snac, "public", 0, 20);
         xs *bio   = not_really_markdown(xs_dict_get(snac.config, "bio"));
@@ -1588,7 +1577,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
     }
 #endif
 
-    if (p_path && strcmp(p_path, "admin/note") == 0) {
+    if (p_path && strcmp(p_path, "admin/note") == 0) { /** **/
         /* post note */
         xs_str *content      = xs_dict_get(p_vars, "content");
         xs_str *in_reply_to  = xs_dict_get(p_vars, "in_reply_to");
@@ -1696,7 +1685,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
         status = 303;
     }
     else
-    if (p_path && strcmp(p_path, "admin/action") == 0) {
+    if (p_path && strcmp(p_path, "admin/action") == 0) { /** **/
         /* action on an entry */
         char *id     = xs_dict_get(p_vars, "id");
         char *actor  = xs_dict_get(p_vars, "actor");
@@ -1709,7 +1698,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
 
         status = 303;
 
-        if (strcmp(action, L("Like")) == 0) {
+        if (strcmp(action, L("Like")) == 0) { /** **/
             xs *msg = msg_admiration(&snac, id, "Like");
 
             if (msg != NULL) {
@@ -1718,7 +1707,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
             }
         }
         else
-        if (strcmp(action, L("Boost")) == 0) {
+        if (strcmp(action, L("Boost")) == 0) { /** **/
             xs *msg = msg_admiration(&snac, id, "Announce");
 
             if (msg != NULL) {
@@ -1727,19 +1716,19 @@ int html_post_handler(const xs_dict *req, const char *q_path,
             }
         }
         else
-        if (strcmp(action, L("MUTE")) == 0) {
+        if (strcmp(action, L("MUTE")) == 0) { /** **/
             mute(&snac, actor);
         }
         else
-        if (strcmp(action, L("Unmute")) == 0) {
+        if (strcmp(action, L("Unmute")) == 0) { /** **/
             unmute(&snac, actor);
         }
         else
-        if (strcmp(action, L("Hide")) == 0) {
+        if (strcmp(action, L("Hide")) == 0) { /** **/
             hide(&snac, id);
         }
         else
-        if (strcmp(action, L("Follow")) == 0) {
+        if (strcmp(action, L("Follow")) == 0) { /** **/
             xs *msg = msg_follow(&snac, actor);
 
             if (msg != NULL) {
@@ -1752,7 +1741,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
             }
         }
         else
-        if (strcmp(action, L("Unfollow")) == 0) {
+        if (strcmp(action, L("Unfollow")) == 0) { /** **/
             /* get the following object */
             xs *object = NULL;
 
@@ -1769,7 +1758,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
                 snac_log(&snac, xs_fmt("actor is not being followed %s", actor));
         }
         else
-        if (strcmp(action, L("Delete")) == 0) {
+        if (strcmp(action, L("Delete")) == 0) { /** **/
             char *actor_form = xs_dict_get(p_vars, "actor-form");
             if (actor_form != NULL) {
                 /* delete follower */
@@ -1802,7 +1791,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
             history_del(&snac, "timeline.html_");
     }
     else
-    if (p_path && strcmp(p_path, "admin/user-setup") == 0) {
+    if (p_path && strcmp(p_path, "admin/user-setup") == 0) { /** **/
         /* change of user data */
         char *v;
         char *p1, *p2;
@@ -1881,7 +1870,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
         status = 303;
     }
     else
-    if (p_path && strcmp(p_path, "admin/clear-notifications") == 0) {
+    if (p_path && strcmp(p_path, "admin/clear-notifications") == 0) { /** **/
         notify_clear(&snac);
         timeline_touch(&snac);
 
