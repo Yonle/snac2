@@ -4,9 +4,9 @@
 
 New user configuration switch to drop direct messages from people you don't follow, in order to mitigate spam from Mastodon open registration instances.
 
-When updating user information, the changes are also sent to the people being followed (so they have an updated description about who the user is).
+When updating user information (e.g. the display name or the bio), the changes are also sent to the people being followed (so they have an updated description about who the user is).
 
-Mastodon API: account search has been implemented, so mention completion works from apps.
+Mastodon API: account search has been implemented, so mention completion works from apps; new support for blocking users (this operation is called MUTE here).
 
 ## 2.31
 
