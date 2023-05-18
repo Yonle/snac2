@@ -2014,6 +2014,26 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                         }
                     }
                 }
+                else
+                if (strcmp(opt, "block") == 0) { /** **/
+                    if (valid_status(object_get_by_md5(md5, &actor_o))) {
+                        const char *actor = xs_dict_get(actor_o, "id");
+
+                        mute(&snac, actor);
+
+                        rsp = mastoapi_relationship(&snac, md5);
+                    }
+                }
+                else
+                if (strcmp(opt, "unblock") == 0) { /** **/
+                    if (valid_status(object_get_by_md5(md5, &actor_o))) {
+                        const char *actor = xs_dict_get(actor_o, "id");
+
+                        unmute(&snac, actor);
+
+                        rsp = mastoapi_relationship(&snac, md5);
+                    }
+                }
             }
 
             if (rsp != NULL) {
