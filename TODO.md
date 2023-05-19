@@ -6,10 +6,6 @@ Post edits should preserve the image and the image description somewhat.
 
 Implement real tag links instead of just pretending that it's something that exists.
 
-Mastodon API: implement 'unfavourite'.
-
-Mastodon API: implement 'unreblog' (unboost).
-
 Mastodon API: fix whatever the fuck is making the official app and Megalodon to crash.
 
 Improve support for audio attachments.
@@ -241,3 +237,7 @@ Add a notification area, where recent events of interest would be easily seen (2
 Mastodon API: add search by account (webfinger) (2023-04-24T05:01:03+0200).
 
 Mastodon API: add an instance timeline by combining the timelines of all users (2023-04-24T05:01:14+0200).
+
+Mastodon API: implement 'unfavourite' (2023-05-19T21:25:24+0200).
+
+Mastodon API: implement 'unreblog' (unboost) (2023-05-19T21:25:24+0200).
