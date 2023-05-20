@@ -34,10 +34,10 @@ const char *susie_cool =
 
 const char *susie_muertos = 
     "iVBORw0KGgoAAAANSUhEUgAAAEAAAABAAQAAAAC"
-    "CEkxzAAAAVklEQVQoz4XRuQ0AMAwCQDZg/y3ZgG"
-    "ArNcbNFVHkBwBFYdJg+IITHVDKHYQkXsjjDvl/W"
-    "JDO6ZmwgN6qgJX5fCE5sNuWKmYHYgVn40pnBXs1"
-    "2hXbe8UDawL8MY3oY1oAAAAASUVORK5CYII=";
+    "CEkxzAAAAV0lEQVQoz4XQsQ0AMQxCUW/A/lv+DT"
+    "ic6zGRolekIMyMELNp8PiCEw6Q4w4NoAt53IH5m"
+    "xXksrZYgZwJrIox+Z8vJAfe2lCxG6AK7eKkWcEb"
+    "QHbF617xAQatAAD7jJHUAAAAAElFTkSuQmCC";
 
 
 const char *default_avatar_base64(void)
