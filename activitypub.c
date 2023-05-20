@@ -32,16 +32,30 @@ const char *susie_cool =
     "+ZcgN7wF7ZVihXkfSlWIVzIA6dbQzaygllpNuTX"
     "ZmmFNlvxADX1+o0cUPMbAAAAAElFTkSuQmCC";
 
+const char *susie_muertos = 
+    "iVBORw0KGgoAAAANSUhEUgAAAEAAAABAAQAAAAC"
+    "CEkxzAAAAVklEQVQoz4XRuQ0AMAwCQDZg/y3ZgG"
+    "ArNcbNFVHkBwBFYdJg+IITHVDKHYQkXsjjDvl/W"
+    "JDO6ZmwgN6qgJX5fCE5sNuWKmYHYgVn40pnBXs1"
+    "2hXbe8UDawL8MY3oY1oAAAAASUVORK5CYII=";
+
 
 const char *default_avatar_base64(void)
 /* returns the default avatar in base64 */
 {
     time_t t = time(NULL);
     struct tm tm;
+    const char *p = susie;
 
     gmtime_r(&t, &tm);
 
-    return tm.tm_wday == 0 || tm.tm_wday == 6 ? susie_cool : susie;
+    if (tm.tm_mon == 10 && tm.tm_mday == 2)
+        p = susie_muertos;
+    else
+    if (tm.tm_wday == 0 || tm.tm_wday == 6)
+        p = susie_cool;
+
+    return p;
 }
 
 
