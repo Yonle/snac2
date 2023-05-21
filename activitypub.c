@@ -772,7 +772,7 @@ xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
     xs *cc   = xs_list_new();
     xs *irt  = NULL;
     xs *tag  = xs_list_new();
-    xs *atls = NULL;
+    xs *atls = xs_list_new();
     xs_dict *msg = msg_base(snac, "Note", id, NULL, "@now", NULL);
     xs_list *p;
     xs_val *v;
@@ -838,10 +838,8 @@ xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
 
     /* create the attachment list, if there are any */
     if (!xs_is_null(attach)) {
-        atls = xs_list_new();
-
         while (xs_list_iter(&attach, &v)) {
-            xs *d = xs_dict_new();
+            xs *d      = xs_dict_new();
             char *url  = xs_list_get(v, 0);
             char *alt  = xs_list_get(v, 1);
             char *mime = xs_mime_by_ext(url);
@@ -897,7 +895,7 @@ xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
 
     msg = xs_dict_append(msg, "sourceContent", content);
 
-    if (atls != NULL)
+    if (xs_list_len(atls))
         msg = xs_dict_append(msg, "attachment", atls);
 
     return msg;
