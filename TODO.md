@@ -24,8 +24,6 @@ The 'history' pages are just monthly HTML snapshots of the local timeline. This 
 
 Implement bulleted lists. Mastodon is crap and won't show them, but other implementations (Friendica, Pleroma) will do.
 
-Add (back) the possibility to attach an image by URL.
-
 With this new disk layout, hidden posts (and their children) can be directly skipped when rendering the HTML timeline (are there any other implications?).
 
 User request: "will it be possible to click on a link and instead of opening the original instance, we'll be able only to see a list of the posts of this person here in comam?. Something like Mastodon does."
@@ -243,3 +241,5 @@ Mastodon API: implement 'unfavourite' (2023-05-19T21:25:24+0200).
 Mastodon API: implement 'unreblog' (unboost) (2023-05-19T21:25:24+0200).
 
 Do something with @mentions without host; complete with followed people, or with local users. Or just do nothing. I'm not sure (2023-05-21T20:19:15+0200).
+
+Add (back) the possibility to attach an image by URL (2023-05-21T20:35:39+0200).
