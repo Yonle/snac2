@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.33
+
+If an URL written in a post links to an image, it's converted to an attachment.
+
 ## 2.32
 
 New user configuration switch to drop direct messages from people you don't follow, in order to mitigate spam from Mastodon open registration instances.
