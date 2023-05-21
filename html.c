@@ -322,7 +322,7 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
         s = xs_str_cat(s, s1);
 
         if (local) {
-            xs *bio = not_really_markdown(xs_dict_get(snac->config, "bio"));
+            xs *bio = not_really_markdown(xs_dict_get(snac->config, "bio"), NULL);
             xs *s1  = xs_fmt("<div class=\"p-note snac-top-user-bio\">%s</div>\n", bio);
 
             s = xs_str_cat(s, s1);
@@ -1467,7 +1467,7 @@ int html_get_handler(const xs_dict *req, const char *q_path,
     if (strcmp(p_path, ".rss") == 0) { /** public timeline in RSS format **/
         d_char *rss;
         xs *elems = timeline_simple_list(&snac, "public", 0, 20);
-        xs *bio   = not_really_markdown(xs_dict_get(snac.config, "bio"));
+        xs *bio   = not_really_markdown(xs_dict_get(snac.config, "bio"), NULL);
         char *p, *v;
 
         /* escape tags */

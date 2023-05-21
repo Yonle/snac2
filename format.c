@@ -3,6 +3,7 @@
 
 #include "xs.h"
 #include "xs_regex.h"
+#include "xs_mime.h"
 
 #include "snac.h"
 
@@ -38,7 +39,7 @@ struct {
 };
 
 
-static xs_str *format_line(const char *line)
+static xs_str *format_line(const char *line, xs_list **attach)
 /* formats a line */
 {
     xs_str *s = xs_str_new(NULL);
@@ -73,8 +74,24 @@ static xs_str *format_line(const char *line)
             else
             if (xs_startswith(v, "http")) {
                 xs *v2 = xs_strip_chars_i(xs_dup(v), ".");
-                xs *s1 = xs_fmt("<a href=\"%s\" target=\"_blank\">%s</a>", v2, v);
-                s = xs_str_cat(s, s1);
+
+                const char *mime = xs_mime_by_ext(v2);
+
+                if (attach != NULL && xs_startswith(mime, "image/")) {
+                    /* if it's a link to an image, insert it as an attachment */
+                    xs *d = xs_dict_new();
+
+                    d = xs_dict_append(d, "mediaType", mime);
+                    d = xs_dict_append(d, "url",       v2);
+                    d = xs_dict_append(d, "name",      "");
+                    d = xs_dict_append(d, "type",      "Image");
+
+                    *attach = xs_list_append(*attach, d);
+                }
+                else {
+                    xs *s1 = xs_fmt("<a href=\"%s\" target=\"_blank\">%s</a>", v2, v);
+                    s = xs_str_cat(s, s1);
+                }
             }
             else
                 s = xs_str_cat(s, v);
@@ -90,7 +107,7 @@ static xs_str *format_line(const char *line)
 }
 
 
-xs_str *not_really_markdown(const char *content)
+xs_str *not_really_markdown(const char *content, xs_list **attach)
 /* formats a content using some Markdown rules */
 {
     xs_str *s  = xs_str_new(NULL);
@@ -119,7 +136,7 @@ xs_str *not_really_markdown(const char *content)
         if (in_pre)
             ss = xs_dup(v);
         else
-            ss = xs_strip_i(format_line(v));
+            ss = xs_strip_i(format_line(v, attach));
 
         if (xs_startswith(ss, ">")) {
             /* delete the > and subsequent spaces */

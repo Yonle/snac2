@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
     if (strcmp(cmd, "markdown") == 0) {
         /* undocumented, for testing only */
         xs *c = xs_readall(stdin);
-        xs *fc = not_really_markdown(c);
+        xs *fc = not_really_markdown(c, NULL);
 
         printf("<html>\n%s\n</html>\n", fc);
         return 0;

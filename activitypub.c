@@ -646,7 +646,7 @@ d_char *msg_actor(snac *snac)
     msg = xs_dict_set(msg, "preferredUsername", snac->uid);
     msg = xs_dict_set(msg, "published",         xs_dict_get(snac->config, "published"));
 
-    f_bio = not_really_markdown(xs_dict_get(snac->config, "bio"));
+    f_bio = not_really_markdown(xs_dict_get(snac->config, "bio"), NULL);
     msg = xs_dict_set(msg, "summary", f_bio);
 
     char *folders[] = { "inbox", "outbox", "followers", "following", NULL };
@@ -789,7 +789,7 @@ xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
     }
 
     /* format the content */
-    fc2 = not_really_markdown(content);
+    fc2 = not_really_markdown(content, &atls);
 
     if (in_reply_to != NULL && *in_reply_to) {
         xs *p_msg = NULL;
