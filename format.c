@@ -38,10 +38,10 @@ struct {
 };
 
 
-static d_char *format_line(const char *line)
+static xs_str *format_line(const char *line)
 /* formats a line */
 {
-    d_char *s = xs_str_new(NULL);
+    xs_str *s = xs_str_new(NULL);
     char *p, *v;
 
     /* split by markup */
@@ -90,10 +90,10 @@ static d_char *format_line(const char *line)
 }
 
 
-d_char *not_really_markdown(const char *content)
+xs_str *not_really_markdown(const char *content)
 /* formats a content using some Markdown rules */
 {
-    d_char *s = xs_str_new(NULL);
+    xs_str *s  = xs_str_new(NULL);
     int in_pre = 0;
     int in_blq = 0;
     xs *list;
@@ -172,10 +172,10 @@ const char *valid_tags[] = {
     "span", "i", "b", "u", "pre", "code", "em", "strong", NULL
 };
 
-d_char *sanitize(const char *content)
+xs_str *sanitize(const char *content)
 /* cleans dangerous HTML output */
 {
-    d_char *s = xs_str_new(NULL);
+    xs_str *s = xs_str_new(NULL);
     xs *sl;
     int n = 0;
     char *p, *v;

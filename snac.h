@@ -228,8 +228,8 @@ int activitypub_post_handler(const xs_dict *req, const char *q_path,
                              char *payload, int p_size,
                              char **body, int *b_size, char **ctype);
 
-d_char *not_really_markdown(const char *content);
-d_char *sanitize(const char *str);
+xs_str *not_really_markdown(const char *content);
+xs_str *sanitize(const char *content);
 
 int html_get_handler(const xs_dict *req, const char *q_path,
                      char **body, int *b_size, char **ctype);
