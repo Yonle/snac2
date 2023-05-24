@@ -896,10 +896,30 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
             xs_list *ao = xs_dict_get(msg, "anyOf");
             xs_list *p;
             xs_dict *v;
+            int closed = 0;
 
+            if (xs_dict_get(msg, "closed"))
+                closed = 1;
+            else {
+                /* not yet closed? check if we already voted for this */
+                xs *children = object_children(id);
+                p = children;
+                while (!closed && xs_list_iter(&p, &v)) {
+                    xs *msg = NULL;
+
+                    if (valid_status(object_get_by_md5(v, &msg))) {
+                        const char *atto = xs_dict_get(msg, "attributedTo");
+
+                        if (atto && strcmp(atto, snac->actor) == 0)
+                            closed = 1; /* closed for us */
+                    }
+                }
+            }
+
+            /* get the appropriate list of options */
             p = oo != NULL ? oo : ao;
 
-            if (!xs_is_null(xs_dict_get(msg, "closed"))) {
+            if (closed) {
                 /* closed poll */
                 c = xs_str_cat(c, "<table>\n");
 
