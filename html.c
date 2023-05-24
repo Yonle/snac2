@@ -948,9 +948,9 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                     const char *name = xs_dict_get(v, "name");
 
                     if (name) {
-                        /* FIXME: process anyOf (checkbox) correctly */
-                        xs *opt = xs_fmt("<input type=\"radio\""
+                        xs *opt = xs_fmt("<input type=\"%s\""
                                     " id=\"%s\" value=\"%s\" name=\"question\"> %s<br>\n",
+                                    !xs_is_null(oo) ? "radio" : "checkbox",
                                     name, name, name);
 
                         s1 = xs_str_cat(s1, opt);
@@ -1981,16 +1981,31 @@ int html_post_handler(const xs_dict *req, const char *q_path,
         const char *opt   = xs_dict_get(p_vars, "question");
         const char *actor = xs_dict_get(p_vars, "actor");
 
-        xs *msg = msg_note(&snac, "", actor, irt, NULL, 1);
+        xs *ls = NULL;
 
-        /* set the option */
-        msg = xs_dict_append(msg, "name", opt);
+        /* multiple choices? */
+        if (xs_type(opt) == XSTYPE_LIST)
+            ls = xs_dup(opt);
+        else {
+            ls = xs_list_new();
+            ls = xs_list_append(ls, opt);
+        }
 
-        xs *c_msg = msg_create(&snac, msg);
+        xs_list *p = ls;
+        xs_str *v;
 
-        enqueue_message(&snac, c_msg);
+        while (xs_list_iter(&p, &v)) {
+            xs *msg = msg_note(&snac, "", actor, irt, NULL, 1);
 
-        timeline_add(&snac, xs_dict_get(msg, "id"), msg);
+            /* set the option */
+            msg = xs_dict_append(msg, "name", v);
+
+            xs *c_msg = msg_create(&snac, msg);
+
+            enqueue_message(&snac, c_msg);
+
+            timeline_add(&snac, xs_dict_get(msg, "id"), msg);
+        }
 
         status = 303;
     }
