@@ -2,6 +2,8 @@
 
 ## 2.33
 
+Polls (in #ActivityPub lingo, Questions) are shown and can be voted on. Creating a poll is not yet implemented, though.
+
 If an URL written in a post links to an image, it's converted to an attachment.
 
 ## 2.32
