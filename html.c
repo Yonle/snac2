@@ -919,6 +919,29 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
             }
             else {
                 /* poll still active */
+                xs *s1 = xs_fmt("<form method=\"post\" action=\"%s/admin/vote\">\n"
+                                "<input type=\"hidden\" name=\"irt\" value=\"%s\">\n",
+                    snac->actor, id);
+
+                while (xs_list_iter(&p, &v)) {
+                    const char *name = xs_dict_get(v, "name");
+
+                    if (name) {
+                        /* FIXME: process anyOf (checkbox) correctly */
+                        xs *opt = xs_fmt("<input type=\"radio\""
+                                    " id=\"%s\" value=\"%s\" name=\"question\"> %s<br>\n",
+                                    name, name, name);
+
+                        s1 = xs_str_cat(s1, opt);
+                    }
+                }
+
+                xs *s2 = xs_fmt("<p><input type=\"submit\" "
+                                "class=\"button\" value=\"%s\">\n</form>\n\n", L("Vote"));
+
+                s1 = xs_str_cat(s1, s2);
+
+                c = xs_str_cat(c, s1);
             }
         }
 
