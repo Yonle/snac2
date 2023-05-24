@@ -1217,6 +1217,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
     if (strcmp(type, "Update") == 0) {
         if (strcmp(utype, "Person") == 0) {
             actor_add(actor, xs_dict_get(msg, "object"));
+            timeline_touch(snac);
 
             snac_log(snac, xs_fmt("updated actor %s", actor));
         }
@@ -1225,6 +1226,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             char *id = xs_dict_get(object, "id");
 
             object_add_ow(id, object);
+            timeline_touch(snac);
 
             snac_log(snac, xs_fmt("updated post %s", id));
         }
@@ -1233,6 +1235,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             char *id = xs_dict_get(object, "id");
 
             object_add_ow(id, object);
+            timeline_touch(snac);
 
             snac_log(snac, xs_fmt("updated poll %s", id));
         }
