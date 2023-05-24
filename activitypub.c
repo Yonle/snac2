@@ -1135,21 +1135,27 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
     }
     else
     if (strcmp(type, "Create") == 0) {
+        if (is_muted(snac, actor))
+            snac_log(snac, xs_fmt("ignored 'Create' + '%s' from muted actor %s", utype, actor));
+
         if (strcmp(utype, "Note") == 0) {
-            if (is_muted(snac, actor))
-                snac_log(snac, xs_fmt("ignored 'Note' from muted actor %s", actor));
-            else {
-                char *id          = xs_dict_get(object, "id");
-                char *in_reply_to = xs_dict_get(object, "inReplyTo");
-                xs *wrk           = NULL;
+            char *id          = xs_dict_get(object, "id");
+            char *in_reply_to = xs_dict_get(object, "inReplyTo");
+            xs *wrk           = NULL;
 
-                timeline_request(snac, &in_reply_to, &wrk);
+            timeline_request(snac, &in_reply_to, &wrk);
 
-                if (timeline_add(snac, id, object)) {
-                    snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
-                    do_notify = 1;
-                }
+            if (timeline_add(snac, id, object)) {
+                snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
+                do_notify = 1;
             }
+        }
+        else
+        if (strcmp(utype, "Question") == 0) {
+            char *id = xs_dict_get(object, "id");
+
+            if (timeline_add(snac, id, object))
+                snac_log(snac, xs_fmt("new 'Question' %s %s", actor, id));
         }
         else
             snac_debug(snac, 1, xs_fmt("ignored 'Create' for object type '%s'", utype));
@@ -1221,6 +1227,14 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             object_add_ow(id, object);
 
             snac_log(snac, xs_fmt("updated post %s", id));
+        }
+        else
+        if (strcmp(utype, "Question") == 0) {
+            char *id = xs_dict_get(object, "id");
+
+            object_add_ow(id, object);
+
+            snac_log(snac, xs_fmt("updated poll %s", id));
         }
         else
             snac_log(snac, xs_fmt("ignored 'Update' for object type '%s'", utype));
