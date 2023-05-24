@@ -920,8 +920,9 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
             else {
                 /* poll still active */
                 xs *s1 = xs_fmt("<form method=\"post\" action=\"%s/admin/vote\">\n"
+                                "<input type=\"hidden\" name=\"actor\" value= \"%s\">\n"
                                 "<input type=\"hidden\" name=\"irt\" value=\"%s\">\n",
-                    snac->actor, id);
+                    snac->actor, actor, id);
 
                 while (xs_list_iter(&p, &v)) {
                     const char *name = xs_dict_get(v, "name");
@@ -1951,6 +1952,25 @@ int html_post_handler(const xs_dict *req, const char *q_path,
     if (p_path && strcmp(p_path, "admin/clear-notifications") == 0) { /** **/
         notify_clear(&snac);
         timeline_touch(&snac);
+
+        status = 303;
+    }
+    else
+    if (p_path && strcmp(p_path, "admin/vote") == 0) { /** **/
+        char *irt         = xs_dict_get(p_vars, "irt");
+        const char *opt   = xs_dict_get(p_vars, "question");
+        const char *actor = xs_dict_get(p_vars, "actor");
+
+        xs *msg = msg_note(&snac, "", actor, irt, NULL, 1);
+
+        /* set the option */
+        msg = xs_dict_append(msg, "name", opt);
+
+        xs *c_msg = msg_create(&snac, msg);
+
+        enqueue_message(&snac, c_msg);
+
+        timeline_add(&snac, xs_dict_get(msg, "id"), msg);
 
         status = 303;
     }
