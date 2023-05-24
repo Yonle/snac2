@@ -1747,7 +1747,7 @@ int activitypub_post_handler(const xs_dict *req, const char *q_path,
     /* if the message is from a muted actor, reject it right now */
     if (!xs_is_null(v = xs_dict_get(msg, "actor")) && *v) {
         if (is_muted(&snac, v)) {
-            srv_log(xs_fmt("rejected message from MUTEd actor %s", v));
+            snac_log(&snac, xs_fmt("rejected message from MUTEd actor %s", v));
 
             *body  = xs_str_new("rejected");
             *ctype = "text/plain";
