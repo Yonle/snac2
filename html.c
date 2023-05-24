@@ -145,7 +145,7 @@ xs_str *html_actor_icon(xs_str *os, char *actor,
 }
 
 
-d_char *html_msg_icon(snac *snac, d_char *os, char *msg)
+xs_str *html_msg_icon(snac *snac, xs_str *os, const xs_dict *msg)
 {
     char *actor_id;
     xs *actor = NULL;
@@ -498,10 +498,10 @@ d_char *html_button(d_char *s, char *clss, char *label)
 }
 
 
-d_char *build_mentions(snac *snac, char *msg)
+xs_str *build_mentions(snac *snac, const xs_dict *msg)
 /* returns a string with the mentions in msg */
 {
-    d_char *s = xs_str_new(NULL);
+    xs_str *s = xs_str_new(NULL);
     char *list = xs_dict_get(msg, "tag");
     char *v;
 
@@ -548,7 +548,7 @@ d_char *build_mentions(snac *snac, char *msg)
 }
 
 
-d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
+xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const char *md5)
 {
     char *id    = xs_dict_get(msg, "id");
     char *actor = xs_dict_get(msg, "attributedTo");
@@ -688,7 +688,7 @@ d_char *html_entry_controls(snac *snac, d_char *os, char *msg, const char *md5)
 }
 
 
-d_char *html_entry(snac *snac, d_char *os, char *msg, int local,
+xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                    int level, const char *md5, int hide_children)
 {
     char *id    = xs_dict_get(msg, "id");
@@ -1008,10 +1008,11 @@ xs_str *html_user_footer(xs_str *s)
 }
 
 
-d_char *html_timeline(snac *snac, char *list, int local, int skip, int show, int show_more)
+xs_str *html_timeline(snac *snac, const xs_list *list, int local, int skip, int show, int show_more)
 /* returns the HTML for the timeline */
 {
-    d_char *s = xs_str_new(NULL);
+    xs_str *s = xs_str_new(NULL);
+    xs_list *p = (xs_list *)list;
     char *v;
     double t = ftime();
 
@@ -1023,7 +1024,7 @@ d_char *html_timeline(snac *snac, char *list, int local, int skip, int show, int
     s = xs_str_cat(s, "<a name=\"snac-posts\"></a>\n");
     s = xs_str_cat(s, "<div class=\"snac-posts\">\n");
 
-    while (xs_list_iter(&list, &v)) {
+    while (xs_list_iter(&p, &v)) {
         xs *msg = NULL;
 
         if (!valid_status(timeline_get_by_md5(snac, v, &msg)))
