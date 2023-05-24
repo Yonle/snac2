@@ -69,8 +69,8 @@ int index_add(const char *fn, const char *md5);
 int index_gc(const char *fn);
 int index_first(const char *fn, char *buf, int size);
 int index_len(const char *fn);
-d_char *index_list(const char *fn, int max);
-d_char *index_list_desc(const char *fn, int skip, int show);
+xs_list *index_list(const char *fn, int max);
+xs_list *index_list_desc(const char *fn, int skip, int show);
 
 int object_add(const char *id, d_char *obj);
 int object_add_ow(const char *id, d_char *obj);
@@ -88,9 +88,9 @@ int object_unadmire(const char *id, const char *actor, int like);
 int object_likes_len(const char *id);
 int object_announces_len(const char *id);
 
-d_char *object_children(const char *id);
-d_char *object_likes(const char *id);
-d_char *object_announces(const char *id);
+xs_list *object_children(const char *id);
+xs_list *object_likes(const char *id);
+xs_list *object_announces(const char *id);
 int object_parent(const char *id, char *buf, int size);
 
 int object_user_cache_add(snac *snac, const char *id, const char *cachedir);

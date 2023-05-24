@@ -482,7 +482,7 @@ int index_len(const char *fn)
 }
 
 
-d_char *index_list(const char *fn, int max)
+xs_list *index_list(const char *fn, int max)
 /* returns an index as a list */
 {
     d_char *list = NULL;
@@ -508,7 +508,7 @@ d_char *index_list(const char *fn, int max)
 }
 
 
-d_char *index_list_desc(const char *fn, int skip, int show)
+xs_list *index_list_desc(const char *fn, int skip, int show)
 /* returns an index as a list, in reverse order */
 {
     d_char *list = NULL;
@@ -768,7 +768,7 @@ int object_announces_len(const char *id)
 }
 
 
-d_char *object_children(const char *id)
+xs_list *object_children(const char *id)
 /* returns the list of an object's children */
 {
     xs *fn = _object_index_fn(id, "_c.idx");
@@ -776,14 +776,14 @@ d_char *object_children(const char *id)
 }
 
 
-d_char *object_likes(const char *id)
+xs_list *object_likes(const char *id)
 {
     xs *fn = _object_index_fn(id, "_l.idx");
     return index_list(fn, XS_ALL);
 }
 
 
-d_char *object_announces(const char *id)
+xs_list *object_announces(const char *id)
 {
     xs *fn = _object_index_fn(id, "_a.idx");
     return index_list(fn, XS_ALL);

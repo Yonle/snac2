@@ -891,7 +891,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
             }
         }
 
-        if (strcmp(type, "Question") == 0) {
+        if (strcmp(type, "Question") == 0) { /** question content **/
             xs_list *oo = xs_dict_get(msg, "oneOf");
             xs_list *ao = xs_dict_get(msg, "anyOf");
             xs_list *p;
