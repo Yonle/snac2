@@ -678,14 +678,22 @@ d_char *msg_actor(snac *snac)
 }
 
 
-d_char *msg_create(snac *snac, char *object)
+xs_dict *msg_create(snac *snac, const xs_dict *object)
 /* creates a 'Create' message */
 {
-    d_char *msg = msg_base(snac, "Create", "@object", snac->actor, "@now", object);
+    xs_dict *msg = msg_base(snac, "Create", "@object", snac->actor, "@now", object);
+    xs_val *v;
 
-    msg = xs_dict_append(msg, "attributedTo", xs_dict_get(object, "attributedTo"));
-    msg = xs_dict_append(msg, "to",           xs_dict_get(object, "to"));
-    msg = xs_dict_append(msg, "cc",           xs_dict_get(object, "cc"));
+    if ((v = xs_dict_get(object, "attributedTo")))
+        msg = xs_dict_append(msg, "attributedTo", v);
+
+    if ((v = xs_dict_get(object, "cc")))
+        msg = xs_dict_append(msg, "cc", v);
+
+    if ((v = xs_dict_get(object, "to")))
+        msg = xs_dict_append(msg, "to", v);
+    else
+        msg = xs_dict_append(msg, "to", public_address);
 
     return msg;
 }
@@ -951,7 +959,7 @@ xs_dict *msg_question(snac *user, const char *content, const xs_list *opts, int 
     time_t t = time(NULL) + end_secs;
     xs *et = xs_str_utctime(t, "%Y-%m-%dT%H:%M:%SZ");
 
-    msg = xs_dict_append(msg, "endTime", msg);
+    msg = xs_dict_append(msg, "endTime", et);
 
     return msg;
 }

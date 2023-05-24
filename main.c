@@ -30,6 +30,7 @@ int usage(void)
     printf("note {basedir} {uid} {'text'}    Sends a note to followers\n");
     printf("resetpwd {basedir} {uid}         Resets the password of a user\n");
     printf("ping {basedir} {uid} {actor}     Pings an actor\n");
+/*    printf("question {basedir} {uid} 'opts'  Generates a poll (;-separated opts)\n");*/
 
     return 1;
 }
@@ -63,7 +64,7 @@ int main(int argc, char *argv[])
     if ((cmd = GET_ARGV()) == NULL)
         return usage();
 
-    if (strcmp(cmd, "init") == 0) {
+    if (strcmp(cmd, "init") == 0) { /** **/
         /* initialize the data storage */
         /* ... */
         basedir = GET_ARGV();
@@ -71,7 +72,7 @@ int main(int argc, char *argv[])
         return snac_init(basedir);
     }
 
-    if (strcmp(cmd, "upgrade") == 0) {
+    if (strcmp(cmd, "upgrade") == 0) { /** **/
         int ret;
 
         /* upgrade */
@@ -84,7 +85,7 @@ int main(int argc, char *argv[])
         return ret;
     }
 
-    if (strcmp(cmd, "markdown") == 0) {
+    if (strcmp(cmd, "markdown") == 0) { /** **/
         /* undocumented, for testing only */
         xs *c = xs_readall(stdin);
         xs *fc = not_really_markdown(c, NULL);
@@ -101,7 +102,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (strcmp(cmd, "adduser") == 0) {
+    if (strcmp(cmd, "adduser") == 0) { /** **/
         user = GET_ARGV();
 
         return adduser(user);
@@ -109,13 +110,13 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (strcmp(cmd, "httpd") == 0) {
+    if (strcmp(cmd, "httpd") == 0) { /** **/
         httpd();
         srv_free();
         return 0;
     }
 
-    if (strcmp(cmd, "purge") == 0) {
+    if (strcmp(cmd, "purge") == 0) { /** **/
         purge_all();
         return 0;
     }
@@ -123,7 +124,7 @@ int main(int argc, char *argv[])
     if ((user = GET_ARGV()) == NULL)
         return usage();
 
-    if (strcmp(cmd, "webfinger") == 0) {
+    if (strcmp(cmd, "webfinger") == 0) { /** **/
         xs *actor = NULL;
         xs *uid = NULL;
         int status;
@@ -146,16 +147,16 @@ int main(int argc, char *argv[])
 
     lastlog_write(&snac, "cmdline");
 
-    if (strcmp(cmd, "resetpwd") == 0) {
+    if (strcmp(cmd, "resetpwd") == 0) { /** **/
         return resetpwd(&snac);
     }
 
-    if (strcmp(cmd, "queue") == 0) {
+    if (strcmp(cmd, "queue") == 0) { /** **/
         process_user_queue(&snac);
         return 0;
     }
 
-    if (strcmp(cmd, "timeline") == 0) {
+    if (strcmp(cmd, "timeline") == 0) { /** **/
 #if 0
         xs *list = local_list(&snac, XS_ALL);
         xs *body = html_timeline(&snac, list, 1);
@@ -178,7 +179,7 @@ int main(int argc, char *argv[])
     if ((url = GET_ARGV()) == NULL)
         return usage();
 
-    if (strcmp(cmd, "announce") == 0) {
+    if (strcmp(cmd, "announce") == 0) { /** **/
         xs *msg = msg_admiration(&snac, url, "Announce");
 
         if (msg != NULL) {
@@ -193,7 +194,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (strcmp(cmd, "follow") == 0) {
+    if (strcmp(cmd, "follow") == 0) { /** **/
         xs *msg = msg_follow(&snac, url);
 
         if (msg != NULL) {
@@ -212,7 +213,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (strcmp(cmd, "unfollow") == 0) {
+    if (strcmp(cmd, "unfollow") == 0) { /** **/
         xs *object = NULL;
 
         if (valid_status(following_get(&snac, url, &object))) {
@@ -230,7 +231,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (strcmp(cmd, "ping") == 0) {
+    if (strcmp(cmd, "ping") == 0) { /** **/
         xs *actor_o = NULL;
 
         if (valid_status(actor_request(&snac, url, &actor_o))) {
@@ -251,7 +252,25 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (strcmp(cmd, "request") == 0) {
+    if (strcmp(cmd, "question") == 0) { /** **/
+        xs *opts = xs_split(url, ";");
+
+        xs *msg = msg_question(&snac, "Poll", opts, 0, 5 * 60);
+        xs *c_msg = msg_create(&snac, msg);
+
+        if (dbglevel) {
+            xs *j = xs_json_dumps_pp(c_msg, 4);
+            printf("%s\n", j);
+        }
+
+        enqueue_message(&snac, c_msg);
+
+        timeline_add(&snac, xs_dict_get(msg, "id"), msg);
+
+        return 0;
+    }
+
+    if (strcmp(cmd, "request") == 0) { /** **/
         int status;
         xs *data = NULL;
 
@@ -267,7 +286,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (strcmp(cmd, "actor") == 0) {
+    if (strcmp(cmd, "actor") == 0) { /** **/
         int status;
         xs *data = NULL;
 
@@ -283,7 +302,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (strcmp(cmd, "note") == 0) {
+    if (strcmp(cmd, "note") == 0) { /** **/
         xs *content = NULL;
         xs *msg = NULL;
         xs *c_msg = NULL;

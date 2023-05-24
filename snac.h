@@ -193,7 +193,7 @@ int webfinger_get_handler(xs_dict *req, char *q_path,
 const char *default_avatar_base64(void);
 
 d_char *msg_admiration(snac *snac, char *object, char *type);
-d_char *msg_create(snac *snac, char *object);
+xs_dict *msg_create(snac *snac, const xs_dict *object);
 xs_dict *msg_follow(snac *snac, const char *actor);
 
 xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,

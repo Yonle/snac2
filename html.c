@@ -852,7 +852,9 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 #endif
 
     {
-        xs *c  = sanitize(xs_dict_get(msg, "content"));
+        const char *content = xs_dict_get(msg, "content");
+
+        xs *c  = sanitize(xs_is_null(content) ? "" : content);
         char *p, *v;
 
         /* do some tweaks to the content */
