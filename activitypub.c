@@ -924,6 +924,39 @@ xs_dict *msg_pong(snac *user, const char *rcpt, const char *object)
 }
 
 
+xs_dict *msg_question(snac *user, const char *content, const xs_list *opts, int multiple, int end_secs)
+/* creates a Question message */
+{
+    xs *ntid     = tid(0);
+    xs *id       = xs_fmt("%s/q/%s", user->actor, ntid);
+    xs_dict *msg = msg_base(user, "Question", id, NULL, "@now", NULL);
+
+    msg = xs_dict_append(msg, "content",      content);
+    msg = xs_dict_append(msg, "attributedTo", user->actor);
+
+    xs *o = xs_list_new();
+    xs_list *p = (xs_list *)opts;
+    xs_str *v;
+
+    while (xs_list_iter(&p, &v)) {
+        xs *d = xs_dict_new();
+
+        d = xs_dict_append(d, "name", v);
+        o = xs_list_append(o, d);
+    }
+
+    msg = xs_dict_append(msg, multiple ? "anyOf" : "oneOf", o);
+
+    /* set the end time */
+    time_t t = time(NULL) + end_secs;
+    xs *et = xs_str_utctime(t, "%Y-%m-%dT%H:%M:%SZ");
+
+    msg = xs_dict_append(msg, "endTime", msg);
+
+    return msg;
+}
+
+
 void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg)
 /* notifies the user of relevant events */
 {
