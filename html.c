@@ -729,7 +729,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
         return xs_str_cat(os, s);
     }
     else
-    if (strcmp(type, "Note") != 0) {
+    if (strcmp(type, "Note") != 0 && strcmp(type, "Question") != 0) {
         /* skip oddities */
         return os;
     }
@@ -878,6 +878,37 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                         c = xs_replace_i(c, n, img);
                     }
                 }
+            }
+        }
+
+        if (strcmp(type, "Question") == 0) {
+            xs_list *oo = xs_dict_get(msg, "oneOf");
+            xs_list *ao = xs_dict_get(msg, "anyOf");
+            xs_list *p;
+            xs_dict *v;
+
+            p = oo != NULL ? oo : ao;
+
+            if (!xs_is_null(xs_dict_get(msg, "closed"))) {
+                /* closed poll */
+                c = xs_str_cat(c, "<table>\n");
+
+                while (xs_list_iter(&p, &v)) {
+                    const char *name       = xs_dict_get(v, "name");
+                    const xs_dict *replies = xs_dict_get(v, "replies");
+
+                    if (name && replies) {
+                        int nr = xs_number_get(xs_dict_get(replies, "totalItems"));
+                        xs *l = xs_fmt("<tr><td>%s:</td><td>%d</td></tr>\n", name, nr);
+
+                        c = xs_str_cat(c, l);
+                    }
+                }
+
+                c = xs_str_cat(c, "</table>\n");
+            }
+            else {
+                /* poll still active */
             }
         }
 
