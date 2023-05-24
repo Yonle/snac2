@@ -745,7 +745,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     if (strcmp(actor, snac->actor) != 0 && !valid_status(actor_get(snac, actor, NULL)))
         return os;
 
-    s = xs_str_cat(s, "<div class=\"snac-score\">");
+    s = xs_str_cat(s, "<div class=\"snac-score\">"); /** **/
 
     if (strcmp(type, "Question") == 0) {
         /* add the ballot box emoji */
@@ -768,9 +768,9 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     s = xs_str_cat(s, "</div>\n");
 
     if (level == 0)
-        s = xs_str_cat(s, "<div class=\"snac-post\">\n");
+        s = xs_str_cat(s, "<div class=\"snac-post\">\n"); /** **/
     else
-        s = xs_str_cat(s, "<div class=\"snac-child\">\n");
+        s = xs_str_cat(s, "<div class=\"snac-child\">\n"); /** **/
 
     if (boosts == NULL)
         boosts = object_announces(id);
@@ -828,7 +828,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     s = html_msg_icon(snac, s, msg);
 
     /* add the content */
-    s = xs_str_cat(s, "<div class=\"e-content snac-content\">\n");
+    s = xs_str_cat(s, "<div class=\"e-content snac-content\">\n"); /** **/
 
     /* is it sensitive? */
     if (!xs_is_null(v = xs_dict_get(msg, "sensitive")) && xs_type(v) == XSTYPE_TRUE) {
@@ -974,7 +974,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     /* add the attachments */
     char *attach;
 
-    if ((attach = xs_dict_get(msg, "attachment")) != NULL) {
+    if ((attach = xs_dict_get(msg, "attachment")) != NULL) { /** **/
         char *v;
         while (xs_list_iter(&attach, &v)) {
             char *t = xs_dict_get(v, "mediaType");
@@ -1017,7 +1017,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
         s = html_entry_controls(snac, s, msg, md5);
 
     /** children **/
-    if (!hide_children) {
+    if (!hide_children && strcmp(type, "Question") != 0) {
         xs *children = object_children(id);
         int left     = xs_list_len(children);
 
