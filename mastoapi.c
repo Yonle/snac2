@@ -1157,6 +1157,10 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 if (is_hidden(&snac1, xs_dict_get(msg, "id")))
                     continue;
 
+                /* discard poll votes (they have a name) */
+                if (!xs_is_null(xs_dict_get(msg, "name")))
+                    continue;
+
                 /* convert the Note into a Mastodon status */
                 xs *st = mastoapi_status(&snac1, msg);
 
