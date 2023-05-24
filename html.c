@@ -745,6 +745,14 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     if (strcmp(actor, snac->actor) != 0 && !valid_status(actor_get(snac, actor, NULL)))
         return os;
 
+    s = xs_str_cat(s, "<div class=\"snac-score\">");
+
+    if (strcmp(type, "Question") == 0) {
+        /* add the ballot box emoji */
+        xs *f = xs_fmt("<span title=\"%s\"> &#128499; </span>", L("Poll"));
+        s = xs_str_cat(s, f);
+    }
+
     /* if this is our post, add the score */
     if (xs_startswith(id, snac->actor)) {
         int n_likes  = object_likes_len(id);
@@ -752,12 +760,12 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
         /* alternate emojis: %d &#128077; %d &#128257; */
 
-        xs *s1 = xs_fmt(
-            "<div class=\"snac-score\">%d &#9733; %d &#8634;</div>\n",
-            n_likes, n_boosts);
+        xs *s1 = xs_fmt("%d &#9733; %d &#8634;\n", n_likes, n_boosts);
 
         s = xs_str_cat(s, s1);
     }
+
+    s = xs_str_cat(s, "</div>\n");
 
     if (level == 0)
         s = xs_str_cat(s, "<div class=\"snac-post\">\n");
