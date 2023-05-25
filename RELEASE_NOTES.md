@@ -6,6 +6,8 @@ Polls (in #ActivityPub lingo, Questions) are shown and can be voted on. Creating
 
 If an URL written in a post links to an image, it's converted to an attachment.
 
+Fixed a bug in the semaphore code that caused total hangs on OpenBSD.
+
 ## 2.32
 
 New user configuration switch to drop direct messages from people you don't follow, in order to mitigate spam from Mastodon open registration instances.
