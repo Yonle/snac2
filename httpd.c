@@ -483,6 +483,7 @@ void httpd(void)
     int n;
     time_t start_time = time(NULL);
     char sem_name[24];
+    sem_t anon_job_sem;
 
     address = xs_dict_get(srv_config, "address");
     port    = xs_number_get(xs_dict_get(srv_config, "port"));
@@ -510,6 +511,18 @@ void httpd(void)
     pthread_mutex_init(&job_mutex, NULL);
     sprintf(sem_name, "/job_%d", getpid());
     job_sem = sem_open(sem_name, O_CREAT, 0644, 0);
+
+    if (job_sem == NULL) {
+        /* error opening a named semaphore; try with an anonymous one */
+        if (sem_init(&anon_job_sem, 0, 0) != -1)
+            job_sem = &anon_job_sem;
+    }
+
+    if (job_sem == NULL) {
+        srv_log(xs_fmt("fatal error: cannot create semaphore -- cannot continue"));
+        return;
+    }
+
     job_fifo = xs_list_new();
 
     /* initialize sleep control */
