@@ -581,6 +581,8 @@ xs_dict *mastoapi_account(const xs_dict *actor)
         acct = xs_dict_append(acct, "emojis", eml);
     }
 
+    acct = xs_dict_append(acct, "header", "");
+
     return acct;
 }
 
