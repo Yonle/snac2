@@ -253,9 +253,10 @@ int main(int argc, char *argv[])
     }
 
     if (strcmp(cmd, "question") == 0) { /** **/
+        int end_secs = 5 * 60;
         xs *opts = xs_split(url, ";");
 
-        xs *msg = msg_question(&snac, "Poll", opts, 0, 5 * 60);
+        xs *msg = msg_question(&snac, "Poll", opts, 0, end_secs);
         xs *c_msg = msg_create(&snac, msg);
 
         if (dbglevel) {
@@ -264,6 +265,7 @@ int main(int argc, char *argv[])
         }
 
         enqueue_message(&snac, c_msg);
+        enqueue_close_question(&snac, xs_dict_get(msg, "id"), end_secs);
 
         timeline_add(&snac, xs_dict_get(msg, "id"), msg);
 

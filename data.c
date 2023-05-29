@@ -1920,6 +1920,21 @@ void enqueue_message(snac *snac, xs_dict *msg)
 }
 
 
+void enqueue_close_question(snac *user, const char *id, int end_secs)
+/* enqueues the closing of a question */
+{
+    xs *qmsg = _new_qmsg("close_question", id, 0);
+    xs *ntid = tid(end_secs);
+    xs *fn   = xs_fmt("%s/queue/%s.json", user->basedir, ntid);
+
+    qmsg = xs_dict_set(qmsg, "ntid", ntid);
+
+    qmsg = _enqueue_put(fn, qmsg);
+
+    snac_debug(user, 0, xs_fmt("enqueue_close_question %s", id));
+}
+
+
 xs_list *user_queue(snac *snac)
 /* returns a list with filenames that can be dequeued */
 {

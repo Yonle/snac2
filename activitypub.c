@@ -1058,8 +1058,10 @@ int update_question(snac *user, const char *id)
         xs *now = xs_str_utctime(0, ISO_DATE_SPEC);
 
         /* it's now greater than the endTime? */
-        if (strcmp(now, end_time) > 0)
-            msg = xs_dict_set(msg, "closed", end_time);
+        if (strcmp(now, end_time) > 0) {
+            xs *et = xs_dup(end_time);
+            msg    = xs_dict_set(msg, "closed", et);
+        }
     }
 
     /* update the count of voters */
@@ -1539,6 +1541,14 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
                 snac_log(snac, xs_fmt("input requeue #%d", retries + 1));
             }
         }
+    }
+    else
+    if (strcmp(type, "close_question") == 0) {
+        /* the time for this question has ended */
+        const char *id = xs_dict_get(q_item, "message");
+
+        if (!xs_is_null(id))
+            update_question(snac, id);
     }
     else
         snac_log(snac, xs_fmt("unexpected q_item type '%s'", type));
