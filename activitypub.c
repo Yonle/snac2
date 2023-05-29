@@ -1057,6 +1057,10 @@ int update_question(snac *user, const char *id)
             msg = xs_dict_set(msg, "closed", end_time);
     }
 
+    /* update the count of voters */
+    xs *vcnt = xs_number_new(xs_list_len(rcpts));
+    msg = xs_dict_set(msg, "votersCount", vcnt);
+
     /* store */
     object_add_ow(id, msg);
 
