@@ -973,11 +973,10 @@ int update_question(snac *user, const char *id)
     xs *msg   = NULL;
     xs *rcnt  = xs_dict_new();
     xs *z     = xs_number_new(0);
-    xs *chld  = NULL;
     xs *rcpts = xs_list_new();
+    xs *lopts = xs_list_new();
     xs_list *opts;
-    xs_val *p;
-    xs_str *k;
+    xs_list *p;
     xs_val *v;
 
     /* get the object */
@@ -997,12 +996,14 @@ int update_question(snac *user, const char *id)
     p = opts;
     while (xs_list_iter(&p, &v)) {
         const char *name = xs_dict_get(v, "name");
-        if (name)
-            rcnt = xs_dict_set(rcnt, name, z);
+        if (name) {
+            lopts = xs_list_append(lopts, name);
+            rcnt  = xs_dict_set(rcnt, name, z);
+        }
     }
 
     /* iterate now the children (the votes) */
-    chld = object_children(id);
+    xs *chld = object_children(id);
     p = chld;
     while (xs_list_iter(&p, &v)) {
         xs *obj = NULL;
@@ -1029,19 +1030,23 @@ int update_question(snac *user, const char *id)
 
     /* create a new list of options with their new counts */
     xs *nopts = xs_list_new();
-    p = rcnt;
-    while (xs_dict_iter(&p, &k, &v)) {
-        xs *d1 = xs_dict_new();
-        xs *d2 = xs_dict_new();
+    p = lopts;
+    while (xs_list_iter(&p, &v)) {
+        const xs_number *cnt = xs_dict_get(rcnt, v);
 
-        d2 = xs_dict_append(d2, "type",       "Collection");
-        d2 = xs_dict_append(d2, "totalItems", v);
+        if (xs_type(cnt) == XSTYPE_NUMBER) {
+            xs *d1 = xs_dict_new();
+            xs *d2 = xs_dict_new();
 
-        d1 = xs_dict_append(d1, "type",    "Note");
-        d1 = xs_dict_append(d1, "name",    k);
-        d1 = xs_dict_append(d1, "replies", d2);
+            d2 = xs_dict_append(d2, "type",       "Collection");
+            d2 = xs_dict_append(d2, "totalItems", cnt);
 
-        nopts = xs_list_append(nopts, d1);
+            d1 = xs_dict_append(d1, "type",    "Note");
+            d1 = xs_dict_append(d1, "name",    v);
+            d1 = xs_dict_append(d1, "replies", d2);
+
+            nopts = xs_list_append(nopts, d1);
+        }
     }
 
     /* update the list */
