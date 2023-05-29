@@ -970,10 +970,11 @@ xs_dict *msg_question(snac *user, const char *content, const xs_list *opts, int 
 int update_question(snac *user, const char *id)
 /* updates the poll counts */
 {
-    xs *msg  = NULL;
-    xs *rcnt = xs_dict_new();
-    xs *z    = xs_number_new(0);
-    xs *chld = NULL;
+    xs *msg   = NULL;
+    xs *rcnt  = xs_dict_new();
+    xs *z     = xs_number_new(0);
+    xs *chld  = NULL;
+    xs *rcpts = xs_list_new();
     xs_list *opts;
     xs_val *p;
     xs_str *k;
@@ -1010,7 +1011,9 @@ int update_question(snac *user, const char *id)
             continue;
 
         const char *name = xs_dict_get(obj, "name");
-        if (name) {
+        const char *atto = xs_dict_get(obj, "attributedTo");
+
+        if (name && atto) {
             /* get the current count */
             const xs_number *cnt = xs_dict_get(rcnt, name);
 
@@ -1018,6 +1021,8 @@ int update_question(snac *user, const char *id)
                 /* if it exists, increment */
                 xs *ucnt = xs_number_new(xs_number_get(cnt) + 1);
                 rcnt = xs_dict_set(rcnt, name, ucnt);
+
+                rcpts = xs_list_append(rcpts, atto);
             }
         }
     }
@@ -1057,6 +1062,12 @@ int update_question(snac *user, const char *id)
 
     snac_debug(user, 1, xs_fmt("recounted poll %s", id));
     timeline_touch(user);
+
+    /* send an update message to all voters */
+    xs *u_msg = msg_update(user, msg);
+    u_msg = xs_dict_set(u_msg, "cc", rcpts);
+
+    enqueue_message(user, u_msg);
 
     return 0;
 }
