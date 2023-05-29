@@ -1000,15 +1000,20 @@ int update_question(snac *user, const char *id)
     chld = object_children(id);
     p = chld;
     while (xs_list_iter(&p, &v)) {
-        const char *name = xs_dict_get(v, "name");
+        xs *obj = NULL;
+
+        if (!valid_status(object_get_by_md5(v, &obj)))
+            continue;
+
+        const char *name = xs_dict_get(obj, "name");
         if (name) {
             /* get the current count */
-            const xs_number *cnt = xs_dict_get(rcnt, "name");
+            const xs_number *cnt = xs_dict_get(rcnt, name);
 
             if (xs_type(cnt) == XSTYPE_NUMBER) {
                 /* if it exists, increment */
                 xs *ucnt = xs_number_new(xs_number_get(cnt) + 1);
-                rcnt = xs_dict_set(rcnt, "name", ucnt);
+                rcnt = xs_dict_set(rcnt, name, ucnt);
             }
         }
     }
@@ -1156,7 +1161,11 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
     int a_status;
     int do_notify = 0;
 
-    if (xs_is_null(actor) || xs_is_null(type)) {
+    /* question votes may not have a type */
+    if (xs_is_null(type))
+        type = "Note";
+
+    if (xs_is_null(actor)) {
         snac_debug(snac, 0, xs_fmt("malformed message"));
         return 1;
     }
@@ -1268,6 +1277,12 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
                 snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
                 do_notify = 1;
             }
+
+            /* if it has a "name" field, it may be a vote for a question */
+            const char *name = xs_dict_get(object, "name");
+
+            if (!xs_is_null(name) && *name && !xs_is_null(in_reply_to) && *in_reply_to)
+                update_question(snac, in_reply_to);
         }
         else
         if (strcmp(utype, "Question") == 0) {
