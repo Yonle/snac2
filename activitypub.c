@@ -498,7 +498,7 @@ xs_dict *msg_base(snac *snac, const char *type, const char *id,
 
     /* generated values */
     if (date && strcmp(date, "@now") == 0) {
-        published = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
+        published = xs_str_utctime(0, ISO_DATE_SPEC);
         date = published;
     }
 
@@ -959,7 +959,7 @@ xs_dict *msg_question(snac *user, const char *content, const xs_list *opts, int 
 
     /* set the end time */
     time_t t = time(NULL) + end_secs;
-    xs *et = xs_str_utctime(t, "%Y-%m-%dT%H:%M:%SZ");
+    xs *et = xs_str_utctime(t, ISO_DATE_SPEC);
 
     msg = xs_dict_append(msg, "endTime", et);
 
@@ -1234,7 +1234,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
 
             if (xs_is_null(xs_dict_get(f_msg, "published"))) {
                 /* add a date if it doesn't include one (Mastodon) */
-                xs *date = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
+                xs *date = xs_str_utctime(0, ISO_DATE_SPEC);
                 f_msg = xs_dict_set(f_msg, "published", date);
             }
 

@@ -218,7 +218,7 @@ int adduser(const char *uid)
 {
     snac snac;
     xs *config = xs_dict_new();
-    xs *date = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
+    xs *date = xs_str_utctime(0, ISO_DATE_SPEC);
     xs *pwd = NULL;
     xs *pwd_f = NULL;
     xs *key = NULL;

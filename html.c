@@ -1756,7 +1756,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
                     }
 
                     /* set the updated field */
-                    xs *updated = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
+                    xs *updated = xs_str_utctime(0, ISO_DATE_SPEC);
                     msg = xs_dict_set(msg, "updated", updated);
 
                     /* overwrite object, not updating the indexes */

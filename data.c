@@ -1688,7 +1688,7 @@ void notify_add(snac *snac, const char *type, const char *utype,
 {
     xs *ntid = tid(0);
     xs *fn   = xs_fmt("%s/notify/", snac->basedir);
-    xs *date = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
+    xs *date = xs_str_utctime(0, ISO_DATE_SPEC);
     FILE *f;
 
     /* create the directory */

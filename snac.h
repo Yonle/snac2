@@ -9,6 +9,8 @@
 
 #define DIR_PERM 02770
 
+#define ISO_DATE_SPEC "%Y-%m-%dT%H:%M:%SZ"
+
 extern double disk_layout;
 extern d_char *srv_basedir;
 extern d_char *srv_config;

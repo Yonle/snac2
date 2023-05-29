@@ -524,7 +524,7 @@ xs_dict *mastoapi_account(const xs_dict *actor)
         acct = xs_dict_append(acct, "created_at", pub);
     else {
         /* unset created_at crashes Tusky, so lie like a mf */
-        xs *date = xs_str_utctime(0, "%Y-%m-%dT%H:%M:%SZ");
+        xs *date = xs_str_utctime(0, ISO_DATE_SPEC);
         acct = xs_dict_append(acct, "created_at", date);
     }
 
