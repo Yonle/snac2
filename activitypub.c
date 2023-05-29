@@ -945,11 +945,13 @@ xs_dict *msg_question(snac *user, const char *content, const xs_list *opts, int 
     xs *o = xs_list_new();
     xs_list *p = (xs_list *)opts;
     xs_str *v;
+    xs *replies = xs_json_loads("{\"type\":\"Collection\",\"totalItems\":0}");
 
     while (xs_list_iter(&p, &v)) {
         xs *d = xs_dict_new();
 
-        d = xs_dict_append(d, "name", v);
+        d = xs_dict_append(d, "name",    v);
+        d = xs_dict_append(d, "replies", replies);
         o = xs_list_append(o, d);
     }
 
