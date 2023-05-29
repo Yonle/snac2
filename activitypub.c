@@ -983,10 +983,14 @@ int update_question(snac *user, const char *id)
     if (!valid_status(object_get(id, &msg)))
         return -1;
 
+    /* closed? do nothing more */
+    if (xs_dict_get(msg, "closed"))
+        return -2;
+
     /* get the options */
     if ((opts = xs_dict_get(msg, "oneOf")) == NULL &&
         (opts = xs_dict_get(msg, "anyOf")) == NULL)
-        return -2;
+        return -3;
 
     /* fill the initial count */
     p = opts;
