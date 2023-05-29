@@ -967,6 +967,82 @@ xs_dict *msg_question(snac *user, const char *content, const xs_list *opts, int 
 }
 
 
+int update_question(snac *user, const char *id)
+/* updates the poll counts */
+{
+    xs *msg  = NULL;
+    xs *rcnt = xs_dict_new();
+    xs *z    = xs_number_new(0);
+    xs *chld = NULL;
+    xs_list *opts;
+    xs_val *p;
+    xs_str *k;
+    xs_val *v;
+
+    /* get the object */
+    if (!valid_status(object_get(id, &msg)))
+        return -1;
+
+    /* get the options */
+    if ((opts = xs_dict_get(msg, "oneOf")) == NULL &&
+        (opts = xs_dict_get(msg, "anyOf")) == NULL)
+        return -2;
+
+    /* fill the initial count */
+    p = opts;
+    while (xs_list_iter(&p, &v)) {
+        const char *name = xs_dict_get(v, "name");
+        if (name)
+            rcnt = xs_dict_set(rcnt, name, z);
+    }
+
+    /* iterate now the children (the votes) */
+    chld = object_children(id);
+    p = chld;
+    while (xs_list_iter(&p, &v)) {
+        const char *name = xs_dict_get(v, "name");
+        if (name) {
+            /* get the current count */
+            const xs_number *cnt = xs_dict_get(rcnt, "name");
+
+            if (xs_type(cnt) == XSTYPE_NUMBER) {
+                /* if it exists, increment */
+                xs *ucnt = xs_number_new(xs_number_get(cnt) + 1);
+                rcnt = xs_dict_set(rcnt, "name", ucnt);
+            }
+        }
+    }
+
+    /* create a new list of options with their new counts */
+    xs *nopts = xs_list_new();
+    p = rcnt;
+    while (xs_dict_iter(&p, &k, &v)) {
+        xs *d1 = xs_dict_new();
+        xs *d2 = xs_dict_new();
+
+        d2 = xs_dict_append(d2, "type",       "Collection");
+        d2 = xs_dict_append(d2, "totalItems", v);
+
+        d1 = xs_dict_append(d1, "type",    "Note");
+        d1 = xs_dict_append(d1, "name",    k);
+        d1 = xs_dict_append(d1, "replies", d2);
+
+        nopts = xs_list_append(nopts, d1);
+    }
+
+    /* update the list */
+    msg = xs_dict_set(msg, xs_dict_get(msg, "oneOf") != NULL ? "oneOf" : "anyOf", nopts);
+
+    /* store */
+    object_add_ow(id, msg);
+
+    snac_debug(user, 1, xs_fmt("recounted poll %s", id));
+    timeline_touch(user);
+
+    return 0;
+}
+
+
 void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg)
 /* notifies the user of relevant events */
 {
