@@ -1038,6 +1038,16 @@ int update_question(snac *user, const char *id)
     /* update the list */
     msg = xs_dict_set(msg, xs_dict_get(msg, "oneOf") != NULL ? "oneOf" : "anyOf", nopts);
 
+    /* due date? */
+    const char *end_time = xs_dict_get(msg, "endTime");
+    if (!xs_is_null(end_time)) {
+        xs *now = xs_str_utctime(0, ISO_DATE_SPEC);
+
+        /* it's now greater than the endTime? */
+        if (strcmp(now, end_time) > 0)
+            msg = xs_dict_set(msg, "closed", end_time);
+    }
+
     /* store */
     object_add_ow(id, msg);
 
