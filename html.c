@@ -900,6 +900,9 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
             if (xs_dict_get(msg, "closed"))
                 closed = 1;
+            else
+            if (xs_startswith(id, snac->actor))
+                closed = 1; /* we questioned? closed for us */
             else {
                 /* not yet closed? check if we already voted for this */
                 xs *children = object_children(id);
