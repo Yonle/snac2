@@ -937,8 +937,8 @@ xs_dict *msg_question(snac *user, const char *content, xs_list *attach,
 /* creates a Question message */
 {
     xs *ntid     = tid(0);
-    xs *id       = xs_fmt("%s/q/%s", user->actor, ntid);
     xs_dict *msg = msg_note(user, content, NULL, NULL, attach, 0);
+    int max      = 8;
 
     msg = xs_dict_set(msg, "type", "Question");
 
@@ -947,10 +947,16 @@ xs_dict *msg_question(snac *user, const char *content, xs_list *attach,
     xs_str *v;
     xs *replies = xs_json_loads("{\"type\":\"Collection\",\"totalItems\":0}");
 
-    while (xs_list_iter(&p, &v)) {
-        xs *d = xs_dict_new();
+    while (max-- && xs_list_iter(&p, &v)) {
+        xs *v2 = xs_dup(v);
+        xs *d  = xs_dict_new();
 
-        d = xs_dict_append(d, "name",    v);
+        if (strlen(v2) > 60) {
+            v2[60] = '\0';
+            v2 = xs_str_cat(v2, "...");
+        }
+
+        d = xs_dict_append(d, "name",    v2);
         d = xs_dict_append(d, "replies", replies);
         o = xs_list_append(o, d);
     }
@@ -1058,7 +1064,7 @@ int update_question(snac *user, const char *id)
         xs *now = xs_str_utctime(0, ISO_DATE_SPEC);
 
         /* it's now greater than the endTime? */
-        if (strcmp(now, end_time) > 0) {
+        if (strcmp(now, end_time) >= 0) {
             xs *et = xs_dup(end_time);
             msg    = xs_dict_set(msg, "closed", et);
         }
