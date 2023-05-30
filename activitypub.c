@@ -486,6 +486,109 @@ void process_tags(snac *snac, const char *content, xs_str **n_content, xs_list *
 }
 
 
+void notify(snac *snac, const char *type, const char *utype, const char *actor, const xs_dict *msg)
+/* notifies the user of relevant events */
+{
+    if (strcmp(type, "Create") == 0) {
+        /* only notify of notes specifically for us */
+        xs *rcpts = recipient_list(snac, msg, 0);
+
+        if (xs_list_in(rcpts, snac->actor) == -1)
+            return;
+    }
+
+    if (strcmp(type, "Undo") == 0 && strcmp(utype, "Follow") != 0)
+        return;
+
+    /* get the object id */
+    const char *objid = xs_dict_get(msg, "object");
+
+    if (xs_type(objid) == XSTYPE_DICT)
+        objid = xs_dict_get(objid, "id");
+    else
+        objid = xs_dict_get(msg, "id");
+
+    if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
+        /* if it's not an admiration about something by us, done */
+        if (xs_is_null(objid) || !xs_startswith(objid, snac->actor))
+            return;
+    }
+
+    /* user will love to know about this! */
+
+    /* prepare message body */
+    xs *body = xs_fmt("User  : @%s@%s\n",
+        xs_dict_get(snac->config, "uid"),
+        xs_dict_get(srv_config,   "host")
+    );
+
+    if (strcmp(utype, "(null)") != 0) {
+        xs *s1 = xs_fmt("Type  : %s + %s\n", type, utype);
+        body = xs_str_cat(body, s1);
+    }
+    else {
+        xs *s1 = xs_fmt("Type  : %s\n", type);
+        body = xs_str_cat(body, s1);
+    }
+
+    {
+        xs *s1 = xs_fmt("Actor : %s\n", actor);
+        body = xs_str_cat(body, s1);
+    }
+
+    if (objid != NULL) {
+        xs *s1 = xs_fmt("Object: %s\n", objid);
+        body = xs_str_cat(body, s1);
+    }
+
+    /* email */
+
+    const char *email = "[disabled by admin]";
+
+    if (xs_type(xs_dict_get(srv_config, "disable_email_notifications")) != XSTYPE_TRUE) {
+        email = xs_dict_get(snac->config_o, "email");
+        if (xs_is_null(email)) {
+            email = xs_dict_get(snac->config, "email");
+
+            if (xs_is_null(email))
+                email = "[empty]";
+        }
+    }
+
+    if (*email != '\0' && *email != '[') {
+        snac_debug(snac, 1, xs_fmt("email notify %s %s %s", type, utype, actor));
+
+        xs *subject = xs_fmt("snac notify for @%s@%s",
+                    xs_dict_get(snac->config, "uid"), xs_dict_get(srv_config, "host"));
+        xs *from    = xs_fmt("snac-daemon <snac-daemon@%s>", xs_dict_get(srv_config, "host"));
+        xs *header  = xs_fmt(
+                    "From: %s\n"
+                    "To: %s\n"
+                    "Subject: %s\n"
+                    "\n",
+                    from, email, subject);
+
+        xs *email_body = xs_fmt("%s%s", header, body);
+
+        enqueue_email(email_body, 0);
+    }
+
+    /* telegram */
+
+    char *bot     = xs_dict_get(snac->config, "telegram_bot");
+    char *chat_id = xs_dict_get(snac->config, "telegram_chat_id");
+
+    if (!xs_is_null(bot) && !xs_is_null(chat_id) && *bot && *chat_id)
+        enqueue_telegram(body, bot, chat_id);
+
+    /* finally, store it in the notification folder */
+    if (strcmp(type, "Follow") == 0)
+        objid = xs_dict_get(msg, "id");
+
+    notify_add(snac, type, utype, actor, objid);
+}
+
+
 /** messages **/
 
 xs_dict *msg_base(snac *snac, const char *type, const char *id,
@@ -1070,6 +1173,8 @@ int update_question(snac *user, const char *id)
         if (strcmp(now, end_time) >= 0) {
             xs *et = xs_dup(end_time);
             msg    = xs_dict_set(msg, "closed", et);
+
+            notify(user, "Update", "Question", user->actor, msg);
         }
     }
 
@@ -1090,107 +1195,6 @@ int update_question(snac *user, const char *id)
     enqueue_message(user, u_msg);
 
     return 0;
-}
-
-
-void notify(snac *snac, xs_str *type, xs_str *utype, xs_str *actor, xs_dict *msg)
-/* notifies the user of relevant events */
-{
-    if (strcmp(type, "Create") == 0) {
-        /* only notify of notes specifically for us */
-        xs *rcpts = recipient_list(snac, msg, 0);
-
-        if (xs_list_in(rcpts, snac->actor) == -1)
-            return;
-    }
-
-    if (strcmp(type, "Undo") == 0 && strcmp(utype, "Follow") != 0)
-        return;
-
-    /* get the object id */
-    const char *objid = xs_dict_get(msg, "object");
-
-    if (xs_type(objid) == XSTYPE_DICT)
-        objid = xs_dict_get(objid, "id");
-
-    if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
-        /* if it's not an admiration about something by us, done */
-        if (xs_is_null(objid) || !xs_startswith(objid, snac->actor))
-            return;
-    }
-
-    /* user will love to know about this! */
-
-    /* prepare message body */
-    xs *body = xs_fmt("User  : @%s@%s\n",
-        xs_dict_get(snac->config, "uid"),
-        xs_dict_get(srv_config,   "host")
-    );
-
-    if (strcmp(utype, "(null)") != 0) {
-        xs *s1 = xs_fmt("Type  : %s + %s\n", type, utype);
-        body = xs_str_cat(body, s1);
-    }
-    else {
-        xs *s1 = xs_fmt("Type  : %s\n", type);
-        body = xs_str_cat(body, s1);
-    }
-
-    {
-        xs *s1 = xs_fmt("Actor : %s\n", actor);
-        body = xs_str_cat(body, s1);
-    }
-
-    if (objid != NULL) {
-        xs *s1 = xs_fmt("Object: %s\n", objid);
-        body = xs_str_cat(body, s1);
-    }
-
-    /* email */
-
-    const char *email = "[disabled by admin]";
-
-    if (xs_type(xs_dict_get(srv_config, "disable_email_notifications")) != XSTYPE_TRUE) {
-        email = xs_dict_get(snac->config_o, "email");
-        if (xs_is_null(email)) {
-            email = xs_dict_get(snac->config, "email");
-
-            if (xs_is_null(email))
-                email = "[empty]";
-        }
-    }
-
-    if (*email != '\0' && *email != '[') {
-        snac_debug(snac, 1, xs_fmt("email notify %s %s %s", type, utype, actor));
-
-        xs *subject = xs_fmt("snac notify for @%s@%s",
-                    xs_dict_get(snac->config, "uid"), xs_dict_get(srv_config, "host"));
-        xs *from    = xs_fmt("snac-daemon <snac-daemon@%s>", xs_dict_get(srv_config, "host"));
-        xs *header  = xs_fmt(
-                    "From: %s\n"
-                    "To: %s\n"
-                    "Subject: %s\n"
-                    "\n",
-                    from, email, subject);
-
-        xs *email_body = xs_fmt("%s%s", header, body);
-
-        enqueue_email(email_body, 0);
-    }
-
-    /* telegram */
-
-    char *bot     = xs_dict_get(snac->config, "telegram_bot");
-    char *chat_id = xs_dict_get(snac->config, "telegram_chat_id");
-
-    if (!xs_is_null(bot) && !xs_is_null(chat_id) && *bot && *chat_id)
-        enqueue_telegram(body, bot, chat_id);
-
-    /* finally, store it in the notification folder */
-    if (strcmp(type, "Follow") == 0)
-        objid = xs_dict_get(msg, "id");
-
-    notify_add(snac, type, utype, actor, objid);
 }
 
 
@@ -1270,7 +1274,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
         return 1;
     }
 
-    if (strcmp(type, "Follow") == 0) {
+    if (strcmp(type, "Follow") == 0) { /** **/
         if (!follower_check(snac, actor)) {
             xs *f_msg = xs_dup(msg);
             xs *reply = msg_accept(snac, f_msg, actor);
@@ -1294,8 +1298,8 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             snac_log(snac, xs_fmt("repeated 'Follow' from %s", actor));
     }
     else
-    if (strcmp(type, "Undo") == 0) {
-        if (strcmp(utype, "Follow") == 0) {
+    if (strcmp(type, "Undo") == 0) { /** **/
+        if (strcmp(utype, "Follow") == 0) { /** **/
             if (valid_status(follower_del(snac, actor))) {
                 snac_log(snac, xs_fmt("no longer following us %s", actor));
                 do_notify = 1;
@@ -1307,11 +1311,11 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             snac_debug(snac, 1, xs_fmt("ignored 'Undo' for object type '%s'", utype));
     }
     else
-    if (strcmp(type, "Create") == 0) {
+    if (strcmp(type, "Create") == 0) { /** **/
         if (is_muted(snac, actor))
             snac_log(snac, xs_fmt("ignored 'Create' + '%s' from muted actor %s", utype, actor));
 
-        if (strcmp(utype, "Note") == 0) {
+        if (strcmp(utype, "Note") == 0) { /** **/
             char *id          = xs_dict_get(object, "id");
             char *in_reply_to = xs_dict_get(object, "inReplyTo");
             xs *wrk           = NULL;
@@ -1330,7 +1334,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
                 update_question(snac, in_reply_to);
         }
         else
-        if (strcmp(utype, "Question") == 0) {
+        if (strcmp(utype, "Question") == 0) { /**  **/
             char *id = xs_dict_get(object, "id");
 
             if (timeline_add(snac, id, object))
@@ -1340,8 +1344,8 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             snac_debug(snac, 1, xs_fmt("ignored 'Create' for object type '%s'", utype));
     }
     else
-    if (strcmp(type, "Accept") == 0) {
-        if (strcmp(utype, "Follow") == 0) {
+    if (strcmp(type, "Accept") == 0) { /** **/
+        if (strcmp(utype, "Follow") == 0) { /** **/
             if (following_check(snac, actor)) {
                 following_add(snac, actor, msg);
                 snac_log(snac, xs_fmt("confirmed follow from %s", actor));
@@ -1353,7 +1357,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             snac_debug(snac, 1, xs_fmt("ignored 'Accept' for object type '%s'", utype));
     }
     else
-    if (strcmp(type, "Like") == 0) {
+    if (strcmp(type, "Like") == 0) { /** **/
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
 
@@ -1362,7 +1366,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
         do_notify = 1;
     }
     else
-    if (strcmp(type, "Announce") == 0) {
+    if (strcmp(type, "Announce") == 0) { /** **/
         xs *a_msg = NULL;
         xs *wrk   = NULL;
 
@@ -1393,7 +1397,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             snac_log(snac, xs_fmt("error requesting 'Announce' object %s", object));
     }
     else
-    if (strcmp(type, "Update") == 0) {
+    if (strcmp(type, "Update") == 0) { /** **/
         if (strcmp(utype, "Person") == 0) {
             actor_add(actor, xs_dict_get(msg, "object"));
             timeline_touch(snac);
@@ -1401,7 +1405,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             snac_log(snac, xs_fmt("updated actor %s", actor));
         }
         else
-        if (strcmp(utype, "Note") == 0) {
+        if (strcmp(utype, "Note") == 0) { /** **/
             const char *id = xs_dict_get(object, "id");
 
             object_add_ow(id, object);
@@ -1410,7 +1414,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             snac_log(snac, xs_fmt("updated post %s", id));
         }
         else
-        if (strcmp(utype, "Question") == 0) {
+        if (strcmp(utype, "Question") == 0) { /** **/
             const char *id     = xs_dict_get(object, "id");
             const char *closed = xs_dict_get(object, "closed");
 
@@ -1418,12 +1422,15 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             timeline_touch(snac);
 
             snac_log(snac, xs_fmt("%s poll %s", closed == NULL ? "updated" : "closed", id));
+
+            if (closed != NULL)
+                do_notify = 1;
         }
         else
             snac_log(snac, xs_fmt("ignored 'Update' for object type '%s'", utype));
     }
     else
-    if (strcmp(type, "Delete") == 0) {
+    if (strcmp(type, "Delete") == 0) { /** **/
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
 
@@ -1433,11 +1440,11 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             snac_debug(snac, 1, xs_fmt("ignored 'Delete' for unknown object %s", object));
     }
     else
-    if (strcmp(type, "Pong") == 0) {
+    if (strcmp(type, "Pong") == 0) { /** **/
         snac_log(snac, xs_fmt("'Pong' received from %s", actor));
     }
     else
-    if (strcmp(type, "Ping") == 0) {
+    if (strcmp(type, "Ping") == 0) { /** **/
         snac_log(snac, xs_fmt("'Ping' requested from %s", actor));
 
         xs *rsp = msg_pong(snac, actor, xs_dict_get(msg, "id"));
