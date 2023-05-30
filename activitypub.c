@@ -942,6 +942,9 @@ xs_dict *msg_question(snac *user, const char *content, xs_list *attach,
 
     msg = xs_dict_set(msg, "type", "Question");
 
+    /* make it non-editable */
+    msg = xs_dict_del(msg, "sourceContent");
+
     xs *o = xs_list_new();
     xs_list *p = (xs_list *)opts;
     xs_str *v;
