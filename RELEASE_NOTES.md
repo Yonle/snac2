@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.34
+
+Polls can now be created from the web interface.
+
 ## 2.33
 
 Polls (in #ActivityPub lingo, Questions) are shown and can be voted on. Creating a poll is not yet implemented, though.
