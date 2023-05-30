@@ -1399,7 +1399,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
         }
         else
         if (strcmp(utype, "Note") == 0) {
-            char *id = xs_dict_get(object, "id");
+            const char *id = xs_dict_get(object, "id");
 
             object_add_ow(id, object);
             timeline_touch(snac);
@@ -1408,12 +1408,13 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
         }
         else
         if (strcmp(utype, "Question") == 0) {
-            char *id = xs_dict_get(object, "id");
+            const char *id     = xs_dict_get(object, "id");
+            const char *closed = xs_dict_get(object, "closed");
 
             object_add_ow(id, object);
             timeline_touch(snac);
 
-            snac_log(snac, xs_fmt("updated poll %s", id));
+            snac_log(snac, xs_fmt("%s poll %s", closed == NULL ? "updated" : "closed", id));
         }
         else
             snac_log(snac, xs_fmt("ignored 'Update' for object type '%s'", utype));
