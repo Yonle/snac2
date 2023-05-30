@@ -1769,8 +1769,31 @@ int html_post_handler(const xs_dict *req, const char *q_path,
             xs *msg       = NULL;
             xs *c_msg     = NULL;
             xs *content_2 = xs_replace(content, "\r", "");
+            xs *poll_opts = NULL;
 
-            msg = msg_note(&snac, content_2, to, in_reply_to, attach_list, priv);
+            /* is there a valid set of poll options? */
+            const char *v = xs_dict_get(p_vars, "poll_options");
+            if (!xs_is_null(v) && *v) {
+                xs *v2 = xs_strip_i(xs_replace(v, "\r", ""));
+
+                poll_opts = xs_split(v2, "\n");
+            }
+
+            if (!xs_is_null(poll_opts) && xs_list_len(poll_opts)) {
+                /* get the rest of poll configuration */
+                const char *p_multiple = xs_dict_get(p_vars, "poll_multiple");
+                const char *p_end_secs = xs_dict_get(p_vars, "poll_end_secs");
+
+                int end_secs = atoi(!xs_is_null(p_end_secs) ? p_end_secs : "60");
+                int multiple = !xs_is_null(p_multiple);
+
+                msg = msg_question(&snac, content_2, attach_list,
+                                   poll_opts, multiple, end_secs);
+
+                enqueue_close_question(&snac, xs_dict_get(msg, "id"), end_secs);
+            }
+            else
+                msg = msg_note(&snac, content_2, to, in_reply_to, attach_list, priv);
 
             if (sensitive != NULL) {
                 xs *t = xs_val_new(XSTYPE_TRUE);
