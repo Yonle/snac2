@@ -1352,8 +1352,9 @@ xs_str *html_notifications(snac *snac)
             continue;
 
         xs *obj = NULL;
-        const char *type = xs_dict_get(noti, "type");
-        const char *id   = xs_dict_get(noti, "objid");
+        const char *type  = xs_dict_get(noti, "type");
+        const char *utype = xs_dict_get(noti, "utype");
+        const char *id    = xs_dict_get(noti, "objid");
 
         if (!valid_status(object_get(id, &obj)))
             continue;
@@ -1390,8 +1391,16 @@ xs_str *html_notifications(snac *snac)
 
         s = xs_str_cat(s, "<div>\n");
 
+        const char *label = type;
+
+        if (strcmp(type, "Create") == 0)
+            label = L("Mention");
+        else
+        if (strcmp(type, "Update") == 0 && strcmp(utype, "Question") == 0)
+            label = L("Finished poll");
+
         xs *s1 = xs_fmt("<p><b>%s by <a href=\"%s\">%s</a></b>:</p>\n",
-            strcmp(type, "Create") == 0 ? "Mention" : type, actor_id, a_name);
+            label, actor_id, a_name);
         s = xs_str_cat(s, s1);
 
         if (strcmp(type, "Follow") == 0) {
