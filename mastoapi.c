@@ -1253,6 +1253,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                     continue;
 
                 const char *type  = xs_dict_get(noti, "type");
+                const char *utype = xs_dict_get(noti, "utype");
                 const char *objid = xs_dict_get(noti, "objid");
                 xs *actor = NULL;
                 xs *entry = NULL;
@@ -1278,6 +1279,9 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 else
                 if (strcmp(type, "Create") == 0)
                     type = "mention";
+                else
+                if (strcmp(type, "Update") == 0 && strcmp(utype, "Question") == 0)
+                    type = "poll";
                 else
                     continue;
 
