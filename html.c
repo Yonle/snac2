@@ -899,10 +899,10 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
             int closed = 0;
 
             if (xs_dict_get(msg, "closed"))
-                closed = 1;
+                closed = 2;
             else
             if (xs_startswith(id, snac->actor))
-                closed = 1; /* we questioned? closed for us */
+                closed = 1; /* we questioned; closed for us */
             else {
                 /* not yet closed? check if we already voted for this */
                 xs *children = object_children(id);
@@ -914,7 +914,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                         const char *atto = xs_dict_get(msg, "attributedTo");
 
                         if (atto && strcmp(atto, snac->actor) == 0)
-                            closed = 1; /* closed for us */
+                            closed = 1; /* we already voted; closed for us */
                     }
                 }
             }
@@ -941,7 +941,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                 c = xs_str_cat(c, "</table>\n");
 
                 /* if it's *really* closed, say it */
-                if (!xs_is_null(xs_dict_get(msg, "closed"))) {
+                if (closed == 2) {
                     xs *s1 = xs_fmt("<p>%s</p>\n", L("Closed"));
                     c = xs_str_cat(c, s1);
                 }
