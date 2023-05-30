@@ -932,15 +932,15 @@ xs_dict *msg_pong(snac *user, const char *rcpt, const char *object)
 }
 
 
-xs_dict *msg_question(snac *user, const char *content, const xs_list *opts, int multiple, int end_secs)
+xs_dict *msg_question(snac *user, const char *content, xs_list *attach,
+                      const xs_list *opts, int multiple, int end_secs)
 /* creates a Question message */
 {
     xs *ntid     = tid(0);
     xs *id       = xs_fmt("%s/q/%s", user->actor, ntid);
-    xs_dict *msg = msg_base(user, "Question", id, NULL, "@now", NULL);
+    xs_dict *msg = msg_note(user, content, NULL, NULL, attach, 0);
 
-    msg = xs_dict_append(msg, "content",      content);
-    msg = xs_dict_append(msg, "attributedTo", user->actor);
+    msg = xs_dict_set(msg, "type", "Question");
 
     xs *o = xs_list_new();
     xs_list *p = (xs_list *)opts;

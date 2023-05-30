@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
         int end_secs = 5 * 60;
         xs *opts = xs_split(url, ";");
 
-        xs *msg = msg_question(&snac, "Poll", opts, 0, end_secs);
+        xs *msg = msg_question(&snac, "Poll", NULL, opts, 0, end_secs);
         xs *c_msg = msg_create(&snac, msg);
 
         if (dbglevel) {
