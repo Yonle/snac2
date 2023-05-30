@@ -495,6 +495,10 @@ void notify(snac *snac, const char *type, const char *utype, const char *actor, 
 
         if (xs_list_in(rcpts, snac->actor) == -1)
             return;
+
+        /* discard votes */
+        if (!xs_is_null(xs_dict_get(msg, "name")))
+            return;
     }
 
     if (strcmp(type, "Undo") == 0 && strcmp(utype, "Follow") != 0)
