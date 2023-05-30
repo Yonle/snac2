@@ -939,6 +939,12 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                 }
 
                 c = xs_str_cat(c, "</table>\n");
+
+                /* if it's *really* closed, say it */
+                if (!xs_is_null(xs_dict_get(msg, "closed"))) {
+                    xs *s1 = xs_fmt("<p>%s</p>\n", L("Closed"));
+                    c = xs_str_cat(c, s1);
+                }
             }
             else {
                 /* poll still active */
