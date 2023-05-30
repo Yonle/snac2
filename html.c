@@ -348,8 +348,12 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
         "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
         "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
+
+        "<details><summary>%s</summary>\n"
         "<p>%s: <input type=\"file\" name=\"attach\">\n"
         "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
+        "</details>\n"
+
         "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
         "</form><p>\n"
         "</div>\n"
@@ -446,6 +450,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         snac->actor,
         L("Sensitive content"),
         L("Only for mentioned people"),
+        L("Attach..."),
         L("File"),
         L("File description"),
         L("Post"),
@@ -617,8 +622,11 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
 
             "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
             "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
+
+            "<details><summary>%s</summary>\n"
             "<p>%s: <input type=\"file\" name=\"attach\">\n"
             "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
+            "</details>\n"
 
             "<input type=\"hidden\" name=\"redir\" value=\"%s_entry\">\n"
             "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
@@ -633,6 +641,7 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             id,
             L("Sensitive content"),
             L("Only for mentioned people"),
+            L("Attach..."),
             L("File"),
             L("File description"),
             md5,
@@ -657,8 +666,11 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
 
             "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
             "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
+
+            "<details><summary>%s</summary>\n"
             "<p>%s: <input type=\"file\" name=\"attach\">\n"
             "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
+            "</details>\n"
 
             "<input type=\"hidden\" name=\"redir\" value=\"%s_entry\">\n"
             "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
@@ -673,6 +685,7 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             id,
             L("Sensitive content"),
             L("Only for mentioned people"),
+            L("Attach..."),
             L("File"),
             L("File description"),
             md5,
