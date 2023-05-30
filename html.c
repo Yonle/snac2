@@ -446,8 +446,8 @@ d_char *html_top_controls(snac *snac, d_char *s)
         snac->actor,
         L("Sensitive content"),
         L("Only for mentioned people"),
-        L("Image"),
-        L("Image description"),
+        L("File"),
+        L("File description"),
         L("Post"),
 
         L("More options..."),
@@ -633,8 +633,8 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             id,
             L("Sensitive content"),
             L("Only for mentioned people"),
-            L("Image"),
-            L("Image description"),
+            L("File"),
+            L("File description"),
             md5,
             L("Post")
         );
@@ -673,8 +673,8 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             id,
             L("Sensitive content"),
             L("Only for mentioned people"),
-            L("Image"),
-            L("Image description"),
+            L("File"),
+            L("File description"),
             md5,
             L("Post")
         );
