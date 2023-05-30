@@ -349,9 +349,22 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
         "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
 
-        "<details><summary>%s</summary>\n"
+        "<details><summary>%s</summary>\n" /** attach **/
         "<p>%s: <input type=\"file\" name=\"attach\">\n"
         "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
+        "</details>\n"
+
+        "<p>"
+        "<details><summary>%s</summary>\n" /** poll **/
+        "<p>%s:<br>\n"
+        "<textarea class=\"snac-textarea\" name=\"poll_options\" "
+        "rows=\"6\" wrap=\"virtual\"></textarea>\n"
+        "<p>%s: <input type=\"checkbox\" name=\"poll_multiple\">\n"
+        "<select name=\"poll_end_secs\" id=\"poll_end_secs\">\n"
+        "<option value=\"300\">%s</option>\n"
+        "<option value=\"3600\">%s</option>\n"
+        "<option value=\"86400\">%s</option>\n"
+        "</select>\n"
         "</details>\n"
 
         "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
@@ -361,19 +374,19 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<div class=\"snac-top-controls-more\">\n"
         "<details><summary>%s</summary>\n"
 
-        "<form method=\"post\" action=\"%s/admin/action\">\n"
+        "<form method=\"post\" action=\"%s/admin/action\">\n" /** follow **/
         "<input type=\"text\" name=\"actor\" required=\"required\">\n"
         "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
         "</form><p>\n"
 
-        "<form method=\"post\" action=\"%s/admin/action\">\n"
+        "<form method=\"post\" action=\"%s/admin/action\">\n" /** boost **/
         "<input type=\"text\" name=\"id\" required=\"required\">\n"
         "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
         "</form><p>\n"
 
         "<details><summary>%s</summary>\n"
 
-        "<div class=\"snac-user-setup\">\n"
+        "<div class=\"snac-user-setup\">\n" /** user setup **/
         "<form method=\"post\" action=\"%s/admin/user-setup\" enctype=\"multipart/form-data\">\n"
         "<p>%s:<br>\n"
         "<input type=\"text\" name=\"name\" value=\"%s\"></p>\n"
@@ -450,9 +463,18 @@ d_char *html_top_controls(snac *snac, d_char *s)
         snac->actor,
         L("Sensitive content"),
         L("Only for mentioned people"),
+
         L("Attach..."),
         L("File"),
         L("File description"),
+
+        L("Poll..."),
+        L("Poll options (one per line, up to 8)"),
+        L("Multiple"),
+        L("5 minutes"),
+        L("1 hour"),
+        L("1 day"),
+
         L("Post"),
 
         L("More options..."),
