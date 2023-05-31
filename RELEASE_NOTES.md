@@ -4,6 +4,8 @@
 
 Polls can now be created from the web interface.
 
+New Mastodon API features: polls are shown.
+
 ## 2.33
 
 Polls (in #ActivityPub lingo, Questions) are shown and can be voted on. Creating a poll is not yet implemented, though.
