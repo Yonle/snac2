@@ -166,6 +166,7 @@ void enqueue_email(xs_str *msg, int retries);
 void enqueue_telegram(const xs_str *msg, const char *bot, const char *chat_id);
 void enqueue_message(snac *snac, char *msg);
 void enqueue_close_question(snac *user, const char *id, int end_secs);
+int was_question_voted(snac *user, const char *id);
 
 xs_list *user_queue(snac *snac);
 xs_list *queue(void);

@@ -598,7 +598,6 @@ xs_dict *mastoapi_poll(snac *snac, const xs_dict *msg)
         xs *f    = xs_val_new(XSTYPE_FALSE);
         xs *t    = xs_val_new(XSTYPE_TRUE);
         xs_list *opts = NULL;
-        xs_list *p;
         xs_val *v;
         int num_votes = 0;
         xs *options = xs_list_new();
@@ -638,21 +637,8 @@ xs_dict *mastoapi_poll(snac *snac, const xs_dict *msg)
         xs *vc = xs_number_new(num_votes);
         poll = xs_dict_append(poll, "votes_count", vc);
 
-        xs *children = object_children(xs_dict_get(msg, "id"));
-        int voted = 0;
-        p = children;
-        while (xs_list_iter(&p, &v)) {
-            xs *obj = NULL;
-
-            if (valid_status(object_get_by_md5(v, &obj))) {
-                if (strcmp(xs_dict_get(obj, "attributedTo"), snac->actor) == 0) {
-                    voted = 1;
-                    break;
-                }
-            }
-        }
-
-        poll = xs_dict_append(poll, "voted", voted ? t : f);
+        poll = xs_dict_append(poll, "voted",
+                was_question_voted(snac, xs_dict_get(msg, "id")) ? t : f);
     }
 
     return poll;

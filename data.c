@@ -1935,6 +1935,30 @@ void enqueue_close_question(snac *user, const char *id, int end_secs)
 }
 
 
+int was_question_voted(snac *user, const char *id)
+/* returns true if the user voted in this poll */
+{
+    xs *children = object_children(id);
+    int voted = 0;
+    xs_list *p;
+    xs_str *md5;
+
+    p = children;
+    while (xs_list_iter(&p, &md5)) {
+        xs *obj = NULL;
+
+        if (valid_status(object_get_by_md5(md5, &obj))) {
+            if (strcmp(xs_dict_get(obj, "attributedTo"), user->actor) == 0) {
+                voted = 1;
+                break;
+            }
+        }
+    }
+
+    return voted;
+}
+
+
 xs_list *user_queue(snac *snac)
 /* returns a list with filenames that can be dequeued */
 {
