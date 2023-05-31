@@ -812,7 +812,7 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
         int num_votes = 0;
         xs *options = xs_list_new();
 
-        poll = xs_dict_append(poll, "id", id);
+        poll = xs_dict_append(poll, "id", mid);
         poll = xs_dict_append(poll, "expires_at", xs_dict_get(msg, "endTime"));
         poll = xs_dict_append(poll, "expired", xs_dict_get(msg, "closed") != NULL ? t : f);
 
