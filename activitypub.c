@@ -520,9 +520,9 @@ void notify(snac *snac, const char *type, const char *utype, const char *actor, 
             return;
     }
 
-    /* if it's a closed poll but we didn't vote, drop it */
+    /* if it's a closed poll that is not ours and we didn't vote, drop it */
     if (strcmp(type, "Update") == 0 && strcmp(type, "Question") == 0) {
-        if (!was_question_voted(snac, id))
+        if (!xs_startswith(id, snac->actor) && !was_question_voted(snac, id))
             return;
     }
 
