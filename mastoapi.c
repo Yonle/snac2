@@ -2120,6 +2120,43 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
         else
             status = 401;
     }
+    else
+    if (xs_startswith(cmd, "/v1/polls")) { /** **/
+        if (logged_in) {
+            /* operations on a status */
+            xs *l = xs_split(cmd, "/");
+            const char *mid = xs_list_get(l, 3);
+            const char *op  = xs_list_get(l, 4);
+
+            if (!xs_is_null(mid)) {
+                xs *msg = NULL;
+                xs *out = NULL;
+
+                /* skip the 'fake' part of the id */
+                mid = MID_TO_MD5(mid);
+
+                if (valid_status(timeline_get_by_md5(&snac, mid, &msg))) {
+                    if (op == NULL) {
+                    }
+                    else
+                    if (strcmp(op, "votes") == 0) {
+                        const char *opts = xs_dict_get(args, "choices[]");
+
+                        if (xs_type(opts) == XSTYPE_LIST) {
+                        }
+                    }
+                }
+
+                if (out != NULL) {
+                    *body  = xs_json_dumps_pp(out, 4);
+                    *ctype = "application/json";
+                    status = 200;
+                }
+            }
+        }
+        else
+            status = 401;
+    }
 
     /* user cleanup */
     if (logged_in)
