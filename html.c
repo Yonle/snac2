@@ -1098,7 +1098,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                     older_open = 0;
                 }
 
-                if (chd != NULL) {
+                if (chd != NULL && xs_is_null(xs_dict_get(chd, "name"))) {
                     ss = html_entry(snac, ss, chd, local, level + 1, cmd5, hide_children);
                     n_children++;
                 }
