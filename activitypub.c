@@ -489,6 +489,8 @@ void process_tags(snac *snac, const char *content, xs_str **n_content, xs_list *
 void notify(snac *snac, const char *type, const char *utype, const char *actor, const xs_dict *msg)
 /* notifies the user of relevant events */
 {
+    const char *id = xs_dict_get(msg, "id");
+
     if (strcmp(type, "Create") == 0) {
         /* only notify of notes specifically for us */
         xs *rcpts = recipient_list(snac, msg, 0);
@@ -510,11 +512,17 @@ void notify(snac *snac, const char *type, const char *utype, const char *actor, 
     if (xs_type(objid) == XSTYPE_DICT)
         objid = xs_dict_get(objid, "id");
     else
-        objid = xs_dict_get(msg, "id");
+        objid = id;
 
     if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
         /* if it's not an admiration about something by us, done */
         if (xs_is_null(objid) || !xs_startswith(objid, snac->actor))
+            return;
+    }
+
+    /* if it's a closed poll but we didn't vote, drop it */
+    if (strcmp(type, "Update") == 0 && strcmp(type, "Question") == 0) {
+        if (!was_question_voted(snac, id))
             return;
     }
 
@@ -587,7 +595,7 @@ void notify(snac *snac, const char *type, const char *utype, const char *actor, 
 
     /* finally, store it in the notification folder */
     if (strcmp(type, "Follow") == 0)
-        objid = xs_dict_get(msg, "id");
+        objid = id;
 
     notify_add(snac, type, utype, actor, objid);
 }
