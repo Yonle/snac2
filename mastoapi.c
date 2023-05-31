@@ -587,6 +587,78 @@ xs_dict *mastoapi_account(const xs_dict *actor)
 }
 
 
+xs_dict *mastoapi_poll(snac *snac, const xs_dict *msg)
+/* creates a mastoapi Poll object */
+{
+    xs_dict *poll = NULL;
+
+    /* is it a poll? */
+    if (strcmp(xs_dict_get(msg, "type"), "Question") == 0) {
+        xs *mid  = mastoapi_id(msg);
+        xs *f    = xs_val_new(XSTYPE_FALSE);
+        xs *t    = xs_val_new(XSTYPE_TRUE);
+        xs_list *opts = NULL;
+        xs_list *p;
+        xs_val *v;
+        int num_votes = 0;
+        xs *options = xs_list_new();
+
+        poll = xs_dict_new();
+
+        poll = xs_dict_append(poll, "id", mid);
+        poll = xs_dict_append(poll, "expires_at", xs_dict_get(msg, "endTime"));
+        poll = xs_dict_append(poll, "expired", xs_dict_get(msg, "closed") != NULL ? t : f);
+
+        if ((opts = xs_dict_get(msg, "oneOf")) != NULL)
+            poll = xs_dict_append(poll, "multiple", f);
+        else {
+            opts = xs_dict_get(msg, "anyOf");
+            poll = xs_dict_append(poll, "multiple", t);
+        }
+
+        while (xs_list_iter(&opts, &v)) {
+            const char *title   = xs_dict_get(v, "name");
+            const char *replies = xs_dict_get(v, "replies");
+
+            if (title && replies) {
+                const char *votes_count = xs_dict_get(replies, "totalItems");
+
+                if (xs_type(votes_count) == XSTYPE_NUMBER) {
+                    xs *d = xs_dict_new();
+                    d = xs_dict_append(d, "title",  title);
+                    d = xs_dict_append(d, "votes_count", votes_count);
+
+                    options = xs_list_append(options, d);
+                    num_votes += xs_number_get(votes_count);
+                }
+            }
+        }
+
+        poll = xs_dict_append(poll, "options", options);
+        xs *vc = xs_number_new(num_votes);
+        poll = xs_dict_append(poll, "votes_count", vc);
+
+        xs *children = object_children(xs_dict_get(msg, "id"));
+        int voted = 0;
+        p = children;
+        while (xs_list_iter(&p, &v)) {
+            xs *obj = NULL;
+
+            if (valid_status(object_get_by_md5(v, &obj))) {
+                if (strcmp(xs_dict_get(obj, "attributedTo"), snac->actor) == 0) {
+                    voted = 1;
+                    break;
+                }
+            }
+        }
+
+        poll = xs_dict_append(poll, "voted", voted ? t : f);
+    }
+
+    return poll;
+}
+
+
 xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 /* converts an ActivityPub note to a Mastodon status */
 {
@@ -803,66 +875,11 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 
     st = xs_dict_append(st, "edited_at", tmp);
 
-    /* is it a poll? */
-    if (strcmp(xs_dict_get(msg, "type"), "Question") == 0) {
-        xs *poll = xs_dict_new();
-        xs_list *opts = NULL;
-        xs_list *p;
-        xs_val *v;
-        int num_votes = 0;
-        xs *options = xs_list_new();
+    /* build the poll object, if applicable */
+    xs *poll = mastoapi_poll(snac, msg);
 
-        poll = xs_dict_append(poll, "id", mid);
-        poll = xs_dict_append(poll, "expires_at", xs_dict_get(msg, "endTime"));
-        poll = xs_dict_append(poll, "expired", xs_dict_get(msg, "closed") != NULL ? t : f);
-
-        if ((opts = xs_dict_get(msg, "oneOf")) != NULL)
-            poll = xs_dict_append(poll, "multiple", f);
-        else {
-            opts = xs_dict_get(msg, "anyOf");
-            poll = xs_dict_append(poll, "multiple", t);
-        }
-
-        while (xs_list_iter(&opts, &v)) {
-            const char *title   = xs_dict_get(v, "name");
-            const char *replies = xs_dict_get(v, "replies");
-
-            if (title && replies) {
-                const char *votes_count = xs_dict_get(replies, "totalItems");
-
-                if (xs_type(votes_count) == XSTYPE_NUMBER) {
-                    xs *d = xs_dict_new();
-                    d = xs_dict_append(d, "title",  title);
-                    d = xs_dict_append(d, "votes_count", votes_count);
-
-                    options = xs_list_append(options, d);
-                    num_votes += xs_number_get(votes_count);
-                }
-            }
-        }
-
-        poll = xs_dict_append(poll, "options", options);
-        xs *vc = xs_number_new(num_votes);
-        poll = xs_dict_append(poll, "votes_count", vc);
-
-        xs *children = object_children(id);
-        int voted = 0;
-        p = children;
-        while (xs_list_iter(&p, &v)) {
-            xs *obj = NULL;
-
-            if (valid_status(object_get_by_md5(v, &obj))) {
-                if (strcmp(xs_dict_get(obj, "attributedTo"), snac->actor) == 0) {
-                    voted = 1;
-                    break;
-                }
-            }
-        }
-
-        poll = xs_dict_append(poll, "voted", voted ? t : f);
-
+    if (poll)
         st = xs_dict_append(st, "poll", poll);
-    }
 
     return st;
 }
