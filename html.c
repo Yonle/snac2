@@ -769,6 +769,10 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
         return os;
     }
 
+    /* ignore notes with "name", as they are votes to Questions */
+    if (strcmp(type, "Note") == 0 && !xs_is_null(xs_dict_get(msg, "name")))
+        return os;
+
     /* bring the main actor */
     if ((actor = xs_dict_get(msg, "attributedTo")) == NULL)
         return os;
@@ -1061,7 +1065,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
         s = html_entry_controls(snac, s, msg, md5);
 
     /** children **/
-    if (!hide_children && strcmp(type, "Question") != 0) {
+    if (!hide_children) {
         xs *children = object_children(id);
         int left     = xs_list_len(children);
 
