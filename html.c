@@ -135,8 +135,33 @@ xs_str *html_actor_icon(xs_str *os, char *actor,
         }
 
         xs *s1 = xs_fmt(
-            "<br>\n<time class=\"dt-published snac-pubdate\" title=\"%s\">%s</time>\n",
+            "\n<time class=\"dt-published snac-pubdate\" title=\"%s\">%s</time>\n",
                 date_title, date_label);
+
+        s = xs_str_cat(s, s1);
+    }
+
+    {
+        char *username, *id;
+        xs *s1;
+
+        if (xs_is_null(username = xs_dict_get(actor, "preferredUsername")) || *username == '\0') {
+            /* This should never be reached */
+            username = "anonymous";
+        }
+
+        if (xs_is_null(id = xs_dict_get(actor, "id")) || *id == '\0') {
+            /* This should never be reached */
+            id = "https://social.example.org/anonymous";
+        }
+
+        /* "LIKE AN ANIMAL" */
+        xs *domain = xs_split(id, "/");
+        xs *user   = xs_fmt("@%s@%s", username, xs_list_get(domain, 2));
+
+        s1 = xs_fmt(
+            "<br><a href=\"%s\" class=\"p-author-tag h-card snac-author snac-author-tag\">%s</a>",
+                xs_dict_get(actor, "id"), user);
 
         s = xs_str_cat(s, s1);
     }
