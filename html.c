@@ -160,7 +160,7 @@ xs_str *html_actor_icon(xs_str *os, char *actor,
         xs *user   = xs_fmt("@%s@%s", username, xs_list_get(domain, 2));
 
         s1 = xs_fmt(
-            "<br><a href=\"%s\" class=\"p-author-tag h-card snac-author snac-author-tag\">%s</a>",
+            "<br><a href=\"%s\" class=\"p-author-tag h-card snac-author-tag\">%s</a>",
                 xs_dict_get(actor, "id"), user);
 
         s = xs_str_cat(s, s1);
