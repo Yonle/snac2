@@ -7,7 +7,7 @@ img { max-width: 100% }
 .snac-top-user-id { font-size: 150% }
 .snac-avatar { float: left; height: 2.5em; padding: 0.25em }
 .snac-author { font-size: 90%; text-decoration: none }
-.snac-author-tag { font-size: 90% }
+.snac-author-tag { font-size: 80% }
 .snac-pubdate { color: #a0a0a0; font-size: 90% }
 .snac-top-controls { padding-bottom: 1.5em }
 .snac-post { border-top: 1px solid #a0a0a0; }
@@ -15,7 +15,9 @@ img { max-width: 100% }
 .snac-textarea { font-family: inherit; width: 95% }
 .snac-history { border: 1px solid #606060; border-radius: 3px; margin: 2.5em 0; padding: 0 2em }
 .snac-btn-mute { float: right; margin-left: 0.5em }
+.snac-btn-unmute { float: right; margin-left: 0.5em }
 .snac-btn-follow { float: right; margin-left: 0.5em }
 .snac-btn-unfollow { float: right; margin-left: 0.5em }
+.snac-btn-hide { float: right; margin-left: 0.5em }
 .snac-btn-delete { float: right; margin-left: 0.5em }
 .snac-footer { margin-top: 2em; font-size: 75% }
