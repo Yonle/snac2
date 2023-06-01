@@ -512,6 +512,7 @@ void notify(snac *snac, const char *type, const char *utype, const char *actor, 
     if (xs_type(objid) == XSTYPE_DICT)
         objid = xs_dict_get(objid, "id");
     else
+    if (objid == NULL)
         objid = id;
 
     if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
