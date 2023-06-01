@@ -519,7 +519,7 @@ void notify(snac *snac, const char *type, const char *utype, const char *actor, 
     }
 
     /* updated poll? */
-    if (strcmp(type, "Update") == 0 && strcmp(type, "Question") == 0) {
+    if (strcmp(type, "Update") == 0 && strcmp(utype, "Question") == 0) {
         /* if it's not closed, discard */
         if (xs_is_null(xs_dict_get(msg, "closed")))
             return;
