@@ -4,9 +4,9 @@
 
 Polls can now be created from the web interface.
 
-New Mastodon API features: polls are shown and can be voted.
+New Mastodon API features: polls are shown and can be voted on.
 
-The user@host identifier is now shown next to the user avatar (contributed by Haijo7). A small change to the default CSS was necessary for this; please consider updating your style.css.
+The user@host identifier is now shown next to the user avatar (contributed by Haijo7). A small tweak to the default CSS was made to suit this change; please consider updating your style.css.
 
 ## 2.33
 
