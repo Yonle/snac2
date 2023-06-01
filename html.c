@@ -1347,7 +1347,7 @@ d_char *html_people(snac *snac)
 
     s = html_people_list(snac, s, wing, L("People you follow"), "i");
 
-    s = html_people_list(snac, s, wers, L("People that follows you"), "e");
+    s = html_people_list(snac, s, wers, L("People that follow you"), "e");
 
     s = html_user_footer(s);
 
