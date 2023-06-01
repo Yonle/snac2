@@ -520,8 +520,13 @@ void notify(snac *snac, const char *type, const char *utype, const char *actor, 
             return;
     }
 
-    /* if it's a closed poll that is not ours and we didn't vote, drop it */
+    /* updated poll? */
     if (strcmp(type, "Update") == 0 && strcmp(type, "Question") == 0) {
+        /* if it's not closed, discard */
+        if (xs_is_null(xs_dict_get(msg, "closed")))
+            return;
+
+        /* if it's not ours and we didn't vote, discard */
         if (!xs_startswith(id, snac->actor) && !was_question_voted(snac, id))
             return;
     }
