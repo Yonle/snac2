@@ -4,7 +4,7 @@
 
 Polls can now be created from the web interface.
 
-New Mastodon API features: polls are shown.
+New Mastodon API features: polls are shown and can be voted.
 
 ## 2.33
 
