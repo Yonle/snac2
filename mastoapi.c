@@ -590,56 +590,50 @@ xs_dict *mastoapi_account(const xs_dict *actor)
 xs_dict *mastoapi_poll(snac *snac, const xs_dict *msg)
 /* creates a mastoapi Poll object */
 {
-    xs_dict *poll = NULL;
+    xs_dict *poll = xs_dict_new();
+    xs *mid       = mastoapi_id(msg);
+    xs *f         = xs_val_new(XSTYPE_FALSE);
+    xs *t         = xs_val_new(XSTYPE_TRUE);
+    xs_list *opts = NULL;
+    xs_val *v;
+    int num_votes = 0;
+    xs *options = xs_list_new();
 
-    /* is it a poll? */
-    if (strcmp(xs_dict_get(msg, "type"), "Question") == 0) {
-        xs *mid  = mastoapi_id(msg);
-        xs *f    = xs_val_new(XSTYPE_FALSE);
-        xs *t    = xs_val_new(XSTYPE_TRUE);
-        xs_list *opts = NULL;
-        xs_val *v;
-        int num_votes = 0;
-        xs *options = xs_list_new();
+    poll = xs_dict_append(poll, "id", mid);
+    poll = xs_dict_append(poll, "expires_at", xs_dict_get(msg, "endTime"));
+    poll = xs_dict_append(poll, "expired", xs_dict_get(msg, "closed") != NULL ? t : f);
 
-        poll = xs_dict_new();
+    if ((opts = xs_dict_get(msg, "oneOf")) != NULL)
+        poll = xs_dict_append(poll, "multiple", f);
+    else {
+        opts = xs_dict_get(msg, "anyOf");
+        poll = xs_dict_append(poll, "multiple", t);
+    }
 
-        poll = xs_dict_append(poll, "id", mid);
-        poll = xs_dict_append(poll, "expires_at", xs_dict_get(msg, "endTime"));
-        poll = xs_dict_append(poll, "expired", xs_dict_get(msg, "closed") != NULL ? t : f);
+    while (xs_list_iter(&opts, &v)) {
+        const char *title   = xs_dict_get(v, "name");
+        const char *replies = xs_dict_get(v, "replies");
 
-        if ((opts = xs_dict_get(msg, "oneOf")) != NULL)
-            poll = xs_dict_append(poll, "multiple", f);
-        else {
-            opts = xs_dict_get(msg, "anyOf");
-            poll = xs_dict_append(poll, "multiple", t);
-        }
+        if (title && replies) {
+            const char *votes_count = xs_dict_get(replies, "totalItems");
 
-        while (xs_list_iter(&opts, &v)) {
-            const char *title   = xs_dict_get(v, "name");
-            const char *replies = xs_dict_get(v, "replies");
+            if (xs_type(votes_count) == XSTYPE_NUMBER) {
+                xs *d = xs_dict_new();
+                d = xs_dict_append(d, "title",  title);
+                d = xs_dict_append(d, "votes_count", votes_count);
 
-            if (title && replies) {
-                const char *votes_count = xs_dict_get(replies, "totalItems");
-
-                if (xs_type(votes_count) == XSTYPE_NUMBER) {
-                    xs *d = xs_dict_new();
-                    d = xs_dict_append(d, "title",  title);
-                    d = xs_dict_append(d, "votes_count", votes_count);
-
-                    options = xs_list_append(options, d);
-                    num_votes += xs_number_get(votes_count);
-                }
+                options = xs_list_append(options, d);
+                num_votes += xs_number_get(votes_count);
             }
         }
-
-        poll = xs_dict_append(poll, "options", options);
-        xs *vc = xs_number_new(num_votes);
-        poll = xs_dict_append(poll, "votes_count", vc);
-
-        poll = xs_dict_append(poll, "voted",
-                was_question_voted(snac, xs_dict_get(msg, "id")) ? t : f);
     }
+
+    poll = xs_dict_append(poll, "options", options);
+    xs *vc = xs_number_new(num_votes);
+    poll = xs_dict_append(poll, "votes_count", vc);
+
+    poll = xs_dict_append(poll, "voted",
+            was_question_voted(snac, xs_dict_get(msg, "id")) ? t : f);
 
     return poll;
 }
@@ -655,6 +649,9 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
     if (actor == NULL)
         return NULL;
 
+    const char *type = xs_dict_get(msg, "type");
+    const char *id   = xs_dict_get(msg, "id");
+
     xs *acct = mastoapi_account(actor);
 
     xs *f   = xs_val_new(XSTYPE_FALSE);
@@ -662,9 +659,7 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
     xs *n   = xs_val_new(XSTYPE_NULL);
     xs *idx = NULL;
     xs *ixc = NULL;
-
     char *tmp;
-    char *id = xs_dict_get(msg, "id");
     xs *mid  = mastoapi_id(msg);
 
     xs_dict *st = xs_dict_new();
@@ -861,11 +856,10 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 
     st = xs_dict_append(st, "edited_at", tmp);
 
-    /* build the poll object, if applicable */
-    xs *poll = mastoapi_poll(snac, msg);
-
-    if (poll)
+    if (strcmp(type, "Question") == 0) {
+        xs *poll = mastoapi_poll(snac, msg);
         st = xs_dict_append(st, "poll", poll);
+    }
 
     return st;
 }
