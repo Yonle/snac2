@@ -1057,6 +1057,7 @@ xs_dict *msg_question(snac *user, const char *content, xs_list *attach,
     xs *ntid     = tid(0);
     xs_dict *msg = msg_note(user, content, NULL, NULL, attach, 0);
     int max      = 8;
+    xs_set seen;
 
     msg = xs_dict_set(msg, "type", "Question");
 
@@ -1068,19 +1069,29 @@ xs_dict *msg_question(snac *user, const char *content, xs_list *attach,
     xs_str *v;
     xs *replies = xs_json_loads("{\"type\":\"Collection\",\"totalItems\":0}");
 
-    while (max-- && xs_list_iter(&p, &v)) {
-        xs *v2 = xs_dup(v);
-        xs *d  = xs_dict_new();
+    xs_set_init(&seen);
 
-        if (strlen(v2) > 60) {
-            v2[60] = '\0';
-            v2 = xs_str_cat(v2, "...");
+    while (max && xs_list_iter(&p, &v)) {
+        if (*v) {
+            xs *v2 = xs_dup(v);
+            xs *d  = xs_dict_new();
+
+            if (strlen(v2) > 60) {
+                v2[60] = '\0';
+                v2 = xs_str_cat(v2, "...");
+            }
+
+            if (xs_set_add(&seen, v2) == 1) {
+                d = xs_dict_append(d, "name",    v2);
+                d = xs_dict_append(d, "replies", replies);
+                o = xs_list_append(o, d);
+
+                max--;
+            }
         }
-
-        d = xs_dict_append(d, "name",    v2);
-        d = xs_dict_append(d, "replies", replies);
-        o = xs_list_append(o, d);
     }
+
+    xs_set_free(&seen);
 
     msg = xs_dict_append(msg, multiple ? "anyOf" : "oneOf", o);
 
