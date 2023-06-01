@@ -815,6 +815,12 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
         /* add the ballot box emoji */
         xs *f = xs_fmt("<span title=\"%s\"> &#128499; </span>", L("Poll"));
         s = xs_str_cat(s, f);
+
+        if (was_question_voted(snac, id)) {
+            /* add a check to show this poll was voted */
+            xs *f2 = xs_fmt("<span title=\"%s\"> &#10003; </span>", L("Voted"));
+            s = xs_str_cat(s, f2);
+        }
     }
 
     /* if this is our post, add the score */
