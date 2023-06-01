@@ -6,7 +6,8 @@ img { max-width: 100% }
 .snac-top-user-name { font-size: 200% }
 .snac-top-user-id { font-size: 150% }
 .snac-avatar { float: left; height: 2.5em; padding: 0.25em }
-.snac-author { font-size: 90% }
+.snac-author { font-size: 90%; text-decoration: none }
+.snac-author-tag { font-size: 90% }
 .snac-pubdate { color: #a0a0a0; font-size: 90% }
 .snac-top-controls { padding-bottom: 1.5em }
 .snac-post { border-top: 1px solid #a0a0a0; }
