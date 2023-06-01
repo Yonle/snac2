@@ -2133,13 +2133,39 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                 mid = MID_TO_MD5(mid);
 
                 if (valid_status(timeline_get_by_md5(&snac, mid, &msg))) {
+                    const char *id   = xs_dict_get(msg, "id");
+                    const char *atto = xs_dict_get(msg, "attributedTo");
+
+                    xs_list *opts = xs_dict_get(msg, "oneOf");
+                    if (opts == NULL)
+                        opts = xs_dict_get(msg, "anyOf");
+
                     if (op == NULL) {
                     }
                     else
                     if (strcmp(op, "votes") == 0) {
-                        const char *opts = xs_dict_get(args, "choices[]");
+                        xs_list *choices = xs_dict_get(args, "choices[]");
 
-                        if (xs_type(opts) == XSTYPE_LIST) {
+                        if (xs_type(choices) == XSTYPE_LIST) {
+                            xs_str *v;
+
+                            while (xs_list_iter(&choices, &v)) {
+                                int io           = atoi(v);
+                                const xs_dict *o = xs_list_get(opts, io);
+
+                                if (o) {
+                                    const char *name = xs_dict_get(o, "name");
+
+                                    xs *msg = msg_note(&snac, "", atto, (char *)id, NULL, 1);
+                                    msg = xs_dict_append(msg, "name", name);
+
+                                    xs *c_msg = msg_create(&snac, msg);
+                                    enqueue_message(&snac, c_msg);
+                                    timeline_add(&snac, xs_dict_get(msg, "id"), msg);
+                                }
+                            }
+
+                            out = mastoapi_poll(&snac, msg);
                         }
                     }
                 }
