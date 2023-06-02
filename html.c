@@ -1055,6 +1055,10 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
     if ((attach = xs_dict_get(msg, "attachment")) != NULL) { /** **/
         char *v;
+
+        /* make custom css for attachments easier */
+        s = xs_str_cat(s, "<p class=\"snac-content-attachments\">\n");
+
         while (xs_list_iter(&attach, &v)) {
             char *t = xs_dict_get(v, "mediaType");
 
@@ -1066,8 +1070,9 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                 char *name = xs_dict_get(v, "name");
 
                 if (url != NULL) {
-                    xs *s1 = xs_fmt("<p><img src=\"%s\" alt=\"%s\" loading=\"lazy\"/></p>\n",
-                        url, xs_is_null(name) ? "" : name);
+                    xs *s1 = xs_fmt(
+                        "<a href=\"%s\" target=\"_blank\"><img src=\"%s\" alt=\"%s\" loading=\"lazy\"/></a>\n",
+                            url, url, xs_is_null(name) ? "" : name);
 
                     s = xs_str_cat(s, s1);
                 }
@@ -1077,12 +1082,14 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                 char *url  = xs_dict_get(v, "url");
 
                 if (url != NULL) {
-                    xs *s1 = xs_fmt("<p><object data=\"%s\"></object></p>\n", url);
+                    xs *s1 = xs_fmt("<object data=\"%s\"></object>\n", url);
 
                     s = xs_str_cat(s, s1);
                 }
             }
         }
+
+        s = xs_str_cat(s, "</p>\n");
     }
 
     if (sensitive)
