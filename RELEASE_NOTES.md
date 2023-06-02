@@ -8,6 +8,8 @@ New Mastodon API features: polls are shown and can be voted on.
 
 The user@host identifier is now shown next to the user avatar (contributed by Haijo7). A small tweak to the default CSS was made to suit this change; please consider updating your style.css.
 
+Clicking on an image attachment opens it in a new tab (contributed by Haijo7).
+
 ## 2.33
 
 Polls (in #ActivityPub lingo, Questions) are shown and can be voted on. Creating a poll is not yet implemented, though.
