@@ -384,7 +384,10 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<p>%s:<br>\n"
         "<textarea class=\"snac-textarea\" name=\"poll_options\" "
         "rows=\"6\" wrap=\"virtual\"></textarea>\n"
-        "<p>%s: <input type=\"checkbox\" name=\"poll_multiple\">\n"
+        "<p><select name=\"poll_multiple\">\n"
+        "<option value=\"off\">%s</option>\n"
+        "<option value=\"on\">%s</option>\n"
+        "</select>\n"
         "<select name=\"poll_end_secs\" id=\"poll_end_secs\">\n"
         "<option value=\"300\">%s</option>\n"
         "<option value=\"3600\">%s</option>\n"
@@ -495,10 +498,11 @@ d_char *html_top_controls(snac *snac, d_char *s)
 
         L("Poll..."),
         L("Poll options (one per line, up to 8)"),
-        L("Multiple"),
-        L("5 minutes"),
-        L("1 hour"),
-        L("1 day"),
+        L("One choice"),
+        L("Multiple choices"),
+        L("End in 5 minutes"),
+        L("End in 1 hour"),
+        L("End in 1 day"),
 
         L("Post"),
 
@@ -1834,9 +1838,12 @@ int html_post_handler(const xs_dict *req, const char *q_path,
                 /* get the rest of poll configuration */
                 const char *p_multiple = xs_dict_get(p_vars, "poll_multiple");
                 const char *p_end_secs = xs_dict_get(p_vars, "poll_end_secs");
+                int multiple = 0;
 
                 int end_secs = atoi(!xs_is_null(p_end_secs) ? p_end_secs : "60");
-                int multiple = !xs_is_null(p_multiple);
+
+                if (!xs_is_null(p_multiple) && strcmp(p_multiple, "on") == 0)
+                    multiple = 1;
 
                 msg = msg_question(&snac, content_2, attach_list,
                                    poll_opts, multiple, end_secs);
