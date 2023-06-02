@@ -1402,7 +1402,7 @@ xs_str *html_notifications(snac *snac)
         const char *utype = xs_dict_get(noti, "utype");
         const char *id    = xs_dict_get(noti, "objid");
 
-        if (!valid_status(object_get(id, &obj)))
+        if (xs_is_null(id) || !valid_status(object_get(id, &obj)))
             continue;
 
         if (is_hidden(snac, id))

@@ -602,7 +602,7 @@ void notify(snac *snac, const char *type, const char *utype, const char *actor, 
     if (strcmp(type, "Follow") == 0)
         objid = id;
 
-    notify_add(snac, type, utype, actor, objid);
+    notify_add(snac, type, utype, actor, objid != NULL ? objid : id);
 }
 
 
