@@ -499,7 +499,9 @@ void notify(snac *snac, const char *type, const char *utype, const char *actor, 
             return;
 
         /* discard votes */
-        if (!xs_is_null(xs_dict_get(msg, "name")))
+        const xs_dict *note = xs_dict_get(msg, "object");
+
+        if (note && !xs_is_null(xs_dict_get(note, "name")))
             return;
     }
 
