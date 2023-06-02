@@ -522,12 +522,21 @@ void notify(snac *snac, const char *type, const char *utype, const char *actor, 
 
     /* updated poll? */
     if (strcmp(type, "Update") == 0 && strcmp(utype, "Question") == 0) {
+        const xs_dict *poll;
+        const char *poll_id;
+
+        if ((poll = xs_dict_get(msg, "object")) == NULL)
+            return;
+
         /* if it's not closed, discard */
-        if (xs_is_null(xs_dict_get(msg, "closed")))
+        if (xs_is_null(xs_dict_get(poll, "closed")))
+            return;
+
+        if ((poll_id = xs_dict_get(poll, "id")) == NULL)
             return;
 
         /* if it's not ours and we didn't vote, discard */
-        if (!xs_startswith(id, snac->actor) && !was_question_voted(snac, id))
+        if (!xs_startswith(poll_id, snac->actor) && !was_question_voted(snac, poll_id))
             return;
     }
 
@@ -1193,16 +1202,17 @@ int update_question(snac *user, const char *id)
     msg = xs_dict_set(msg, xs_dict_get(msg, "oneOf") != NULL ? "oneOf" : "anyOf", nopts);
 
     /* due date? */
+    int closed = 0;
     const char *end_time = xs_dict_get(msg, "endTime");
     if (!xs_is_null(end_time)) {
         xs *now = xs_str_utctime(0, ISO_DATE_SPEC);
 
-        /* it's now greater than the endTime? */
+        /* is now greater than the endTime? */
         if (strcmp(now, end_time) >= 0) {
-            xs *et = xs_dup(end_time);
-            msg    = xs_dict_set(msg, "closed", et);
+            xs *et    = xs_dup(end_time);
+            msg       = xs_dict_set(msg, "closed", et);
 
-            notify(user, "Update", "Question", user->actor, msg);
+            closed = 1;
         }
     }
 
@@ -1221,6 +1231,11 @@ int update_question(snac *user, const char *id)
     u_msg = xs_dict_set(u_msg, "cc", rcpts);
 
     enqueue_message(user, u_msg);
+
+    if (closed) {
+        xs *c_msg = msg_update(user, msg);
+        notify(user, "Update", "Question", user->actor, c_msg);
+    }
 
     return 0;
 }
