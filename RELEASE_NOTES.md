@@ -10,6 +10,8 @@ The user@host identifier is now shown next to the user avatar (contributed by Ha
 
 Clicking on an image attachment opens it in a new tab (contributed by Haijo7).
 
+Bots are marked as such using an emoji (contributed by Haijo7).
+
 ## 2.33
 
 Polls (in #ActivityPub lingo, Questions) are shown and can be voted on. Creating a poll is not yet implemented, though.
