@@ -1445,7 +1445,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
     }
     else
     if (strcmp(type, "Update") == 0) { /** **/
-        if (strcmp(utype, "Person") == 0) {
+        if (strcmp(utype, "Person") == 0 || strcmp(utype, "Service") == 0) {
             actor_add(actor, xs_dict_get(msg, "object"));
             timeline_touch(snac);
 
