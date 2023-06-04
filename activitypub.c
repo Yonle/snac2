@@ -803,6 +803,10 @@ xs_dict *msg_actor(snac *snac)
     keys = xs_dict_append(keys, "publicKeyPem", xs_dict_get(snac->key, "public"));
     msg = xs_dict_set(msg, "publicKey", keys);
 
+    /* if the "bot" config field is set to true, change type to "Service" */
+    if (xs_type(xs_dict_get(snac->config, "bot")) == XSTYPE_TRUE)
+        msg = xs_dict_set(msg, "type", "Service");
+
     return msg;
 }
 
