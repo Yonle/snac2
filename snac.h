@@ -196,16 +196,16 @@ int webfinger_get_handler(xs_dict *req, char *q_path,
 
 const char *default_avatar_base64(void);
 
-d_char *msg_admiration(snac *snac, char *object, char *type);
+xs_dict *msg_admiration(snac *snac, char *object, char *type);
 xs_dict *msg_create(snac *snac, const xs_dict *object);
 xs_dict *msg_follow(snac *snac, const char *actor);
 
 xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
                   xs_str *in_reply_to, xs_list *attach, int priv);
 
-d_char *msg_undo(snac *snac, char *object);
-d_char *msg_delete(snac *snac, char *id);
-d_char *msg_actor(snac *snac);
+xs_dict *msg_undo(snac *snac, char *object);
+xs_dict *msg_delete(snac *snac, char *id);
+xs_dict *msg_actor(snac *snac);
 xs_dict *msg_update(snac *snac, xs_dict *object);
 xs_dict *msg_ping(snac *user, const char *rcpt);
 xs_dict *msg_pong(snac *user, const char *rcpt, const char *object);

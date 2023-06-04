@@ -669,10 +669,10 @@ xs_dict *msg_base(snac *snac, const char *type, const char *id,
 }
 
 
-d_char *msg_collection(snac *snac, char *id)
+xs_dict *msg_collection(snac *snac, char *id)
 /* creates an empty OrderedCollection message */
 {
-    d_char *msg = msg_base(snac, "OrderedCollection", id, NULL, NULL, NULL);
+    xs_dict *msg = msg_base(snac, "OrderedCollection", id, NULL, NULL, NULL);
     xs *ol = xs_list_new();
     xs *nz = xs_number_new(0);
 
@@ -684,10 +684,10 @@ d_char *msg_collection(snac *snac, char *id)
 }
 
 
-d_char *msg_accept(snac *snac, char *object, char *to)
+xs_dict *msg_accept(snac *snac, char *object, char *to)
 /* creates an Accept message (as a response to a Follow) */
 {
-    d_char *msg = msg_base(snac, "Accept", "@dummy", snac->actor, NULL, object);
+    xs_dict *msg = msg_base(snac, "Accept", "@dummy", snac->actor, NULL, object);
 
     msg = xs_dict_append(msg, "to", to);
 
@@ -723,12 +723,12 @@ xs_dict *msg_update(snac *snac, xs_dict *object)
 }
 
 
-d_char *msg_admiration(snac *snac, char *object, char *type)
+xs_dict *msg_admiration(snac *snac, char *object, char *type)
 /* creates a Like or Announce message */
 {
-    xs *a_msg   = NULL;
-    d_char *msg = NULL;
-    xs *wrk     = NULL;
+    xs *a_msg    = NULL;
+    xs_dict *msg = NULL;
+    xs *wrk      = NULL;
 
     /* call the object */
     timeline_request(snac, &object, &wrk);
@@ -752,16 +752,16 @@ d_char *msg_admiration(snac *snac, char *object, char *type)
 }
 
 
-d_char *msg_actor(snac *snac)
+xs_dict *msg_actor(snac *snac)
 /* create a Person message for this actor */
 {
-    xs *ctxt    = xs_list_new();
-    xs *icon    = xs_dict_new();
-    xs *keys    = xs_dict_new();
-    xs *avtr    = NULL;
-    xs *kid     = NULL;
-    xs *f_bio   = NULL;
-    d_char *msg = msg_base(snac, "Person", snac->actor, NULL, NULL, NULL);
+    xs *ctxt     = xs_list_new();
+    xs *icon     = xs_dict_new();
+    xs *keys     = xs_dict_new();
+    xs *avtr     = NULL;
+    xs *kid      = NULL;
+    xs *f_bio    = NULL;
+    xs_dict *msg = msg_base(snac, "Person", snac->actor, NULL, NULL, NULL);
     char *p;
     int n;
 
@@ -828,10 +828,10 @@ xs_dict *msg_create(snac *snac, const xs_dict *object)
 }
 
 
-d_char *msg_undo(snac *snac, char *object)
+xs_dict *msg_undo(snac *snac, char *object)
 /* creates an 'Undo' message */
 {
-    d_char *msg = msg_base(snac, "Undo", "@object", snac->actor, "@now", object);
+    xs_dict *msg = msg_base(snac, "Undo", "@object", snac->actor, "@now", object);
 
     msg = xs_dict_append(msg, "to", xs_dict_get(object, "object"));
 
@@ -839,11 +839,11 @@ d_char *msg_undo(snac *snac, char *object)
 }
 
 
-d_char *msg_delete(snac *snac, char *id)
+xs_dict *msg_delete(snac *snac, char *id)
 /* creates a 'Delete' + 'Tombstone' for a local entry */
 {
     xs *tomb = xs_dict_new();
-    d_char *msg = NULL;
+    xs_dict *msg = NULL;
 
     /* sculpt the tombstone */
     tomb = xs_dict_append(tomb, "type", "Tombstone");
@@ -863,7 +863,7 @@ xs_dict *msg_follow(snac *snac, const char *q)
 {
     xs *actor_o = NULL;
     xs *actor   = NULL;
-    d_char *msg = NULL;
+    xs_dict *msg = NULL;
     int status;
 
     xs *url_or_uid = xs_strip_i(xs_str_new(q));
