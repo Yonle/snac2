@@ -93,6 +93,11 @@ Only useful for debugging.
 This directory stores Mastodon API apps.
 .It Pa token/
 This directory stores Mastodon API tokens.
+.It Pa style.css
+The server-wide CSS. Not used directly; everytime a new user is created, this
+file is copied to the user
+.Pa static/
+folder.
 .El
 .Pp
 Each user directory is a subdirectory of 
