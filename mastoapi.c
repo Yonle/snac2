@@ -10,6 +10,7 @@
 #include "xs_time.h"
 #include "xs_glob.h"
 #include "xs_set.h"
+#include "xs_random.h"
 
 #include "snac.h"
 
@@ -17,19 +18,8 @@ static xs_str *random_str(void)
 /* just what is says in the tin */
 {
     unsigned int data[4] = {0};
-    FILE *f;
 
-    if ((f = fopen("/dev/random", "r")) != NULL) {
-        fread(data, sizeof(data), 1, f);
-        fclose(f);
-    }
-    else {
-        data[0] = random() % 0xffffffff;
-        data[1] = random() % 0xffffffff;
-        data[2] = random() % 0xffffffff;
-        data[3] = random() % 0xffffffff;
-    }
-
+    xs_rnd_buf(data, sizeof(data));
     return xs_hex_enc((char *)data, sizeof(data));
 }
 

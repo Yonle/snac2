@@ -16,6 +16,7 @@
 #include "xs_set.h"
 #include "xs_time.h"
 #include "xs_glob.h"
+#include "xs_random.h"
 
 #include "snac.h"
 
@@ -122,7 +123,9 @@ xs_str *hash_password(const char *uid, const char *passwd, const char *nonce)
     xs *hash;
 
     if (nonce == NULL) {
-        d_nonce = xs_fmt("%08x", random());
+        unsigned int r;
+        xs_rnd_buf(&r, sizeof(r));
+        d_nonce = xs_fmt("%08x", r);
         nonce = d_nonce;
     }
 

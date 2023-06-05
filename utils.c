@@ -6,6 +6,7 @@
 #include "xs_json.h"
 #include "xs_time.h"
 #include "xs_openssl.h"
+#include "xs_random.h"
 
 #include "snac.h"
 
@@ -204,10 +205,7 @@ void new_password(const char *uid, d_char **clear_pwd, d_char **hashed_pwd)
 {
     int rndbuf[3];
 
-    srandom(time(NULL) ^ getpid());
-    rndbuf[0] = random() & 0xffffffff;
-    rndbuf[1] = random() & 0xffffffff;
-    rndbuf[2] = random() & 0xffffffff;
+    xs_rnd_buf(rndbuf, sizeof(rndbuf));
 
     *clear_pwd  = xs_base64_enc((char *)rndbuf, sizeof(rndbuf));
     *hashed_pwd = hash_password(uid, *clear_pwd, NULL);
