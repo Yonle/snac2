@@ -22,9 +22,9 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-d_char *srv_basedir = NULL;
-d_char *srv_config  = NULL;
-d_char *srv_baseurl = NULL;
+xs_str *srv_basedir = NULL;
+xs_dict *srv_config = NULL;
+xs_str *srv_baseurl = NULL;
 
 int dbglevel = 0;
 
@@ -48,7 +48,7 @@ int valid_status(int status)
 }
 
 
-d_char *tid(int offset)
+xs_str *tid(int offset)
 /* returns a time-based Id */
 {
     struct timeval tv;
@@ -82,7 +82,7 @@ int validate_uid(const char *uid)
 }
 
 
-void srv_debug(int level, d_char *str)
+void srv_debug(int level, xs_str *str)
 /* logs a debug message */
 {
     if (xs_str_in(str, srv_basedir) != -1) {
@@ -99,11 +99,11 @@ void srv_debug(int level, d_char *str)
 }
 
 
-void snac_debug(snac *snac, int level, d_char *str)
+void snac_debug(snac *snac, int level, xs_str *str)
 /* prints a user debugging information */
 {
     xs *o_str = str;
-    d_char *msg = xs_fmt("[%s] %s", snac->uid, o_str);
+    xs_str *msg = xs_fmt("[%s] %s", snac->uid, o_str);
 
     if (xs_str_in(msg, snac->basedir) != -1) {
         /* replace long basedir references with ~ */
@@ -114,7 +114,7 @@ void snac_debug(snac *snac, int level, d_char *str)
 }
 
 
-d_char *hash_password(const char *uid, const char *passwd, const char *nonce)
+xs_str *hash_password(const char *uid, const char *passwd, const char *nonce)
 /* hashes a password */
 {
     xs *d_nonce = NULL;

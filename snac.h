@@ -12,9 +12,9 @@
 #define ISO_DATE_SPEC "%Y-%m-%dT%H:%M:%SZ"
 
 extern double disk_layout;
-extern d_char *srv_basedir;
-extern d_char *srv_config;
-extern d_char *srv_baseurl;
+extern xs_str *srv_basedir;
+extern xs_dict *srv_config;
+extern xs_str *srv_baseurl;
 
 extern int dbglevel;
 
@@ -23,10 +23,10 @@ extern int dbglevel;
 int mkdirx(const char *pathname);
 
 int valid_status(int status);
-d_char *tid(int offset);
+xs_str *tid(int offset);
 double ftime(void);
 
-void srv_debug(int level, d_char *str);
+void srv_debug(int level, xs_str *str);
 #define srv_log(str) srv_debug(0, str)
 
 int srv_open(char *basedir, int auto_upgrade);
@@ -47,12 +47,12 @@ void user_free(snac *snac);
 xs_list *user_list(void);
 int user_open_by_md5(snac *snac, const char *md5);
 
-void snac_debug(snac *snac, int level, d_char *str);
+void snac_debug(snac *snac, int level, xs_str *str);
 #define snac_log(snac, str) snac_debug(snac, 0, str)
 
 int validate_uid(const char *uid);
 
-d_char *hash_password(const char *uid, const char *passwd, const char *nonce);
+xs_str *hash_password(const char *uid, const char *passwd, const char *nonce);
 int check_password(const char *uid, const char *passwd, const char *hash);
 
 void srv_archive(const char *direction, const char *url, xs_dict *req,
