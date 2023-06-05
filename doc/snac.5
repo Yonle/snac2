@@ -98,6 +98,12 @@ The server-wide CSS. Not used directly; everytime a new user is created, this
 file is copied to the user
 .Pa static/
 folder.
+.It Pa greeting.html
+This file is served when the server base URL is requested from a web browser. See
+.Xr snac 8
+for more information about the customization options.
+.It Pa public.idx
+This file contains the list of public posts from all users in the server.
 .El
 .Pp
 Each user directory is a subdirectory of 
