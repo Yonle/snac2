@@ -510,7 +510,7 @@ void httpd(void)
 
     /* initialize the job control engine */
     pthread_mutex_init(&job_mutex, NULL);
-    sprintf(sem_name, "/job_%d", getpid());
+    snprintf(sem_name, sizeof(sem_name), "/job_%d", getpid());
     job_sem = sem_open(sem_name, O_CREAT, 0644, 0);
 
     if (job_sem == NULL) {
