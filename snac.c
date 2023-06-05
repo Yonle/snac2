@@ -25,7 +25,6 @@
 d_char *srv_basedir = NULL;
 d_char *srv_config  = NULL;
 d_char *srv_baseurl = NULL;
-int     srv_running = 0;
 
 int dbglevel = 0;
 

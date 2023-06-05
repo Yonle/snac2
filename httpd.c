@@ -24,6 +24,7 @@
 #include <poll.h>
 #endif
 
+int srv_running = 0;
 
 /* nodeinfo 2.0 template */
 const char *nodeinfo_2_0_template = ""
