@@ -170,6 +170,7 @@ int was_question_voted(snac *user, const char *id);
 
 xs_list *user_queue(snac *snac);
 xs_list *queue(void);
+xs_dict *queue_get(const char *fn);
 xs_dict *dequeue(const char *fn);
 
 void purge(snac *snac);

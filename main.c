@@ -279,8 +279,8 @@ int main(int argc, char *argv[])
         status = activitypub_request(&snac, url, &data);
 
         printf("status: %d\n", status);
-        if (valid_status(status)) {
 
+        if (data != NULL) {
             xs *j = xs_json_dumps_pp(data, 4);
             printf("%s\n", j);
         }

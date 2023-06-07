@@ -1938,9 +1938,32 @@ void enqueue_close_question(snac *user, const char *id, int end_secs)
 void enqueue_request_replies(snac *user, const char *id)
 /* enqueues a request for the replies of a message */
 {
+    /* test first if this precise request is already in the queue */
+    xs *queue = user_queue(user);
+    xs_list *p = queue;
+    xs_str *v;
+
+    while (xs_list_iter(&p, &v)) {
+        xs *q_item = queue_get(v);
+
+        if (q_item != NULL) {
+            const char *type = xs_dict_get(q_item, "type");
+            const char *msg  = xs_dict_get(q_item, "message");
+
+            if (type && msg && strcmp(type, "request_replies") == 0 && strcmp(msg, id) == 0) {
+                /* don't requeue */
+                snac_debug(user, 0, xs_fmt("enqueue_request_replies already here %s", id));
+                return;
+            }
+        }
+    }
+
+    /* not there; enqueue the request with a small delay */
     xs *qmsg   = _new_qmsg("request_replies", id, 0);
-    char *ntid = xs_dict_get(qmsg, "ntid");
+    xs *ntid = tid(10);
     xs *fn     = xs_fmt("%s/queue/%s.json", user->basedir, ntid);
+
+    qmsg = xs_dict_set(qmsg, "ntid", ntid);
 
     qmsg = _enqueue_put(fn, qmsg);
 
@@ -2030,21 +2053,30 @@ xs_list *queue(void)
 }
 
 
-xs_dict *dequeue(const char *fn)
-/* dequeues a message */
+xs_dict *queue_get(const char *fn)
+/* gets a file from a queue */
 {
     FILE *f;
     xs_dict *obj = NULL;
 
     if ((f = fopen(fn, "r")) != NULL) {
-        /* delete right now */
-        unlink(fn);
-
         xs *j = xs_readall(f);
         obj = xs_json_loads(j);
 
         fclose(f);
     }
+
+    return obj;
+}
+
+
+xs_dict *dequeue(const char *fn)
+/* dequeues a message */
+{
+    xs_dict *obj = queue_get(fn);
+
+    if (obj != NULL)
+        unlink(fn);
 
     return obj;
 }
