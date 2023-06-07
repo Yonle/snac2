@@ -143,16 +143,18 @@ int actor_request(snac *snac, const char *actor, xs_dict **data)
 }
 
 
-int timeline_request(snac *snac, char **id, d_char **wrk)
+void timeline_request_replies(snac *user, const xs_dict *msg);
+
+int timeline_request(snac *snac, char **id, xs_str **wrk)
 /* ensures that an entry and its ancestors are in the timeline */
 {
     int status = 0;
 
     if (!xs_is_null(*id)) {
-        /* is the admired object already there? */
-        if (!object_here(*id)) {
-            xs *object = NULL;
+        xs *object = NULL;
 
+        /* is the object already there? */
+        if (!valid_status(object_get(*id, &object))) {
             /* no; download it */
             status = activitypub_request(snac, *id, &object);
 
@@ -180,17 +182,75 @@ int timeline_request(snac *snac, char **id, d_char **wrk)
                     /* does it have an ancestor? */
                     char *in_reply_to = xs_dict_get(object, "inReplyTo");
 
+                    /* store */
+                    timeline_add(snac, *id, object);
+
                     /* recurse! */
                     timeline_request(snac, &in_reply_to, NULL);
-
-                    /* finally store */
-                    timeline_add(snac, *id, object);
                 }
             }
         }
+
+        if (object)
+            timeline_request_replies(snac, object);
     }
 
     return status;
+}
+
+
+void timeline_request_replies(snac *user, const xs_dict *msg)
+/* requests all replies of a message */
+/* FIXME: experimental -- needs more testing */
+{
+    /* does it have a replies collection? */
+    const xs_dict *replies = xs_dict_get(msg, "replies");
+
+    if (!xs_is_null(replies)) {
+        const char *type  = xs_dict_get(replies, "type");
+        const char *first = xs_dict_get(replies, "first");
+
+        if (!xs_is_null(type) && !xs_is_null(first) && strcmp(type, "Collection") == 0) {
+            const char *next = xs_dict_get(first, "next");
+
+            if (!xs_is_null(next)) {
+                xs *rpls = NULL;
+                int status = activitypub_request(user, next, &rpls);
+
+                /* request the Collection of replies */
+                if (valid_status(status)) {
+                    xs_list *items = xs_dict_get(rpls, "items");
+
+                    if (xs_type(items) == XSTYPE_LIST) {
+                        xs_val *v;
+
+                        /* request them all */
+                        while (xs_list_iter(&items, &v)) {
+                            if (xs_type(v) == XSTYPE_DICT) {
+                                /* not an id, but the object itself (!) */
+                                const char *id = xs_dict_get(v, "id");
+
+                                if (!xs_is_null(id)) {
+                                    snac_debug(user, 0, xs_fmt("embedded reply %s", id));
+
+                                    object_add(id, v);
+
+                                    /* get its own children */
+                                    timeline_request_replies(user, v);
+                                }
+                            }
+                            else {
+                                snac_debug(user, 0, xs_fmt("request reply %s", v));
+                                timeline_request(user, &v, NULL);
+                            }
+                        }
+                    }
+                }
+                else
+                    snac_debug(user, 0, xs_fmt("reply collection get %s %d", next, status));
+            }
+        }
+    }
 }
 
 
