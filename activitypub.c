@@ -143,7 +143,7 @@ int actor_request(snac *snac, const char *actor, xs_dict **data)
 }
 
 
-void timeline_request_replies(snac *user, const xs_dict *msg);
+void timeline_request_replies(snac *user, const char *id);
 
 int timeline_request(snac *snac, char **id, xs_str **wrk)
 /* ensures that an entry and its ancestors are in the timeline */
@@ -191,18 +191,22 @@ int timeline_request(snac *snac, char **id, xs_str **wrk)
             }
         }
 
-        if (object)
-            timeline_request_replies(snac, object);
+        timeline_request_replies(snac, *id);
     }
 
     return status;
 }
 
 
-void timeline_request_replies(snac *user, const xs_dict *msg)
+void timeline_request_replies(snac *user, const char *id)
 /* requests all replies of a message */
 /* FIXME: experimental -- needs more testing */
 {
+    xs *msg = NULL;
+
+    if (!valid_status(object_get(id, &msg)))
+        return;
+
     /* does it have a replies collection? */
     const xs_dict *replies = xs_dict_get(msg, "replies");
 
@@ -247,7 +251,7 @@ void timeline_request_replies(snac *user, const xs_dict *msg)
                     }
                 }
                 else
-                    snac_debug(user, 0, xs_fmt("reply collection get %s %d", next, status));
+                    snac_debug(user, 0, xs_fmt("replies request error %s %d", next, status));
             }
         }
     }
