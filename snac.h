@@ -73,10 +73,10 @@ int index_len(const char *fn);
 xs_list *index_list(const char *fn, int max);
 xs_list *index_list_desc(const char *fn, int skip, int show);
 
-int object_add(const char *id, d_char *obj);
-int object_add_ow(const char *id, d_char *obj);
-int object_here_by_md5(char *id);
-int object_here(char *id);
+int object_add(const char *id, const xs_dict *obj);
+int object_add_ow(const char *id, const xs_dict *obj);
+int object_here_by_md5(const char *id);
+int object_here(const char *id);
 int object_get_by_md5(const char *md5, xs_dict **obj);
 int object_get(const char *id, xs_dict **obj);
 int object_del(const char *id);
@@ -100,7 +100,7 @@ int object_user_cache_del(snac *snac, const char *id, const char *cachedir);
 int follower_add(snac *snac, const char *actor);
 int follower_del(snac *snac, const char *actor);
 int follower_check(snac *snac, const char *actor);
-d_char *follower_list(snac *snac);
+xs_list *follower_list(snac *snac);
 
 double timeline_mtime(snac *snac);
 int timeline_touch(snac *snac);
@@ -119,7 +119,7 @@ xs_list *timeline_instance_list(int skip, int show);
 int following_add(snac *snac, const char *actor, const xs_dict *msg);
 int following_del(snac *snac, const char *actor);
 int following_check(snac *snac, const char *actor);
-int following_get(snac *snac, const char *actor, d_char **data);
+int following_get(snac *snac, const char *actor, xs_dict **data);
 xs_list *following_list(snac *snac);
 
 void mute(snac *snac, const char *actor);
@@ -132,7 +132,7 @@ int is_hidden(snac *snac, const char *id);
 int actor_add(const char *actor, xs_dict *msg);
 int actor_get(snac *snac, const char *actor, xs_dict **data);
 
-int static_get(snac *snac, const char *id, d_char **data, int *size);
+int static_get(snac *snac, const char *id, xs_val **data, int *size);
 void static_put(snac *snac, const char *id, const char *data, int size);
 void static_put_meta(snac *snac, const char *id, const char *str);
 xs_str *static_get_meta(snac *snac, const char *id);

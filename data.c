@@ -32,7 +32,7 @@ int srv_open(char *basedir, int auto_upgrade)
     int ret = 0;
     xs *cfg_file = NULL;
     FILE *f;
-    d_char *error = NULL;
+    xs_str *error = NULL;
 
     pthread_mutex_init(&data_mutex, NULL);
 
@@ -485,7 +485,7 @@ int index_len(const char *fn)
 xs_list *index_list(const char *fn, int max)
 /* returns an index as a list */
 {
-    d_char *list = NULL;
+    xs_list *list = NULL;
     FILE *f;
     int n = 0;
 
@@ -511,7 +511,7 @@ xs_list *index_list(const char *fn, int max)
 xs_list *index_list_desc(const char *fn, int skip, int show)
 /* returns an index as a list, in reverse order */
 {
-    d_char *list = NULL;
+    xs_list *list = NULL;
     FILE *f;
     int n = 0;
 
@@ -543,7 +543,7 @@ xs_list *index_list_desc(const char *fn, int skip, int show)
 
 /** objects **/
 
-d_char *_object_fn_by_md5(const char *md5)
+xs_str *_object_fn_by_md5(const char *md5)
 {
     xs *bfn = xs_fmt("%s/object/%c%c", srv_basedir, md5[0], md5[1]);
 
@@ -553,14 +553,14 @@ d_char *_object_fn_by_md5(const char *md5)
 }
 
 
-d_char *_object_fn(const char *id)
+xs_str *_object_fn(const char *id)
 {
     xs *md5 = xs_md5_hex(id, strlen(id));
     return _object_fn_by_md5(md5);
 }
 
 
-int object_here_by_md5(char *id)
+int object_here_by_md5(const char *id)
 /* checks if an object is already downloaded */
 {
     xs *fn = _object_fn_by_md5(id);
@@ -568,7 +568,7 @@ int object_here_by_md5(char *id)
 }
 
 
-int object_here(char *id)
+int object_here(const char *id)
 /* checks if an object is already downloaded */
 {
     xs *fn = _object_fn(id);
@@ -609,7 +609,7 @@ int object_get(const char *id, xs_dict **obj)
 }
 
 
-int _object_add(const char *id, d_char *obj, int ow)
+int _object_add(const char *id, const xs_dict *obj, int ow)
 /* stores an object */
 {
     int status = 201; /* Created */
@@ -666,14 +666,14 @@ int _object_add(const char *id, d_char *obj, int ow)
 }
 
 
-int object_add(const char *id, d_char *obj)
+int object_add(const char *id, const xs_dict *obj)
 /* stores an object */
 {
     return _object_add(id, obj, 0);
 }
 
 
-int object_add_ow(const char *id, d_char *obj)
+int object_add_ow(const char *id, const xs_dict *obj)
 /* stores an object (overwriting allowed) */
 {
     return _object_add(id, obj, 1);
@@ -744,10 +744,10 @@ double object_ctime(const char *id)
 }
 
 
-d_char *_object_index_fn(const char *id, const char *idxsfx)
+xs_str *_object_index_fn(const char *id, const char *idxsfx)
 /* returns the filename of an object's index */
 {
-    d_char *fn = _object_fn(id);
+    xs_str *fn = _object_fn(id);
     return xs_replace_i(fn, ".json", idxsfx);
 }
 
@@ -879,7 +879,7 @@ int object_user_cache_in(snac *snac, const char *id, const char *cachedir)
 }
 
 
-d_char *object_user_cache_list(snac *snac, const char *cachedir, int max)
+xs_list *object_user_cache_list(snac *snac, const char *cachedir, int max)
 /* returns the objects in a cache as a list */
 {
     xs *idx = xs_fmt("%s/%s.idx", snac->basedir, cachedir);
@@ -920,11 +920,11 @@ int follower_check(snac *snac, const char *actor)
 }
 
 
-d_char *follower_list(snac *snac)
+xs_list *follower_list(snac *snac)
 /* returns the list of followers */
 {
-    xs *list      = object_user_cache_list(snac, "followers", XS_ALL);
-    d_char *fwers = xs_list_new();
+    xs *list       = object_user_cache_list(snac, "followers", XS_ALL);
+    xs_list *fwers = xs_list_new();
     char *p, *v;
 
     /* resolve the list of md5 to be a list of actors */
@@ -1150,7 +1150,7 @@ xs_list *timeline_instance_list(int skip, int show)
    with a link to a cached author, because we need the Follow object
    in case we need to unfollow (Undo + original Follow) */
 
-d_char *_following_fn(snac *snac, const char *actor)
+xs_str *_following_fn(snac *snac, const char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
     return xs_fmt("%s/following/%s.json", snac->basedir, md5);
@@ -1201,7 +1201,7 @@ int following_check(snac *snac, const char *actor)
 }
 
 
-int following_get(snac *snac, const char *actor, d_char **data)
+int following_get(snac *snac, const char *actor, xs_dict **data)
 /* returns the 'Follow' object */
 {
     xs *fn = _following_fn(snac, actor);
@@ -1262,7 +1262,7 @@ xs_list *following_list(snac *snac)
 }
 
 
-d_char *_muted_fn(snac *snac, const char *actor)
+xs_str *_muted_fn(snac *snac, const char *actor)
 {
     xs *md5 = xs_md5_hex(actor, strlen(actor));
     return xs_fmt("%s/muted/%s", snac->basedir, md5);
@@ -1304,7 +1304,7 @@ int is_muted(snac *snac, const char *actor)
 }
 
 
-d_char *_hidden_fn(snac *snac, const char *id)
+xs_str *_hidden_fn(snac *snac, const char *id)
 {
     xs *md5 = xs_md5_hex(id, strlen(id));
     return xs_fmt("%s/hidden/%s", snac->basedir, md5);
@@ -1424,7 +1424,7 @@ int actor_get(snac *snac1, const char *actor, xs_dict **data)
 
 /** static data **/
 
-d_char *_static_fn(snac *snac, const char *id)
+xs_str *_static_fn(snac *snac, const char *id)
 /* gets the filename for a static file */
 {
     if (strchr(id, '/'))
@@ -1434,7 +1434,7 @@ d_char *_static_fn(snac *snac, const char *id)
 }
 
 
-int static_get(snac *snac, const char *id, d_char **data, int *size)
+int static_get(snac *snac, const char *id, xs_val **data, int *size)
 /* returns static content */
 {
     xs *fn = _static_fn(snac, id);
