@@ -1025,8 +1025,8 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
             }
             else {
                 /* poll still active */
-                xs *s1 = xs_fmt("<form class=\"snac-poll-form\" method=\"post\" "
-                                "action=\"%s/admin/vote\">\n"
+                xs *s1 = xs_fmt("<div class=\"snac-poll-form\">\n"
+                                "<form method=\"post\" action=\"%s/admin/vote\">\n"
                                 "<input type=\"hidden\" name=\"actor\" value= \"%s\">\n"
                                 "<input type=\"hidden\" name=\"irt\" value=\"%s\">\n",
                     snac->actor, actor, id);
@@ -1045,7 +1045,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                 }
 
                 xs *s2 = xs_fmt("<p><input type=\"submit\" "
-                                "class=\"button\" value=\"%s\">\n</form>\n\n", L("Vote"));
+                                "class=\"button\" value=\"%s\">\n</form>\n</div>\n\n", L("Vote"));
 
                 s1 = xs_str_cat(s1, s2);
 
