@@ -1001,7 +1001,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
             if (closed) {
                 /* closed poll */
-                c = xs_str_cat(c, "<table>\n");
+                c = xs_str_cat(c, "<table class=\"snac-poll-result\">\n");
 
                 while (xs_list_iter(&p, &v)) {
                     const char *name       = xs_dict_get(v, "name");
@@ -1025,7 +1025,8 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
             }
             else {
                 /* poll still active */
-                xs *s1 = xs_fmt("<form method=\"post\" action=\"%s/admin/vote\">\n"
+                xs *s1 = xs_fmt("<form class=\"snac-poll-form\" method=\"post\" "
+                                "action=\"%s/admin/vote\">\n"
                                 "<input type=\"hidden\" name=\"actor\" value= \"%s\">\n"
                                 "<input type=\"hidden\" name=\"irt\" value=\"%s\">\n",
                     snac->actor, actor, id);
