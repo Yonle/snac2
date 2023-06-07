@@ -143,8 +143,6 @@ int actor_request(snac *snac, const char *actor, xs_dict **data)
 }
 
 
-void timeline_request_replies(snac *user, const char *id);
-
 int timeline_request(snac *snac, char **id, xs_str **wrk)
 /* ensures that an entry and its ancestors are in the timeline */
 {
@@ -191,7 +189,7 @@ int timeline_request(snac *snac, char **id, xs_str **wrk)
             }
         }
 
-        timeline_request_replies(snac, *id);
+        enqueue_request_replies(snac, *id);
     }
 
     return status;
@@ -1679,7 +1677,14 @@ void process_user_queue_item(snac *snac, xs_dict *q_item)
             update_question(snac, id);
     }
     else
-        snac_log(snac, xs_fmt("unexpected q_item type '%s'", type));
+    if (strcmp(type, "request_replies") == 0) {
+        const char *id = xs_dict_get(q_item, "message");
+
+        if (!xs_is_null(id))
+            timeline_request_replies(snac, id);
+    }
+    else
+        snac_log(snac, xs_fmt("unexpected user q_item type '%s'", type));
 }
 
 

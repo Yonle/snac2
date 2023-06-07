@@ -165,6 +165,7 @@ void enqueue_email(xs_str *msg, int retries);
 void enqueue_telegram(const xs_str *msg, const char *bot, const char *chat_id);
 void enqueue_message(snac *snac, char *msg);
 void enqueue_close_question(snac *user, const char *id, int end_secs);
+void enqueue_request_replies(snac *user, const char *id);
 int was_question_voted(snac *user, const char *id);
 
 xs_list *user_queue(snac *snac);
@@ -213,6 +214,7 @@ xs_dict *msg_question(snac *user, const char *content, xs_list *attach,
 
 int activitypub_request(snac *snac, const char *url, xs_dict **data);
 int actor_request(snac *snac, const char *actor, xs_dict **data);
+void timeline_request_replies(snac *user, const char *id);
 int send_to_inbox_raw(const char *keyid, const char *seckey,
                   const xs_str *inbox, const xs_dict *msg,
                   xs_val **payload, int *p_size, int timeout);

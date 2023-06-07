@@ -1935,6 +1935,19 @@ void enqueue_close_question(snac *user, const char *id, int end_secs)
 }
 
 
+void enqueue_request_replies(snac *user, const char *id)
+/* enqueues a request for the replies of a message */
+{
+    xs *qmsg   = _new_qmsg("request_replies", id, 0);
+    char *ntid = xs_dict_get(qmsg, "ntid");
+    xs *fn     = xs_fmt("%s/queue/%s.json", user->basedir, ntid);
+
+    qmsg = _enqueue_put(fn, qmsg);
+
+    snac_debug(user, 0, xs_fmt("enqueue_request_replies %s", id));
+}
+
+
 int was_question_voted(snac *user, const char *id)
 /* returns true if the user voted in this poll */
 {
