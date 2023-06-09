@@ -1172,7 +1172,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
                 /* only return entries older that max_id */
                 if (max_id) {
-                    if (strcmp(v, max_id) == 0)
+                    if (strcmp(v, max_id + 10) == 0)
                         max_id = NULL;
 
                     continue;
@@ -1180,14 +1180,14 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
                 /* only returns entries newer than since_id */
                 if (since_id) {
-                    if (strcmp(v, since_id) == 0)
+                    if (strcmp(v, since_id + 10) == 0)
                         break;
                 }
 
                 /* only returns entries newer than min_id */
                 /* what does really "Return results immediately newer than ID" mean? */
                 if (min_id) {
-                    if (strcmp(v, min_id) == 0)
+                    if (strcmp(v, min_id + 10) == 0)
                         break;
                 }
 
