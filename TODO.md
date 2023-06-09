@@ -2,6 +2,10 @@
 
 ## Open
 
+Fix premature purge of actor by hardlinking the actor object inside the user `following/` subfolder.
+
+Replace weird, vestigial 'touch-by-append-spaces' in actor_get() with a more proper call to `utimes()`.
+
 Post edits should preserve the image and the image description somewhat.
 
 Implement real tag links instead of just pretending that it's something that exists.
