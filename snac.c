@@ -94,6 +94,14 @@ void srv_debug(int level, xs_str *str)
     if (dbglevel >= level) {
         xs *tm = xs_str_localtime(0, "%H:%M:%S");
         fprintf(stderr, "%s %s\n", tm, str);
+
+        /* if the ~/error/ folder exists, also write to a file there */
+        xs *lf = xs_fmt("%s/error/debug.log", srv_basedir);
+        FILE *f;
+        if ((f = fopen(lf, "a")) != NULL) {
+            fprintf(f, "%s %s\n", tm, str);
+            fclose(f);
+        }
     }
 
     xs_free(str);
