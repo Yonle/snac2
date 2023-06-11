@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.35
+
+Mastodon API: several bug fixes (contributed by Poesty).
+
 ## 2.34
 
 Polls can now be created from the web interface.
