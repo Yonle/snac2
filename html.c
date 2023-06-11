@@ -769,13 +769,11 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     if (local && !is_msg_public(snac, msg))
         return os;
 
-    xs *s = xs_str_new(NULL);
-
-    /* top wrap */
+    /* hidden? do nothing more for this conversation */
     if (is_hidden(snac, id))
-        s = xs_str_cat(s, "<div style=\"display: none\">\n");
-    else
-        s = xs_str_cat(s, "<div>\n");
+        return os;
+
+    xs *s = xs_str_new("<div>\n");
 
     {
         xs *s1 = xs_fmt("<a name=\"%s_entry\"></a>\n", md5);
