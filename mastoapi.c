@@ -1172,7 +1172,7 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
                 /* only return entries older that max_id */
                 if (max_id) {
-                    if (strcmp(v, max_id) == 0)
+                    if (strcmp(v, MID_TO_MD5(max_id)) == 0)
                         max_id = NULL;
 
                     continue;
@@ -1180,14 +1180,14 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
 
                 /* only returns entries newer than since_id */
                 if (since_id) {
-                    if (strcmp(v, since_id) == 0)
+                    if (strcmp(v, MID_TO_MD5(since_id)) == 0)
                         break;
                 }
 
                 /* only returns entries newer than min_id */
                 /* what does really "Return results immediately newer than ID" mean? */
                 if (min_id) {
-                    if (strcmp(v, min_id) == 0)
+                    if (strcmp(v, MID_TO_MD5(min_id)) == 0)
                         break;
                 }
 
@@ -1198,6 +1198,11 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 /* discard non-Notes */
                 const char *type = xs_dict_get(msg, "type");
                 if (strcmp(type, "Note") != 0 && strcmp(type, "Question") != 0)
+                    continue;
+
+                /* discard notes from people we don't follow with no boosts */
+                if (!following_check(&snac1, xs_dict_get(msg, "attributedTo")) &&
+                    object_announces_len(xs_dict_get(msg, "id")) == 0)
                     continue;
 
                 /* discard notes from muted morons */
@@ -1505,102 +1510,106 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     else
     if (xs_startswith(cmd, "/v1/statuses/")) { /** **/
         /* information about a status */
-        xs *l = xs_split(cmd, "/");
-        const char *id = xs_list_get(l, 3);
-        const char *op = xs_list_get(l, 4);
+        if (logged_in) {
+            xs *l = xs_split(cmd, "/");
+            const char *id = xs_list_get(l, 3);
+            const char *op = xs_list_get(l, 4);
 
-        if (!xs_is_null(id)) {
-            xs *msg = NULL;
-            xs *out = NULL;
+            if (!xs_is_null(id)) {
+                xs *msg = NULL;
+                xs *out = NULL;
 
-            /* skip the 'fake' part of the id */
-            id = MID_TO_MD5(id);
+                /* skip the 'fake' part of the id */
+                id = MID_TO_MD5(id);
 
-            if (valid_status(object_get_by_md5(id, &msg))) {
-                if (op == NULL) {
-                    if (!is_muted(&snac1, xs_dict_get(msg, "attributedTo"))) {
-                        /* return the status itself */
-                        out = mastoapi_status(&snac1, msg);
-                    }
-                }
-                else
-                if (strcmp(op, "context") == 0) { /** **/
-                    /* return ancestors and children */
-                    xs *anc = xs_list_new();
-                    xs *des = xs_list_new();
-                    xs_list *p;
-                    xs_str *v;
-                    char pid[64];
-
-                    /* build the [grand]parent list, moving up */
-                    strncpy(pid, id, sizeof(pid));
-
-                    while (object_parent(pid, pid, sizeof(pid))) {
-                        xs *m2 = NULL;
-
-                        if (valid_status(timeline_get_by_md5(&snac1, pid, &m2))) {
-                            xs *st = mastoapi_status(&snac1, m2);
-                            anc = xs_list_insert(anc, 0, st);
+                if (valid_status(object_get_by_md5(id, &msg))) {
+                    if (op == NULL) {
+                        if (!is_muted(&snac1, xs_dict_get(msg, "attributedTo"))) {
+                            /* return the status itself */
+                            out = mastoapi_status(&snac1, msg);
                         }
-                        else
-                            break;
                     }
+                    else
+                    if (strcmp(op, "context") == 0) { /** **/
+                        /* return ancestors and children */
+                        xs *anc = xs_list_new();
+                        xs *des = xs_list_new();
+                        xs_list *p;
+                        xs_str *v;
+                        char pid[64];
 
-                    /* build the children list */
-                    xs *children = object_children(xs_dict_get(msg, "id"));
-                    p = children;
+                        /* build the [grand]parent list, moving up */
+                        strncpy(pid, id, sizeof(pid));
 
-                    while (xs_list_iter(&p, &v)) {
-                        xs *m2 = NULL;
+                        while (object_parent(pid, pid, sizeof(pid))) {
+                            xs *m2 = NULL;
 
-                        if (valid_status(timeline_get_by_md5(&snac1, v, &m2))) {
-                            if (xs_is_null(xs_dict_get(m2, "name"))) {
+                            if (valid_status(timeline_get_by_md5(&snac1, pid, &m2))) {
                                 xs *st = mastoapi_status(&snac1, m2);
-                                des = xs_list_append(des, st);
+                                anc = xs_list_insert(anc, 0, st);
+                            }
+                            else
+                                break;
+                        }
+
+                        /* build the children list */
+                        xs *children = object_children(xs_dict_get(msg, "id"));
+                        p = children;
+
+                        while (xs_list_iter(&p, &v)) {
+                            xs *m2 = NULL;
+
+                            if (valid_status(timeline_get_by_md5(&snac1, v, &m2))) {
+                                if (xs_is_null(xs_dict_get(m2, "name"))) {
+                                    xs *st = mastoapi_status(&snac1, m2);
+                                    des = xs_list_append(des, st);
+                                }
+                            }
+                        }
+
+                        out = xs_dict_new();
+                        out = xs_dict_append(out, "ancestors",   anc);
+                        out = xs_dict_append(out, "descendants", des);
+                    }
+                    else
+                    if (strcmp(op, "reblogged_by") == 0 || /** **/
+                        strcmp(op, "favourited_by") == 0) { /** **/
+                        /* return the list of people who liked or boosted this */
+                        out = xs_list_new();
+
+                        xs *l = NULL;
+
+                        if (op[0] == 'r')
+                            l = object_announces(xs_dict_get(msg, "id"));
+                        else
+                            l = object_likes(xs_dict_get(msg, "id"));
+
+                        xs_list *p = l;
+                        xs_str *v;
+
+                        while (xs_list_iter(&p, &v)) {
+                            xs *actor2 = NULL;
+
+                            if (valid_status(object_get_by_md5(v, &actor2))) {
+                                xs *acct2 = mastoapi_account(actor2);
+
+                                out = xs_list_append(out, acct2);
                             }
                         }
                     }
-
-                    out = xs_dict_new();
-                    out = xs_dict_append(out, "ancestors",   anc);
-                    out = xs_dict_append(out, "descendants", des);
                 }
                 else
-                if (strcmp(op, "reblogged_by") == 0 || /** **/
-                    strcmp(op, "favourited_by") == 0) { /** **/
-                    /* return the list of people who liked or boosted this */
-                    out = xs_list_new();
+                    srv_debug(1, xs_fmt("mastoapi status: bad id %s", id));
 
-                    xs *l = NULL;
-
-                    if (op[0] == 'r')
-                        l = object_announces(xs_dict_get(msg, "id"));
-                    else
-                        l = object_likes(xs_dict_get(msg, "id"));
-
-                    xs_list *p = l;
-                    xs_str *v;
-
-                    while (xs_list_iter(&p, &v)) {
-                        xs *actor2 = NULL;
-
-                        if (valid_status(object_get_by_md5(v, &actor2))) {
-                            xs *acct2 = mastoapi_account(actor2);
-
-                            out = xs_list_append(out, acct2);
-                        }
-                    }
+                if (out != NULL) {
+                    *body  = xs_json_dumps_pp(out, 4);
+                    *ctype = "application/json";
+                    status = 200;
                 }
             }
-            else
-                srv_debug(1, xs_fmt("mastoapi status: bad id %s", id));
-
-            if (out != NULL) {
-                *body  = xs_json_dumps_pp(out, 4);
-                *ctype = "application/json";
-                status = 200;
-            }
         }
+        else
+            status = 401;
     }
     else
     if (strcmp(cmd, "/v1/preferences") == 0) { /** **/
@@ -1622,43 +1631,47 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (strcmp(cmd, "/v2/search") == 0) { /** **/
-        const char *q      = xs_dict_get(args, "q");
-        const char *type   = xs_dict_get(args, "type");
-        const char *offset = xs_dict_get(args, "offset");
+        if (logged_in) {
+            const char *q      = xs_dict_get(args, "q");
+            const char *type   = xs_dict_get(args, "type");
+            const char *offset = xs_dict_get(args, "offset");
 
-        xs *acl = xs_list_new();
-        xs *stl = xs_list_new();
-        xs *htl = xs_list_new();
-        xs *res = xs_dict_new();
+            xs *acl = xs_list_new();
+            xs *stl = xs_list_new();
+            xs *htl = xs_list_new();
+            xs *res = xs_dict_new();
 
-        if (xs_is_null(offset) || strcmp(offset, "0") == 0) {
-            /* reply something only for offset 0; otherwise,
-               apps like Tusky keep asking again and again */
+            if (xs_is_null(offset) || strcmp(offset, "0") == 0) {
+                /* reply something only for offset 0; otherwise,
+                   apps like Tusky keep asking again and again */
 
-            if (!xs_is_null(q) && !xs_is_null(type) && strcmp(type, "accounts") == 0) {
-                /* do a webfinger query */
-                char *actor = NULL;
-                char *user  = NULL;
+                if (!xs_is_null(q) && !xs_is_null(type) && strcmp(type, "accounts") == 0) {
+                    /* do a webfinger query */
+                    char *actor = NULL;
+                    char *user  = NULL;
 
-                if (valid_status(webfinger_request(q, &actor, &user))) {
-                    xs *actor_o = NULL;
+                    if (valid_status(webfinger_request(q, &actor, &user))) {
+                        xs *actor_o = NULL;
 
-                    if (valid_status(actor_request(&snac1, actor, &actor_o))) {
-                        xs *acct = mastoapi_account(actor_o);
+                        if (valid_status(actor_request(&snac1, actor, &actor_o))) {
+                            xs *acct = mastoapi_account(actor_o);
 
-                        acl = xs_list_append(acl, acct);
+                            acl = xs_list_append(acl, acct);
+                        }
                     }
                 }
             }
+
+            res = xs_dict_append(res, "accounts", acl);
+            res = xs_dict_append(res, "statuses", stl);
+            res = xs_dict_append(res, "hashtags", htl);
+
+            *body  = xs_json_dumps_pp(res, 4);
+            *ctype = "application/json";
+            status = 200;
         }
-
-        res = xs_dict_append(res, "accounts", acl);
-        res = xs_dict_append(res, "statuses", stl);
-        res = xs_dict_append(res, "hashtags", htl);
-
-        *body  = xs_json_dumps_pp(res, 4);
-        *ctype = "application/json";
-        status = 200;
+        else
+            status = 401;
     }
 
     /* user cleanup */
