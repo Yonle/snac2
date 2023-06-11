@@ -522,6 +522,11 @@ xs_dict *mastoapi_account(const xs_dict *actor)
     if (xs_is_null(note))
         note = "";
 
+    if (strcmp(xs_dict_get(actor, "type"), "Service") == 0)
+        acct = xs_dict_append(acct, "bot", "true");
+    else
+        acct = xs_dict_append(acct, "bot", "false");
+
     acct = xs_dict_append(acct, "note", note);
 
     acct = xs_dict_append(acct, "url", id);
