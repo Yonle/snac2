@@ -2,6 +2,8 @@
 
 ## 2.35
 
+There is new a user configuration setup checkbox to mark an account as a bot.
+
 Mastodon API: several bug fixes (contributed by Poesty).
 
 ## 2.34
