@@ -1510,102 +1510,106 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
     else
     if (xs_startswith(cmd, "/v1/statuses/")) { /** **/
         /* information about a status */
-        xs *l = xs_split(cmd, "/");
-        const char *id = xs_list_get(l, 3);
-        const char *op = xs_list_get(l, 4);
+        if (logged_in) {
+            xs *l = xs_split(cmd, "/");
+            const char *id = xs_list_get(l, 3);
+            const char *op = xs_list_get(l, 4);
 
-        if (!xs_is_null(id)) {
-            xs *msg = NULL;
-            xs *out = NULL;
+            if (!xs_is_null(id)) {
+                xs *msg = NULL;
+                xs *out = NULL;
 
-            /* skip the 'fake' part of the id */
-            id = MID_TO_MD5(id);
+                /* skip the 'fake' part of the id */
+                id = MID_TO_MD5(id);
 
-            if (valid_status(object_get_by_md5(id, &msg))) {
-                if (op == NULL) {
-                    if (!is_muted(&snac1, xs_dict_get(msg, "attributedTo"))) {
-                        /* return the status itself */
-                        out = mastoapi_status(&snac1, msg);
-                    }
-                }
-                else
-                if (strcmp(op, "context") == 0) { /** **/
-                    /* return ancestors and children */
-                    xs *anc = xs_list_new();
-                    xs *des = xs_list_new();
-                    xs_list *p;
-                    xs_str *v;
-                    char pid[64];
-
-                    /* build the [grand]parent list, moving up */
-                    strncpy(pid, id, sizeof(pid));
-
-                    while (object_parent(pid, pid, sizeof(pid))) {
-                        xs *m2 = NULL;
-
-                        if (valid_status(timeline_get_by_md5(&snac1, pid, &m2))) {
-                            xs *st = mastoapi_status(&snac1, m2);
-                            anc = xs_list_insert(anc, 0, st);
+                if (valid_status(object_get_by_md5(id, &msg))) {
+                    if (op == NULL) {
+                        if (!is_muted(&snac1, xs_dict_get(msg, "attributedTo"))) {
+                            /* return the status itself */
+                            out = mastoapi_status(&snac1, msg);
                         }
-                        else
-                            break;
                     }
+                    else
+                    if (strcmp(op, "context") == 0) { /** **/
+                        /* return ancestors and children */
+                        xs *anc = xs_list_new();
+                        xs *des = xs_list_new();
+                        xs_list *p;
+                        xs_str *v;
+                        char pid[64];
 
-                    /* build the children list */
-                    xs *children = object_children(xs_dict_get(msg, "id"));
-                    p = children;
+                        /* build the [grand]parent list, moving up */
+                        strncpy(pid, id, sizeof(pid));
 
-                    while (xs_list_iter(&p, &v)) {
-                        xs *m2 = NULL;
+                        while (object_parent(pid, pid, sizeof(pid))) {
+                            xs *m2 = NULL;
 
-                        if (valid_status(timeline_get_by_md5(&snac1, v, &m2))) {
-                            if (xs_is_null(xs_dict_get(m2, "name"))) {
+                            if (valid_status(timeline_get_by_md5(&snac1, pid, &m2))) {
                                 xs *st = mastoapi_status(&snac1, m2);
-                                des = xs_list_append(des, st);
+                                anc = xs_list_insert(anc, 0, st);
+                            }
+                            else
+                                break;
+                        }
+
+                        /* build the children list */
+                        xs *children = object_children(xs_dict_get(msg, "id"));
+                        p = children;
+
+                        while (xs_list_iter(&p, &v)) {
+                            xs *m2 = NULL;
+
+                            if (valid_status(timeline_get_by_md5(&snac1, v, &m2))) {
+                                if (xs_is_null(xs_dict_get(m2, "name"))) {
+                                    xs *st = mastoapi_status(&snac1, m2);
+                                    des = xs_list_append(des, st);
+                                }
+                            }
+                        }
+
+                        out = xs_dict_new();
+                        out = xs_dict_append(out, "ancestors",   anc);
+                        out = xs_dict_append(out, "descendants", des);
+                    }
+                    else
+                    if (strcmp(op, "reblogged_by") == 0 || /** **/
+                        strcmp(op, "favourited_by") == 0) { /** **/
+                        /* return the list of people who liked or boosted this */
+                        out = xs_list_new();
+
+                        xs *l = NULL;
+
+                        if (op[0] == 'r')
+                            l = object_announces(xs_dict_get(msg, "id"));
+                        else
+                            l = object_likes(xs_dict_get(msg, "id"));
+
+                        xs_list *p = l;
+                        xs_str *v;
+
+                        while (xs_list_iter(&p, &v)) {
+                            xs *actor2 = NULL;
+
+                            if (valid_status(object_get_by_md5(v, &actor2))) {
+                                xs *acct2 = mastoapi_account(actor2);
+
+                                out = xs_list_append(out, acct2);
                             }
                         }
                     }
-
-                    out = xs_dict_new();
-                    out = xs_dict_append(out, "ancestors",   anc);
-                    out = xs_dict_append(out, "descendants", des);
                 }
                 else
-                if (strcmp(op, "reblogged_by") == 0 || /** **/
-                    strcmp(op, "favourited_by") == 0) { /** **/
-                    /* return the list of people who liked or boosted this */
-                    out = xs_list_new();
+                    srv_debug(1, xs_fmt("mastoapi status: bad id %s", id));
 
-                    xs *l = NULL;
-
-                    if (op[0] == 'r')
-                        l = object_announces(xs_dict_get(msg, "id"));
-                    else
-                        l = object_likes(xs_dict_get(msg, "id"));
-
-                    xs_list *p = l;
-                    xs_str *v;
-
-                    while (xs_list_iter(&p, &v)) {
-                        xs *actor2 = NULL;
-
-                        if (valid_status(object_get_by_md5(v, &actor2))) {
-                            xs *acct2 = mastoapi_account(actor2);
-
-                            out = xs_list_append(out, acct2);
-                        }
-                    }
+                if (out != NULL) {
+                    *body  = xs_json_dumps_pp(out, 4);
+                    *ctype = "application/json";
+                    status = 200;
                 }
             }
-            else
-                srv_debug(1, xs_fmt("mastoapi status: bad id %s", id));
-
-            if (out != NULL) {
-                *body  = xs_json_dumps_pp(out, 4);
-                *ctype = "application/json";
-                status = 200;
-            }
         }
+        else
+            status = 401;
     }
     else
     if (strcmp(cmd, "/v1/preferences") == 0) { /** **/
