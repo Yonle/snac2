@@ -205,7 +205,7 @@ void timeline_request_replies(snac *user, const char *id)
        do not have an inReplyTo field (why??? aren't they 'replies'???).
        For this reason, these requested objects are not stored as children
        of the original post and they are shown as out-of-context, top level posts.
-       This is disabled until I find an elegant way of providing a parent
+       This process is disabled until I find an elegant way of providing a parent
        for these 'stray' children. */
     return;
 
