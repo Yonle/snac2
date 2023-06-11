@@ -383,11 +383,15 @@ int is_msg_for_me(snac *snac, const xs_dict *c_msg)
 {
     const char *type = xs_dict_get(c_msg, "type");
 
-    if (strcmp(type, "Announce") == 0) {
+    if (strcmp(type, "Like") == 0 || strcmp(type, "Announce") == 0) {
         const char *object = xs_dict_get(c_msg, "object");
 
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
+
+        /* bad object id? reject */
+        if (xs_type(object) != XSTYPE_STRING)
+            return 0;
 
         /* if it's about one of our posts, accept it */
         if (xs_startswith(object, snac->actor))
