@@ -2,6 +2,8 @@
 
 ## Open
 
+Fix `timeline_request_replies()` issues (more info there).
+
 Fix premature purge of actor by hardlinking the actor object inside the user `following/` subfolder.
 
 Replace weird, vestigial 'touch-by-append-spaces' in actor_get() with a more proper call to `utimes()`.

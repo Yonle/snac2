@@ -200,6 +200,15 @@ void timeline_request_replies(snac *user, const char *id)
 /* requests all replies of a message */
 /* FIXME: experimental -- needs more testing */
 {
+    /* FIXME: TEMPORARILY DISABLED */
+    /* Reason: I've found that many of the posts in the 'replies' Collection
+       do not have an inReplyTo field (why??? aren't they 'replies'???).
+       For this reason, these requested objects are not stored as children
+       of the original post and they are shown as out-of-context, top level posts.
+       This is disabled until I find an elegant way of providing a parent
+       for these 'stray' children. */
+    return;
+
     xs *msg = NULL;
 
     if (!valid_status(object_get(id, &msg)))
