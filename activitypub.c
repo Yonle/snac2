@@ -230,12 +230,12 @@ void timeline_request_replies(snac *user, const char *id)
                         while (xs_list_iter(&items, &v)) {
                             if (xs_type(v) == XSTYPE_DICT) {
                                 /* not an id, but the object itself (!) */
-                                const char *id = xs_dict_get(v, "id");
+                                const char *c_id = xs_dict_get(v, "id");
 
                                 if (!xs_is_null(id)) {
-                                    snac_debug(user, 0, xs_fmt("embedded reply %s", id));
+                                    snac_debug(user, 0, xs_fmt("embedded reply %s", c_id));
 
-                                    object_add(id, v);
+                                    object_add(c_id, v);
 
                                     /* get its own children */
                                     timeline_request_replies(user, v);
