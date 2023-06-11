@@ -497,9 +497,11 @@ xs_dict *mastoapi_account(const xs_dict *actor)
         display_name = prefu;
 
     const char *id  = xs_dict_get(actor, "id");
+    const char *type  = xs_dict_get(actor, "type");
     const char *pub = xs_dict_get(actor, "published");
     xs *acct_md5 = xs_md5_hex(id, strlen(id));
     acct = xs_dict_append(acct, "id",           acct_md5);
+    acct = xs_dict_append(acct, "type",         type);
     acct = xs_dict_append(acct, "username",     prefu);
     acct = xs_dict_append(acct, "display_name", display_name);
 
