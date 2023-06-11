@@ -443,6 +443,9 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<p><input type=\"checkbox\" name=\"drop_dm_from_unknown\" id=\"drop_dm_from_unknown\" %s>\n"
         "<label for=\"drop_dm_from_unknown\">%s</label></p>\n"
 
+        "<p><input type=\"checkbox\" name=\"bot\" id=\"bot\" %s>\n"
+        "<label for=\"bot\">%s</label></p>\n"
+
         "<p>%s:<br>\n"
         "<input type=\"password\" name=\"passwd1\" value=\"\"></p>\n"
 
@@ -490,6 +493,8 @@ d_char *html_top_controls(snac *snac, d_char *s)
 
     const char *d_dm_f_u = xs_dict_get(snac->config, "drop_dm_from_unknown");
 
+    const char *bot = xs_dict_get(snac->config, "bot");
+
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
         L("Sensitive content"),
@@ -535,6 +540,8 @@ d_char *html_top_controls(snac *snac, d_char *s)
         purge_days,
         xs_type(d_dm_f_u) == XSTYPE_TRUE ? "checked" : "",
         L("Drop direct messages from people you don't follow"),
+        xs_type(bot) == XSTYPE_TRUE ? "checked" : "",
+        L("This account is a bot"),
         L("Password (only to change it)"),
         L("Repeat Password"),
         L("Update user info")
@@ -2044,6 +2051,10 @@ int html_post_handler(const xs_dict *req, const char *q_path,
             snac.config = xs_dict_set(snac.config, "drop_dm_from_unknown", byes);
         else
             snac.config = xs_dict_set(snac.config, "drop_dm_from_unknown", bno);
+        if ((v = xs_dict_get(p_vars, "bot")) != NULL && strcmp(v, "on") == 0)
+            snac.config = xs_dict_set(snac.config, "bot", byes);
+        else
+            snac.config = xs_dict_set(snac.config, "bot", bno);
 
         /* avatar upload */
         xs_list *avatar_file = xs_dict_get(p_vars, "avatar_file");
