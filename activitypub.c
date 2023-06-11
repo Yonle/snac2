@@ -1479,6 +1479,12 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
 
+        if (xs_type(object) != XSTYPE_STRING) {
+            snac_log(snac, xs_fmt("malformed 'Like' from %s", actor));
+            srv_archive_error("malformed_message", "Bad 'Like'", req, msg);
+            return 1;
+        }
+
         timeline_admire(snac, object, actor, 1);
         snac_log(snac, xs_fmt("new 'Like' %s %s", actor, object));
         do_notify = 1;
