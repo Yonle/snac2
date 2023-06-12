@@ -73,7 +73,8 @@ static xs_str *format_line(const char *line, xs_list **attach)
             }
             else
             if (xs_startswith(v, "http")) {
-                xs *v2 = xs_strip_chars_i(xs_dup(v), ".");
+                xs *u  = xs_replace(v, "#", "&#35;");
+                xs *v2 = xs_strip_chars_i(xs_dup(u), ".");
 
                 const char *mime = xs_mime_by_ext(v2);
 
@@ -89,7 +90,7 @@ static xs_str *format_line(const char *line, xs_list **attach)
                     *attach = xs_list_append(*attach, d);
                 }
                 else {
-                    xs *s1 = xs_fmt("<a href=\"%s\" target=\"_blank\">%s</a>", v2, v);
+                    xs *s1 = xs_fmt("<a href=\"%s\" target=\"_blank\">%s</a>", v2, u);
                     s = xs_str_cat(s, s1);
                 }
             }
