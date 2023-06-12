@@ -2,6 +2,8 @@
 
 ## Open
 
+Fix broken links that contain # (https://codeberg.org/grunfink/snac2/issues/47#issuecomment-937014).
+
 Fix `timeline_request_replies()` issues (more info there).
 
 Fix premature purge of actor by hardlinking the actor object inside the user `following/` subfolder.
