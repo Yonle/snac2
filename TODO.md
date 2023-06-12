@@ -2,8 +2,6 @@
 
 ## Open
 
-Fix broken links that contain # (https://codeberg.org/grunfink/snac2/issues/47#issuecomment-937014).
-
 Fix `timeline_request_replies()` issues (more info there).
 
 Fix premature purge of actor by hardlinking the actor object inside the user `following/` subfolder.
@@ -251,3 +249,5 @@ Mastodon API: implement 'unreblog' (unboost) (2023-05-19T21:25:24+0200).
 Do something with @mentions without host; complete with followed people, or with local users. Or just do nothing. I'm not sure (2023-05-21T20:19:15+0200).
 
 Add (back) the possibility to attach an image by URL (2023-05-21T20:35:39+0200).
+
+Fix broken links that contain # (https://codeberg.org/grunfink/snac2/issues/47#issuecomment-937014) (2023-06-12T19:03:45+0200).
