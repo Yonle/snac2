@@ -548,6 +548,9 @@ xs_dict *mastoapi_account(const xs_dict *actor)
     if (xs_type(hd) == XSTYPE_DICT)
         header = xs_dup(xs_dict_get(hd, "url"));
 
+    if (xs_is_null(header))
+        header = xs_dup("");
+
     acct = xs_dict_append(acct, "header", header);
     acct = xs_dict_append(acct, "header_static", header);
 
