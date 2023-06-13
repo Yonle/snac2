@@ -4,6 +4,8 @@
 
 Fixed URL links with the # symbol on them.
 
+When sanitizing HTML input, unsupported tags are deleted instead of escaped.
+
 There is new a user configuration setup checkbox to mark an account as a bot.
 
 Mastodon API: several bug fixes (contributed by Poesty), improved account object (contributed by Haijo7).
