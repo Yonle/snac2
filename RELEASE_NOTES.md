@@ -8,6 +8,8 @@ When sanitizing HTML input, unsupported tags are deleted instead of escaped.
 
 There is new a user configuration setup checkbox to mark an account as a bot.
 
+Fixed crash on missing headers while checking signatures.
+
 Mastodon API: several bug fixes (contributed by Poesty), improved account object (contributed by Haijo7).
 
 ## 2.34
