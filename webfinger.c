@@ -7,7 +7,7 @@
 
 #include "snac.h"
 
-int webfinger_request(const char *qs, char **actor, char **user)
+int webfinger_request_signed(snac *snac, const char *qs, char **actor, char **user)
 /* queries the webfinger for qs and fills the required fields */
 {
     int status;
@@ -61,7 +61,10 @@ int webfinger_request(const char *qs, char **actor, char **user)
     else {
         xs *url = xs_fmt("https:/" "/%s/.well-known/webfinger?resource=%s", host, resource);
 
-        xs_http_request("GET", url, headers, NULL, 0, &status, &payload, &p_size, 0);
+        if (snac == NULL)
+            xs_http_request("GET", url, headers, NULL, 0, &status, &payload, &p_size, 0);
+        else
+            http_signed_request(snac, "GET", url, headers, NULL, 0, &status, &payload, &p_size, 0);
     }
 
     if (valid_status(status)) {
@@ -93,6 +96,13 @@ int webfinger_request(const char *qs, char **actor, char **user)
     }
 
     return status;
+}
+
+
+int webfinger_request(const char *qs, char **actor, char **user)
+/* queries the webfinger for qs and fills the required fields */
+{
+    return webfinger_request_signed(NULL, qs, actor, user);
 }
 
 

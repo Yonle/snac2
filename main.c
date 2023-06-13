@@ -16,20 +16,21 @@ int usage(void)
     printf("\n");
     printf("Commands:\n");
     printf("\n");
-    printf("init [{basedir}]                 Initializes the data storage\n");
-    printf("upgrade {basedir}                Upgrade to a new version\n");
-    printf("adduser {basedir} [{uid}]        Adds a new user\n");
-    printf("httpd {basedir}                  Starts the HTTPD daemon\n");
-    printf("purge {basedir}                  Purges old data\n");
-    printf("webfinger {basedir} {user}       Queries about a @user@host or actor\n");
-    printf("queue {basedir} {uid}            Processes a user queue\n");
-    printf("follow {basedir} {uid} {actor}   Follows an actor\n");
-    printf("unfollow {basedir} {uid} {actor} Unfollows an actor\n");
-    printf("request {basedir} {uid} {url}    Requests an object\n");
-    printf("actor {basedir} {uid} {url}      Requests an actor\n");
-    printf("note {basedir} {uid} {'text'}    Sends a note to followers\n");
-    printf("resetpwd {basedir} {uid}         Resets the password of a user\n");
-    printf("ping {basedir} {uid} {actor}     Pings an actor\n");
+    printf("init [{basedir}]                    Initializes the data storage\n");
+    printf("upgrade {basedir}                   Upgrade to a new version\n");
+    printf("adduser {basedir} [{uid}]           Adds a new user\n");
+    printf("httpd {basedir}                     Starts the HTTPD daemon\n");
+    printf("purge {basedir}                     Purges old data\n");
+    printf("webfinger {basedir} {actor}         Queries about an actor (@user@host or actor url)\n");
+    printf("queue {basedir} {uid}               Processes a user queue\n");
+    printf("follow {basedir} {uid} {actor}      Follows an actor\n");
+    printf("unfollow {basedir} {uid} {actor}    Unfollows an actor\n");
+    printf("request {basedir} {uid} {url}       Requests an object\n");
+    printf("actor {basedir} {uid} {url}         Requests an actor\n");
+    printf("note {basedir} {uid} {'text'}       Sends a note to followers\n");
+    printf("resetpwd {basedir} {uid}            Resets the password of a user\n");
+    printf("ping {basedir} {uid} {actor}        Pings an actor\n");
+    printf("webfinger_s {basedir} {uid} {actor} Queries about an actor (@user@host or actor url)\n");
 /*    printf("question {basedir} {uid} 'opts'  Generates a poll (;-separated opts)\n");*/
 
     return 1;
@@ -178,6 +179,22 @@ int main(int argc, char *argv[])
 
     if ((url = GET_ARGV()) == NULL)
         return usage();
+
+    if (strcmp(cmd, "webfinger_s") == 0) { /** **/
+        xs *actor = NULL;
+        xs *uid = NULL;
+        int status;
+
+        status = webfinger_request_signed(&snac, url, &actor, &uid);
+
+        printf("status: %d\n", status);
+        if (actor != NULL)
+            printf("actor: %s\n", actor);
+        if (uid != NULL)
+            printf("uid: %s\n", uid);
+
+        return 0;
+    }
 
     if (strcmp(cmd, "announce") == 0) { /** **/
         xs *msg = msg_admiration(&snac, url, "Announce");
@@ -352,5 +369,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    return 0;
+    fprintf(stderr, "ERROR: bad command '%s'\n", cmd);
+
+    return 1;
 }

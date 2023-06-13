@@ -191,6 +191,7 @@ int check_signature(snac *snac, xs_dict *req, xs_str **err);
 
 void httpd(void);
 
+int webfinger_request_signed(snac *snac, const char *qs, char **actor, char **user);
 int webfinger_request(const char *qs, char **actor, char **user);
 int webfinger_get_handler(xs_dict *req, char *q_path,
                           char **body, int *b_size, char **ctype);
