@@ -132,6 +132,11 @@ int check_signature(snac *snac, xs_dict *req, xs_str **err)
     char *pubkey;
     char *p;
 
+    if (xs_is_null(sig_hdr)) {
+        *err = xs_fmt("missing 'signature' header");
+        return 0;
+    }
+
     {
         /* extract the values */
         xs *l = xs_split(sig_hdr, ",");
