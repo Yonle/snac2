@@ -26,7 +26,7 @@ This is not the manual; man pages `snac(1)` (user manual), `snac(5)` (formats) a
 
 ## Building and installation
 
-This program is written in highly portable ANSI C. The only external dependencies are `openssl` and `curl`.
+This program is written in highly portable C. The only external dependencies are `openssl` and `curl`.
 
 On Debian/Ubuntu, you can satisfy these requirements by running
 
