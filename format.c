@@ -186,7 +186,7 @@ xs_str *not_really_markdown(const char *content, xs_list **attach)
 
 
 const char *valid_tags[] = {
-    "a", "p", "br", "br/", "blockquote", "ul", "li", "cite",
+    "a", "p", "br", "br/", "blockquote", "ul", "ol", "li", "cite",
     "span", "i", "b", "u", "pre", "code", "em", "strong", NULL
 };
 
