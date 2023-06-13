@@ -224,13 +224,9 @@ xs_str *sanitize(const char *content)
 
                 s2 = xs_fmt("<%s%s%s%s>",
                     v[1] == '/' ? "/" : "", tag, xs_list_len(el) ? " " : "", s3);
-            }
-            else {
-                /* bad tag: escape it */
-                s2 = xs_replace(v, "<", "&lt;");
-            }
 
-            s = xs_str_cat(s, s2);
+                s = xs_str_cat(s, s2);
+            }
         }
         else {
             /* non-tag */
