@@ -1407,13 +1407,9 @@ int actor_get(snac *snac1, const char *actor, xs_dict **data)
 
     if (mtime(fn) + max_time < (double) time(NULL)) {
         /* actor data exists but also stinks */
-        FILE *f;
 
-        if ((f = fopen(fn, "a")) != NULL) {
-            /* write a blank at the end to 'touch' the file */
-            fwrite(" ", 1, 1, f);
-            fclose(f);
-        }
+        /* touch the file */
+        utimes(fn, NULL);
 
         status = 205; /* "205: Reset Content" "110: Response Is Stale" */
     }
