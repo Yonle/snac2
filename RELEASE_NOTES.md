@@ -6,6 +6,8 @@ Fixed broken URL links with the # symbol on them.
 
 Fixed people-being-followed data loss after not logging in for a long time (actor objects were purged too soon).
 
+Fixed bug that made impossible to vote on polls that were replied to.
+
 Don't show 'ghost' no-longer-followers in the people list.
 
 When sanitizing HTML input, unsupported tags are deleted instead of escaped.
