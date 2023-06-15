@@ -132,8 +132,17 @@ int xs_is_hex(const char *str);
 #define XS_ASSERT_TYPE_NULL(v, t) (void)(0)
 #endif
 
+extern xs_val xs_stock_null[];
+extern xs_val xs_stock_true[];
+extern xs_val xs_stock_false[];
+
 
 #ifdef XS_IMPLEMENTATION
+
+xs_val xs_stock_null[]  = { XSTYPE_NULL };
+xs_val xs_stock_true[]  = { XSTYPE_TRUE };
+xs_val xs_stock_false[] = { XSTYPE_FALSE };
+
 
 void *_xs_realloc(void *ptr, size_t size, const char *file, int line, const char *func)
 {
