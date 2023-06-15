@@ -1174,7 +1174,7 @@ int following_add(snac *snac, const char *actor, const xs_dict *msg)
         xs *actor_fn = _object_fn(actor);
 
         /* increase its reference count */
-        fn = xs_replace_i(fn, ".json", "");
+        fn = xs_replace_i(fn, ".json", "_a.json");
         link(actor_fn, fn);
     }
     else
@@ -1196,7 +1196,7 @@ int following_del(snac *snac, const char *actor)
     unlink(fn);
 
     /* also delete the reference to the author */
-    fn = xs_replace_i(fn, ".json", "");
+    fn = xs_replace_i(fn, ".json", "_a.json");
     unlink(fn);
 
     return 200;
@@ -1265,7 +1265,7 @@ xs_list *following_list(snac *snac)
                             list = xs_list_append(list, actor);
 
                             /* check if there is a link to the actor object */
-                            xs *v2 = xs_replace(v, ".json", "");
+                            xs *v2 = xs_replace(v, ".json", "_a.json");
 
                             if (mtime(v2) == 0.0) {
                                 /* no; add a link to it */
