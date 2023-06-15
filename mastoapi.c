@@ -523,9 +523,9 @@ xs_dict *mastoapi_account(const xs_dict *actor)
         note = "";
 
     if (strcmp(xs_dict_get(actor, "type"), "Service") == 0)
-        acct = xs_dict_append(acct, "bot", "true");
+        acct = xs_dict_append(acct, "bot", xs_stock_true);
     else
-        acct = xs_dict_append(acct, "bot", "false");
+        acct = xs_dict_append(acct, "bot", xs_stock_false);
 
     acct = xs_dict_append(acct, "note", note);
 
@@ -559,7 +559,6 @@ xs_dict *mastoapi_account(const xs_dict *actor)
     if (!xs_is_null(p = xs_dict_get(actor, "tag"))) {
         xs *eml = xs_list_new();
         xs_dict *v;
-        xs *t = xs_val_new(XSTYPE_TRUE);
 
         while (xs_list_iter(&p, &v)) {
             const char *type = xs_dict_get(v, "type");
@@ -578,7 +577,7 @@ xs_dict *mastoapi_account(const xs_dict *actor)
                         d1 = xs_dict_append(d1, "shortcode",         nm);
                         d1 = xs_dict_append(d1, "url",               url);
                         d1 = xs_dict_append(d1, "static_url",        url);
-                        d1 = xs_dict_append(d1, "visible_in_picker", t);
+                        d1 = xs_dict_append(d1, "visible_in_picker", xs_stock_true);
 
                         eml = xs_list_append(eml, d1);
                     }
@@ -598,8 +597,6 @@ xs_dict *mastoapi_poll(snac *snac, const xs_dict *msg)
 {
     xs_dict *poll = xs_dict_new();
     xs *mid       = mastoapi_id(msg);
-    xs *f         = xs_val_new(XSTYPE_FALSE);
-    xs *t         = xs_val_new(XSTYPE_TRUE);
     xs_list *opts = NULL;
     xs_val *v;
     int num_votes = 0;
@@ -607,13 +604,14 @@ xs_dict *mastoapi_poll(snac *snac, const xs_dict *msg)
 
     poll = xs_dict_append(poll, "id", mid);
     poll = xs_dict_append(poll, "expires_at", xs_dict_get(msg, "endTime"));
-    poll = xs_dict_append(poll, "expired", xs_dict_get(msg, "closed") != NULL ? t : f);
+    poll = xs_dict_append(poll, "expired",
+            xs_dict_get(msg, "closed") != NULL ? xs_stock_true : xs_stock_false);
 
     if ((opts = xs_dict_get(msg, "oneOf")) != NULL)
-        poll = xs_dict_append(poll, "multiple", f);
+        poll = xs_dict_append(poll, "multiple", xs_stock_false);
     else {
         opts = xs_dict_get(msg, "anyOf");
-        poll = xs_dict_append(poll, "multiple", t);
+        poll = xs_dict_append(poll, "multiple", xs_stock_true);
     }
 
     while (xs_list_iter(&opts, &v)) {
@@ -639,7 +637,7 @@ xs_dict *mastoapi_poll(snac *snac, const xs_dict *msg)
     poll = xs_dict_append(poll, "votes_count", vc);
 
     poll = xs_dict_append(poll, "voted",
-            was_question_voted(snac, xs_dict_get(msg, "id")) ? t : f);
+            was_question_voted(snac, xs_dict_get(msg, "id")) ? xs_stock_true : xs_stock_false);
 
     return poll;
 }
@@ -660,9 +658,6 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 
     xs *acct = mastoapi_account(actor);
 
-    xs *f   = xs_val_new(XSTYPE_FALSE);
-    xs *t   = xs_val_new(XSTYPE_TRUE);
-    xs *n   = xs_val_new(XSTYPE_NULL);
     xs *idx = NULL;
     xs *ixc = NULL;
     char *tmp;
@@ -682,7 +677,7 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 
     tmp = xs_dict_get(msg, "sensitive");
     if (xs_is_null(tmp))
-        tmp = f;
+        tmp = xs_stock_false;
 
     st = xs_dict_append(st, "sensitive",    tmp);
 
@@ -781,12 +776,11 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 
                     if (!xs_is_null(url)) {
                         xs *nm = xs_strip_chars_i(xs_dup(name), ":");
-                        xs *t  = xs_val_new(XSTYPE_TRUE);
 
                         d1 = xs_dict_append(d1, "shortcode", nm);
                         d1 = xs_dict_append(d1, "url", url);
                         d1 = xs_dict_append(d1, "static_url", url);
-                        d1 = xs_dict_append(d1, "visible_in_picker", t);
+                        d1 = xs_dict_append(d1, "visible_in_picker", xs_stock_true);
                         d1 = xs_dict_append(d1, "category", "Emojis");
 
                         eml = xs_list_append(eml, d1);
@@ -807,7 +801,7 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 
     st = xs_dict_append(st, "favourites_count", ixc);
     st = xs_dict_append(st, "favourited",
-        xs_list_in(idx, snac->md5) != -1 ? t : f);
+        xs_list_in(idx, snac->md5) != -1 ? xs_stock_true : xs_stock_false);
 
     xs_free(idx);
     xs_free(ixc);
@@ -816,7 +810,7 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 
     st = xs_dict_append(st, "reblogs_count", ixc);
     st = xs_dict_append(st, "reblogged",
-        xs_list_in(idx, snac->md5) != -1 ? t : f);
+        xs_list_in(idx, snac->md5) != -1 ? xs_stock_true : xs_stock_false);
 
     xs_free(idx);
     xs_free(ixc);
@@ -826,8 +820,8 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
     st = xs_dict_append(st, "replies_count", ixc);
 
     /* default in_reply_to values */
-    st = xs_dict_append(st, "in_reply_to_id",         n);
-    st = xs_dict_append(st, "in_reply_to_account_id", n);
+    st = xs_dict_append(st, "in_reply_to_id",         xs_stock_null);
+    st = xs_dict_append(st, "in_reply_to_account_id", xs_stock_null);
 
     tmp = xs_dict_get(msg, "inReplyTo");
     if (!xs_is_null(tmp)) {
@@ -845,10 +839,10 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
         }
     }
 
-    st = xs_dict_append(st, "reblog",   n);
-    st = xs_dict_append(st, "poll",     n);
-    st = xs_dict_append(st, "card",     n);
-    st = xs_dict_append(st, "language", n);
+    st = xs_dict_append(st, "reblog",   xs_stock_null);
+    st = xs_dict_append(st, "poll",     xs_stock_null);
+    st = xs_dict_append(st, "card",     xs_stock_null);
+    st = xs_dict_append(st, "language", xs_stock_null);
 
     tmp = xs_dict_get(msg, "sourceContent");
     if (xs_is_null(tmp))
@@ -858,7 +852,7 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
 
     tmp = xs_dict_get(msg, "updated");
     if (xs_is_null(tmp))
-        tmp = n;
+        tmp = xs_stock_null;
 
     st = xs_dict_append(st, "edited_at", tmp);
 
@@ -877,29 +871,27 @@ xs_dict *mastoapi_relationship(snac *snac, const char *md5)
     xs *actor_o  = NULL;
 
     if (valid_status(object_get_by_md5(md5, &actor_o))) {
-        xs *t   = xs_val_new(XSTYPE_TRUE);
-        xs *f   = xs_val_new(XSTYPE_FALSE);
         rel = xs_dict_new();
 
         const char *actor = xs_dict_get(actor_o, "id");
 
         rel = xs_dict_append(rel, "id",                   md5);
         rel = xs_dict_append(rel, "following",
-            following_check(snac, actor) ? t : f);
+            following_check(snac, actor) ? xs_stock_true : xs_stock_false);
 
-        rel = xs_dict_append(rel, "showing_reblogs",      t);
-        rel = xs_dict_append(rel, "notifying",            f);
+        rel = xs_dict_append(rel, "showing_reblogs",      xs_stock_true);
+        rel = xs_dict_append(rel, "notifying",            xs_stock_false);
         rel = xs_dict_append(rel, "followed_by",
-            follower_check(snac, actor) ? t : f);
+            follower_check(snac, actor) ? xs_stock_true : xs_stock_false);
 
         rel = xs_dict_append(rel, "blocking",
-            is_muted(snac, actor) ? t : f);
+            is_muted(snac, actor) ? xs_stock_true : xs_stock_false);
 
-        rel = xs_dict_append(rel, "muting",               f);
-        rel = xs_dict_append(rel, "muting_notifications", f);
-        rel = xs_dict_append(rel, "requested",            f);
-        rel = xs_dict_append(rel, "domain_blocking",      f);
-        rel = xs_dict_append(rel, "endorsed",             f);
+        rel = xs_dict_append(rel, "muting",               xs_stock_false);
+        rel = xs_dict_append(rel, "muting_notifications", xs_stock_false);
+        rel = xs_dict_append(rel, "requested",            xs_stock_false);
+        rel = xs_dict_append(rel, "domain_blocking",      xs_stock_false);
+        rel = xs_dict_append(rel, "endorsed",             xs_stock_false);
         rel = xs_dict_append(rel, "note",                 "");
     }
 
@@ -1482,10 +1474,9 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
         d1 = xs_dict_append(d1, "domain_count", z);
         ins = xs_dict_append(ins, "stats", d1);
 
-        xs *f = xs_val_new(XSTYPE_FALSE);
-        ins = xs_dict_append(ins, "registrations", f);
-        ins = xs_dict_append(ins, "approval_required", f);
-        ins = xs_dict_append(ins, "invites_enabled", f);
+        ins = xs_dict_append(ins, "registrations",     xs_stock_false);
+        ins = xs_dict_append(ins, "approval_required", xs_stock_false);
+        ins = xs_dict_append(ins, "invites_enabled",   xs_stock_false);
 
         xs *cfg = xs_dict_new();
 
@@ -1846,8 +1837,7 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                         strcmp(visibility, "public") == 0 ? 0 : 1);
 
             if (!xs_is_null(summary) && *summary) {
-                xs *t = xs_val_new(XSTYPE_TRUE);
-                msg = xs_dict_set(msg, "sensitive", t);
+                msg = xs_dict_set(msg, "sensitive", xs_stock_true);
                 msg = xs_dict_set(msg, "summary",   summary);
             }
 

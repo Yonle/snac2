@@ -1851,9 +1851,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
                 msg = msg_note(&snac, content_2, to, in_reply_to, attach_list, priv);
 
             if (sensitive != NULL) {
-                xs *t = xs_val_new(XSTYPE_TRUE);
-
-                msg = xs_dict_set(msg, "sensitive", t);
+                msg = xs_dict_set(msg, "sensitive", xs_stock_true);
                 msg = xs_dict_set(msg, "summary",   "...");
             }
 
@@ -2010,8 +2008,6 @@ int html_post_handler(const xs_dict *req, const char *q_path,
         /* change of user data */
         char *v;
         char *p1, *p2;
-        xs *byes = xs_val_new(XSTYPE_TRUE);
-        xs *bno  = xs_val_new(XSTYPE_FALSE);
 
         if ((v = xs_dict_get(p_vars, "name")) != NULL)
             snac.config = xs_dict_set(snac.config, "name", v);
@@ -2036,13 +2032,13 @@ int html_post_handler(const xs_dict *req, const char *q_path,
             snac.config = xs_dict_set(snac.config, "purge_days", days);
         }
         if ((v = xs_dict_get(p_vars, "drop_dm_from_unknown")) != NULL && strcmp(v, "on") == 0)
-            snac.config = xs_dict_set(snac.config, "drop_dm_from_unknown", byes);
+            snac.config = xs_dict_set(snac.config, "drop_dm_from_unknown", xs_stock_true);
         else
-            snac.config = xs_dict_set(snac.config, "drop_dm_from_unknown", bno);
+            snac.config = xs_dict_set(snac.config, "drop_dm_from_unknown", xs_stock_false);
         if ((v = xs_dict_get(p_vars, "bot")) != NULL && strcmp(v, "on") == 0)
-            snac.config = xs_dict_set(snac.config, "bot", byes);
+            snac.config = xs_dict_set(snac.config, "bot", xs_stock_true);
         else
-            snac.config = xs_dict_set(snac.config, "bot", bno);
+            snac.config = xs_dict_set(snac.config, "bot", xs_stock_false);
 
         /* avatar upload */
         xs_list *avatar_file = xs_dict_get(p_vars, "avatar_file");
