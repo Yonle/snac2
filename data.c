@@ -1169,6 +1169,13 @@ int following_add(snac *snac, const char *actor, const xs_dict *msg)
 
         fwrite(j, 1, strlen(j), f);
         fclose(f);
+
+        /* get the filename of the actor object */
+        xs *actor_fn = _object_fn(actor);
+
+        /* increase its reference count */
+        fn = xs_replace_i(fn, ".json", "");
+        link(actor_fn, fn);
     }
     else
         ret = 500;
@@ -1184,9 +1191,13 @@ int following_del(snac *snac, const char *actor)
 {
     xs *fn = _following_fn(snac, actor);
 
+    snac_debug(snac, 2, xs_fmt("following_del %s %s", actor, fn));
+
     unlink(fn);
 
-    snac_debug(snac, 2, xs_fmt("following_del %s %s", actor, fn));
+    /* also delete the reference to the author */
+    fn = xs_replace_i(fn, ".json", "");
+    unlink(fn);
 
     return 200;
 }

@@ -32,8 +32,6 @@ xs_str *xs_str_time(time_t t, const char *fmt, int local)
 
     strftime(tmp, sizeof(tmp), fmt, &tm);
 
-//    printf("%d %d\n", local, t - xs_parse_time(tmp, fmt, local));
-
     return xs_str_new(tmp);
 }
 
