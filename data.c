@@ -933,10 +933,15 @@ xs_list *follower_list(snac *snac)
         xs *a_obj = NULL;
 
         if (valid_status(object_get_by_md5(v, &a_obj))) {
-            char *actor = xs_dict_get(a_obj, "id");
+            const char *actor = xs_dict_get(a_obj, "id");
 
-            if (!xs_is_null(actor))
-                fwers = xs_list_append(fwers, actor);
+            if (!xs_is_null(actor)) {
+                /* check if the actor is still cached */
+                xs *fn = xs_fmt("%s/followers/%s.json", snac->basedir, v);
+
+                if (mtime(fn) > 0.0)
+                    fwers = xs_list_append(fwers, actor);
+            }
         }
     }
 
