@@ -985,21 +985,9 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
             else
             if (xs_startswith(id, snac->actor))
                 closed = 1; /* we questioned; closed for us */
-            else {
-                /* not yet closed? check if we already voted for this */
-                xs *children = object_children(id);
-                p = children;
-                while (!closed && xs_list_iter(&p, &v)) {
-                    xs *msg = NULL;
-
-                    if (valid_status(object_get_by_md5(v, &msg))) {
-                        const char *atto = xs_dict_get(msg, "attributedTo");
-
-                        if (atto && strcmp(atto, snac->actor) == 0)
-                            closed = 1; /* we already voted; closed for us */
-                    }
-                }
-            }
+            else
+            if (was_question_voted(snac, id))
+                closed = 1; /* we already voted; closed for us */
 
             /* get the appropriate list of options */
             p = oo != NULL ? oo : ao;
