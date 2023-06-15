@@ -545,6 +545,9 @@ xs_list *index_list_desc(const char *fn, int skip, int show)
 
 xs_str *_object_fn_by_md5(const char *md5)
 {
+    if (!xs_is_hex(md5))
+        srv_log(xs_fmt("_object_fn_by_md5(): '%s' not hex", md5));
+
     xs *bfn = xs_fmt("%s/object/%c%c", srv_basedir, md5[0], md5[1]);
 
     mkdirx(bfn);
