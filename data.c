@@ -1256,13 +1256,23 @@ xs_list *following_list(snac *snac)
                 xs *o = xs_json_loads(j);
 
                 if (o != NULL) {
-                    char *type = xs_dict_get(o, "type");
+                    const char *type = xs_dict_get(o, "type");
 
                     if (!xs_is_null(type) && strcmp(type, "Accept") == 0) {
-                        char *actor = xs_dict_get(o, "actor");
+                        const char *actor = xs_dict_get(o, "actor");
 
-                        if (!xs_is_null(actor))
+                        if (!xs_is_null(actor)) {
                             list = xs_list_append(list, actor);
+
+                            /* check if there is a link to the actor object */
+                            xs *v2 = xs_replace(v, ".json", "");
+
+                            if (mtime(v2) == 0.0) {
+                                /* no; add a link to it */
+                                xs *actor_fn = _object_fn(actor);
+                                link(actor_fn, v2);
+                            }
+                        }
                     }
                 }
             }
