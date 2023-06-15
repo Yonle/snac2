@@ -2,15 +2,19 @@
 
 ## 2.35
 
-Fixed URL links with the # symbol on them.
+Fixed broken URL links with the # symbol on them.
+
+Fixed people-being-followed data loss after not logging in for a long time (actor objects were purged too soon).
+
+Don't show 'ghost' no-longer-followers in the people list.
 
 When sanitizing HTML input, unsupported tags are deleted instead of escaped.
-
-There is new a user configuration setup checkbox to mark an account as a bot.
 
 Fixed crash on missing headers while checking signatures.
 
 Mastodon API: several bug fixes (contributed by Poesty), improved account object (contributed by Haijo7).
+
+There is new a user configuration setup checkbox to mark an account as a bot.
 
 ## 2.34
 
