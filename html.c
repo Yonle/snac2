@@ -121,7 +121,7 @@ xs_str *html_actor_icon(xs_str *os, char *actor,
         s = xs_str_cat(s, " <span title=\"bot\">&#129302;</span>");
 
     if (xs_is_null(date)) {
-        s = xs_str_cat(s, "<br>\n&nbsp;\n");
+        s = xs_str_cat(s, "\n&nbsp;\n");
     }
     else {
         xs *date_label = xs_crop_i(xs_dup(date), 0, 10);
