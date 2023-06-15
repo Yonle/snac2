@@ -1977,22 +1977,22 @@ void enqueue_request_replies(snac *user, const char *id)
 
             if (type && msg && strcmp(type, "request_replies") == 0 && strcmp(msg, id) == 0) {
                 /* don't requeue */
-                snac_debug(user, 0, xs_fmt("enqueue_request_replies already here %s", id));
+                snac_debug(user, 1, xs_fmt("enqueue_request_replies already here %s", id));
                 return;
             }
         }
     }
 
     /* not there; enqueue the request with a small delay */
-    xs *qmsg   = _new_qmsg("request_replies", id, 0);
+    xs *qmsg = _new_qmsg("request_replies", id, 0);
     xs *ntid = tid(10);
-    xs *fn     = xs_fmt("%s/queue/%s.json", user->basedir, ntid);
+    xs *fn   = xs_fmt("%s/queue/%s.json", user->basedir, ntid);
 
     qmsg = xs_dict_set(qmsg, "ntid", ntid);
 
     qmsg = _enqueue_put(fn, qmsg);
 
-    snac_debug(user, 0, xs_fmt("enqueue_request_replies %s", id));
+    snac_debug(user, 1, xs_fmt("enqueue_request_replies %s", id));
 }
 
 
