@@ -137,7 +137,7 @@ int actor_request(snac *snac, const char *actor, xs_dict **data)
             inbox_add_by_actor(*data);
     }
     else
-        srv_log(xs_fmt("NOT collected"));
+        srv_debug(2, xs_fmt("NOT collected"));
 
     return status;
 }
