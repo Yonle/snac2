@@ -668,9 +668,11 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
 
     s = xs_str_cat(s, "</form>\n");
 
-    char *prev_src = xs_dict_get(msg, "sourceContent");
+    const char *prev_src1 = xs_dict_get(msg, "sourceContent");
 
-    if (!xs_is_null(prev_src) && strcmp(actor, snac->actor) == 0) {
+    if (!xs_is_null(prev_src1) && strcmp(actor, snac->actor) == 0) {
+        xs *prev_src = xs_replace(prev_src1, "<", "&lt;");
+
         /* post can be edited */
         xs *s1 = xs_fmt(
             "<p><details><summary>%s</summary>\n"
