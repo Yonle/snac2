@@ -543,10 +543,12 @@ xs_list *index_list_desc(const char *fn, int skip, int show)
 
 /** objects **/
 
-xs_str *_object_fn_by_md5(const char *md5)
+static xs_str *_object_fn_by_md5(const char *md5)
 {
-    if (!xs_is_hex(md5))
-        srv_log(xs_fmt("_object_fn_by_md5(): '%s' not hex", md5));
+    if (!xs_is_hex(md5) || strlen(md5) != 32) {
+        srv_log(xs_fmt("_object_fn_by_md5(): bad md5 '%s'", md5));
+        return NULL;
+    }
 
     xs *bfn = xs_fmt("%s/object/%c%c", srv_basedir, md5[0], md5[1]);
 
@@ -567,7 +569,7 @@ int object_here_by_md5(const char *id)
 /* checks if an object is already downloaded */
 {
     xs *fn = _object_fn_by_md5(id);
-    return mtime(fn) > 0.0;
+    return fn && mtime(fn) > 0.0;
 }
 
 
@@ -585,6 +587,11 @@ int object_get_by_md5(const char *md5, xs_dict **obj)
     int status = 404;
     xs *fn     = _object_fn_by_md5(md5);
     FILE *f;
+
+    if (xs_is_null(fn)) {
+        srv_log(xs_fmt("object_get_by_md5(): bad md5 '%s'", md5));
+        return 500;
+    }
 
     if ((f = fopen(fn, "r")) != NULL) {
         flock(fileno(f), LOCK_SH);
@@ -689,6 +696,11 @@ int object_del_by_md5(const char *md5)
     int status = 404;
     xs *fn     = _object_fn_by_md5(md5);
 
+    if (xs_is_null(fn)) {
+        srv_log(xs_fmt("object_del_by_md5(): bad md5 '%s'", md5));
+        return 500;
+    }
+
     if (unlink(fn) != -1) {
         status = 200;
 
@@ -736,7 +748,7 @@ int object_del_if_unref(const char *id)
 double object_ctime_by_md5(const char *md5)
 {
     xs *fn = _object_fn_by_md5(md5);
-    return f_ctime(fn);
+    return fn ? f_ctime(fn) : 0.0;
 }
 
 
@@ -793,10 +805,13 @@ xs_list *object_announces(const char *id)
 }
 
 
-int object_parent(const char *id, char *buf, int size)
+int object_parent(const char *md5, char *buf, int size)
 /* returns the object parent, if any */
 {
-    xs *fn = _object_fn_by_md5(id);
+    xs *fn = _object_fn_by_md5(md5);
+    if (xs_is_null(fn))
+        return 0;
+
     fn = xs_replace_i(fn, ".json", "_p.idx");
     return index_first(fn, buf, size);
 }
