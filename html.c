@@ -967,7 +967,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                     if (n && i) {
                         char *u = xs_dict_get(i, "url");
                         xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\" "
-                                         "loading=\"lazy\"/>", u);
+                                         "loading=\"lazy\" title=\"%s\"/>", u, n);
 
                         c = xs_replace_i(c, n, img);
                     }
@@ -1073,9 +1073,11 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                 char *name = xs_dict_get(v, "name");
 
                 if (url != NULL) {
+                    if (xs_is_null(name))
+                        name = "";
                     xs *s1 = xs_fmt(
-                        "<a href=\"%s\" target=\"_blank\"><img src=\"%s\" alt=\"%s\" loading=\"lazy\"/></a>\n",
-                            url, url, xs_is_null(name) ? "" : name);
+                        "<a href=\"%s\" target=\"_blank\"><img src=\"%s\" alt=\"%s\" title=\"%s\" loading=\"lazy\"/></a>\n",
+                            url, url, name, name);
 
                     s = xs_str_cat(s, s1);
                 }
