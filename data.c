@@ -546,7 +546,7 @@ xs_list *index_list_desc(const char *fn, int skip, int show)
 static xs_str *_object_fn_by_md5(const char *md5, const char *func)
 {
     xs *bfn = xs_fmt("%s/object/%c%c", srv_basedir, md5[0], md5[1]);
-    xs *ret = NULL;
+    xs_str *ret;
     int ok = 1;
 
     /* an object deleted from an index; fail but don't bark */
