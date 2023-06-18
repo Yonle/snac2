@@ -391,7 +391,7 @@ int index_gc(const char *fn)
             while (fgets(line, sizeof(line), i) != NULL) {
                 line[32] = '\0';
 
-                if (object_here_by_md5(line))
+                if (line[0] != '-' && object_here_by_md5(line))
                     fprintf(o, "%s\n", line);
                 else
                     gc++;
