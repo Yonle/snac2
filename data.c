@@ -569,10 +569,10 @@ static xs_str *_object_fn_by_md5(const char *md5, const char *func)
 }
 
 
-static xs_str *_object_fn(const char *id, const char *func)
+static xs_str *_object_fn(const char *id)
 {
     xs *md5 = xs_md5_hex(id, strlen(id));
-    return _object_fn_by_md5(md5, func);
+    return _object_fn_by_md5(md5, "_object_fn");
 }
 
 
@@ -587,7 +587,7 @@ int object_here_by_md5(const char *id)
 int object_here(const char *id)
 /* checks if an object is already downloaded */
 {
-    xs *fn = _object_fn(id, "object_here");
+    xs *fn = _object_fn(id);
     return mtime(fn) > 0.0;
 }
 
@@ -629,7 +629,7 @@ int _object_add(const char *id, const xs_dict *obj, int ow)
 /* stores an object */
 {
     int status = 201; /* Created */
-    xs *fn     = _object_fn(id, "_object_add 1");
+    xs *fn     = _object_fn(id);
     FILE *f;
 
     if (!ow && mtime(fn) > 0.0) {
@@ -651,7 +651,7 @@ int _object_add(const char *id, const xs_dict *obj, int ow)
 
         if (!xs_is_null(in_reply_to) && *in_reply_to) {
             /* update the children index of the parent */
-            xs *c_idx = _object_fn(in_reply_to, "_object_add 2");
+            xs *c_idx = _object_fn(in_reply_to);
 
             c_idx = xs_replace_i(c_idx, ".json", "_c.idx");
 
@@ -735,7 +735,7 @@ int object_del(const char *id)
 int object_del_if_unref(const char *id)
 /* deletes an object if its n_links < 2 */
 {
-    xs *fn = _object_fn(id, "object_del_if_unref");
+    xs *fn = _object_fn(id);
     int n_links;
     int ret = 0;
 
@@ -763,7 +763,7 @@ double object_ctime(const char *id)
 xs_str *_object_index_fn(const char *id, const char *idxsfx)
 /* returns the filename of an object's index */
 {
-    xs_str *fn = _object_fn(id, "_object_index_fn");
+    xs_str *fn = _object_fn(id);
     return xs_replace_i(fn, ".json", idxsfx);
 }
 
@@ -820,7 +820,7 @@ int object_admire(const char *id, const char *actor, int like)
 /* actor likes or announces this object */
 {
     int status = 200;
-    xs *fn     = _object_fn(id, "object_admire");
+    xs *fn     = _object_fn(id);
 
     fn = xs_replace_i(fn, ".json", like ? "_l.idx" : "_a.idx");
 
@@ -838,7 +838,7 @@ int object_unadmire(const char *id, const char *actor, int like)
 /* actor no longer likes or announces this object */
 {
     int status;
-    xs *fn = _object_fn(id, "object_unadmire");
+    xs *fn = _object_fn(id);
 
     fn = xs_replace_i(fn, ".json", like ? "_l.idx" : "_a.idx");
 
@@ -854,7 +854,7 @@ int object_unadmire(const char *id, const char *actor, int like)
 int _object_user_cache(snac *snac, const char *id, const char *cachedir, int del)
 /* adds or deletes from a user cache */
 {
-    xs *ofn = _object_fn(id, "_object_user_cache");
+    xs *ofn = _object_fn(id);
     xs *l   = xs_split(ofn, "/");
     xs *cfn = xs_fmt("%s/%s/%s", snac->basedir, cachedir, xs_list_get(l, -1));
     xs *idx = xs_fmt("%s/%s.idx", snac->basedir, cachedir);
@@ -1193,7 +1193,7 @@ int following_add(snac *snac, const char *actor, const xs_dict *msg)
         fclose(f);
 
         /* get the filename of the actor object */
-        xs *actor_fn = _object_fn(actor, "following_add");
+        xs *actor_fn = _object_fn(actor);
 
         /* increase its reference count */
         fn = xs_replace_i(fn, ".json", "_a.json");
@@ -1291,7 +1291,7 @@ xs_list *following_list(snac *snac)
 
                             if (mtime(v2) == 0.0) {
                                 /* no; add a link to it */
-                                xs *actor_fn = _object_fn(actor, "following_list");
+                                xs *actor_fn = _object_fn(actor);
                                 link(actor_fn, v2);
                             }
                         }
@@ -1442,7 +1442,7 @@ int actor_get(snac *snac1, const char *actor, xs_dict **data)
     else
         d = xs_free(d);
 
-    xs *fn = _object_fn(actor, "actor_get");
+    xs *fn = _object_fn(actor);
     double max_time;
 
     /* maximum time for the actor data to be considered stale */
