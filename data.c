@@ -545,18 +545,24 @@ xs_list *index_list_desc(const char *fn, int skip, int show)
 
 static xs_str *_object_fn_by_md5(const char *md5, const char *func)
 {
-    /* object deleted in an index; fail, but don't bark */
-    if (md5[0] == '-')
-        return NULL;
+    xs *bfn = xs_fmt("%s/object/%c%c", srv_basedir, md5[0], md5[1]);
+    int ok = 1;
 
+    /* an object deleted from an index; fail but don't bark */
+    if (md5[0] == '-')
+        ok = 0;
+    else
     if (!xs_is_hex(md5) || strlen(md5) != 32) {
         srv_log(xs_fmt("_object_fn_by_md5() [from %s()]: bad md5 '%s'", func, md5));
-        return NULL;
+        ok = 0;
     }
 
-    xs *bfn = xs_fmt("%s/object/%c%c", srv_basedir, md5[0], md5[1]);
-
-    mkdirx(bfn);
+    if (ok)
+        mkdirx(bfn);
+    else {
+        xs_free(bfn);
+        bfn = xs_fmt("%s/object/invalid", srv_basedir);
+    }
 
     return xs_fmt("%s/%s.json", bfn, md5);
 }
@@ -573,7 +579,7 @@ int object_here_by_md5(const char *id)
 /* checks if an object is already downloaded */
 {
     xs *fn = _object_fn_by_md5(id, "object_here_by_md5");
-    return fn && mtime(fn) > 0.0;
+    return mtime(fn) > 0.0;
 }
 
 
@@ -589,15 +595,8 @@ int object_get_by_md5(const char *md5, xs_dict **obj)
 /* returns a stored object, optionally of the requested type */
 {
     int status = 404;
-    xs *fn     = NULL;
+    xs *fn     = _object_fn_by_md5(md5, "object_get_my_md5");
     FILE *f;
-
-    /* objects deleted in indexes start with - */
-    if (md5[0] == '-')
-        return status;
-
-    if (xs_is_null((fn = _object_fn_by_md5(md5, "object_get_my_md5"))))
-        return 500;
 
     if ((f = fopen(fn, "r")) != NULL) {
         flock(fileno(f), LOCK_SH);
@@ -702,9 +701,6 @@ int object_del_by_md5(const char *md5)
     int status = 404;
     xs *fn     = _object_fn_by_md5(md5, "object_del_by_md5");
 
-    if (xs_is_null(fn))
-        return 500;
-
     if (unlink(fn) != -1) {
         status = 200;
 
@@ -742,7 +738,7 @@ int object_del_if_unref(const char *id)
     int n_links;
     int ret = 0;
 
-    if (fn && mtime_nl(fn, &n_links) > 0.0 && n_links < 2)
+    if (mtime_nl(fn, &n_links) > 0.0 && n_links < 2)
         ret = object_del(id);
 
     return ret;
@@ -752,7 +748,7 @@ int object_del_if_unref(const char *id)
 double object_ctime_by_md5(const char *md5)
 {
     xs *fn = _object_fn_by_md5(md5, "object_ctime_by_md5");
-    return fn ? f_ctime(fn) : 0.0;
+    return f_ctime(fn);
 }
 
 
@@ -813,8 +809,6 @@ int object_parent(const char *md5, char *buf, int size)
 /* returns the object parent, if any */
 {
     xs *fn = _object_fn_by_md5(md5, "object_parent");
-    if (xs_is_null(fn))
-        return 0;
 
     fn = xs_replace_i(fn, ".json", "_p.idx");
     return index_first(fn, buf, size);
@@ -826,9 +820,6 @@ int object_admire(const char *id, const char *actor, int like)
 {
     int status = 200;
     xs *fn     = _object_fn(id, "object_admire");
-
-    if (xs_is_null(fn))
-        return 500;
 
     fn = xs_replace_i(fn, ".json", like ? "_l.idx" : "_a.idx");
 
