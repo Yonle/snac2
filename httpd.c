@@ -250,8 +250,10 @@ void httpd_connection(FILE *f)
     if (status == 303)
         headers = xs_dict_append(headers, "location", body);
 
-    if (status == 401)
-        headers = xs_dict_append(headers, "WWW-Authenticate", "Basic realm=\"IDENTIFY\"");
+    if (status == 401) {
+        xs *www_auth = xs_fmt("Basic realm=\"%s snac login", xs_dict_get(srv_config, "host"));
+        headers = xs_dict_append(headers, "WWW-Authenticate", www_auth);
+    }
 
     if (ctype == NULL)
         ctype = "text/html; charset=utf-8";
