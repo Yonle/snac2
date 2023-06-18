@@ -543,10 +543,14 @@ xs_list *index_list_desc(const char *fn, int skip, int show)
 
 /** objects **/
 
-static xs_str *_object_fn_by_md5(const char *md5)
+static xs_str *_object_fn_by_md5(const char *md5, const char *func)
 {
+    /* object deleted in an index; fail, but don't bark */
+    if (md5[0] == '-')
+        return NULL;
+
     if (!xs_is_hex(md5) || strlen(md5) != 32) {
-        srv_log(xs_fmt("_object_fn_by_md5(): bad md5 '%s'", md5));
+        srv_log(xs_fmt("_object_fn_by_md5() [from %s()]: bad md5 '%s'", func, md5));
         return NULL;
     }
 
@@ -558,17 +562,17 @@ static xs_str *_object_fn_by_md5(const char *md5)
 }
 
 
-xs_str *_object_fn(const char *id)
+static xs_str *_object_fn(const char *id, const char *func)
 {
     xs *md5 = xs_md5_hex(id, strlen(id));
-    return _object_fn_by_md5(md5);
+    return _object_fn_by_md5(md5, func);
 }
 
 
 int object_here_by_md5(const char *id)
 /* checks if an object is already downloaded */
 {
-    xs *fn = _object_fn_by_md5(id);
+    xs *fn = _object_fn_by_md5(id, "object_here_by_md5");
     return fn && mtime(fn) > 0.0;
 }
 
@@ -576,7 +580,7 @@ int object_here_by_md5(const char *id)
 int object_here(const char *id)
 /* checks if an object is already downloaded */
 {
-    xs *fn = _object_fn(id);
+    xs *fn = _object_fn(id, "object_here");
     return mtime(fn) > 0.0;
 }
 
@@ -585,13 +589,15 @@ int object_get_by_md5(const char *md5, xs_dict **obj)
 /* returns a stored object, optionally of the requested type */
 {
     int status = 404;
-    xs *fn     = _object_fn_by_md5(md5);
+    xs *fn     = NULL;
     FILE *f;
 
-    if (xs_is_null(fn)) {
-        srv_log(xs_fmt("object_get_by_md5(): bad md5 '%s'", md5));
+    /* objects deleted in indexes start with - */
+    if (md5[0] == '-')
+        return status;
+
+    if (xs_is_null((fn = _object_fn_by_md5(md5, "object_get_my_md5"))))
         return 500;
-    }
 
     if ((f = fopen(fn, "r")) != NULL) {
         flock(fileno(f), LOCK_SH);
@@ -623,7 +629,7 @@ int _object_add(const char *id, const xs_dict *obj, int ow)
 /* stores an object */
 {
     int status = 201; /* Created */
-    xs *fn     = _object_fn(id);
+    xs *fn     = _object_fn(id, "_object_add 1");
     FILE *f;
 
     if (!ow && mtime(fn) > 0.0) {
@@ -645,7 +651,7 @@ int _object_add(const char *id, const xs_dict *obj, int ow)
 
         if (!xs_is_null(in_reply_to) && *in_reply_to) {
             /* update the children index of the parent */
-            xs *c_idx = _object_fn(in_reply_to);
+            xs *c_idx = _object_fn(in_reply_to, "_object_add 2");
 
             c_idx = xs_replace_i(c_idx, ".json", "_c.idx");
 
@@ -694,12 +700,10 @@ int object_del_by_md5(const char *md5)
 /* deletes an object by its md5 */
 {
     int status = 404;
-    xs *fn     = _object_fn_by_md5(md5);
+    xs *fn     = _object_fn_by_md5(md5, "object_del_by_md5");
 
-    if (xs_is_null(fn)) {
-        srv_log(xs_fmt("object_del_by_md5(): bad md5 '%s'", md5));
+    if (xs_is_null(fn))
         return 500;
-    }
 
     if (unlink(fn) != -1) {
         status = 200;
@@ -734,11 +738,11 @@ int object_del(const char *id)
 int object_del_if_unref(const char *id)
 /* deletes an object if its n_links < 2 */
 {
-    xs *fn = _object_fn(id);
+    xs *fn = _object_fn(id, "object_del_if_unref");
     int n_links;
     int ret = 0;
 
-    if (mtime_nl(fn, &n_links) > 0.0 && n_links < 2)
+    if (fn && mtime_nl(fn, &n_links) > 0.0 && n_links < 2)
         ret = object_del(id);
 
     return ret;
@@ -747,7 +751,7 @@ int object_del_if_unref(const char *id)
 
 double object_ctime_by_md5(const char *md5)
 {
-    xs *fn = _object_fn_by_md5(md5);
+    xs *fn = _object_fn_by_md5(md5, "object_ctime_by_md5");
     return fn ? f_ctime(fn) : 0.0;
 }
 
@@ -762,7 +766,7 @@ double object_ctime(const char *id)
 xs_str *_object_index_fn(const char *id, const char *idxsfx)
 /* returns the filename of an object's index */
 {
-    xs_str *fn = _object_fn(id);
+    xs_str *fn = _object_fn(id, "_object_index_fn");
     return xs_replace_i(fn, ".json", idxsfx);
 }
 
@@ -808,7 +812,7 @@ xs_list *object_announces(const char *id)
 int object_parent(const char *md5, char *buf, int size)
 /* returns the object parent, if any */
 {
-    xs *fn = _object_fn_by_md5(md5);
+    xs *fn = _object_fn_by_md5(md5, "object_parent");
     if (xs_is_null(fn))
         return 0;
 
@@ -821,7 +825,10 @@ int object_admire(const char *id, const char *actor, int like)
 /* actor likes or announces this object */
 {
     int status = 200;
-    xs *fn     = _object_fn(id);
+    xs *fn     = _object_fn(id, "object_admire");
+
+    if (xs_is_null(fn))
+        return 500;
 
     fn = xs_replace_i(fn, ".json", like ? "_l.idx" : "_a.idx");
 
@@ -839,7 +846,7 @@ int object_unadmire(const char *id, const char *actor, int like)
 /* actor no longer likes or announces this object */
 {
     int status;
-    xs *fn = _object_fn(id);
+    xs *fn = _object_fn(id, "object_unadmire");
 
     fn = xs_replace_i(fn, ".json", like ? "_l.idx" : "_a.idx");
 
@@ -855,7 +862,7 @@ int object_unadmire(const char *id, const char *actor, int like)
 int _object_user_cache(snac *snac, const char *id, const char *cachedir, int del)
 /* adds or deletes from a user cache */
 {
-    xs *ofn = _object_fn(id);
+    xs *ofn = _object_fn(id, "_object_user_cache");
     xs *l   = xs_split(ofn, "/");
     xs *cfn = xs_fmt("%s/%s/%s", snac->basedir, cachedir, xs_list_get(l, -1));
     xs *idx = xs_fmt("%s/%s.idx", snac->basedir, cachedir);
@@ -1194,7 +1201,7 @@ int following_add(snac *snac, const char *actor, const xs_dict *msg)
         fclose(f);
 
         /* get the filename of the actor object */
-        xs *actor_fn = _object_fn(actor);
+        xs *actor_fn = _object_fn(actor, "following_add");
 
         /* increase its reference count */
         fn = xs_replace_i(fn, ".json", "_a.json");
@@ -1292,7 +1299,7 @@ xs_list *following_list(snac *snac)
 
                             if (mtime(v2) == 0.0) {
                                 /* no; add a link to it */
-                                xs *actor_fn = _object_fn(actor);
+                                xs *actor_fn = _object_fn(actor, "following_list");
                                 link(actor_fn, v2);
                             }
                         }
@@ -1443,7 +1450,7 @@ int actor_get(snac *snac1, const char *actor, xs_dict **data)
     else
         d = xs_free(d);
 
-    xs *fn = _object_fn(actor);
+    xs *fn = _object_fn(actor, "actor_get");
     double max_time;
 
     /* maximum time for the actor data to be considered stale */
