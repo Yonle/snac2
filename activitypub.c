@@ -90,6 +90,9 @@ int activitypub_request(snac *snac, const char *url, xs_dict **data)
         /* ensure it's ActivityPub data */
         ctype = xs_dict_get(response, "content-type");
 
+        if (xs_is_null(ctype))
+            status = 400;
+        else
         if (xs_str_in(ctype, "application/activity+json") != -1 ||
             xs_str_in(ctype, "application/ld+json") != -1)
             *data = xs_json_loads(payload);
