@@ -65,12 +65,18 @@ This will:
 - Create a new user `testuser` and print the user's generated password on the console (see `examples/docker-entrypoint.sh`)
 - Start nginx to handle HTTPS, using the certificate pair from `nginx-alpine-ssl/nginx-selfsigned.*` (see `examples/nginx-alpine-ssl/entrypoint.sh`)
 
+## Other Documentation
+
+[Online snac manuals (user, administrator and data formats)](https://comam.es/snac-doc).
+
+[how to run your own ActivityPub server on OpenBSD via snac (by Jordan Reger)](https://futurist.city/~jr/activitypub-server-on-openbsd.html).
+
 ## License
 
 See the LICENSE file for details.
 
 ## Author
 
-grunfink @grunfink@comam.es
+grunfink [@grunfink@comam.es](https://comam.es/snac/grunfink)
 
 Buy grunfink a coffee: https://ko-fi.com/grunfink
