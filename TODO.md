@@ -4,8 +4,6 @@
 
 Fix `timeline_request_replies()` issues (more info there).
 
-Replace weird, vestigial 'touch-by-append-spaces' in actor_get() with a more proper call to `utimes()`.
-
 Post edits should preserve the image and the image description somewhat.
 
 Implement real tag links instead of just pretending that it's something that exists.
@@ -28,10 +26,9 @@ The 'history' pages are just monthly HTML snapshots of the local timeline. This 
 
 Implement bulleted lists. Mastodon is crap and won't show them, but other implementations (Friendica, Pleroma) will do.
 
-With this new disk layout, hidden posts (and their children) can be directly skipped when rendering the HTML timeline (are there any other implications?).
-
 User request: "will it be possible to click on a link and instead of opening the original instance, we'll be able only to see a list of the posts of this person here in comam?. Something like Mastodon does."
 
+Test all the possible XSS vulnerabilities in https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/big-list-of-naughty-strings.txt
 ## Closed
 
 Start a TODO file (2022-08-25T10:07:44+0200).
@@ -251,3 +248,7 @@ Add (back) the possibility to attach an image by URL (2023-05-21T20:35:39+0200).
 Fix broken links that contain # (https://codeberg.org/grunfink/snac2/issues/47#issuecomment-937014) (2023-06-12T19:03:45+0200).
 
 Fix premature purge of actor by hardlinking the actor object inside the user `following/` subfolder (2023-06-15T04:30:40+0200).
+
+Replace weird, vestigial 'touch-by-append-spaces' in actor_get() with a more proper call to `utimes()` (2023-06-23T06:46:56+0200).
+
+With this new disk layout, hidden posts (and their children) can be directly skipped when rendering the HTML timeline (are there any other implications?) (2023-06-23T06:48:51+0200).
