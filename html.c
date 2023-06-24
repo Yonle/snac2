@@ -1565,8 +1565,10 @@ int html_get_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (strcmp(p_path, "admin") == 0) { /** private timeline **/
-        if (!login(&snac, req))
+        if (!login(&snac, req)) {
+            *body  = xs_dup(uid);
             status = 401;
+        }
         else {
             if (cache && history_mtime(&snac, "timeline.html_") > timeline_mtime(&snac)) {
                 snac_debug(&snac, 1, xs_fmt("serving cached timeline"));
@@ -1593,8 +1595,10 @@ int html_get_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (strcmp(p_path, "people") == 0) { /** the list of people **/
-        if (!login(&snac, req))
+        if (!login(&snac, req)) {
+            *body  = xs_dup(uid);
             status = 401;
+        }
         else {
             *body   = html_people(&snac);
             *b_size = strlen(*body);
@@ -1603,8 +1607,10 @@ int html_get_handler(const xs_dict *req, const char *q_path,
     }
     else
     if (strcmp(p_path, "notifications") == 0) { /** the list of notifications **/
-        if (!login(&snac, req))
+        if (!login(&snac, req)) {
+            *body  = xs_dup(uid);
             status = 401;
+        }
         else {
             *body   = html_notifications(&snac);
             *b_size = strlen(*body);
@@ -1758,6 +1764,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
     /* all posts must be authenticated */
     if (!login(&snac, req)) {
         user_free(&snac);
+        *body  = xs_dup(uid);
         return 401;
     }
 

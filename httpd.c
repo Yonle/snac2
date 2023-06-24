@@ -251,7 +251,9 @@ void httpd_connection(FILE *f)
         headers = xs_dict_append(headers, "location", body);
 
     if (status == 401) {
-        xs *www_auth = xs_fmt("Basic realm=\"%s snac login\"", xs_dict_get(srv_config, "host"));
+        xs *www_auth = xs_fmt("Basic realm=\"@%s@%s snac login\"",
+                                body, xs_dict_get(srv_config, "host"));
+
         headers = xs_dict_append(headers, "WWW-Authenticate", www_auth);
     }
 
