@@ -225,7 +225,19 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
         xs *css = NULL;
         int size;
 
-        if (valid_status(static_get(snac, "style.css", &css, &size))) {
+        /* try to open the user css */
+        if (!valid_status(static_get(snac, "style.css", &css, &size))) {
+            /* it's not there; try to open the server-wide css */
+            FILE *f;
+            xs *g_css_fn = xs_fmt("%s/style.css", srv_basedir);
+
+            if ((f = fopen(g_css_fn, "r")) != NULL) {
+                css = xs_readall(f);
+                fclose(f);
+            }
+        }
+
+        if (css != NULL) {
             xs *s1 = xs_fmt("<style>%s</style>\n", css);
             s = xs_str_cat(s, s1);
         }
