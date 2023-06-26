@@ -53,7 +53,8 @@ const char *default_css =
     ".snac-btn-unfollow { float: right; margin-left: 0.5em }\n"
     ".snac-btn-hide { float: right; margin-left: 0.5em }\n"
     ".snac-btn-delete { float: right; margin-left: 0.5em }\n"
-    ".snac-footer { margin-top: 2em; font-size: 75% }\n";
+    ".snac-footer { margin-top: 2em; font-size: 75% }\n"
+    ".snac-poll-result { margin-left: auto; margin-right: auto; }\n";
 
 const char *greeting_html =
     "<!DOCTYPE html>\n"
@@ -264,26 +265,6 @@ int adduser(const char *uid)
     for (n = 0; dirs[n]; n++) {
         xs *d = xs_fmt("%s/%s", basedir, dirs[n]);
         mkdirx(d);
-    }
-
-    xs *scssfn = xs_fmt("%s/style.css", srv_basedir);
-    xs *ucssfn = xs_fmt("%s/static/style.css", basedir);
-
-    if ((f = fopen(scssfn, "r")) != NULL) {
-        FILE *i;
-
-        if ((i = fopen(ucssfn, "w")) == NULL) {
-            printf("ERROR: cannot create file '%s'\n", ucssfn);
-            return 1;
-        }
-        else {
-            xs *c = xs_readall(f);
-            fwrite(c, strlen(c), 1, i);
-
-            fclose(i);
-        }
-
-        fclose(f);
     }
 
     xs *cfn = xs_fmt("%s/user.json", basedir);

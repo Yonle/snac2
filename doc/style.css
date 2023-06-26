@@ -12,7 +12,7 @@ img { max-width: 100% }
 .snac-top-controls { padding-bottom: 1.5em }
 .snac-post { border-top: 1px solid #a0a0a0; }
 .snac-children { padding-left: 2em; border-left: 1px solid #a0a0a0; }
-.snac-textarea { font-family: inherit; width: 95% }
+.snac-textarea { font-family: inherit; width: 100% }
 .snac-history { border: 1px solid #606060; border-radius: 3px; margin: 2.5em 0; padding: 0 2em }
 .snac-btn-mute { float: right; margin-left: 0.5em }
 .snac-btn-unmute { float: right; margin-left: 0.5em }
@@ -21,3 +21,4 @@ img { max-width: 100% }
 .snac-btn-hide { float: right; margin-left: 0.5em }
 .snac-btn-delete { float: right; margin-left: 0.5em }
 .snac-footer { margin-top: 2em; font-size: 75% }
+.snac-poll-result { margin-left: auto; margin-right: auto; }
