@@ -2281,7 +2281,7 @@ void purge_user(snac *snac)
     for (n = 0; idxs[n]; n++) {
         xs *idx = xs_fmt("%s/%s", snac->basedir, idxs[n]);
         int gc = index_gc(idx);
-        snac_debug(snac, 1, xs_fmt("purge: %s %d", idx, gc));
+        srv_debug(1, xs_fmt("purge: %s %d", idx, gc));
     }
 }
 
