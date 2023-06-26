@@ -1,5 +1,15 @@
 # Release Notes
 
+## 2.36
+
+If the user style.css does not exist, the server-wide one if served instead.
+
+Fixed some crashes on badly-formatted input messages.
+
+The image alt-text is also inserted in the 'title' attribute, so it's shown on mouse hover in browsers like Firefox (contributed by Haijo7).
+
+Some improvements to HTML sanitization.
+
 ## 2.35
 
 Fixed broken URL links with the # symbol on them.
