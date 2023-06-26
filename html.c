@@ -264,7 +264,7 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
         int n;
 
         /* shorten the bio */
-        for (n = 0; s_bio[n] && s_bio[n] != '&' &&
+        for (n = 0; s_bio[n] && s_bio[n] != '&' && s_bio[n] != '.' &&
                     s_bio[n] != '\r' && s_bio[n] != '\n' && n < 128; n++);
         s_bio[n] = '\0';
 
