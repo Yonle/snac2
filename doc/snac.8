@@ -200,12 +200,9 @@ the list of users in this instance to be inserted.
 Users can change a bit of information about themselves from the
 web interface. See
 .Xr snac 1
-for details. Further, every user has a private CSS file in their
+for details. Further, every user can have a private CSS file in their
 .Pa static/style.css
-that can be modified to suit their needs. This file contains
-a copy of the
-.Pa style.css
-file in the server root and it's inserted into the HTML output.
+that will be served instead of the server-wide one.
 It's not modifiable from the web interface to avoid users
 shooting themselves in the foot by destroying everything.
 .Ss Old Data Purging

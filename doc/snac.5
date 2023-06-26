@@ -96,8 +96,8 @@ This directory stores Mastodon API apps.
 .It Pa token/
 This directory stores Mastodon API tokens.
 .It Pa style.css
-The server-wide CSS. Not used directly; everytime a new user is created, this
-file is copied to the user
+The server-wide CSS. The content of this file is inserted into the HTML output
+unless a user-specific one exist in the user's
 .Pa static/
 folder.
 .It Pa greeting.html
