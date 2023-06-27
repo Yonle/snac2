@@ -1025,12 +1025,6 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                 }
 
                 c = xs_str_cat(c, "</table>\n");
-
-                /* if it's *really* closed, say it */
-                if (closed == 2) {
-                    xs *s1 = xs_fmt("<p>%s</p>\n", L("Closed"));
-                    c = xs_str_cat(c, s1);
-                }
             }
             else {
                 /* poll still active */
@@ -1060,6 +1054,28 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                 s1 = xs_str_cat(s1, s2);
 
                 c = xs_str_cat(c, s1);
+            }
+
+            /* if it's *really* closed, say it */
+            if (closed == 2) {
+                xs *s1 = xs_fmt("<p>%s</p>\n", L("Closed"));
+                c = xs_str_cat(c, s1);
+            }
+            else {
+                /* show when the poll closes */
+                const char *end_time = xs_dict_get(msg, "endTime");
+                if (!xs_is_null(end_time)) {
+                    time_t t0 = time(NULL);
+                    time_t t1 = xs_parse_iso_date(end_time, 0);
+
+                    if (t1 > 0 && t1 > t0) {
+                        time_t diff_time = t1 - t0;
+                        xs *tf = xs_str_time_diff(diff_time);
+
+                        xs *s1 = xs_fmt("<p>%s %s</p>", L("Closes in"), tf);
+                        c = xs_str_cat(c, s1);
+                    }
+                }
             }
         }
 
