@@ -9,6 +9,7 @@
 xs_str *xs_str_time(time_t t, const char *fmt, int local);
 #define xs_str_localtime(t, fmt) xs_str_time(t, fmt, 1)
 #define xs_str_utctime(t, fmt)   xs_str_time(t, fmt, 0)
+time_t xs_parse_iso_date(const char *iso_date, int local);
 time_t xs_parse_time(const char *str, const char *fmt, int local);
 #define xs_parse_localtime(str, fmt) xs_parse_time(str, fmt, 1)
 #define xs_parse_utctime(str, fmt) xs_parse_time(str, fmt, 0)
@@ -52,16 +53,55 @@ char *strptime(const char *s, const char *format, struct tm *tm);
 
 time_t xs_parse_time(const char *str, const char *fmt, int local)
 {
-    struct tm tm;
+    time_t t = 0;
 
-    memset(&tm, '\0', sizeof(tm));
+#ifndef WITHOUT_STRPTIME
+
+    struct tm tm = {0};
+
     strptime(str, fmt, &tm);
 
     /* try to guess the Daylight Saving Time */
     if (local)
         tm.tm_isdst = -1;
 
-    return local ? mktime(&tm) : timegm(&tm);
+    t = local ? mktime(&tm) : timegm(&tm);
+
+#endif /* WITHOUT_STRPTIME */
+
+    return t;
+}
+
+
+time_t xs_parse_iso_date(const char *iso_date, int local)
+/* parses a YYYY-MM-DDTHH:MM:SS date string */
+{
+    time_t t = 0;
+
+#ifndef WITHOUT_STRPTIME
+
+    t = xs_parse_time(iso_date, "%Y-%m-%dT%H:%M:%S", local);
+
+#else /* WITHOUT_STRPTIME */
+
+    struct tm tm = {0};
+
+    if (sscanf(iso_date, "%d-%d-%dT%d:%d:%d",
+        &tm.tm_year, &tm.tm_mon, &tm.tm_mday,
+        &tm.tm_hour, &tm.tm_min, &tm.tm_sec) == 6) {
+
+        tm.tm_year -= 1900;
+        tm.tm_mon -= 1;
+
+        if (local)
+            tm.tm_isdst = -1;
+
+        t = local ? mktime(&tm) : timegm(&tm);
+    }
+
+#endif /* WITHOUT_STRPTIME */
+
+    return t;
 }
 
 
