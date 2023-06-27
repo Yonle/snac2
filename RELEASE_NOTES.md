@@ -10,6 +10,8 @@ The image alt-text is also inserted in the 'title' attribute, so it's shown on m
 
 Some improvements to HTML sanitization.
 
+For polls, show the time left before it closes.
+
 ## 2.35
 
 Fixed broken URL links with the # symbol on them.
