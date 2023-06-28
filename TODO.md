@@ -14,6 +14,8 @@ Improve support for audio attachments.
 
 Add a quick way to block complete domains / instances.
 
+Add support for pinning posts.
+
 ## Wishlist
 
 Add a list of hashtags to drop.
