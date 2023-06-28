@@ -2326,7 +2326,7 @@ void purge_user(snac *snac)
 
     _purge_user_subdir(snac, "public",  pub_days);
 
-    const char *idxs[] = { "followers.idx", "private.idx", "public.idx", NULL };
+    const char *idxs[] = { "followers.idx", "private.idx", "public.idx", "pinned.idx", NULL };
 
     for (n = 0; idxs[n]; n++) {
         xs *idx = xs_fmt("%s/%s", snac->basedir, idxs[n]);
