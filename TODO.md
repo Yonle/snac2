@@ -33,6 +33,8 @@ Implement bulleted lists. Mastodon is crap and won't show them, but other implem
 User request: "will it be possible to click on a link and instead of opening the original instance, we'll be able only to see a list of the posts of this person here in comam?. Something like Mastodon does."
 
 Test all the possible XSS vulnerabilities in https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/big-list-of-naughty-strings.txt
+Minor data storage housekeeping: index_list() and index_list_desc() should not return deleted (i.e. dash prefixed) entries; _object_user_cache() should call index_del() (?).
+
 ## Closed
 
 Start a TODO file (2022-08-25T10:07:44+0200).
