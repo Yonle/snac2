@@ -127,7 +127,7 @@ void unmute(snac *snac, const char *actor);
 int is_muted(snac *snac, const char *actor);
 
 int pin(snac *user, const char *id);
-void unpin(snac *user, const char *id);
+int unpin(snac *user, const char *id);
 int is_pinned(snac *user, const char *id);
 xs_list *pinned_list(snac *user);
 

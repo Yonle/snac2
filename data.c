@@ -1352,7 +1352,7 @@ int is_muted(snac *snac, const char *actor)
 xs_str *_pinned_fn(snac *user, const char *id)
 {
     xs *md5 = xs_md5_hex(id, strlen(id));
-    return xs_fmt("%s/pinned/%s", user->basedir, md5);
+    return xs_fmt("%s/pinned/%s.json", user->basedir, md5);
 }
 
 
@@ -1367,26 +1367,28 @@ int is_pinned(snac *user, const char *id)
 int pin(snac *user, const char *id)
 /* pins a message */
 {
-    int ret = 0;
+    int ret = -2;
 
     if (xs_startswith(id, user->actor)) {
-        /* create the subfolder, if it does not exist */
-        xs *fn = xs_fmt("%s/pinned/", user->basedir);
-        mkdirx(fn);
+        if (is_pinned(user, id))
+            ret = -3;
+        else {
+            /* create the subfolder, if it does not exist */
+            xs *fn = xs_fmt("%s/pinned/", user->basedir);
+            mkdirx(fn);
 
-        object_user_cache_add(user, id, "pinned");
-
-        ret = 1;
+            ret = object_user_cache_add(user, id, "pinned");
+        }
     }
 
     return ret;
 }
 
 
-void unpin(snac *user, const char *id)
+int unpin(snac *user, const char *id)
 /* unpin a message */
 {
-    object_user_cache_del(user, id, "pinned");
+    return object_user_cache_del(user, id, "pinned");
 }
 
 

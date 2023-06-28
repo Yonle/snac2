@@ -31,6 +31,8 @@ int usage(void)
     printf("resetpwd {basedir} {uid}            Resets the password of a user\n");
     printf("ping {basedir} {uid} {actor}        Pings an actor\n");
     printf("webfinger_s {basedir} {uid} {actor} Queries about an actor (@user@host or actor url)\n");
+    printf("pin {basedir} {uid} {msg_url}       Pins a message\n");
+    printf("unpin {basedir} {uid} {msg_url}     Unpins a message\n");
 /*    printf("question {basedir} {uid} 'opts'  Generates a poll (;-separated opts)\n");*/
 
     return 1;
@@ -263,6 +265,26 @@ int main(int argc, char *argv[])
         }
         else {
             srv_log(xs_fmt("Error getting actor %s", url));
+            return 1;
+        }
+
+        return 0;
+    }
+
+    if (strcmp(cmd, "pin") == 0) { /** **/
+        int ret = pin(&snac, url);
+        if (ret < 0) {
+            fprintf(stderr, "error pinning %s %d\n", url, ret);
+            return 1;
+        }
+
+        return 0;
+    }
+
+    if (strcmp(cmd, "unpin") == 0) { /** **/
+        int ret = unpin(&snac, url);
+        if (ret < 0) {
+            fprintf(stderr, "error unpinning %s %d\n", url, ret);
             return 1;
         }
 
