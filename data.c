@@ -1388,7 +1388,15 @@ int pin(snac *user, const char *id)
 int unpin(snac *user, const char *id)
 /* unpin a message */
 {
-    return object_user_cache_del(user, id, "pinned");
+    int ret = object_user_cache_del(user, id, "pinned");
+
+    if (ret != -1) {
+        /* delete from the index */
+        xs *idx = xs_fmt("%s/pinned.idx", user->basedir);
+        index_del(idx, id);
+    }
+
+    return ret;
 }
 
 
