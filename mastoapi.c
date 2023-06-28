@@ -1208,10 +1208,12 @@ int mastoapi_get_handler(const xs_dict *req, const char *q_path,
                 if (strcmp(type, "Note") != 0 && strcmp(type, "Question") != 0)
                     continue;
 
+#if 0
                 /* discard notes from people we don't follow with no boosts */
                 if (!following_check(&snac1, xs_dict_get(msg, "attributedTo")) &&
                     object_announces_len(xs_dict_get(msg, "id")) == 0)
                     continue;
+#endif
 
                 /* discard notes from muted morons */
                 if (is_muted(&snac1, xs_dict_get(msg, "attributedTo")))
