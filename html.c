@@ -1071,8 +1071,12 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                     if (t1 > 0 && t1 > t0) {
                         time_t diff_time = t1 - t0;
                         xs *tf = xs_str_time_diff(diff_time);
+                        char *p = tf;
 
-                        xs *s1 = xs_fmt("<p>%s %s</p>", L("Closes in"), tf);
+                        /* skip leading zeros */
+                        for (; *p == '0' || *p == ':'; p++);
+
+                        xs *s1 = xs_fmt("<p>%s %s</p>", L("Closes in"), p);
                         c = xs_str_cat(c, s1);
                     }
                 }
