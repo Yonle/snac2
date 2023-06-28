@@ -840,7 +840,6 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
     }
 
     st = xs_dict_append(st, "reblog",   xs_stock_null);
-    st = xs_dict_append(st, "poll",     xs_stock_null);
     st = xs_dict_append(st, "card",     xs_stock_null);
     st = xs_dict_append(st, "language", xs_stock_null);
 
@@ -860,6 +859,11 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
         xs *poll = mastoapi_poll(snac, msg);
         st = xs_dict_append(st, "poll", poll);
     }
+    else
+        st = xs_dict_append(st, "poll", xs_stock_null);
+
+    st = xs_dict_append(st, "bookmarked", xs_stock_false);
+    st = xs_dict_append(st, "pinned", xs_stock_false);
 
     return st;
 }
