@@ -863,7 +863,8 @@ xs_dict *mastoapi_status(snac *snac, const xs_dict *msg)
         st = xs_dict_append(st, "poll", xs_stock_null);
 
     st = xs_dict_append(st, "bookmarked", xs_stock_false);
-    st = xs_dict_append(st, "pinned", xs_stock_false);
+
+    st = xs_dict_append(st, "pinned", is_pinned(snac, id) ? xs_stock_true : xs_stock_false);
 
     return st;
 }
@@ -1932,11 +1933,17 @@ int mastoapi_post_handler(const xs_dict *req, const char *q_path,
                     }
                     else
                     if (strcmp(op, "pin") == 0) { /** **/
-                        /* snac does not support pinning */
+                        /* pin this message */
+                        if (pin(&snac, id))
+                            out = mastoapi_status(&snac, msg);
+                        else
+                            status = 422;
                     }
                     else
                     if (strcmp(op, "unpin") == 0) { /** **/
-                        /* snac does not support pinning */
+                        /* unpin this message */
+                        unpin(&snac, id);
+                        out = mastoapi_status(&snac, msg);
                     }
                     else
                     if (strcmp(op, "mute") == 0) { /** **/
