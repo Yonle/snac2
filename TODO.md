@@ -12,6 +12,8 @@ Mastodon API: fix whatever the fuck is making the official app and Megalodon to 
 
 Improve support for audio attachments.
 
+Add a quick way to block complete domains / instances.
+
 ## Wishlist
 
 Add a list of hashtags to drop.
