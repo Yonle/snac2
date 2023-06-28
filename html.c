@@ -841,6 +841,12 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
     s = xs_str_cat(s, "<div class=\"snac-score\">"); /** **/
 
+    if (is_pinned(snac, id)) {
+        /* add a pin emoji */
+        xs *f = xs_fmt("<span title=\"%s\"> &#128204; </span>", L("Pinned"));
+        s = xs_str_cat(s, f);
+    }
+
     if (strcmp(type, "Question") == 0) {
         /* add the ballot box emoji */
         xs *f = xs_fmt("<span title=\"%s\"> &#128499; </span>", L("Poll"));
