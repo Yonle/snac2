@@ -81,7 +81,7 @@ xs_str *actor_name(xs_dict *actor)
 xs_str *html_actor_icon(xs_str *os, char *actor,
     const char *date, const char *udate, const char *url, int priv)
 {
-    xs *s = xs_str_new(NULL);
+    xs *s = xs_str_new("<div class=\"snac-post-header\">\n");
 
     xs *avatar = NULL;
     char *v;
@@ -168,6 +168,8 @@ xs_str *html_actor_icon(xs_str *os, char *actor,
 
         s = xs_str_cat(s, s1);
     }
+
+    s = xs_str_cat(s, "</div>\n");
 
     return xs_str_cat(os, s);
 }
