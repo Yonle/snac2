@@ -2,6 +2,8 @@
 
 ## 2.36
 
+Added a way to block full instances (from the command-line tool, as I consider this to be an administration priviledge).
+
 If the user style.css does not exist, the server-wide one if served instead.
 
 Fixed some crashes on badly-formatted input messages.
@@ -11,6 +13,8 @@ The image alt-text is also inserted in the 'title' attribute, so it's shown on m
 Some improvements to HTML sanitization.
 
 For polls, show the time left before it closes.
+
+Added some support for post pinning.
 
 ## 2.35
 
