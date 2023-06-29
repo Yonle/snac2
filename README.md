@@ -71,7 +71,11 @@ This will:
 
 [how to run your own ActivityPub server on OpenBSD via snac (by Jordan Reger)](https://futurist.city/~jr/activitypub-server-on-openbsd.html).
 
-[A cool, elegant CSS theme for snac (by Haijo7)](https://codeberg.org/Haijo7/snac-custom-css).
+## Incredibly awesome CSS themes for snac
+
+[A cool, elegant theme (by Haijo7)](https://codeberg.org/Haijo7/snac-custom-css).
+
+[A light, lean theme (by Ворон)](https://codeberg.org/voron/snac-style).
 
 ## License
 
