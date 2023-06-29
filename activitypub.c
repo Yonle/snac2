@@ -1994,13 +1994,22 @@ int activitypub_post_handler(const xs_dict *req, const char *q_path,
 
     /* decode the message */
     xs *msg = xs_json_loads(payload);
+    const char *id;
 
-    if (msg == NULL) {
+    if (msg == NULL || xs_is_null(id = xs_dict_get(msg, "id"))) {
         srv_log(xs_fmt("activitypub_post_handler JSON error %s", q_path));
 
         *body  = xs_str_new("JSON error");
         *ctype = "text/plain";
-        status = 400;
+        return 400;
+    }
+
+    if (is_instance_blocked(id)) {
+        srv_debug(1, xs_fmt("full instance block for %s", id));
+
+        *body  = xs_str_new("blocked");
+        *ctype = "text/plain";
+        return 403;
     }
 
     /* get the user and path */
