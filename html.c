@@ -1313,9 +1313,11 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
         xs *actor = NULL;
 
         if (valid_status(actor_get(snac, actor_id, &actor))) {
-            s = xs_str_cat(s, "<div class=\"snac-post\">\n");
+            s = xs_str_cat(s, "<div class=\"snac-post\">\n<div class=\"snac-post-header\">\n");
 
             s = html_actor_icon(s, actor, xs_dict_get(actor, "published"), NULL, NULL, 0);
+
+            s = xs_str_cat(s, "</div>\n");
 
             /* content (user bio) */
             char *c = xs_dict_get(actor, "summary");
