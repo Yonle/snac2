@@ -81,7 +81,7 @@ xs_str *actor_name(xs_dict *actor)
 xs_str *html_actor_icon(xs_str *os, char *actor,
     const char *date, const char *udate, const char *url, int priv)
 {
-    xs *s = xs_str_new("<div class=\"snac-post-header\">\n");
+    xs *s = xs_str_new(NULL);
 
     xs *avatar = NULL;
     char *v;
@@ -168,8 +168,6 @@ xs_str *html_actor_icon(xs_str *os, char *actor,
 
         s = xs_str_cat(s, s1);
     }
-
-    s = xs_str_cat(s, "</div>\n");
 
     return xs_str_cat(os, s);
 }
@@ -807,14 +805,14 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     }
 
     if (strcmp(type, "Follow") == 0) {
-        s = xs_str_cat(s, "<div class=\"snac-post\">\n");
+        s = xs_str_cat(s, "<div class=\"snac-post\">\n<div class=\"snac-post-header\">\n");
 
         xs *s1 = xs_fmt("<div class=\"snac-origin\">%s</div>\n", L("follows you"));
         s = xs_str_cat(s, s1);
 
         s = html_msg_icon(snac, s, msg);
 
-        s = xs_str_cat(s, "</div>\n");
+        s = xs_str_cat(s, "</div>\n</div>\n");
 
         return xs_str_cat(os, s);
     }
@@ -839,7 +837,12 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     if (strcmp(actor, snac->actor) != 0 && !valid_status(actor_get(snac, actor, NULL)))
         return os;
 
-    s = xs_str_cat(s, "<div class=\"snac-score\">"); /** **/
+    if (level == 0)
+        s = xs_str_cat(s, "<div class=\"snac-post\">\n"); /** **/
+    else
+        s = xs_str_cat(s, "<div class=\"snac-child\">\n"); /** **/
+
+    s = xs_str_cat(s, "<div class=\"snac-post-header\">\n<div class=\"snac-score\">"); /** **/
 
     if (is_pinned(snac, id)) {
         /* add a pin emoji */
@@ -872,11 +875,6 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     }
 
     s = xs_str_cat(s, "</div>\n");
-
-    if (level == 0)
-        s = xs_str_cat(s, "<div class=\"snac-post\">\n"); /** **/
-    else
-        s = xs_str_cat(s, "<div class=\"snac-child\">\n"); /** **/
 
     if (boosts == NULL)
         boosts = object_announces(id);
@@ -934,7 +932,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     s = html_msg_icon(snac, s, msg);
 
     /* add the content */
-    s = xs_str_cat(s, "<div class=\"e-content snac-content\">\n"); /** **/
+    s = xs_str_cat(s, "</div>\n<div class=\"e-content snac-content\">\n"); /** **/
 
     /* is it sensitive? */
     if (!xs_is_null(v = xs_dict_get(msg, "sensitive")) && xs_type(v) == XSTYPE_TRUE) {
