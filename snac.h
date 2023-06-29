@@ -161,6 +161,10 @@ void inbox_add(const char *inbox);
 void inbox_add_by_actor(const xs_dict *actor);
 xs_list *inbox_list(void);
 
+int is_instance_blocked(const char *instance);
+int instance_block(const char *instance);
+int instance_unblock(const char *instance);
+
 void enqueue_input(snac *snac, const xs_dict *msg, const xs_dict *req, int retries);
 void enqueue_output_raw(const char *keyid, const char *seckey,
                         xs_dict *msg, xs_str *inbox, int retries);

@@ -1751,6 +1751,72 @@ xs_list *inbox_list(void)
 }
 
 
+/** instance-wide operations **/
+
+xs_str *_instance_block_fn(const char *instance)
+{
+    xs *s1  = xs_replace(instance, "https:/" "/", "");
+    xs *l   = xs_split(s1, "/");
+    char *p = xs_list_get(l, 0);
+    xs *md5 = xs_md5_hex(p, strlen(p));
+
+    return xs_fmt("%s/block/%s", srv_basedir, md5);
+}
+
+
+int is_instance_blocked(const char *instance)
+{
+    xs *fn = _instance_block_fn(instance);
+
+    return !!(mtime(fn) != 0.0);
+}
+
+
+int instance_block(const char *instance)
+/* blocks a full instance */
+{
+    int ret;
+
+    /* create the subdir */
+    xs *dir = xs_fmt("%s/block/", srv_basedir);
+    mkdirx(dir);
+
+    if (!is_instance_blocked(instance)) {
+        xs *fn = _instance_block_fn(instance);
+        FILE *f;
+
+        if ((f = fopen(fn, "w")) != NULL) {
+            fprintf(f, "%s\n", instance);
+            fclose(f);
+
+            ret = 0;
+        }
+        else
+            ret = -1;
+    }
+    else
+        ret = -2;
+
+    return ret;
+}
+
+
+int instance_unblock(const char *instance)
+/* unblocks a full instance */
+{
+    int ret;
+
+    if (is_instance_blocked(instance)) {
+        xs *fn = _instance_block_fn(instance);
+        ret = unlink(fn);
+    }
+    else
+        ret = -2;
+
+    return ret;
+}
+
+
 /** notifications **/
 
 xs_str *notify_check_time(snac *snac, int reset)
