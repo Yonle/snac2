@@ -33,6 +33,9 @@ int usage(void)
     printf("webfinger_s {basedir} {uid} {actor} Queries about an actor (@user@host or actor url)\n");
     printf("pin {basedir} {uid} {msg_url}       Pins a message\n");
     printf("unpin {basedir} {uid} {msg_url}     Unpins a message\n");
+    printf("block {basedir} {instance_url}      Blocks a full instance\n");
+    printf("unblock {basedir} {instance_url}    Unblocks a full instance\n");
+
 /*    printf("question {basedir} {uid} 'opts'  Generates a poll (;-separated opts)\n");*/
 
     return 1;
@@ -126,6 +129,28 @@ int main(int argc, char *argv[])
 
     if ((user = GET_ARGV()) == NULL)
         return usage();
+
+    if (strcmp(cmd, "block") == 0) { /** **/
+        int ret = instance_block(user);
+
+        if (ret < 0) {
+            fprintf(stderr, "Error blocking instance %s: %d\n", user, ret);
+            return 1;
+        }
+
+        return 0;
+    }
+
+    if (strcmp(cmd, "unblock") == 0) { /** **/
+        int ret = instance_unblock(user);
+
+        if (ret < 0) {
+            fprintf(stderr, "Error unblocking instance %s: %d\n", user, ret);
+            return 1;
+        }
+
+        return 0;
+    }
 
     if (strcmp(cmd, "webfinger") == 0) { /** **/
         xs *actor = NULL;
