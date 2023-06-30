@@ -16,6 +16,8 @@ Add a quick way to block complete domains / instances.
 
 Add support for pinning posts.
 
+Important: deleting a follower should do more that just delete the object, see https://codeberg.org/grunfink/snac2/issues/43#issuecomment-956721
+
 ## Wishlist
 
 Add a list of hashtags to drop.
