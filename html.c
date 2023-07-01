@@ -1302,10 +1302,12 @@ xs_str *html_timeline(snac *snac, const xs_list *list, int local, int skip, int 
 d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *header, const char *t)
 {
     xs *s = xs_str_new(NULL);
-    xs *h = xs_fmt("<h2>%s</h2>\n", header);
+    xs *h = xs_fmt("<h2 class=\"snac-header\">%s</h2>\n", header);
     char *p, *actor_id;
 
     s = xs_str_cat(s, h);
+
+    s = xs_str_cat(s, "<div class=\"snac-posts\">\n");
 
     p = list;
     while (xs_list_iter(&p, &actor_id)) {
@@ -1394,6 +1396,8 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
         }
     }
 
+    s = xs_str_cat(s, "</div>\n");
+
     return xs_str_cat(os, s);
 }
 
@@ -1464,8 +1468,10 @@ xs_str *html_notifications(snac *snac)
         if (strcmp(v, n_time) > 0) {
             /* unseen notification */
             if (stage == NHDR_NONE) {
-                xs *s1 = xs_fmt("<h2>%s</h2>\n", L("New"));
+                xs *s1 = xs_fmt("<h2 class=\"snac-header\">%s</h2>\n", L("New"));
                 s = xs_str_cat(s, s1);
+
+                s = xs_str_cat(s, "<div class=\"snac-posts\">\n");
 
                 stage = NHDR_NEW;
             }
@@ -1473,14 +1479,17 @@ xs_str *html_notifications(snac *snac)
         else {
             /* already seen notification */
             if (stage != NHDR_OLD) {
-                xs *s1 = xs_fmt("<h2>%s</h2>\n", L("Already seen"));
+                if (stage == NHDR_NEW)
+                    s = xs_str_cat(s, "</div>\n");
+
+                xs *s1 = xs_fmt("<h2 class=\"snac-header\">%s</h2>\n", L("Already seen"));
                 s = xs_str_cat(s, s1);
+
+                s = xs_str_cat(s, "<div class=\"snac-posts\">\n");
 
                 stage = NHDR_OLD;
             }
         }
-
-        s = xs_str_cat(s, "<div>\n");
 
         const char *label = type;
 
@@ -1490,7 +1499,8 @@ xs_str *html_notifications(snac *snac)
         if (strcmp(type, "Update") == 0 && strcmp(utype, "Question") == 0)
             label = L("Finished poll");
 
-        xs *s1 = xs_fmt("<p><b>%s by <a href=\"%s\">%s</a></b>:</p>\n",
+        xs *s1 = xs_fmt("<div class=\"snac-post-with-desc\">\n"
+                        "<p><b>%s by <a href=\"%s\">%s</a></b>:</p>\n",
             label, actor_id, a_name);
         s = xs_str_cat(s, s1);
 
@@ -1511,9 +1521,11 @@ xs_str *html_notifications(snac *snac)
     }
 
     if (stage == NHDR_NONE) {
-        xs *s1 = xs_fmt("<h2>%s</h2>\n", L("None"));
-         s = xs_str_cat(s, s1);
+        xs *s1 = xs_fmt("<h2 class=\"snac-header\">%s</h2>\n", L("None"));
+        s = xs_str_cat(s, s1);
     }
+    else
+        s = xs_str_cat(s, "</div>\n");
 
     s = html_user_footer(s);
 
