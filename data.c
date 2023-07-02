@@ -1533,19 +1533,44 @@ xs_str *_static_fn(snac *snac, const char *id)
 }
 
 
-int static_get(snac *snac, const char *id, xs_val **data, int *size)
+int static_get(snac *snac, const char *id, xs_val **data, int *size,
+                const char *inm, xs_str **etag)
 /* returns static content */
 {
     xs *fn = _static_fn(snac, id);
-    FILE *f;
     int status = 404;
 
-    if (fn && (f = fopen(fn, "rb")) != NULL) {
-        *size = XS_ALL;
-        *data = xs_read(f, size);
-        fclose(f);
+    if (fn) {
+        double tm = mtime(fn);
 
-        status = 200;
+        if (tm > 0.0) {
+            /* file exists; build the etag */
+            xs *e = xs_fmt("W/\"snac-%.0lf\"", tm);
+
+            /* if if-none-match is set, check if it's the same */
+            if (!xs_is_null(inm) && strcmp(e, inm) == 0) {
+                /* client has the newest version */
+                status = 304;
+            }
+            else {
+                /* newer or never downloaded; read the full file */
+                FILE *f;
+
+                if ((f = fopen(fn, "rb")) != NULL) {
+                    *size = XS_ALL;
+                    *data = xs_read(f, size);
+                    fclose(f);
+
+                    status = 200;
+                }
+            }
+
+            /* if caller wants the etag, return it */
+            if (etag != NULL)
+                *etag = xs_dup(e);
+
+            srv_debug(1, xs_fmt("static_get(): %d %s %s", status, id, e));
+        }
     }
 
     return status;

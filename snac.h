@@ -137,7 +137,7 @@ int is_hidden(snac *snac, const char *id);
 int actor_add(const char *actor, xs_dict *msg);
 int actor_get(snac *snac, const char *actor, xs_dict **data);
 
-int static_get(snac *snac, const char *id, xs_val **data, int *size);
+int static_get(snac *snac, const char *id, xs_val **data, int *size, const char *inm, xs_str **etag);
 void static_put(snac *snac, const char *id, const char *data, int size);
 void static_put_meta(snac *snac, const char *id, const char *str);
 xs_str *static_get_meta(snac *snac, const char *id);
@@ -250,7 +250,7 @@ xs_str *not_really_markdown(const char *content, xs_list **attach);
 xs_str *sanitize(const char *content);
 
 int html_get_handler(const xs_dict *req, const char *q_path,
-                     char **body, int *b_size, char **ctype);
+                     char **body, int *b_size, char **ctype, xs_str **etag);
 int html_post_handler(const xs_dict *req, const char *q_path,
                       char *payload, int p_size,
                       char **body, int *b_size, char **ctype);

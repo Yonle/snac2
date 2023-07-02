@@ -226,7 +226,7 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
         int size;
 
         /* try to open the user css */
-        if (!valid_status(static_get(snac, "style.css", &css, &size))) {
+        if (!valid_status(static_get(snac, "style.css", &css, &size, NULL, NULL))) {
             /* it's not there; try to open the server-wide css */
             FILE *f;
             xs *g_css_fn = xs_fmt("%s/style.css", srv_basedir);
@@ -1542,7 +1542,7 @@ xs_str *html_notifications(snac *snac)
 
 
 int html_get_handler(const xs_dict *req, const char *q_path,
-                     char **body, int *b_size, char **ctype)
+                     char **body, int *b_size, char **ctype, xs_str **etag)
 {
     char *accept = xs_dict_get(req, "accept");
     int status = 404;
@@ -1695,10 +1695,12 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         char *id = xs_list_get(l, 1);
         int sz;
 
-        if (valid_status(static_get(&snac, id, body, &sz))) {
+        status = static_get(&snac, id, body, &sz,
+                        xs_dict_get(req, "if-none-match"), etag);
+
+        if (valid_status(status)) {
             *b_size = sz;
             *ctype  = xs_mime_by_ext(id);
-            status  = 200;
         }
     }
     else

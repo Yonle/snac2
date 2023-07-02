@@ -156,6 +156,7 @@ void httpd_connection(FILE *f)
     xs *headers  = NULL;
     xs *q_path   = NULL;
     xs *payload  = NULL;
+    xs *etag     = NULL;
     int p_size   = 0;
     char *p;
 
@@ -198,7 +199,7 @@ void httpd_connection(FILE *f)
 #endif /* NO_MASTODON_API */
 
         if (status == 0)
-            status = html_get_handler(req, q_path, &body, &b_size, &ctype);
+            status = html_get_handler(req, q_path, &body, &b_size, &ctype, &etag);
     }
     else
     if (strcmp(method, "POST") == 0) {
@@ -262,6 +263,9 @@ void httpd_connection(FILE *f)
 
     headers = xs_dict_append(headers, "content-type", ctype);
     headers = xs_dict_append(headers, "x-creator",    USER_AGENT);
+
+    if (!xs_is_null(etag))
+        headers = xs_dict_append(headers, "etag", etag);
 
     if (b_size == 0 && body != NULL)
         b_size = strlen(body);
