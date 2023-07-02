@@ -26,8 +26,6 @@ Add a per-account toggle to [un]mute their Announces.
 
 Add domain/subdomain flexibility according to https://codeberg.org/grunfink/snac2/issues/3
 
-Implement HTTP caches (If-None-Match / ETag). I'm not sure if it's worth the effort.
-
 The 'history' pages are just monthly HTML snapshots of the local timeline. This is ok and cheap and easy, but is problematic if you e.g. intentionally delete a post because it will remain there in the history forever. If you activate local timeline purging, purged entries will remain in the history as 'ghosts', which may or may not be what the user wants.
 
 Implement bulleted lists. Mastodon is crap and won't show them, but other implementations (Friendica, Pleroma) will do.
@@ -260,3 +258,5 @@ Fix premature purge of actor by hardlinking the actor object inside the user `fo
 Replace weird, vestigial 'touch-by-append-spaces' in actor_get() with a more proper call to `utimes()` (2023-06-23T06:46:56+0200).
 
 With this new disk layout, hidden posts (and their children) can be directly skipped when rendering the HTML timeline (are there any other implications?) (2023-06-23T06:48:51+0200).
+
+Implement HTTP caches (If-None-Match / ETag) (2023-07-02T11:11:20+0200).
