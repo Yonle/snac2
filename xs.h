@@ -122,6 +122,7 @@ xs_str *xs_hex_enc(const xs_val *data, int size);
 xs_val *xs_hex_dec(const xs_str *hex, int *size);
 int xs_is_hex(const char *str);
 
+unsigned int xs_hash_func(const char *data, int size);
 
 #ifdef XS_ASSERT
 #include <assert.h>
@@ -135,6 +136,8 @@ int xs_is_hex(const char *str);
 extern xs_val xs_stock_null[];
 extern xs_val xs_stock_true[];
 extern xs_val xs_stock_false[];
+
+#define xs_return(v) xs_val *__r = v; v = NULL; return __r
 
 
 #ifdef XS_IMPLEMENTATION
@@ -1183,6 +1186,21 @@ int xs_is_hex(const char *str)
     }
 
     return 1;
+}
+
+
+unsigned int xs_hash_func(const char *data, int size)
+/* a general purpose hashing function */
+{
+    unsigned int hash = 0x666;
+    int n;
+
+    for (n = 0; n < size; n++) {
+        hash ^= data[n];
+        hash *= 111111111;
+    }
+
+    return hash ^ hash >> 16;
 }
 
 

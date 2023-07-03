@@ -51,26 +51,12 @@ void xs_set_free(xs_set *s)
 }
 
 
-static unsigned int _calc_hash(const char *data, int size)
-{
-    unsigned int hash = 0x666;
-    int n;
-
-    for (n = 0; n < size; n++) {
-        hash ^= data[n];
-        hash *= 111111111;
-    }
-
-    return hash ^ hash >> 16;
-}
-
-
 static int _store_hash(xs_set *s, const char *data, int value)
 {
     unsigned int hash, i;
     int sz = xs_size(data);
 
-    hash = _calc_hash(data, sz);
+    hash = xs_hash_func(data, sz);
 
     while (s->hash[(i = hash % s->elems)]) {
         /* get the pointer to the stored data */
