@@ -18,6 +18,8 @@ For polls, show the time left before it closes.
 
 Added some support for post pinning.
 
+Fixed a bug that prevented unfollows to be shown in the notification area.
+
 ## 2.35
 
 Fixed broken URL links with the # symbol on them.
