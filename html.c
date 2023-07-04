@@ -1437,7 +1437,7 @@ xs_str *html_notifications(snac *snac)
         "<form autocomplete=\"off\" "
         "method=\"post\" action=\"%s/admin/clear-notifications\" id=\"clear\">\n"
         "<input type=\"submit\" class=\"snac-btn-like\" value=\"%s\">\n"
-        "</form><p>", snac->actor, L("Clear all"));
+        "</form><p>\n", snac->actor, L("Clear all"));
     s = xs_str_cat(s, s1);
 
     while (xs_list_iter(&p, &v)) {
@@ -1498,13 +1498,16 @@ xs_str *html_notifications(snac *snac)
         else
         if (strcmp(type, "Update") == 0 && strcmp(utype, "Question") == 0)
             label = L("Finished poll");
+        else
+        if (strcmp(type, "Undo") == 0 && strcmp(utype, "Follow") == 0)
+            label = L("Unfollow");
 
         xs *s1 = xs_fmt("<div class=\"snac-post-with-desc\">\n"
                         "<p><b>%s by <a href=\"%s\">%s</a></b>:</p>\n",
             label, actor_id, a_name);
         s = xs_str_cat(s, s1);
 
-        if (strcmp(type, "Follow") == 0) {
+        if (strcmp(type, "Follow") == 0 || strcmp(utype, "Follow") == 0) {
             s = xs_str_cat(s, "<div class=\"snac-post\">\n");
 
             s = html_msg_icon(snac, s, obj);
