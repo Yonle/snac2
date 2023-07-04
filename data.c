@@ -862,6 +862,7 @@ int _object_user_cache(snac *snac, const char *id, const char *cachedir, int del
 
     if (del) {
         ret = unlink(cfn);
+        index_del(idx, id);
     }
     else {
         if ((ret = link(ofn, cfn)) != -1)
