@@ -688,6 +688,8 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
 
     if (!xs_is_null(prev_src1) && strcmp(actor, snac->actor) == 0) {
         xs *prev_src = xs_replace(prev_src1, "<", "&lt;");
+        const xs_val *sensitive = xs_dict_get(msg, "sensitive");
+        const char *summary = xs_dict_get(msg, "summary");
 
         /* post can be edited */
         xs *s1 = xs_fmt(
@@ -699,8 +701,8 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
             "<input type=\"hidden\" name=\"edit_id\" value=\"%s\">\n"
 
-            "<p>%s: <input type=\"checkbox\" name=\"sensitive\"> "
-            "<input type=\"text\" name=\"summary\" placeholder=\"%s\">\n"
+            "<p>%s: <input type=\"checkbox\" name=\"sensitive\" %s> "
+            "<input type=\"text\" name=\"summary\" placeholder=\"%s\" value=\"%s\">\n"
             "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
 
             "<details><summary>%s</summary>\n"
@@ -720,7 +722,9 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             prev_src,
             id,
             L("Sensitive content"),
+            xs_type(sensitive) == XSTYPE_TRUE ? "checked" : "",
             L("Sensitive content description"),
+            summary,
             L("Only for mentioned people"),
             L("Attach..."),
             L("File"),
