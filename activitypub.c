@@ -686,8 +686,11 @@ void notify(snac *snac, const char *type, const char *utype, const char *actor, 
         enqueue_telegram(body, bot, chat_id);
 
     /* finally, store it in the notification folder */
-    if (strcmp(type, "Follow") == 0 || strcmp(utype, "Follow") == 0)
+    if (strcmp(type, "Follow") == 0)
         objid = id;
+    else
+    if (strcmp(utype, "Follow") == 0)
+        objid = actor;
 
     notify_add(snac, type, utype, actor, objid != NULL ? objid : id);
 }

@@ -1510,7 +1510,7 @@ xs_str *html_notifications(snac *snac)
         if (strcmp(type, "Follow") == 0 || strcmp(utype, "Follow") == 0) {
             s = xs_str_cat(s, "<div class=\"snac-post\">\n");
 
-            s = html_msg_icon(snac, s, obj);
+            s = html_actor_icon(s, actor, NULL, NULL, NULL, 0);
 
             s = xs_str_cat(s, "</div>\n");
         }
