@@ -686,7 +686,7 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
 
     const char *prev_src1 = xs_dict_get(msg, "sourceContent");
 
-    if (!xs_is_null(prev_src1) && strcmp(actor, snac->actor) == 0) {
+    if (!xs_is_null(prev_src1) && strcmp(actor, snac->actor) == 0) { /** edit **/
         xs *prev_src = xs_replace(prev_src1, "<", "&lt;");
         const xs_val *sensitive = xs_dict_get(msg, "sensitive");
         const char *summary = xs_dict_get(msg, "summary");
@@ -724,7 +724,7 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             L("Sensitive content"),
             xs_type(sensitive) == XSTYPE_TRUE ? "checked" : "",
             L("Sensitive content description"),
-            summary,
+            xs_is_null(summary) ? "" : summary,
             L("Only for mentioned people"),
             L("Attach..."),
             L("File"),
@@ -736,9 +736,12 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
         s = xs_str_cat(s, s1);
     }
 
-    {
+    { /** reply **/
         /* the post textarea */
         xs *ct = build_mentions(snac, msg);
+
+        const xs_val *sensitive = xs_dict_get(msg, "sensitive");
+        const char *summary = xs_dict_get(msg, "summary");
 
         xs *s1 = xs_fmt(
             "<p><details><summary>%s</summary>\n"
@@ -749,8 +752,8 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
             "<input type=\"hidden\" name=\"in_reply_to\" value=\"%s\">\n"
 
-            "<p>%s: <input type=\"checkbox\" name=\"sensitive\"> "
-            "<input type=\"text\" name=\"summary\" placeholder=\"%s\">\n"
+            "<p>%s: <input type=\"checkbox\" name=\"sensitive\" %s> "
+            "<input type=\"text\" name=\"summary\" placeholder=\"%s\" value=\"%s\">\n"
             "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
 
             "<details><summary>%s</summary>\n"
@@ -770,7 +773,9 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             ct,
             id,
             L("Sensitive content"),
+            xs_type(sensitive) == XSTYPE_TRUE ? "checked" : "",
             L("Sensitive content description"),
+            xs_is_null(summary) ? "" : summary,
             L("Only for mentioned people"),
             L("Attach..."),
             L("File"),
