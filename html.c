@@ -387,7 +387,8 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<textarea class=\"snac-textarea\" name=\"content\" "
         "rows=\"8\" wrap=\"virtual\" required=\"required\"></textarea>\n"
         "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
-        "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
+        "<p>%s: <input type=\"checkbox\" name=\"sensitive\"> "
+        "<input type=\"text\" name=\"summary\" placeholder=\"%s\">\n"
         "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
 
         "<details><summary>%s</summary>\n" /** attach **/
@@ -512,6 +513,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
         L("Sensitive content"),
+        L("Sensitive content description"),
         L("Only for mentioned people"),
 
         L("Attach..."),
@@ -697,7 +699,8 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
             "<input type=\"hidden\" name=\"edit_id\" value=\"%s\">\n"
 
-            "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
+            "<p>%s: <input type=\"checkbox\" name=\"sensitive\"> "
+            "<input type=\"text\" name=\"summary\" placeholder=\"%s\">\n"
             "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
 
             "<details><summary>%s</summary>\n"
@@ -717,6 +720,7 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             prev_src,
             id,
             L("Sensitive content"),
+            L("Sensitive content description"),
             L("Only for mentioned people"),
             L("Attach..."),
             L("File"),
@@ -741,7 +745,8 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
             "<input type=\"hidden\" name=\"in_reply_to\" value=\"%s\">\n"
 
-            "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
+            "<p>%s: <input type=\"checkbox\" name=\"sensitive\"> "
+            "<input type=\"text\" name=\"summary\" placeholder=\"%s\">\n"
             "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
 
             "<details><summary>%s</summary>\n"
@@ -761,6 +766,7 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             ct,
             id,
             L("Sensitive content"),
+            L("Sensitive content description"),
             L("Only for mentioned people"),
             L("Attach..."),
             L("File"),
@@ -1846,6 +1852,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
         xs_list *attach_file = xs_dict_get(p_vars, "attach");
         xs_str *to           = xs_dict_get(p_vars, "to");
         xs_str *sensitive    = xs_dict_get(p_vars, "sensitive");
+        xs_str *summary      = xs_dict_get(p_vars, "summary");
         xs_str *edit_id      = xs_dict_get(p_vars, "edit_id");
         xs_str *alt_text     = xs_dict_get(p_vars, "alt_text");
         int priv             = !xs_is_null(xs_dict_get(p_vars, "mentioned_only"));
@@ -1924,7 +1931,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
 
             if (sensitive != NULL) {
                 msg = xs_dict_set(msg, "sensitive", xs_stock_true);
-                msg = xs_dict_set(msg, "summary",   "...");
+                msg = xs_dict_set(msg, "summary",   xs_is_null(summary) ? "..." : summary);
             }
 
             if (xs_is_null(edit_id)) {
