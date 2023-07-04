@@ -839,6 +839,7 @@ xs_dict *msg_actor(snac *snac)
     xs *ctxt     = xs_list_new();
     xs *icon     = xs_dict_new();
     xs *keys     = xs_dict_new();
+    xs *tags     = xs_list_new();
     xs *avtr     = NULL;
     xs *kid      = NULL;
     xs *f_bio    = NULL;
@@ -856,8 +857,10 @@ xs_dict *msg_actor(snac *snac)
     msg = xs_dict_set(msg, "preferredUsername", snac->uid);
     msg = xs_dict_set(msg, "published",         xs_dict_get(snac->config, "published"));
 
-    f_bio = not_really_markdown(xs_dict_get(snac->config, "bio"), NULL);
+    xs *f_bio_2 = not_really_markdown(xs_dict_get(snac->config, "bio"), NULL);
+    process_tags(snac, f_bio_2, &f_bio, &tags);
     msg = xs_dict_set(msg, "summary", f_bio);
+    msg = xs_dict_set(msg, "tag", tags);
 
     char *folders[] = { "inbox", "outbox", "followers", "following", NULL };
     for (n = 0; folders[n]; n++) {
