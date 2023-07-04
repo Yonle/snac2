@@ -449,7 +449,7 @@ int is_msg_for_me(snac *snac, const xs_dict *c_msg)
 }
 
 
-void process_tags(snac *snac, const char *content, xs_str **n_content, xs_list **tag)
+xs_str *process_tags(snac *snac, const char *content, xs_list **tag)
 /* parses mentions and tags from content */
 {
     xs_str *nc  = xs_str_new(NULL);
@@ -559,8 +559,9 @@ void process_tags(snac *snac, const char *content, xs_str **n_content, xs_list *
         n++;
     }
 
-    *n_content = nc;
-    *tag       = tl;
+    *tag = tl;
+
+    return nc;
 }
 
 
@@ -858,7 +859,7 @@ xs_dict *msg_actor(snac *snac)
     msg = xs_dict_set(msg, "published",         xs_dict_get(snac->config, "published"));
 
     xs *f_bio_2 = not_really_markdown(xs_dict_get(snac->config, "bio"), NULL);
-    process_tags(snac, f_bio_2, &f_bio, &tags);
+    f_bio = process_tags(snac, f_bio_2, &tags);
     msg = xs_dict_set(msg, "summary", f_bio);
     msg = xs_dict_set(msg, "tag", tags);
 
@@ -1059,7 +1060,7 @@ xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
         irt = xs_val_new(XSTYPE_NULL);
 
     /* extract the mentions and hashtags and convert the content */
-    process_tags(snac, fc2, &fc1, &tag);
+    fc1 = process_tags(snac, fc2, &tag);
 
     /* create the attachment list, if there are any */
     if (!xs_is_null(attach)) {
