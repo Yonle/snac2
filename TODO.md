@@ -16,10 +16,6 @@ Add support for pinning posts.
 
 Important: deleting a follower should do more that just delete the object, see https://codeberg.org/grunfink/snac2/issues/43#issuecomment-956721
 
-Add a content warning description.
-
-Propagate the CW status and description from the replied messaage.
-
 ## Wishlist
 
 Add a list of hashtags to drop.
@@ -267,3 +263,7 @@ Implement HTTP caches (If-None-Match / ETag) (2023-07-02T11:11:20+0200).
 Add a quick way to block complete domains / instances (2023-07-04T14:35:44+0200).
 
 _object_user_cache() should call index_del() (2023-07-04T14:36:37+0200).
+
+Add a content warning description (2023-07-04T15:02:19+0200).
+
+Propagate the CW status and description from the replied message (2023-07-04T15:02:19+0200).
