@@ -16,6 +16,10 @@ Add support for pinning posts.
 
 Important: deleting a follower should do more that just delete the object, see https://codeberg.org/grunfink/snac2/issues/43#issuecomment-956721
 
+Add a content warning description.
+
+Propagate the CW status and description from the replied messaage.
+
 ## Wishlist
 
 Add a list of hashtags to drop.
