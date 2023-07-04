@@ -496,9 +496,11 @@ xs_list *index_list(const char *fn, int max)
         list = xs_list_new();
 
         while (n < max && fgets(line, sizeof(line), f) != NULL) {
-            line[32] = '\0';
-            list = xs_list_append(list, line);
-            n++;
+            if (line[0] != '-') {
+                line[32] = '\0';
+                list = xs_list_append(list, line);
+                n++;
+            }
         }
 
         fclose(f);
@@ -524,9 +526,11 @@ xs_list *index_list_desc(const char *fn, int skip, int show)
         /* move to the end minus one entry (or more, if skipping entries) */
         if (!fseek(f, 0, SEEK_END) && !fseek(f, (skip + 1) * -33, SEEK_CUR)) {
             while (n < show && fgets(line, sizeof(line), f) != NULL) {
-                line[32] = '\0';
-                list = xs_list_append(list, line);
-                n++;
+                if (line[0] != '-') {
+                    line[32] = '\0';
+                    list = xs_list_append(list, line);
+                    n++;
+                }
 
                 /* move backwards 2 entries */
                 if (fseek(f, -66, SEEK_CUR) == -1)
