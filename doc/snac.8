@@ -281,6 +281,10 @@ format) from the Mastodon web interface and execute this:
 awk -F, 'NR > 1 { print $1 }' /path/to/following_accounts.csv | \\
 xargs -n 1 snac follow $SNAC_BASEDIR $SNAC_USER
 .Ed
+.Ss Instance blocking
+Full instances can be blocked. This operation must be done from
+the command-line tool. See
+.Xr snac 1 .
 .Ss Other Considerations
 .Nm
 stores all the messages it receives as JSON files, which are usually

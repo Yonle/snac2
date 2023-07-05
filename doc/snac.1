@@ -204,6 +204,12 @@ Enqueues a Create + Note message to all followers. If the
 argument is -e,  the external editor defined by the EDITOR
 environment variable will be invoked to prepare a message; if
 it's - (a lonely hyphen), the post content will be read from stdin.
+.It Cm block Ar basedir Ar instance_url
+Blocks a full instance, given its URL or domain name. All subsequent
+incoming activities with identifiers from that instance will be immediately
+blocked without further inspection.
+.It Cm unblock Ar basedir Ar instance_url
+Unblocks a previously blocked instance.
 .El
 .Ss Migrating an account from Mastodon
 See 
