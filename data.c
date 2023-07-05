@@ -1574,7 +1574,7 @@ int static_get(snac *snac, const char *id, xs_val **data, int *size,
             if (etag != NULL)
                 *etag = xs_dup(e);
 
-            srv_debug(1, xs_fmt("static_get(): %d %s %s", status, id, e));
+            srv_debug(1, xs_fmt("static_get(): %s %d", id, status));
         }
     }
 
