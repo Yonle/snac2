@@ -12,8 +12,6 @@ Mastodon API: fix whatever the fuck is making the official app and Megalodon to 
 
 Improve support for audio attachments.
 
-Add a quick way to block complete domains / instances.
-
 Add support for pinning posts.
 
 Important: deleting a follower should do more that just delete the object, see https://codeberg.org/grunfink/snac2/issues/43#issuecomment-956721
@@ -33,7 +31,8 @@ Implement bulleted lists. Mastodon is crap and won't show them, but other implem
 User request: "will it be possible to click on a link and instead of opening the original instance, we'll be able only to see a list of the posts of this person here in comam?. Something like Mastodon does."
 
 Test all the possible XSS vulnerabilities in https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/big-list-of-naughty-strings.txt
-Minor data storage housekeeping: index_list() and index_list_desc() should not return deleted (i.e. dash prefixed) entries; _object_user_cache() should call index_del() (?).
+
+index_list() and index_list_desc() should not return deleted (i.e. dash prefixed) entries.
 
 ## Closed
 
@@ -260,3 +259,11 @@ Replace weird, vestigial 'touch-by-append-spaces' in actor_get() with a more pro
 With this new disk layout, hidden posts (and their children) can be directly skipped when rendering the HTML timeline (are there any other implications?) (2023-06-23T06:48:51+0200).
 
 Implement HTTP caches (If-None-Match / ETag) (2023-07-02T11:11:20+0200).
+
+Add a quick way to block complete domains / instances (2023-07-04T14:35:44+0200).
+
+_object_user_cache() should call index_del() (2023-07-04T14:36:37+0200).
+
+Add a content warning description (2023-07-04T15:02:19+0200).
+
+Propagate the CW status and description from the replied message (2023-07-04T15:02:19+0200).

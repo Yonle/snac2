@@ -449,7 +449,7 @@ int is_msg_for_me(snac *snac, const xs_dict *c_msg)
 }
 
 
-void process_tags(snac *snac, const char *content, xs_str **n_content, xs_list **tag)
+xs_str *process_tags(snac *snac, const char *content, xs_list **tag)
 /* parses mentions and tags from content */
 {
     xs_str *nc  = xs_str_new(NULL);
@@ -559,8 +559,9 @@ void process_tags(snac *snac, const char *content, xs_str **n_content, xs_list *
         n++;
     }
 
-    *n_content = nc;
-    *tag       = tl;
+    *tag = tl;
+
+    return nc;
 }
 
 
@@ -688,6 +689,9 @@ void notify(snac *snac, const char *type, const char *utype, const char *actor, 
     /* finally, store it in the notification folder */
     if (strcmp(type, "Follow") == 0)
         objid = id;
+    else
+    if (strcmp(utype, "Follow") == 0)
+        objid = actor;
 
     notify_add(snac, type, utype, actor, objid != NULL ? objid : id);
 }
@@ -836,6 +840,7 @@ xs_dict *msg_actor(snac *snac)
     xs *ctxt     = xs_list_new();
     xs *icon     = xs_dict_new();
     xs *keys     = xs_dict_new();
+    xs *tags     = xs_list_new();
     xs *avtr     = NULL;
     xs *kid      = NULL;
     xs *f_bio    = NULL;
@@ -853,8 +858,10 @@ xs_dict *msg_actor(snac *snac)
     msg = xs_dict_set(msg, "preferredUsername", snac->uid);
     msg = xs_dict_set(msg, "published",         xs_dict_get(snac->config, "published"));
 
-    f_bio = not_really_markdown(xs_dict_get(snac->config, "bio"), NULL);
+    xs *f_bio_2 = not_really_markdown(xs_dict_get(snac->config, "bio"), NULL);
+    f_bio = process_tags(snac, f_bio_2, &tags);
     msg = xs_dict_set(msg, "summary", f_bio);
+    msg = xs_dict_set(msg, "tag", tags);
 
     char *folders[] = { "inbox", "outbox", "followers", "following", NULL };
     for (n = 0; folders[n]; n++) {
@@ -1053,7 +1060,7 @@ xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
         irt = xs_val_new(XSTYPE_NULL);
 
     /* extract the mentions and hashtags and convert the content */
-    process_tags(snac, fc2, &fc1, &tag);
+    fc1 = process_tags(snac, fc2, &tag);
 
     /* create the attachment list, if there are any */
     if (!xs_is_null(attach)) {

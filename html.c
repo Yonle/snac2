@@ -362,8 +362,10 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
         s = xs_str_cat(s, s1);
 
         if (local) {
-            xs *bio = not_really_markdown(xs_dict_get(snac->config, "bio"), NULL);
-            xs *s1  = xs_fmt("<div class=\"p-note snac-top-user-bio\">%s</div>\n", bio);
+            xs *bio1 = not_really_markdown(xs_dict_get(snac->config, "bio"), NULL);
+            xs *tags = xs_list_new();
+            xs *bio2 = process_tags(snac, bio1, &tags);
+            xs *s1   = xs_fmt("<div class=\"p-note snac-top-user-bio\">%s</div>\n", bio2);
 
             s = xs_str_cat(s, s1);
         }
@@ -387,7 +389,8 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<textarea class=\"snac-textarea\" name=\"content\" "
         "rows=\"8\" wrap=\"virtual\" required=\"required\"></textarea>\n"
         "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
-        "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
+        "<p>%s: <input type=\"checkbox\" name=\"sensitive\"> "
+        "<input type=\"text\" name=\"summary\" placeholder=\"%s\">\n"
         "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
 
         "<details><summary>%s</summary>\n" /** attach **/
@@ -512,6 +515,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
         L("Sensitive content"),
+        L("Sensitive content description"),
         L("Only for mentioned people"),
 
         L("Attach..."),
@@ -684,8 +688,10 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
 
     const char *prev_src1 = xs_dict_get(msg, "sourceContent");
 
-    if (!xs_is_null(prev_src1) && strcmp(actor, snac->actor) == 0) {
+    if (!xs_is_null(prev_src1) && strcmp(actor, snac->actor) == 0) { /** edit **/
         xs *prev_src = xs_replace(prev_src1, "<", "&lt;");
+        const xs_val *sensitive = xs_dict_get(msg, "sensitive");
+        const char *summary = xs_dict_get(msg, "summary");
 
         /* post can be edited */
         xs *s1 = xs_fmt(
@@ -697,7 +703,8 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
             "<input type=\"hidden\" name=\"edit_id\" value=\"%s\">\n"
 
-            "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
+            "<p>%s: <input type=\"checkbox\" name=\"sensitive\" %s> "
+            "<input type=\"text\" name=\"summary\" placeholder=\"%s\" value=\"%s\">\n"
             "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
 
             "<details><summary>%s</summary>\n"
@@ -717,6 +724,9 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             prev_src,
             id,
             L("Sensitive content"),
+            xs_type(sensitive) == XSTYPE_TRUE ? "checked" : "",
+            L("Sensitive content description"),
+            xs_is_null(summary) ? "" : summary,
             L("Only for mentioned people"),
             L("Attach..."),
             L("File"),
@@ -728,9 +738,12 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
         s = xs_str_cat(s, s1);
     }
 
-    {
+    { /** reply **/
         /* the post textarea */
         xs *ct = build_mentions(snac, msg);
+
+        const xs_val *sensitive = xs_dict_get(msg, "sensitive");
+        const char *summary = xs_dict_get(msg, "summary");
 
         xs *s1 = xs_fmt(
             "<p><details><summary>%s</summary>\n"
@@ -741,7 +754,8 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
             "<input type=\"hidden\" name=\"in_reply_to\" value=\"%s\">\n"
 
-            "<p>%s: <input type=\"checkbox\" name=\"sensitive\">\n"
+            "<p>%s: <input type=\"checkbox\" name=\"sensitive\" %s> "
+            "<input type=\"text\" name=\"summary\" placeholder=\"%s\" value=\"%s\">\n"
             "<p>%s: <input type=\"checkbox\" name=\"mentioned_only\">\n"
 
             "<details><summary>%s</summary>\n"
@@ -761,6 +775,9 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
             ct,
             id,
             L("Sensitive content"),
+            xs_type(sensitive) == XSTYPE_TRUE ? "checked" : "",
+            L("Sensitive content description"),
+            xs_is_null(summary) ? "" : summary,
             L("Only for mentioned people"),
             L("Attach..."),
             L("File"),
@@ -1437,7 +1454,7 @@ xs_str *html_notifications(snac *snac)
         "<form autocomplete=\"off\" "
         "method=\"post\" action=\"%s/admin/clear-notifications\" id=\"clear\">\n"
         "<input type=\"submit\" class=\"snac-btn-like\" value=\"%s\">\n"
-        "</form><p>", snac->actor, L("Clear all"));
+        "</form><p>\n", snac->actor, L("Clear all"));
     s = xs_str_cat(s, s1);
 
     while (xs_list_iter(&p, &v)) {
@@ -1498,16 +1515,19 @@ xs_str *html_notifications(snac *snac)
         else
         if (strcmp(type, "Update") == 0 && strcmp(utype, "Question") == 0)
             label = L("Finished poll");
+        else
+        if (strcmp(type, "Undo") == 0 && strcmp(utype, "Follow") == 0)
+            label = L("Unfollow");
 
         xs *s1 = xs_fmt("<div class=\"snac-post-with-desc\">\n"
                         "<p><b>%s by <a href=\"%s\">%s</a></b>:</p>\n",
             label, actor_id, a_name);
         s = xs_str_cat(s, s1);
 
-        if (strcmp(type, "Follow") == 0) {
+        if (strcmp(type, "Follow") == 0 || strcmp(utype, "Follow") == 0) {
             s = xs_str_cat(s, "<div class=\"snac-post\">\n");
 
-            s = html_msg_icon(snac, s, obj);
+            s = html_actor_icon(s, actor, NULL, NULL, NULL, 0);
 
             s = xs_str_cat(s, "</div>\n");
         }
@@ -1843,6 +1863,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
         xs_list *attach_file = xs_dict_get(p_vars, "attach");
         xs_str *to           = xs_dict_get(p_vars, "to");
         xs_str *sensitive    = xs_dict_get(p_vars, "sensitive");
+        xs_str *summary      = xs_dict_get(p_vars, "summary");
         xs_str *edit_id      = xs_dict_get(p_vars, "edit_id");
         xs_str *alt_text     = xs_dict_get(p_vars, "alt_text");
         int priv             = !xs_is_null(xs_dict_get(p_vars, "mentioned_only"));
@@ -1921,7 +1942,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
 
             if (sensitive != NULL) {
                 msg = xs_dict_set(msg, "sensitive", xs_stock_true);
-                msg = xs_dict_set(msg, "summary",   "...");
+                msg = xs_dict_set(msg, "summary",   xs_is_null(summary) ? "..." : summary);
             }
 
             if (xs_is_null(edit_id)) {

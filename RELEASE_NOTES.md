@@ -4,6 +4,8 @@
 
 Added proper HTTP caching when serving static files (attached images, avatars, etc.)
 
+Sensitive content messages can now have a summary (i.e. no longer limited to ...)
+
 Added a way to block full instances (from the command-line tool, as I consider this to be an administration priviledge).
 
 If the user style.css does not exist, the server-wide one if served instead.
@@ -17,6 +19,8 @@ Some improvements to HTML sanitization.
 For polls, show the time left before it closes.
 
 Added some support for post pinning.
+
+Fixed a bug that prevented unfollows to be shown in the notification area.
 
 ## 2.35
 
