@@ -901,11 +901,11 @@ int object_user_cache_in(snac *snac, const char *id, const char *cachedir)
 }
 
 
-xs_list *object_user_cache_list(snac *snac, const char *cachedir, int max)
+xs_list *object_user_cache_list(snac *snac, const char *cachedir, int max, int inv)
 /* returns the objects in a cache as a list */
 {
     xs *idx = xs_fmt("%s/%s.idx", snac->basedir, cachedir);
-    return index_list(idx, max);
+    return inv ? index_list_desc(idx, 0, max) : index_list(idx, max);
 }
 
 
@@ -945,7 +945,7 @@ int follower_check(snac *snac, const char *actor)
 xs_list *follower_list(snac *snac)
 /* returns the list of followers */
 {
-    xs *list       = object_user_cache_list(snac, "followers", XS_ALL);
+    xs *list       = object_user_cache_list(snac, "followers", XS_ALL, 0);
     xs_list *fwers = xs_list_new();
     char *p, *v;
 
@@ -1408,7 +1408,7 @@ int unpin(snac *user, const char *id)
 xs_list *pinned_list(snac *user)
 /* return the lists of pinned posts */
 {
-    return object_user_cache_list(user, "pinned", XS_ALL);
+    return object_user_cache_list(user, "pinned", XS_ALL, 1);
 }
 
 

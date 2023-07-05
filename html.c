@@ -657,9 +657,17 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
         s = xs_str_cat(s, s1);
     }
 
-    if (xs_list_in(likes, snac->md5) == -1) {
-        /* not already liked; add button */
-        s = html_button(s, "like", L("Like"));
+    if (!xs_startswith(id, snac->actor)) {
+        if (xs_list_in(likes, snac->md5) == -1) {
+            /* not already liked; add button */
+            s = html_button(s, "like", L("Like"));
+        }
+    }
+    else {
+        if (is_pinned(snac, id))
+            s = html_button(s, "unpin", L("Unpin"));
+        else
+            s = html_button(s, "pin", L("Pin"));
     }
 
     if (is_msg_public(snac, msg)) {
@@ -2088,6 +2096,16 @@ int html_post_handler(const xs_dict *req, const char *q_path,
 
                 snac_log(&snac, xs_fmt("deleted entry %s", id));
             }
+        }
+        else
+        if (strcmp(action, L("Pin")) == 0) { /** **/
+            pin(&snac, id);
+            timeline_touch(&snac);
+        }
+        else
+        if (strcmp(action, L("Unpin")) == 0) { /** **/
+            unpin(&snac, id);
+            timeline_touch(&snac);
         }
         else
             status = 404;
