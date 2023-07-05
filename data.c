@@ -485,7 +485,7 @@ int index_len(const char *fn)
 xs_list *index_list(const char *fn, int max)
 /* returns an index as a list */
 {
-    xs_list *list = NULL;
+    xs_list *list = xs_list_new();
     FILE *f;
     int n = 0;
 
@@ -493,7 +493,6 @@ xs_list *index_list(const char *fn, int max)
         flock(fileno(f), LOCK_SH);
 
         char line[256];
-        list = xs_list_new();
 
         while (n < max && fgets(line, sizeof(line), f) != NULL) {
             if (line[0] != '-') {
@@ -513,7 +512,7 @@ xs_list *index_list(const char *fn, int max)
 xs_list *index_list_desc(const char *fn, int skip, int show)
 /* returns an index as a list, in reverse order */
 {
-    xs_list *list = NULL;
+    xs_list *list = xs_list_new();
     FILE *f;
     int n = 0;
 
@@ -521,7 +520,6 @@ xs_list *index_list_desc(const char *fn, int skip, int show)
         flock(fileno(f), LOCK_SH);
 
         char line[256];
-        list = xs_list_new();
 
         /* move to the end minus one entry (or more, if skipping entries) */
         if (!fseek(f, 0, SEEK_END) && !fseek(f, (skip + 1) * -33, SEEK_CUR)) {
