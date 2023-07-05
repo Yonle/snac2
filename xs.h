@@ -96,6 +96,7 @@ int xs_list_in(const xs_list *list, const xs_val *val);
 xs_str *xs_join(const xs_list *list, const char *sep);
 xs_list *xs_split_n(const char *str, const char *sep, int times);
 #define xs_split(str, sep) xs_split_n(str, sep, XS_ALL)
+xs_list *xs_list_cat(xs_list *l1, const xs_list *l2);
 
 xs_dict *xs_dict_new(void);
 xs_dict *xs_dict_append_m(xs_dict *dict, const xs_str *key, const xs_val *mem, int dsz);
@@ -855,6 +856,17 @@ xs_list *xs_split_n(const char *str, const char *sep, int times)
     list = xs_list_append(list, str);
 
     return list;
+}
+
+
+xs_list *xs_list_cat(xs_list *l1, const xs_list *l2)
+/* concatenates list l2 to l1 */
+{
+    XS_ASSERT_TYPE(l1, XSTYPE_LIST);
+    XS_ASSERT_TYPE(l2, XSTYPE_LIST);
+
+    /* inserts at the end of l1 the content of l2 (skipping header and footer) */
+    return xs_insert_m(l1, xs_size(l1) - 1, l2 + 4, xs_size(l2) - 5);
 }
 
 
