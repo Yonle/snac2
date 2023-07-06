@@ -12,8 +12,6 @@ Mastodon API: fix whatever the fuck is making the official app and Megalodon to 
 
 Improve support for audio attachments.
 
-Add support for pinning posts.
-
 Important: deleting a follower should do more that just delete the object, see https://codeberg.org/grunfink/snac2/issues/43#issuecomment-956721
 
 ## Wishlist
@@ -32,7 +30,7 @@ User request: "will it be possible to click on a link and instead of opening the
 
 Test all the possible XSS vulnerabilities in https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/big-list-of-naughty-strings.txt
 
-index_list() and index_list_desc() should not return deleted (i.e. dash prefixed) entries.
+The actual storage system wastes too much disk space (lots of small files that really consume 4k of storage). Consider alternatives.
 
 ## Closed
 
@@ -267,3 +265,7 @@ _object_user_cache() should call index_del() (2023-07-04T14:36:37+0200).
 Add a content warning description (2023-07-04T15:02:19+0200).
 
 Propagate the CW status and description from the replied message (2023-07-04T15:02:19+0200).
+
+Add support for pinning posts (2023-07-06T10:11:35+0200).
+
+index_list() and index_list_desc() should not return deleted (i.e. dash prefixed) entries (2023-07-06T10:12:06+0200).
