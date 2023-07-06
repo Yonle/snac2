@@ -4,11 +4,13 @@
 
 Added proper HTTP caching when serving static files (attached images, avatars, etc.)
 
-Sensitive content messages can now have a summary (i.e. no longer limited to ...)
+Sensitive content messages can now have a summary.
 
 Added a way to block full instances (from the command-line tool, as I consider this to be an administration priviledge).
 
 If the user style.css does not exist, the server-wide one if served instead.
+
+Added support for pinning user posts. These posts are shown first in the public AND in the private timelines.
 
 Fixed some crashes on badly-formatted input messages.
 
@@ -17,8 +19,6 @@ The image alt-text is also inserted in the 'title' attribute, so it's shown on m
 Some improvements to HTML sanitization.
 
 For polls, show the time left before it closes.
-
-Added some support for post pinning.
 
 Fixed a bug that prevented unfollows to be shown in the notification area.
 
