@@ -1670,7 +1670,10 @@ int html_get_handler(const xs_dict *req, const char *q_path,
                 xs *list = timeline_list(&snac, "private", skip, show);
                 xs *next = timeline_list(&snac, "private", skip + show, 1);
 
-                *body   = html_timeline(&snac, list, 0, skip, show, xs_list_len(next));
+                xs *pins = pinned_list(&snac);
+                pins = xs_list_cat(pins, list);
+
+                *body = html_timeline(&snac, pins, 0, skip, show, xs_list_len(next));
 
                 *b_size = strlen(*body);
                 status  = 200;
