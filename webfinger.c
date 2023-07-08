@@ -106,8 +106,8 @@ int webfinger_request(const char *qs, char **actor, char **user)
 }
 
 
-int webfinger_get_handler(d_char *req, char *q_path,
-                           char **body, int *b_size, char **ctype)
+int webfinger_get_handler(const xs_dict *req, const char *q_path,
+                          char **body, int *b_size, char **ctype)
 /* serves webfinger queries */
 {
     int status;
@@ -117,8 +117,8 @@ int webfinger_get_handler(d_char *req, char *q_path,
     if (strcmp(q_path, "/.well-known/webfinger") != 0)
         return 0;
 
-    char *q_vars   = xs_dict_get(req, "q_vars");
-    char *resource = xs_dict_get(q_vars, "resource");
+    const xs_dict *q_vars = xs_dict_get(req, "q_vars");
+    const char *resource  = xs_dict_get(q_vars, "resource");
 
     if (resource == NULL)
         return 400;
@@ -129,7 +129,8 @@ int webfinger_get_handler(d_char *req, char *q_path,
     if (xs_startswith(resource, "https:/" "/")) {
         /* actor search: find a user with this actor */
         xs *list = user_list();
-        char *p, *uid;
+        xs_list *p;
+        char *uid;
 
         p = list;
         while (xs_list_iter(&p, &uid)) {
@@ -156,11 +157,22 @@ int webfinger_get_handler(d_char *req, char *q_path,
         l = xs_split_n(an, "@", 1);
 
         if (xs_list_len(l) == 2) {
-            char *uid  = xs_list_get(l, 0);
-            char *host = xs_list_get(l, 1);
+            const char *uid  = xs_list_get(l, 0);
+            const char *host = xs_list_get(l, 1);
 
             if (strcmp(host, xs_dict_get(srv_config, "host")) == 0)
                 found = user_open(&snac, uid);
+
+            if (!found) {
+                /* get the list of possible domain aliases */
+                xs_list *domains = xs_dict_get(srv_config, "webfinger_domains");
+                char *v;
+
+                while (!found && xs_list_iter(&domains, &v)) {
+                    if (strcmp(host, v) == 0)
+                        found = user_open(&snac, uid);
+                }
+            }
         }
     }
 
@@ -170,7 +182,6 @@ int webfinger_get_handler(d_char *req, char *q_path,
         xs *aaj   = xs_dict_new();
         xs *links = xs_list_new();
         xs *obj   = xs_dict_new();
-        d_char *j;
 
         acct = xs_fmt("acct:%s@%s",
             xs_dict_get(snac.config, "uid"), xs_dict_get(srv_config, "host"));
@@ -184,12 +195,10 @@ int webfinger_get_handler(d_char *req, char *q_path,
         obj = xs_dict_append(obj, "subject", acct);
         obj = xs_dict_append(obj, "links",   links);
 
-        j = xs_json_dumps_pp(obj, 4);
-
         user_free(&snac);
 
         status = 200;
-        *body  = j;
+        *body  = xs_json_dumps_pp(obj, 4);
         *ctype = "application/json";
     }
     else
