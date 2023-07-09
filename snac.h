@@ -7,7 +7,8 @@
 
 #define WHAT_IS_SNAC_URL "https:/" "/comam.es/what-is-snac"
 
-#define DIR_PERM 02770
+#define DIR_PERM 00770
+#define DIR_PERM_ADD 02770
 
 #define ISO_DATE_SPEC "%Y-%m-%dT%H:%M:%SZ"
 

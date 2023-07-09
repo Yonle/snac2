@@ -35,8 +35,13 @@ int mkdirx(const char *pathname)
 {
     int ret;
 
-    if ((ret = mkdir(pathname, DIR_PERM)) != -1)
-        ret = chmod(pathname, DIR_PERM);
+    if ((ret = mkdir(pathname, DIR_PERM)) != -1) {
+        /* try to the set the setgid bit, to allow system users
+           to create files in these directories using the
+           command-line tool. This may fail in some restricted
+           environments, but it's of no use there anyway */
+        chmod(pathname, DIR_PERM_ADD);
+    }
 
     return ret;
 }
