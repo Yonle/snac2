@@ -1,0 +1,24 @@
+[Unit]
+Description=A simple, minimalistic ActivityPub instance
+Documentation=https://codeberg.org/grunfink/snac2/src/branch/master/doc
+After=network.target
+Wants=network-online.target
+
+[Service]
+DynamicUser=yes
+User=snac
+Group=snac
+StateDirectory=snac
+ExecStart=/usr/local/bin/snac httpd $STATE_DIRECTORY
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+# This is a systemd global service example. Edit and run:
+# 
+# cp snac-global.service /etc/systemd/system/snac.service
+# sudo snac init /var/lib/snac
+# sudo snac adduser /var/lib/snac USER
+# systemctl enable snac
+# systemctl start snac
