@@ -1725,13 +1725,9 @@ void inbox_add(const char *inbox)
     xs *fn  = xs_fmt("%s/inbox/%s", srv_basedir, md5);
     FILE *f;
 
-    if (strlen(inbox) < 256 && (f = fopen(fn, "w")) != NULL) {
-        pthread_mutex_lock(&data_mutex);
-
+    if ((f = fopen(fn, "w")) != NULL) {
         fprintf(f, "%s\n", inbox);
         fclose(f);
-
-        pthread_mutex_unlock(&data_mutex);
     }
 }
 
@@ -1760,18 +1756,14 @@ xs_list *inbox_list(void)
         FILE *f;
 
         if ((f = fopen(v, "r")) != NULL) {
-            char line[256];
+            xs *line = xs_readline(f);
 
-            if (fgets(line, sizeof(line), f)) {
-                fclose(f);
-
-                int i = strlen(line);
-
-                if (i) {
-                    line[i - 1] = '\0';
-                    ibl = xs_list_append(ibl, line);
-                }
+            if (line) {
+                line = xs_strip_i(line);
+                ibl  = xs_list_append(ibl, line);
             }
+
+            fclose(f);
         }
     }
 
