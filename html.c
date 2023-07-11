@@ -1410,8 +1410,7 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
                 if (xs_startswith(sc, "<p>"))
                     s = xs_str_cat(s, sc);
                 else {
-                    xs *es1 = encode_html(sc);
-                    xs *s1 = xs_fmt("<p>%s</p>", es1);
+                    xs *s1 = xs_fmt("<p>%s</p>", sc);
                     s = xs_str_cat(s, s1);
                 }
 
