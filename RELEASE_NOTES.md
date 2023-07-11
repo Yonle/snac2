@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.37
+
+Fixed a bug that prevented working in systemd restricted environments (details: `mkdir()` failed if trying to set the setgid bit).
+
 ## 2.36
 
 Added proper HTTP caching when serving static files (attached images, avatars, etc.)
