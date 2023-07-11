@@ -1147,47 +1147,61 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                 continue;
 
             if (xs_startswith(t, "image/")) {
-                char *url = xs_dict_get(v, "url");
-                xs *name  = encode_html(xs_dict_get(v, "name"));
+                char *url  = xs_dict_get(v, "url");
+                char *name = xs_dict_get(v, "name");
 
                 if (url != NULL) {
                     if (xs_is_null(name))
                         name = "";
+
+                    xs *es1 = encode_html(name);
                     xs *s1 = xs_fmt(
                         "<a href=\"%s\" target=\"_blank\"><img src=\"%s\" alt=\"%s\" title=\"%s\" loading=\"lazy\"/></a>\n",
-                            url, url, name, name);
+                            url, url, es1, es1);
 
                     s = xs_str_cat(s, s1);
                 }
             }
             else
             if (xs_startswith(t, "video/")) {
-                char *url = xs_dict_get(v, "url");
-                xs *name  = encode_html(xs_dict_get(v, "name"));
+                char *url  = xs_dict_get(v, "url");
+                char *name = xs_dict_get(v, "name");
 
                 if (url != NULL) {
-                    xs *s1 = xs_fmt("<video style=\"max-width: 90vw; max-height: 70vh;\" controls src=\"%s\">Video: <a href=\"%s\">%s</a></video>\n", url, url, name ? name : "No description.");
+                    if (xs_is_null(name))
+                        name = "No description";
+
+                    xs *es1 = encode_html(name);
+                    xs *s1 = xs_fmt("<video style=\"max-width: 90vw; max-height: 70vh;\" controls src=\"%s\">Video: <a href=\"%s\">%s</a></video>\n", url, url, es1);
 
                     s = xs_str_cat(s, s1);
                 }
             }
             else
             if (xs_startswith(t, "audio/")) {
-                char *url = xs_dict_get(v, "url");
-                xs *name  = encode_html(xs_dict_get(v, "name"));
+                char *url  = xs_dict_get(v, "url");
+                char *name = xs_dict_get(v, "name");
 
                 if (url != NULL) {
-                    xs *s1 = xs_fmt("<audio style=\"max-width: 90vw\" controls src=\"%s\">Audio: <a href=\"%s\">%s</a></audio>\n", url, url, name ? name : "No description.");
+                    if (xs_is_null(name))
+                        name = "No description";
+
+                    xs *es1 = encode_html(name);
+                    xs *s1 = xs_fmt("<audio style=\"max-width: 90vw\" controls src=\"%s\">Audio: <a href=\"%s\">%s</a></audio>\n", url, url, es1);
 
                     s = xs_str_cat(s, s1);
                 }
             }
             else {
-                char *url = xs_dict_get(v, "url");
-                xs *name  = encode_html(xs_dict_get(v, "name"));
+                char *url  = xs_dict_get(v, "url");
+                char *name = xs_dict_get(v, "name");
 
                 if (url != NULL) {
-                    xs *s1 = xs_fmt("<a href=\"%s\">Attachment: %s</a>", url, name ? name : "No description");
+                    if (xs_is_null(name))
+                        name = "No description";
+
+                    xs *es1 = encode_html(name);
+                    xs *s1 = xs_fmt("<a href=\"%s\">Attachment: %s</a>", url, es1);
 
                     s = xs_str_cat(s, s1);
                 }
