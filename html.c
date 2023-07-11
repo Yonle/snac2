@@ -1172,7 +1172,9 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                         name = "No description";
 
                     xs *es1 = encode_html(name);
-                    xs *s1 = xs_fmt("<video style=\"max-width: 90vw; max-height: 70vh;\" controls src=\"%s\">Video: <a href=\"%s\">%s</a></video>\n", url, url, es1);
+                    xs *s1 = xs_fmt("<video style=\"width: 100%\" class=\"snac-embedded-video\" "
+                            "controls src=\"%s\">Video: "
+                            "<a href=\"%s\">%s</a></video>\n", url, url, es1);
 
                     s = xs_str_cat(s, s1);
                 }
@@ -1187,7 +1189,9 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                         name = "No description";
 
                     xs *es1 = encode_html(name);
-                    xs *s1 = xs_fmt("<audio style=\"max-width: 90vw\" controls src=\"%s\">Audio: <a href=\"%s\">%s</a></audio>\n", url, url, es1);
+                    xs *s1 = xs_fmt("<audio style=\"width: 100%\" class=\"snac-embedded-audio\" "
+                            "controls src=\"%s\">Audio: "
+                            "<a href=\"%s\">%s</a></audio>\n", url, url, es1);
 
                     s = xs_str_cat(s, s1);
                 }
