@@ -368,10 +368,10 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
         s = xs_str_cat(s, s1);
 
         if (local) {
-            xs *es1 = encode_html(xs_dict_get(snac->config, "bio"));
+            xs *es1  = encode_html(xs_dict_get(snac->config, "bio"));
             xs *bio1 = not_really_markdown(es1, NULL);
             xs *tags = xs_list_new();
-            xs *bio2 = encode_html(process_tags(snac, bio1, &tags));
+            xs *bio2 = process_tags(snac, bio1, &tags);
             xs *s1   = xs_fmt("<div class=\"p-note snac-top-user-bio\">%s</div>\n", bio2);
 
             s = xs_str_cat(s, s1);
