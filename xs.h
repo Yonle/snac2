@@ -72,6 +72,7 @@ xs_str *xs_replace_in(xs_str *str, const char *sfrom, const char *sto, int times
 xs_str *xs_fmt(const char *fmt, ...);
 int xs_str_in(const char *haystack, const char *needle);
 int _xs_startsorends(const char *str, const char *xfix, int ends);
+xs_str *xs_encode_html(const xs_str *str);
 #define xs_startswith(str, prefix) _xs_startsorends(str, prefix, 0)
 #define xs_endswith(str, postfix) _xs_startsorends(str, postfix, 1)
 xs_str *xs_crop_i(xs_str *str, int start, int end);
@@ -506,6 +507,20 @@ int _xs_startsorends(const char *str, const char *xfix, int ends)
     return !!(ssz >= psz && memcmp(xfix, str + (ends ? ssz - psz : 0), psz) == 0);
 }
 
+xs_str *xs_encode_html(const char *str)
+/* escapes html characters */
+{
+    xs_str *encoded = xs_replace(str, "&", "&amp;");
+    encoded = xs_replace(encoded, "<", "&lt;");
+    encoded = xs_replace(encoded, ">", "&gt;");
+    encoded = xs_replace(encoded, "\"", "&#34;");
+    encoded = xs_replace(encoded, "'", "&#39;");
+
+    // Restore only <br>. Probably safe. Let's hope nothing goes wrong with this.
+    encoded = xs_replace(encoded, "&lt;br&gt;", "<br>");
+
+    return encoded;
+}
 
 xs_str *xs_crop_i(xs_str *str, int start, int end)
 /* crops the d_char to be only from start to end */
