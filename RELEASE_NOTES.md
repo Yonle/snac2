@@ -2,6 +2,8 @@
 
 ## 2.37
 
+Fixed several XSS vulnerabilities (contributed by yonle).
+
 Fixed a bug that prevented working in systemd restricted environments (details: `mkdir()` failed if trying to set the setgid bit).
 
 ## 2.36
