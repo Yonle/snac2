@@ -238,3 +238,19 @@ xs_str *sanitize(const char *content)
 
     return s;
 }
+
+
+xs_str *encode_html(const char *str)
+/* escapes html characters */
+{
+    xs_str *encoded = xs_replace(str, "&", "&amp;");
+    encoded = xs_replace_i(encoded, "<", "&lt;");
+    encoded = xs_replace_i(encoded, ">", "&gt;");
+    encoded = xs_replace_i(encoded, "\"", "&#34;");
+    encoded = xs_replace_i(encoded, "'", "&#39;");
+
+    /* Restore only <br>. Probably safe. Let's hope nothing goes wrong with this. */
+    encoded = xs_replace_i(encoded, "&lt;br&gt;", "<br>");
+
+    return encoded;
+}

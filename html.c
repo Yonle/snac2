@@ -52,7 +52,7 @@ xs_str *actor_name(xs_dict *actor)
         }
     }
 
-    name = xs_dup(v);
+    name = encode_html(v);
 
     /* replace the :shortnames: */
     if (!xs_is_null(p = xs_dict_get(actor, "tag"))) {
@@ -105,7 +105,7 @@ xs_str *html_actor_icon(xs_str *os, char *actor,
 
     {
         xs *s1 = xs_fmt("<a href=\"%s\" class=\"p-author h-card snac-author\">%s</a>",
-            xs_dict_get(actor, "id"), xs_encode_html(name));
+            xs_dict_get(actor, "id"), name);
         s = xs_str_cat(s, s1);
     }
 
@@ -137,9 +137,11 @@ xs_str *html_actor_icon(xs_str *os, char *actor,
             date_title = xs_str_cat(date_title, udate);
         }
 
+        xs *edt = encode_html(date_title);
+        xs *edl = encode_html(date_label);
         xs *s1 = xs_fmt(
             "\n<time class=\"dt-published snac-pubdate\" title=\"%s\">%s</time>\n",
-                xs_encode_html(date_title), xs_encode_html(date_label));
+                edt, edl);
 
         s = xs_str_cat(s, s1);
     }
@@ -162,9 +164,10 @@ xs_str *html_actor_icon(xs_str *os, char *actor,
         xs *domain = xs_split(id, "/");
         xs *user   = xs_fmt("@%s@%s", username, xs_list_get(domain, 2));
 
+        xs *u1 = encode_html(user);
         s1 = xs_fmt(
             "<br><a href=\"%s\" class=\"p-author-tag h-card snac-author-tag\">%s</a>",
-                xs_dict_get(actor, "id"), xs_encode_html(user));
+                xs_dict_get(actor, "id"), u1);
 
         s = xs_str_cat(s, s1);
     }
@@ -244,10 +247,10 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
     }
 
     {
-        xs *s1 = xs_fmt("<title>%s (@%s@%s)</title>\n",
-            xs_encode_html(xs_dict_get(snac->config, "name")),
-            xs_encode_html(snac->uid),
-            xs_encode_html(xs_dict_get(srv_config,   "host")));
+        xs *es1 = encode_html(xs_dict_get(snac->config, "name"));
+        xs *es2 = encode_html(snac->uid);
+        xs *es3 = encode_html(xs_dict_get(srv_config,   "host"));
+        xs *s1 = xs_fmt("<title>%s (@%s@%s)</title>\n", es1, es2, es3);
 
         s = xs_str_cat(s, s1);
     }
@@ -277,6 +280,13 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
         }
 
         /* og properties */
+        xs *es1 = encode_html(xs_dict_get(srv_config, "host"));
+        xs *es2 = encode_html(xs_dict_get(snac->config, "name"));
+        xs *es3 = encode_html(snac->uid);
+        xs *es4 = encode_html(xs_dict_get(srv_config, "host"));
+        xs *es5 = encode_html(s_bio);
+        xs *es6 = encode_html(s_avatar);
+
         xs *s1 = xs_fmt(
             "<meta property=\"og:site_name\" content=\"%s\"/>\n"
             "<meta property=\"og:title\" content=\"%s (@%s@%s)\"/>\n"
@@ -284,12 +294,7 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
             "<meta property=\"og:image\" content=\"%s\"/>\n"
             "<meta property=\"og:image:width\" content=\"300\"/>\n"
             "<meta property=\"og:image:height\" content=\"300\"/>\n",
-            xs_encode_html(xs_dict_get(srv_config, "host")),
-            xs_encode_html(xs_dict_get(snac->config, "name")),
-            xs_encode_html(snac->uid),
-            xs_encode_html(xs_dict_get(srv_config, "host")),
-            xs_encode_html(s_bio),
-            xs_encode_html(s_avatar));
+            es1, es2, es3, es4, es5, es6);
         s = xs_str_cat(s, s1);
     }
 
@@ -354,17 +359,19 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
             "<p class=\"p-name snac-top-user-name\">%s</p>\n"
             "<p class=\"snac-top-user-id\">@%s@%s</p>\n";
 
-        xs *s1 = xs_fmt(_tmpl,
-            xs_encode_html(xs_dict_get(snac->config, "name")),
-            xs_encode_html(xs_dict_get(snac->config, "uid")), xs_encode_html(xs_dict_get(srv_config, "host"))
-        );
+        xs *es1 = encode_html(xs_dict_get(snac->config, "name"));
+        xs *es2 = encode_html(xs_dict_get(snac->config, "uid"));
+        xs *es3 = encode_html(xs_dict_get(srv_config, "host"));
+
+        xs *s1 = xs_fmt(_tmpl, es1, es2, es3);
 
         s = xs_str_cat(s, s1);
 
         if (local) {
-            xs *bio1 = not_really_markdown(xs_encode_html(xs_dict_get(snac->config, "bio")), NULL);
+            xs *es1 = encode_html(xs_dict_get(snac->config, "bio"));
+            xs *bio1 = not_really_markdown(es1, NULL);
             xs *tags = xs_list_new();
-            xs *bio2 = xs_encode_html(process_tags(snac, bio1, &tags));
+            xs *bio2 = encode_html(process_tags(snac, bio1, &tags));
             xs *s1   = xs_fmt("<div class=\"p-note snac-top-user-bio\">%s</div>\n", bio2);
 
             s = xs_str_cat(s, s1);
@@ -911,10 +918,11 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
         if (xs_list_in(boosts, snac->md5) != -1) {
             /* we boosted this */
+            xs *es1 = encode_html(xs_dict_get(snac->config, "name"));
             xs *s1 = xs_fmt(
                 "<div class=\"snac-origin\">"
                 "<a href=\"%s\">%s</a> %s</a></div>",
-                snac->actor, xs_encode_html(xs_dict_get(snac->config, "name")), L("boosted")
+                snac->actor, es1, L("boosted")
             );
 
             s = xs_str_cat(s, s1);
@@ -928,7 +936,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                     "<div class=\"snac-origin\">"
                     "<a href=\"%s\">%s</a> %s</div>\n",
                     xs_dict_get(actor_r, "id"),
-                    xs_encode_html(name),
+                    name,
                     L("boosted")
                 );
 
@@ -967,7 +975,8 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
         char *cw = xs_dict_get(snac->config, "cw");
         if (xs_is_null(cw) || local)
             cw = "";
-        xs *s1 = xs_fmt("<details %s><summary>%s [%s]</summary>\n", cw, xs_encode_html(v), L("SENSITIVE CONTENT"));
+        xs *es1 = encode_html(v);
+        xs *s1 = xs_fmt("<details %s><summary>%s [%s]</summary>\n", cw, es1, L("SENSITIVE CONTENT"));
         s = xs_str_cat(s, s1);
         sensitive = 1;
     }
@@ -1049,7 +1058,8 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
                     if (name && replies) {
                         int nr = xs_number_get(xs_dict_get(replies, "totalItems"));
-                        xs *l = xs_fmt("<tr><td>%s:</td><td>%d</td></tr>\n", xs_encode_html(name), nr);
+                        xs *es1 = encode_html(name);
+                        xs *l = xs_fmt("<tr><td>%s:</td><td>%d</td></tr>\n", es1, nr);
 
                         c = xs_str_cat(c, l);
                     }
@@ -1070,10 +1080,11 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                     const char *name = xs_dict_get(v, "name");
 
                     if (name) {
+                        xs *es1 = encode_html(name);
                         xs *opt = xs_fmt("<input type=\"%s\""
                                     " id=\"%s\" value=\"%s\" name=\"question\"> %s<br>\n",
                                     !xs_is_null(oo) ? "radio" : "checkbox",
-                                    xs_encode_html(name), xs_encode_html(name), xs_encode_html(name));
+                                    es1, es1, es1);
 
                         s1 = xs_str_cat(s1, opt);
                     }
@@ -1107,7 +1118,8 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                         /* skip leading zeros */
                         for (; *p == '0' || *p == ':'; p++);
 
-                        xs *s1 = xs_fmt("<p>%s %s</p>", L("Closes in"), xs_encode_html(p));
+                        xs *es1 = encode_html(p);
+                        xs *s1 = xs_fmt("<p>%s %s</p>", L("Closes in"), es1);
                         c = xs_str_cat(c, s1);
                     }
                 }
@@ -1135,8 +1147,8 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                 continue;
 
             if (xs_startswith(t, "image/")) {
-                char *url  = xs_dict_get(v, "url");
-                char *name = xs_encode_html(xs_dict_get(v, "name"));
+                char *url = xs_dict_get(v, "url");
+                xs *name  = encode_html(xs_dict_get(v, "name"));
 
                 if (url != NULL) {
                     if (xs_is_null(name))
@@ -1150,8 +1162,8 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
             }
             else
             if (xs_startswith(t, "video/")) {
-                char *url  = xs_dict_get(v, "url");
-                char *name = xs_encode_html(xs_dict_get(v, "name"));
+                char *url = xs_dict_get(v, "url");
+                xs *name  = encode_html(xs_dict_get(v, "name"));
 
                 if (url != NULL) {
                     xs *s1 = xs_fmt("<video style=\"max-width: 90vw; max-height: 70vh;\" controls src=\"%s\">Video: <a href=\"%s\">%s</a></video>\n", url, url, name ? name : "No description.");
@@ -1161,8 +1173,8 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
             }
             else
             if (xs_startswith(t, "audio/")) {
-                char *url  = xs_dict_get(v, "url");
-                char *name = xs_encode_html(xs_dict_get(v, "name"));
+                char *url = xs_dict_get(v, "url");
+                xs *name  = encode_html(xs_dict_get(v, "name"));
 
                 if (url != NULL) {
                     xs *s1 = xs_fmt("<audio style=\"max-width: 90vw\" controls src=\"%s\">Audio: <a href=\"%s\">%s</a></audio>\n", url, url, name ? name : "No description.");
@@ -1171,8 +1183,8 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                 }
             }
             else {
-                char *url  = xs_dict_get(v, "url");
-                char *name = xs_encode_html(xs_dict_get(v, "name"));
+                char *url = xs_dict_get(v, "url");
+                xs *name  = encode_html(xs_dict_get(v, "name"));
 
                 if (url != NULL) {
                     xs *s1 = xs_fmt("<a href=\"%s\">Attachment: %s</a>", url, name ? name : "No description");
@@ -1349,7 +1361,8 @@ xs_str *html_timeline(snac *snac, const xs_list *list, int local, int skip, int 
 d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *header, const char *t)
 {
     xs *s = xs_str_new(NULL);
-    xs *h = xs_fmt("<h2 class=\"snac-header\">%s</h2>\n", xs_encode_html(header));
+    xs *es1 = encode_html(header);
+    xs *h = xs_fmt("<h2 class=\"snac-header\">%s</h2>\n", es1);
     char *p, *actor_id;
 
     s = xs_str_cat(s, h);
@@ -1379,7 +1392,8 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
                 if (xs_startswith(sc, "<p>"))
                     s = xs_str_cat(s, sc);
                 else {
-                    xs *s1 = xs_fmt("<p>%s</p>", xs_encode_html(sc));
+                    xs *es1 = encode_html(sc);
+                    xs *s1 = xs_fmt("<p>%s</p>", es1);
                     s = xs_str_cat(s, s1);
                 }
 
@@ -1549,9 +1563,10 @@ xs_str *html_notifications(snac *snac)
         if (strcmp(type, "Undo") == 0 && strcmp(utype, "Follow") == 0)
             label = L("Unfollow");
 
+        xs *es1 = encode_html(label);
         xs *s1 = xs_fmt("<div class=\"snac-post-with-desc\">\n"
                         "<p><b>%s by <a href=\"%s\">%s</a></b>:</p>\n",
-            xs_encode_html(label), actor_id, xs_encode_html(a_name));
+            es1, actor_id, a_name);
         s = xs_str_cat(s, s1);
 
         if (strcmp(type, "Follow") == 0 || strcmp(utype, "Follow") == 0) {
@@ -1776,7 +1791,10 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         xs *bio   = not_really_markdown(xs_dict_get(snac.config, "bio"), NULL);
         char *p, *v;
 
-
+        xs *es1 = encode_html(xs_dict_get(snac.config, "name"));
+        xs *es2 = encode_html(snac.uid);
+        xs *es3 = encode_html(xs_dict_get(srv_config, "host"));
+        xs *es4 = encode_html(bio);
         rss = xs_fmt(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             "<rss version=\"0.91\">\n"
@@ -1785,11 +1803,11 @@ int html_get_handler(const xs_dict *req, const char *q_path,
             "<language>en</language>\n"
             "<link>%s.rss</link>\n"
             "<description>%s</description>\n",
-            xs_encode_html(xs_dict_get(snac.config, "name")),
-            xs_encode_html(snac.uid),
-            xs_encode_html(xs_dict_get(srv_config, "host")),
+            es1,
+            es2,
+            es3,
             snac.actor,
-            xs_encode_html(bio)
+            es4
         );
 
         p = elems;
@@ -1804,20 +1822,23 @@ int html_get_handler(const xs_dict *req, const char *q_path,
             if (!xs_startswith(id, snac.actor))
                 continue;
 
-            xs *content = xs_encode_html(sanitize(xs_dict_get(msg, "content")));
+            xs *es1     = sanitize(xs_dict_get(msg, "content"));
+            xs *content = encode_html(es1);
             xs *title   = xs_str_new(NULL);
             int i;
 
             for (i = 0; content[i] && content[i] != '<' && content[i] != '&' && i < 40; i++)
                 title = xs_append_m(title, &content[i], 1);
 
+            xs *es11 = encode_html(title);
+            xs *es12 = encode_html(content);
             xs *s = xs_fmt(
                 "<item>\n"
                 "<title>%s...</title>\n"
                 "<link>%s</link>\n"
                 "<description>%s</description>\n"
                 "</item>\n",
-                xs_encode_html(title), id, xs_encode_html(content)
+                es11, id, es12
             );
 
             rss = xs_str_cat(rss, s);
