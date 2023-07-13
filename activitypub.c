@@ -146,7 +146,7 @@ int actor_request(snac *snac, const char *actor, xs_dict **data)
 }
 
 
-int timeline_request(snac *snac, char **id, xs_str **wrk)
+int timeline_request(snac *snac, char **id, xs_str **wrk, int level)
 /* ensures that an entry and its ancestors are in the timeline */
 {
     int status = 0;
@@ -187,7 +187,8 @@ int timeline_request(snac *snac, char **id, xs_str **wrk)
                     timeline_add(snac, *id, object);
 
                     /* recurse! */
-                    timeline_request(snac, &in_reply_to, NULL);
+                    if (level < 32)
+                        timeline_request(snac, &in_reply_to, NULL, level + 1);
                 }
             }
         }
@@ -255,7 +256,7 @@ void timeline_request_replies(snac *user, const char *id)
                             }
                             else {
                                 snac_debug(user, 0, xs_fmt("request reply %s", v));
-                                timeline_request(user, &v, NULL);
+                                timeline_request(user, &v, NULL, 0);
                             }
                         }
                     }
@@ -830,7 +831,7 @@ xs_dict *msg_admiration(snac *snac, char *object, char *type)
     xs *wrk      = NULL;
 
     /* call the object */
-    timeline_request(snac, &object, &wrk);
+    timeline_request(snac, &object, &wrk, 0);
 
     if (valid_status(object_get(object, &a_msg))) {
         xs *rcpts = xs_list_new();
@@ -1039,7 +1040,7 @@ xs_dict *msg_note(snac *snac, const xs_str *content, const xs_val *rcpts,
         xs *wrk   = NULL;
 
         /* demand this thing */
-        timeline_request(snac, &in_reply_to, &wrk);
+        timeline_request(snac, &in_reply_to, &wrk, 0);
 
         if (valid_status(object_get(in_reply_to, &p_msg))) {
             /* add this author as recipient */
@@ -1468,7 +1469,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             char *in_reply_to = xs_dict_get(object, "inReplyTo");
             xs *wrk           = NULL;
 
-            timeline_request(snac, &in_reply_to, &wrk);
+            timeline_request(snac, &in_reply_to, &wrk, 0);
 
             if (timeline_add(snac, id, object)) {
                 snac_log(snac, xs_fmt("new 'Note' %s %s", actor, id));
@@ -1521,7 +1522,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
         if (xs_type(object) == XSTYPE_DICT)
             object = xs_dict_get(object, "id");
 
-        timeline_request(snac, &object, &wrk);
+        timeline_request(snac, &object, &wrk, 0);
 
         /* Note: implementations like lemmy send announces about objects
            that are not of the 'Note' type; these objects are not stored,
