@@ -1219,7 +1219,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
                 if (!xs_is_null(url)) {
                     xs *es1 = encode_html(url);
-                    xs *s1  = xs_fmt("<p><a href=\"%s\">%s</p>", url, es1);
+                    xs *s1  = xs_fmt("<p><a href=\"%s\">%s</a></p>\n", url, es1);
                     s = xs_str_cat(s, s1);
                 }
             }
