@@ -335,11 +335,12 @@ void post_message(snac *snac, const char *actor, const xs_dict *msg)
 {
     xs *payload = NULL;
     int p_size;
-    int status;
 
-    if (valid_status(status = send_to_actor(snac, actor, msg, &payload, &p_size, 3)))
-        srv_log(xs_fmt("post_message to actor %s %d", actor, status));
-    else
+    int status = send_to_actor(snac, actor, msg, &payload, &p_size, 3);
+
+    srv_log(xs_fmt("post_message to actor %s %d", actor, status));
+
+    if (!valid_status(status))
         /* cannot send right now, enqueue */
         enqueue_message(snac, msg);
 }
