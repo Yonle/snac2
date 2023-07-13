@@ -1155,7 +1155,10 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
         s = xs_str_cat(s, "<p class=\"snac-content-attachments\">\n");
 
         while (xs_list_iter(&attach, &v)) {
-            char *t = xs_dict_get(v, "mediaType");
+            const char *t = xs_dict_get(v, "mediaType");
+
+            if (xs_is_null(t))
+                t = xs_dict_get(v, "type");
 
             if (xs_is_null(t))
                 continue;
@@ -1207,6 +1210,16 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                             "controls src=\"%s\">Audio: "
                             "<a href=\"%s\">%s</a></audio>\n", url, url, es1);
 
+                    s = xs_str_cat(s, s1);
+                }
+            }
+            else
+            if (strcmp(t, "Link") == 0) {
+                const char *url = xs_dict_get(v, "href");
+
+                if (!xs_is_null(url)) {
+                    xs *es1 = encode_html(url);
+                    xs *s1  = xs_fmt("<p><a href=\"%s\">%s</p>", url, es1);
                     s = xs_str_cat(s, s1);
                 }
             }
