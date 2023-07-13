@@ -4,6 +4,8 @@
 
 Added support for ActivityPub `Group` and `Page` objects. This allows subscribing to Lemmy channels and interacting with them.
 
+Confirmation messages to follow requests are sent as soon as possible (i.e. bypassing the usual output queue).
+
 ## 2.37
 
 Fixed several XSS vulnerabilities (contributed by yonle).
