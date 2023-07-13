@@ -1562,7 +1562,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
                 snac_log(snac, xs_fmt("ignored 'Announce' about muted actor %s", who));
         }
         else
-            snac_log(snac, xs_fmt("error requesting 'Announce' object %s", object));
+            snac_debug(snac, 1, xs_fmt("error requesting 'Announce' object %s", object));
     }
     else
     if (strcmp(type, "Update") == 0) { /** **/
