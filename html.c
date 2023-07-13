@@ -519,6 +519,13 @@ d_char *html_top_controls(snac *snac, d_char *s)
 
     const char *bot = xs_dict_get(snac->config, "bot");
 
+    xs *es1 = encode_html(xs_dict_get(snac->config, "name"));
+    xs *es2 = encode_html(xs_dict_get(snac->config, "bio"));
+    xs *es3 = encode_html(email);
+    xs *es4 = encode_html(telegram_bot);
+    xs *es5 = encode_html(telegram_chat_id);
+    xs *es6 = encode_html(purge_days);
+
     xs *s1 = xs_fmt(_tmpl,
         snac->actor,
         L("Sensitive content"),
@@ -550,19 +557,19 @@ d_char *html_top_controls(snac *snac, d_char *s)
         L("User setup..."),
         snac->actor,
         L("Display name"),
-        encode_html(xs_dict_get(snac->config, "name")),
+        es1,
         L("Avatar"),
         L("Bio"),
-        encode_html(xs_dict_get(snac->config, "bio")),
+        es2,
         strcmp(cw, "open") == 0 ? "checked" : "",
         L("Always show sensitive content"),
         L("Email address for notifications"),
-        encode_html(email),
+        es3,
         L("Telegram notifications (bot key and chat id)"),
-        encode_html(telegram_bot),
-        encode_html(telegram_chat_id),
+        es4,
+        es5,
         L("Maximum days to keep posts (0: server settings)"),
-        encode_html(purge_days),
+        es6,
         xs_type(d_dm_f_u) == XSTYPE_TRUE ? "checked" : "",
         L("Drop direct messages from people you don't follow"),
         xs_type(bot) == XSTYPE_TRUE ? "checked" : "",
