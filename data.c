@@ -2092,7 +2092,7 @@ void enqueue_telegram(const xs_str *msg, const char *bot, const char *chat_id)
 }
 
 
-void enqueue_message(snac *snac, xs_dict *msg)
+void enqueue_message(snac *snac, const xs_dict *msg)
 /* enqueues an output message */
 {
     xs *qmsg   = _new_qmsg("message", msg, 0);

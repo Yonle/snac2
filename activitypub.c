@@ -316,7 +316,7 @@ xs_str *get_actor_inbox(snac *snac, const char *actor)
 }
 
 
-int send_to_actor(snac *snac, const char *actor, const char *msg,
+int send_to_actor(snac *snac, const char *actor, const xs_dict *msg,
                   xs_val **payload, int *p_size, int timeout)
 /* sends a message to an actor */
 {
@@ -327,6 +327,21 @@ int send_to_actor(snac *snac, const char *actor, const char *msg,
         status = send_to_inbox(snac, inbox, msg, payload, p_size, timeout);
 
     return status;
+}
+
+
+void post_message(snac *snac, const char *actor, const xs_dict *msg)
+/* posts a message immediately (bypassing the output queues) */
+{
+    xs *payload = NULL;
+    int p_size;
+    int status;
+
+    if (valid_status(status = send_to_actor(snac, actor, msg, &payload, &p_size, 3)))
+        srv_log(xs_fmt("post_message to actor %s %d", actor, status));
+    else
+        /* cannot send right now, enqueue */
+        enqueue_message(snac, msg);
 }
 
 
@@ -1411,7 +1426,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             xs *f_msg = xs_dup(msg);
             xs *reply = msg_accept(snac, f_msg, actor);
 
-            enqueue_message(snac, reply);
+            post_message(snac, actor, reply);
 
             if (xs_is_null(xs_dict_get(f_msg, "published"))) {
                 /* add a date if it doesn't include one (Mastodon) */

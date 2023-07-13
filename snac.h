@@ -173,7 +173,7 @@ void enqueue_output(snac *snac, xs_dict *msg, xs_str *inbox, int retries);
 void enqueue_output_by_actor(snac *snac, xs_dict *msg, const xs_str *actor, int retries);
 void enqueue_email(xs_str *msg, int retries);
 void enqueue_telegram(const xs_str *msg, const char *bot, const char *chat_id);
-void enqueue_message(snac *snac, char *msg);
+void enqueue_message(snac *snac, const xs_dict *msg);
 void enqueue_close_question(snac *user, const char *id, int end_secs);
 void enqueue_request_replies(snac *user, const char *id);
 int was_question_voted(snac *user, const char *id);
@@ -235,7 +235,7 @@ int send_to_inbox_raw(const char *keyid, const char *seckey,
 int send_to_inbox(snac *snac, const xs_str *inbox, const xs_dict *msg,
                   xs_val **payload, int *p_size, int timeout);
 xs_str *get_actor_inbox(snac *snac, const char *actor);
-int send_to_actor(snac *snac, const char *actor, const char *msg,
+int send_to_actor(snac *snac, const char *actor, const xs_dict *msg,
                   xs_val **payload, int *p_size, int timeout);
 int is_msg_public(snac *snac, const xs_dict *msg);
 int is_msg_for_me(snac *snac, const xs_dict *msg);
