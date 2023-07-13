@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.38
+
+Added support for ActivityPub `Group` and `Page` objects. This allows subscribing to Lemmy channels and interacting with them.
+
 ## 2.37
 
 Fixed several XSS vulnerabilities (contributed by yonle).
