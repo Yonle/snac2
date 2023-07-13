@@ -1154,7 +1154,6 @@ xs_dict *msg_question(snac *user, const char *content, xs_list *attach,
                       const xs_list *opts, int multiple, int end_secs)
 /* creates a Question message */
 {
-    xs *ntid     = tid(0);
     xs_dict *msg = msg_note(user, content, NULL, NULL, attach, 0);
     int max      = 8;
     xs_set seen;
