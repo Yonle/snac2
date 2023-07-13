@@ -296,7 +296,7 @@ int send_to_inbox(snac *snac, const xs_str *inbox, const xs_dict *msg,
 }
 
 
-d_char *get_actor_inbox(snac *snac, const char *actor)
+xs_str *get_actor_inbox(snac *snac, const char *actor)
 /* gets an actor's inbox */
 {
     xs *data = NULL;
@@ -316,7 +316,8 @@ d_char *get_actor_inbox(snac *snac, const char *actor)
 }
 
 
-int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size, int timeout)
+int send_to_actor(snac *snac, const char *actor, const char *msg,
+                  xs_val **payload, int *p_size, int timeout)
 /* sends a message to an actor */
 {
     int status = 400;

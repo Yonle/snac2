@@ -234,8 +234,9 @@ int send_to_inbox_raw(const char *keyid, const char *seckey,
                   xs_val **payload, int *p_size, int timeout);
 int send_to_inbox(snac *snac, const xs_str *inbox, const xs_dict *msg,
                   xs_val **payload, int *p_size, int timeout);
-d_char *get_actor_inbox(snac *snac, const char *actor);
-int send_to_actor(snac *snac, char *actor, char *msg, d_char **payload, int *p_size, int timeout);
+xs_str *get_actor_inbox(snac *snac, const char *actor);
+int send_to_actor(snac *snac, const char *actor, const char *msg,
+                  xs_val **payload, int *p_size, int timeout);
 int is_msg_public(snac *snac, const xs_dict *msg);
 int is_msg_for_me(snac *snac, const xs_dict *msg);
 
