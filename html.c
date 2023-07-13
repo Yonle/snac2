@@ -1146,9 +1146,10 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     s = xs_str_cat(s, "\n");
 
     /* add the attachments */
-    char *attach;
+    xs_list *attach = xs_dict_get(msg, "attachment");
+    xs_dict *image  = xs_dict_get(msg, "image");
 
-    if ((attach = xs_dict_get(msg, "attachment")) != NULL) { /** **/
+    if (!xs_is_null(attach) || !xs_is_null(image)) { /** **/
         char *v;
 
         /* make custom css for attachments easier */
@@ -1173,7 +1174,8 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
                     xs *es1 = encode_html(name);
                     xs *s1 = xs_fmt(
-                        "<a href=\"%s\" target=\"_blank\"><img src=\"%s\" alt=\"%s\" title=\"%s\" loading=\"lazy\"/></a>\n",
+                        "<a href=\"%s\" target=\"_blank\">"
+                        "<img src=\"%s\" alt=\"%s\" title=\"%s\" loading=\"lazy\"/></a>\n",
                             url, url, es1, es1);
 
                     s = xs_str_cat(s, s1);
@@ -1236,6 +1238,24 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
                     s = xs_str_cat(s, s1);
                 }
+            }
+        }
+
+        /* if the message has an image, add it */
+        if (!xs_is_null(image)) {
+            if (!xs_is_null(image = xs_dict_get(image, "url"))) {
+                xs *es1;
+                if (!xs_is_null(v = xs_dict_get(msg, "name")))
+                    es1 = encode_html(v);
+                else
+                    es1 = xs_str_new(NULL);
+
+                xs *s1 = xs_fmt(
+                    "<a href=\"%s\" target=\"_blank\">"
+                    "<img src=\"%s\" alt=\"%s\" title=\"%s\" loading=\"lazy\"/></a>\n",
+                            image, image, es1, es1);
+
+                s = xs_str_cat(s, s1);
             }
         }
 
