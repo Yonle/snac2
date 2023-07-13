@@ -152,18 +152,19 @@ int timeline_request(snac *snac, char **id, xs_str **wrk, int level)
     int status = 0;
 
     if (!xs_is_null(*id)) {
-        xs *object = NULL;
+        xs *msg = NULL;
 
         /* is the object already there? */
-        if (!valid_status(object_get(*id, &object))) {
+        if (!valid_status(object_get(*id, &msg))) {
             /* no; download it */
-            status = activitypub_request(snac, *id, &object);
+            status = activitypub_request(snac, *id, &msg);
 
             if (valid_status(status)) {
-                char *type = xs_dict_get(object, "type");
+                xs_dict *object  = msg;
+                const char *type = xs_dict_get(object, "type");
 
                 /* get the id again from the object, as it may be different */
-                char *nid = xs_dict_get(object, "id");
+                const char *nid = xs_dict_get(object, "id");
 
                 if (wrk && strcmp(nid, *id) != 0) {
                     snac_debug(snac, 1,
@@ -173,8 +174,21 @@ int timeline_request(snac *snac, char **id, xs_str **wrk, int level)
                     *id  = *wrk;
                 }
 
-                if (!xs_is_null(type) && strcmp(type, "Note") == 0) {
-                    char *actor = xs_dict_get(object, "attributedTo");
+                if (xs_is_null(type))
+                    type = "(null)";
+
+                srv_debug(0, xs_fmt("timeline_request type %s '%s'", *id, type));
+
+                if (strcmp(type, "Create") == 0) {
+                    /* some software like lemmy nest Announce + Create + Note */
+                    if (!xs_is_null(object = xs_dict_get(object, "object")))
+                        type = xs_dict_get(object, "type");
+                    else
+                        type = "(null)";
+                }
+
+                if (strcmp(type, "Note") == 0 || strcmp(type, "Page") == 0) {
+                    const char *actor = xs_dict_get(object, "attributedTo");
 
                     /* request (and drop) the actor for this entry */
                     if (!xs_is_null(actor))

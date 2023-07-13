@@ -189,8 +189,9 @@ xs_str *html_msg_icon(snac *snac, xs_str *os, const xs_dict *msg)
         char *udate = NULL;
         char *url   = NULL;
         int priv    = 0;
+        const char *type = xs_dict_get(msg, "type");
 
-        if (strcmp(xs_dict_get(msg, "type"), "Note") == 0)
+        if (strcmp(type, "Note") == 0 || strcmp(type, "Question") == 0 || strcmp(type, "Page") == 0)
             url = xs_dict_get(msg, "id");
 
         priv = !is_msg_public(snac, msg);
@@ -856,7 +857,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
         return xs_str_cat(os, s);
     }
     else
-    if (strcmp(type, "Note") != 0 && strcmp(type, "Question") != 0) {
+    if (strcmp(type, "Note") != 0 && strcmp(type, "Question") != 0 && strcmp(type, "Page") != 0) {
         /* skip oddities */
         return os;
     }
@@ -973,6 +974,12 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
     /* add the content */
     s = xs_str_cat(s, "</div>\n<div class=\"e-content snac-content\">\n"); /** **/
+
+    if (!xs_is_null(v = xs_dict_get(msg, "name"))) {
+        xs *es1 = encode_html(v);
+        xs *s1  = xs_fmt("<h3 class=\"snac-entry-title\">%s</h3>\n", es1);
+        s = xs_str_cat(s, s1);
+    }
 
     /* is it sensitive? */
     if (!xs_is_null(v = xs_dict_get(msg, "sensitive")) && xs_type(v) == XSTYPE_TRUE) {
