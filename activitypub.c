@@ -177,12 +177,14 @@ int timeline_request(snac *snac, char **id, xs_str **wrk, int level)
                 if (xs_is_null(type))
                     type = "(null)";
 
-                srv_debug(0, xs_fmt("timeline_request type %s '%s'", *id, type));
+                srv_debug(0, xs_fmt("timeline_request type %s '%s'", nid, type));
 
                 if (strcmp(type, "Create") == 0) {
                     /* some software like lemmy nest Announce + Create + Note */
-                    if (!xs_is_null(object = xs_dict_get(object, "object")))
+                    if (!xs_is_null(object = xs_dict_get(object, "object"))) {
                         type = xs_dict_get(object, "type");
+                        nid  = xs_dict_get(object, "id");
+                    }
                     else
                         type = "(null)";
                 }
@@ -198,7 +200,7 @@ int timeline_request(snac *snac, char **id, xs_str **wrk, int level)
                     char *in_reply_to = xs_dict_get(object, "inReplyTo");
 
                     /* store */
-                    timeline_add(snac, *id, object);
+                    timeline_add(snac, nid, object);
 
                     /* recurse! */
                     if (level < 32)
