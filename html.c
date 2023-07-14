@@ -1830,12 +1830,14 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         char *id = xs_list_get(l, 1);
         int sz;
 
-        status = static_get(&snac, id, body, &sz,
+        if (id && *id) {
+            status = static_get(&snac, id, body, &sz,
                         xs_dict_get(req, "if-none-match"), etag);
 
-        if (valid_status(status)) {
-            *b_size = sz;
-            *ctype  = xs_mime_by_ext(id);
+            if (valid_status(status)) {
+                *b_size = sz;
+                *ctype  = xs_mime_by_ext(id);
+            }
         }
     }
     else
@@ -1843,13 +1845,17 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         xs *l    = xs_split(p_path, "/");
         char *id = xs_list_get(l, 1);
 
-        if (xs_endswith(id, "timeline.html_")) {
-            // Don't let them in.
-            *b_size = 0;
-            status = 404;
-        } else if ((*body = history_get(&snac, id)) != NULL) {
-            *b_size = strlen(*body);
-            status  = 200;
+        if (id && *id) {
+            if (xs_endswith(id, "timeline.html_")) {
+                /* Don't let them in */
+                *b_size = 0;
+                status = 404;
+            }
+            else
+            if ((*body = history_get(&snac, id)) != NULL) {
+                *b_size = strlen(*body);
+                status  = 200;
+            }
         }
     }
     else
