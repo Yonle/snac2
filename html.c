@@ -712,7 +712,7 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
     const char *prev_src1 = xs_dict_get(msg, "sourceContent");
 
     if (!xs_is_null(prev_src1) && strcmp(actor, snac->actor) == 0) { /** edit **/
-        xs *prev_src = xs_replace(prev_src1, "<", "&lt;");
+        xs *prev_src = encode_html(prev_src1);
         const xs_val *sensitive = xs_dict_get(msg, "sensitive");
         const char *summary = xs_dict_get(msg, "summary");
 
