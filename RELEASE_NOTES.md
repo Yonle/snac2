@@ -2,9 +2,13 @@
 
 ## 2.38
 
+More vulnerability fixes (contributed by yonle).
+
 Added support for ActivityPub `Group` and `Page` objects. This allows subscribing to Lemmy channels and interacting with them.
 
 Confirmation messages to follow requests are sent as soon as possible (i.e. bypassing the usual output queue).
+
+Fixed crash when accessing some static or history objects.
 
 ## 2.37
 
