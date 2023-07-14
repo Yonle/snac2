@@ -1068,7 +1068,7 @@ void timeline_update_indexes(snac *snac, const char *id)
 }
 
 
-int timeline_add(snac *snac, char *id, char *o_msg)
+int timeline_add(snac *snac, const char *id, const xs_dict *o_msg)
 /* adds a message to the timeline */
 {
     int ret = object_add(id, o_msg);
@@ -1080,7 +1080,7 @@ int timeline_add(snac *snac, char *id, char *o_msg)
 }
 
 
-void timeline_admire(snac *snac, char *id, char *admirer, int like)
+void timeline_admire(snac *snac, const char *id, const char *admirer, int like)
 /* updates a timeline entry with a new admiration */
 {
     /* if we are admiring this, add to both timelines */
