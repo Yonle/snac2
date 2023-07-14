@@ -1843,7 +1843,11 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         xs *l    = xs_split(p_path, "/");
         char *id = xs_list_get(l, 1);
 
-        if ((*body = history_get(&snac, id)) != NULL) {
+        if (xs_endswith(id, "timeline.html_")) {
+            // Don't let them in.
+            *b_size = 0;
+            status = 404;
+        } else if ((*body = history_get(&snac, id)) != NULL) {
             *b_size = strlen(*body);
             status  = 200;
         }
