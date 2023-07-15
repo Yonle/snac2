@@ -395,7 +395,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<form autocomplete=\"off\" method=\"post\" "
         "action=\"%s/admin/note\" enctype=\"multipart/form-data\">\n"
         "<textarea class=\"snac-textarea\" name=\"content\" "
-        "rows=\"8\" wrap=\"virtual\" required=\"required\"></textarea>\n"
+        "rows=\"8\" wrap=\"virtual\" required=\"required\" placeholder=\"What's on your mind?\"></textarea>\n"
         "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
         "<p>%s: <input type=\"checkbox\" name=\"sensitive\"> "
         "<input type=\"text\" name=\"summary\" placeholder=\"%s\">\n"
@@ -403,14 +403,14 @@ d_char *html_top_controls(snac *snac, d_char *s)
 
         "<details><summary>%s</summary>\n" /** attach **/
         "<p>%s: <input type=\"file\" name=\"attach\">\n"
-        "<p>%s: <input type=\"text\" name=\"alt_text\">\n"
+        "<p>%s: <input type=\"text\" name=\"alt_text\" placeholder=\"[Optional]\">\n"
         "</details>\n"
 
         "<p>"
         "<details><summary>%s</summary>\n" /** poll **/
         "<p>%s:<br>\n"
         "<textarea class=\"snac-textarea\" name=\"poll_options\" "
-        "rows=\"6\" wrap=\"virtual\"></textarea>\n"
+        "rows=\"6\" wrap=\"virtual\" placeholder=\"Option 1...\nOption 2...\nOption 3...\n....\"></textarea>\n"
         "<p><select name=\"poll_multiple\">\n"
         "<option value=\"off\">%s</option>\n"
         "<option value=\"on\">%s</option>\n"
@@ -430,12 +430,12 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<details><summary>%s</summary>\n"
 
         "<form autocomplete=\"off\" method=\"post\" action=\"%s/admin/action\">\n" /** follow **/
-        "<input type=\"text\" name=\"actor\" required=\"required\">\n"
+        "<input type=\"text\" name=\"actor\" required=\"required\" placeholder=\"bob@example.com\">\n"
         "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
         "</form><p>\n"
 
         "<form autocomplete=\"off\" method=\"post\" action=\"%s/admin/action\">\n" /** boost **/
-        "<input type=\"text\" name=\"id\" required=\"required\">\n"
+        "<input type=\"text\" name=\"id\" required=\"required\" placeholder=\"https://fedi.example.com/bob/....\">\n"
         "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
         "</form><p>\n"
 
@@ -445,18 +445,18 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<form autocomplete=\"off\" method=\"post\" "
         "action=\"%s/admin/user-setup\" enctype=\"multipart/form-data\">\n"
         "<p>%s:<br>\n"
-        "<input type=\"text\" name=\"name\" value=\"%s\"></p>\n"
+        "<input type=\"text\" name=\"name\" value=\"%s\" placeholder=\"Your name.\"></p>\n"
 
         "<p>%s: <input type=\"file\" name=\"avatar_file\"></p>\n"
 
         "<p>%s:<br>\n"
-        "<textarea name=\"bio\" cols=\"40\" rows=\"4\">%s</textarea></p>\n"
+        "<textarea name=\"bio\" cols=\"40\" rows=\"4\" placeholder=\"Write about yourself here....\">%s</textarea></p>\n"
 
         "<p><input type=\"checkbox\" name=\"cw\" id=\"cw\" %s>\n"
         "<label for=\"cw\">%s</label></p>\n"
 
         "<p>%s:<br>\n"
-        "<input type=\"text\" name=\"email\" value=\"%s\"></p>\n"
+        "<input type=\"text\" name=\"email\" value=\"%s\" placeholder=\"bob@example.com\"></p>\n"
 
         "<p>%s:<br>\n"
         "<input type=\"text\" name=\"telegram_bot\" placeholder=\"Bot API key\" value=\"%s\"> "
@@ -533,7 +533,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         L("Sensitive content description"),
         L("Only for mentioned people"),
 
-        L("Attach..."),
+        L("Attachment..."),
         L("File"),
         L("File description"),
 
@@ -555,7 +555,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         snac->actor,
         L("Boost"), L("(by URL)"),
 
-        L("User setup..."),
+        L("User settings...."),
         snac->actor,
         L("Display name"),
         es1,
@@ -575,8 +575,8 @@ d_char *html_top_controls(snac *snac, d_char *s)
         L("Drop direct messages from people you don't follow"),
         xs_type(bot) == XSTYPE_TRUE ? "checked" : "",
         L("This account is a bot"),
-        L("New Password"),
-        L("Repeat New Password"),
+        L("New password"),
+        L("Repeat new password"),
         L("Update user info")
     );
 
@@ -712,7 +712,7 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
     const char *prev_src1 = xs_dict_get(msg, "sourceContent");
 
     if (!xs_is_null(prev_src1) && strcmp(actor, snac->actor) == 0) { /** edit **/
-        xs *prev_src = xs_replace(prev_src1, "<", "&lt;");
+        xs *prev_src = encode_html(prev_src1);
         const xs_val *sensitive = xs_dict_get(msg, "sensitive");
         const char *summary = xs_dict_get(msg, "summary");
 

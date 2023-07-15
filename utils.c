@@ -225,7 +225,7 @@ int adduser(const char *uid)
     FILE *f;
 
     if (uid == NULL) {
-        printf("User id:\n");
+        printf("Username: ");
         uid = xs_strip_i(xs_readline(stdin));
     }
 

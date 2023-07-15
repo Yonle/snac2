@@ -226,6 +226,10 @@ xs_str *sanitize(const char *content)
                     v[1] == '/' ? "/" : "", tag, xs_list_len(el) ? " " : "", s3);
 
                 s = xs_str_cat(s, s2);
+            } else {
+                /* else? just show it with encoded code.. that's it. */
+                xs *el = encode_html(v);
+                s = xs_str_cat(s, el);
             }
         }
         else {
