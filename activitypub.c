@@ -166,6 +166,9 @@ int timeline_request(snac *snac, char **id, xs_str **wrk, int level)
                 /* get the id again from the object, as it may be different */
                 const char *nid = xs_dict_get(object, "id");
 
+                if (xs_type(nid) != XSTYPE_STRING)
+                    return 0;
+
                 if (wrk && strcmp(nid, *id) != 0) {
                     snac_debug(snac, 1,
                         xs_fmt("timeline_request canonical id for %s is %s", *id, nid));
