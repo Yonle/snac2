@@ -392,6 +392,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<div class=\"snac-top-controls\">\n"
 
         "<div class=\"snac-note\">\n"
+        "<details><summary>%s</summary>\n"
         "<form autocomplete=\"off\" method=\"post\" "
         "action=\"%s/admin/note\" enctype=\"multipart/form-data\">\n"
         "<textarea class=\"snac-textarea\" name=\"content\" "
@@ -425,6 +426,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
         "</form><p>\n"
         "</div>\n"
+        "</details>\n"
 
         "<div class=\"snac-top-controls-more\">\n"
         "<details><summary>%s</summary>\n"
@@ -528,6 +530,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
     xs *es6 = encode_html(purge_days);
 
     xs *s1 = xs_fmt(_tmpl,
+        L("New Post..."),
         snac->actor,
         L("Sensitive content"),
         L("Sensitive content description"),
@@ -547,7 +550,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
 
         L("Post"),
 
-        L("More options..."),
+        L("Preferences..."),
 
         snac->actor,
         L("Follow"), L("(by URL or user@host)"),
@@ -555,7 +558,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         snac->actor,
         L("Boost"), L("(by URL)"),
 
-        L("User settings...."),
+        L("User Settings"),
         snac->actor,
         L("Display name"),
         es1,
