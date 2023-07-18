@@ -66,7 +66,7 @@ xs_str *actor_name(xs_dict *actor)
 
                 if (n && i) {
                     char *u = xs_dict_get(i, "url");
-                    xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\" loading=\"lazy\"/>", u);
+                    xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em; vertical-align: middle;\" loading=\"lazy\"/>", u);
 
                     name = xs_replace_i(name, n, img);
                 }
@@ -1037,7 +1037,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
                     if (n && i) {
                         char *u = xs_dict_get(i, "url");
-                        xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\" "
+                        xs *img = xs_fmt("<img src=\"%s\" style=\"height: 2em; vertical-align: middle;\" "
                                          "loading=\"lazy\" title=\"%s\"/>", u, n);
 
                         c = xs_replace_i(c, n, img);
