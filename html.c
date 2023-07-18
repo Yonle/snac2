@@ -1899,23 +1899,25 @@ int html_get_handler(const xs_dict *req, const char *q_path,
             if (!xs_startswith(id, snac.actor))
                 continue;
 
-            xs *es1     = sanitize(xs_dict_get(msg, "content"));
-            xs *content = encode_html(es1);
+            xs *content = sanitize(xs_dict_get(msg, "content"));
+
+            // We SHOULD only use sanitized one for description.
+            // So, only encode for feed title, while the description just keep it sanitized as is.
+            xs *es_title_enc = encode_html(xs_dict_get(msg, "content"));
+            xs *es_title = xs_replace(es_title_enc, "<br>", "\n");
             xs *title   = xs_str_new(NULL);
             int i;
 
-            for (i = 0; content[i] && content[i] != '<' && content[i] != '&' && i < 40; i++)
-                title = xs_append_m(title, &content[i], 1);
+            for (i = 0; es_title[i] && es_title[i] != '\n' && i < 50; i++)
+                title = xs_append_m(title, &es_title[i], 1);
 
-            xs *es11 = encode_html(title);
-            xs *es12 = encode_html(content);
             xs *s = xs_fmt(
                 "<item>\n"
                 "<title>%s...</title>\n"
                 "<link>%s</link>\n"
                 "<description>%s</description>\n"
                 "</item>\n",
-                es11, id, es12
+                title, id, content
             );
 
             rss = xs_str_cat(rss, s);
