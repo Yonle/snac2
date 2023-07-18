@@ -151,7 +151,7 @@ int timeline_request(snac *snac, char **id, xs_str **wrk, int level)
 {
     int status = 0;
 
-    if (!xs_is_null(*id)) {
+    if (level < 256 && !xs_is_null(*id)) {
         xs *msg = NULL;
 
         /* is the object already there? */
@@ -206,8 +206,7 @@ int timeline_request(snac *snac, char **id, xs_str **wrk, int level)
                     timeline_add(snac, nid, object);
 
                     /* recurse! */
-                    if (level < 32)
-                        timeline_request(snac, &in_reply_to, NULL, level + 1);
+                    timeline_request(snac, &in_reply_to, NULL, level + 1);
                 }
             }
         }
