@@ -836,6 +836,10 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     if (is_hidden(snac, id))
         return os;
 
+    /* avoid too deep nesting, as it may be a loop */
+    if (level >= 256)
+        return os;
+
     xs *s = xs_str_new("<div>\n");
 
     {
