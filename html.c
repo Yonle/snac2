@@ -66,7 +66,7 @@ xs_str *actor_name(xs_dict *actor)
 
                 if (n && i) {
                     char *u = xs_dict_get(i, "url");
-                    xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\" loading=\"lazy\"/>", u);
+                    xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em; vertical-align: middle;\" loading=\"lazy\"/>", u);
 
                     name = xs_replace_i(name, n, img);
                 }
@@ -392,6 +392,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<div class=\"snac-top-controls\">\n"
 
         "<div class=\"snac-note\">\n"
+        "<details><summary>%s</summary>\n"
         "<form autocomplete=\"off\" method=\"post\" "
         "action=\"%s/admin/note\" enctype=\"multipart/form-data\">\n"
         "<textarea class=\"snac-textarea\" name=\"content\" "
@@ -425,6 +426,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<p><input type=\"submit\" class=\"button\" value=\"%s\">\n"
         "</form><p>\n"
         "</div>\n"
+        "</details>\n"
 
         "<div class=\"snac-top-controls-more\">\n"
         "<details><summary>%s</summary>\n"
@@ -528,6 +530,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
     xs *es6 = encode_html(purge_days);
 
     xs *s1 = xs_fmt(_tmpl,
+        L("New Post..."),
         snac->actor,
         L("Sensitive content"),
         L("Sensitive content description"),
@@ -547,7 +550,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
 
         L("Post"),
 
-        L("More options..."),
+        L("Preferences..."),
 
         snac->actor,
         L("Follow"), L("(by URL or user@host)"),
@@ -555,7 +558,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         snac->actor,
         L("Boost"), L("(by URL)"),
 
-        L("User settings...."),
+        L("User Settings"),
         snac->actor,
         L("Display name"),
         es1,
@@ -1038,7 +1041,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
                     if (n && i) {
                         char *u = xs_dict_get(i, "url");
-                        xs *img = xs_fmt("<img src=\"%s\" style=\"height: 1em\" "
+                        xs *img = xs_fmt("<img src=\"%s\" style=\"height: 2em; vertical-align: middle;\" "
                                          "loading=\"lazy\" title=\"%s\"/>", u, n);
 
                         c = xs_replace_i(c, n, img);
@@ -1900,23 +1903,25 @@ int html_get_handler(const xs_dict *req, const char *q_path,
             if (!xs_startswith(id, snac.actor))
                 continue;
 
-            xs *es1     = sanitize(xs_dict_get(msg, "content"));
-            xs *content = encode_html(es1);
+            xs *content = sanitize(xs_dict_get(msg, "content"));
+
+            // We SHOULD only use sanitized one for description.
+            // So, only encode for feed title, while the description just keep it sanitized as is.
+            xs *es_title_enc = encode_html(xs_dict_get(msg, "content"));
+            xs *es_title = xs_replace(es_title_enc, "<br>", "\n");
             xs *title   = xs_str_new(NULL);
             int i;
 
-            for (i = 0; content[i] && content[i] != '<' && content[i] != '&' && i < 40; i++)
-                title = xs_append_m(title, &content[i], 1);
+            for (i = 0; es_title[i] && es_title[i] != '\n' && i < 50; i++)
+                title = xs_append_m(title, &es_title[i], 1);
 
-            xs *es11 = encode_html(title);
-            xs *es12 = encode_html(content);
             xs *s = xs_fmt(
                 "<item>\n"
                 "<title>%s...</title>\n"
                 "<link>%s</link>\n"
                 "<description>%s</description>\n"
                 "</item>\n",
-                es11, id, es12
+                title, id, content
             );
 
             rss = xs_str_cat(rss, s);
