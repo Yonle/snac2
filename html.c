@@ -1269,6 +1269,15 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
         s = xs_str_cat(s, "</p>\n");
     }
 
+    /* has this message an audience (i.e., comes from a channel or community)? */
+    const char *audience = xs_dict_get(msg, "audience");
+    if (strcmp(type, "Page") == 0 && !xs_is_null(audience)) {
+        xs *es1 = encode_html(audience);
+        xs *s1 = xs_fmt("<p>(<a href=\"%s\" title=\"%s\">%s</a>)</p>\n",
+            audience, L("Source channel or community"), es1);
+        s = xs_str_cat(s, s1);
+    }
+
     if (sensitive)
         s = xs_str_cat(s, "</details><p>\n");
 
