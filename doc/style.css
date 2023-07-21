@@ -1,5 +1,5 @@
 body { max-width: 48em; margin: auto; line-height: 1.5; padding: 0.8em }
-img { max-width: 100% }
+.snac-embedded-video, img { max-width: 100% }
 .snac-origin { font-size: 85% }
 .snac-score { float: right; font-size: 85% }
 .snac-top-user { text-align: center; padding-bottom: 2em }
