@@ -56,7 +56,8 @@ static xs_str *format_line(const char *line, xs_list **attach)
             /* markup */
             if (xs_startswith(v, "`")) {
                 xs *s1 = xs_crop_i(xs_dup(v), 1, -1);
-                xs *s2 = xs_fmt("<code>%s</code>", s1);
+                xs *e1 = encode_html(s1);
+                xs *s2 = xs_fmt("<code>%s</code>", e1);
                 s = xs_str_cat(s, s2);
             }
             else
@@ -134,8 +135,15 @@ xs_str *not_really_markdown(const char *content, xs_list **attach)
             continue;
         }
 
-        if (in_pre)
-            ss = xs_dup(v);
+        if (in_pre) {
+            // Encode all HTML characters when we're in pre element until we are out.
+            ss = encode_html(xs_dup(v));
+
+            s = xs_str_cat(s, ss);
+            s = xs_str_cat(s, "<br>");
+            continue;
+        }
+
         else
             ss = xs_strip_i(format_line(v, attach));
 
