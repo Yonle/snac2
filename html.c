@@ -345,7 +345,7 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
                 "<a href=\"notifications\">%s</a>%s - "
                 "<a href=\"people\">%s</a></nav>\n"
                 "<a href=\"settings\">%s</a>"
-                "</nav>"
+                "</nav>",
                 snac->uid, L("public"),
                 L("private"),
                 L("notifications"), n_str,
@@ -750,7 +750,7 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
 
             L("Edit..."),
             md5,
-            snac->actor, md5,
+            md5,
             prev_src,
             id,
             L("Sensitive content"),
@@ -2394,7 +2394,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
         char *redir = xs_dict_get(p_vars, "redir");
 
         if (xs_is_null(redir))
-            redir = "snac-posts";
+          redir = "";
 
         *body   = xs_fmt("../admin#%s", redir);
         *b_size = strlen(*body);
