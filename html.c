@@ -325,8 +325,8 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
             s1 = xs_fmt(
                 "<a href=\"%s.rss\">%s</a> - "
                 "<a href=\"%s/admin\" rel=\"nofollow\">%s</a></nav>\n",
-                snac->actor, L("RSS"),
-                snac->actor, L("private"));
+                snac->uid, L("RSS"),
+                snac->uid, L("private"));
         else {
             xs *n_list = notify_list(snac, 1);
             int n_len  = xs_list_len(n_list);
@@ -340,18 +340,17 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
                 n_str = xs_str_new("");
 
             s1 = xs_fmt(
-                "<a href=\"%s\">%s</a> - "
-                "<a href=\"%s/admin\">%s</a> - "
-                "<a href=\"%s/notifications\">%s</a>%s - "
-                "<a href=\"%s/people\">%s</a> - "
-                "<a href=\"%s/settings\">%s</a>"
-                "</nav>\n",
-                snac->actor, L("public"),
-                snac->actor, L("private"),
-                snac->actor, L("notifications"), n_str,
-                snac->actor, L("people"),
-                snac->actor, L("settings")
-            );
+                "<a href=\"../%s\">%s</a> - "
+                "<a href=\"admin\">%s</a> - "
+                "<a href=\"notifications\">%s</a>%s - "
+                "<a href=\"people\">%s</a></nav>\n"
+                "<a href=\"settings\">%s</a>"
+                "</nav>"
+                snac->uid, L("public"),
+                L("private"),
+                L("notifications"), n_str,
+                L("people"),
+                L("settings"));
         }
 
         s = xs_str_cat(s, s1);
@@ -398,7 +397,7 @@ xs_str *html_top_controls(snac *snac, xs_str *s, int settings)
         "<div class=\"snac-note\" %s>\n"
         "<details><summary>%s</summary>\n"
         "<form autocomplete=\"off\" method=\"post\" "
-        "action=\"%s/admin/note\" enctype=\"multipart/form-data\">\n"
+        "action=\"admin/note\" enctype=\"multipart/form-data\">\n"
         "<textarea class=\"snac-textarea\" name=\"content\" "
         "rows=\"8\" wrap=\"virtual\" required=\"required\" placeholder=\"What's on your mind?\"></textarea>\n"
         "<input type=\"hidden\" name=\"in_reply_to\" value=\"\">\n"
@@ -435,12 +434,12 @@ xs_str *html_top_controls(snac *snac, xs_str *s, int settings)
         "<div class=\"snac-top-controls-more\" %s>\n"
         "<p><details><summary>%s</summary>\n"
 
-        "<form autocomplete=\"off\" method=\"post\" action=\"%s/admin/action\">\n" /** follow **/
+        "<form autocomplete=\"off\" method=\"post\" action=\"admin/action\">\n" /** follow **/
         "<input type=\"text\" name=\"actor\" required=\"required\" placeholder=\"bob@example.com\">\n"
         "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
         "</form><p>\n"
 
-        "<form autocomplete=\"off\" method=\"post\" action=\"%s/admin/action\">\n" /** boost **/
+        "<form autocomplete=\"off\" method=\"post\" action=\"admin/action\">\n" /** boost **/
         "<input type=\"text\" name=\"id\" required=\"required\" placeholder=\"https://fedi.example.com/bob/....\">\n"
         "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
         "</form><p>\n"
@@ -453,7 +452,7 @@ xs_str *html_top_controls(snac *snac, xs_str *s, int settings)
 
         "<div class=\"snac-user-setup\">\n" /** user setup **/
         "<form autocomplete=\"off\" method=\"post\" "
-        "action=\"%s/admin/user-setup\" enctype=\"multipart/form-data\">\n"
+        "action=\"admin/user-setup\" enctype=\"multipart/form-data\">\n"
         "<p>%s:<br>\n"
         "<input type=\"text\" name=\"name\" value=\"%s\" placeholder=\"Your name.\"></p>\n"
 
@@ -538,7 +537,6 @@ xs_str *html_top_controls(snac *snac, xs_str *s, int settings)
     xs *s1 = xs_fmt(_tmpl,
         settings ? "style=\"display: none\"" : "",
         L("New Post..."),
-        snac->actor,
         L("Sensitive content"),
         L("Sensitive content description"),
         L("Only for mentioned people"),
@@ -560,16 +558,12 @@ xs_str *html_top_controls(snac *snac, xs_str *s, int settings)
         settings ? "style=\"display: none\"" : "",
         L("Operations..."),
 
-        snac->actor,
         L("Follow"), L("(by URL or user@host)"),
-
-        snac->actor,
         L("Boost"), L("(by URL)"),
 
         !settings ? "style=\"display: none\"" : "",
 
         L("User Settings"),
-        snac->actor,
         L("Display name"),
         es1,
         L("Avatar"),
@@ -673,13 +667,13 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
 
     {
         xs *s1 = xs_fmt(
-            "<form autocomplete=\"off\" method=\"post\" action=\"%s/admin/action\">\n"
+            "<form autocomplete=\"off\" method=\"post\" action=\"admin/action\">\n"
             "<input type=\"hidden\" name=\"id\" value=\"%s\">\n"
             "<input type=\"hidden\" name=\"actor\" value=\"%s\">\n"
             "<input type=\"hidden\" name=\"redir\" value=\"%s_entry\">\n"
             "\n",
 
-            snac->actor, id, actor, md5
+            id, actor, md5
         );
 
         s = xs_str_cat(s, s1);
@@ -733,7 +727,7 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
         xs *s1 = xs_fmt(
             "<p><details><summary>%s</summary>\n"
             "<p><div class=\"snac-note\" id=\"%s_edit\">\n"
-            "<form autocomplete=\"off\" method=\"post\" action=\"%s/admin/note\" "
+            "<form autocomplete=\"off\" method=\"post\" action=\"admin/note\" "
             "enctype=\"multipart/form-data\" id=\"%s_edit_form\">\n"
             "<textarea class=\"snac-textarea\" name=\"content\" "
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
@@ -784,7 +778,7 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
         xs *s1 = xs_fmt(
             "<p><details><summary>%s</summary>\n"
             "<p><div class=\"snac-note\" id=\"%s_reply\">\n"
-            "<form autocomplete=\"off\" method=\"post\" action=\"%s/admin/note\" "
+            "<form autocomplete=\"off\" method=\"post\" action=\"admin/note\" "
             "enctype=\"multipart/form-data\" id=\"%s_reply_form\">\n"
             "<textarea class=\"snac-textarea\" name=\"content\" "
             "rows=\"4\" wrap=\"virtual\" required=\"required\">%s</textarea>\n"
@@ -807,7 +801,7 @@ xs_str *html_entry_controls(snac *snac, xs_str *os, const xs_dict *msg, const ch
 
             L("Reply..."),
             md5,
-            snac->actor, md5,
+            md5,
             ct,
             id,
             L("Sensitive content"),
@@ -1102,10 +1096,10 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
                 /* poll still active */
                 xs *s1 = xs_fmt("<div class=\"snac-poll-form\">\n"
                                 "<form autocomplete=\"off\" "
-                                "method=\"post\" action=\"%s/admin/vote\">\n"
+                                "method=\"post\" action=\"admin/vote\">\n"
                                 "<input type=\"hidden\" name=\"actor\" value= \"%s\">\n"
                                 "<input type=\"hidden\" name=\"irt\" value=\"%s\">\n",
-                    snac->actor, actor, id);
+                    actor, id);
 
                 while (xs_list_iter(&p, &v)) {
                     const char *name = xs_dict_get(v, "name");
@@ -1495,11 +1489,11 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
             s = xs_str_cat(s, "<div class=\"snac-controls\">\n");
 
             xs *s1 = xs_fmt(
-                "<p><form autocomplete=\"off\" method=\"post\" action=\"%s/admin/action\">\n"
+                "<p><form autocomplete=\"off\" method=\"post\" action=\"admin/action\">\n"
                 "<input type=\"hidden\" name=\"actor\" value=\"%s\">\n"
                 "<input type=\"hidden\" name=\"actor-form\" value=\"yes\">\n",
 
-                snac->actor, actor_id
+                actor_id
             );
             s = xs_str_cat(s, s1);
 
@@ -1523,7 +1517,7 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
             xs *s2 = xs_fmt(
                 "<p><details><summary>%s</summary>\n"
                 "<p><div class=\"snac-note\" id=\"%s_%s_dm\">\n"
-                "<form autocomplete=\"off\" method=\"post\" action=\"%s/admin/note\" "
+                "<form autocomplete=\"off\" method=\"post\" action=\"admin/note\" "
                 "enctype=\"multipart/form-data\" id=\"%s_reply_form\">\n"
                 "<textarea class=\"snac-textarea\" name=\"content\" "
                 "rows=\"4\" wrap=\"virtual\" required=\"required\"></textarea>\n"
@@ -1535,7 +1529,7 @@ d_char *html_people_list(snac *snac, d_char *os, d_char *list, const char *heade
 
                 L("Direct Message..."),
                 md5, t,
-                snac->actor, md5,
+                md5,
                 actor_id,
                 L("Post")
             );
@@ -1586,9 +1580,9 @@ xs_str *html_notifications(snac *snac)
 
     xs *s1 = xs_fmt(
         "<form autocomplete=\"off\" "
-        "method=\"post\" action=\"%s/admin/clear-notifications\" id=\"clear\">\n"
+        "method=\"post\" action=\"admin/clear-notifications\" id=\"clear\">\n"
         "<input type=\"submit\" class=\"snac-btn-like\" value=\"%s\">\n"
-        "</form><p>\n", snac->actor, L("Clear all"));
+        "</form><p>\n", L("Clear all"));
     s = xs_str_cat(s, s1);
 
     while (xs_list_iter(&p, &v)) {
@@ -2402,7 +2396,7 @@ int html_post_handler(const xs_dict *req, const char *q_path,
         if (xs_is_null(redir))
             redir = "snac-posts";
 
-        *body   = xs_fmt("%s/admin#%s", snac.actor, redir);
+        *body   = xs_fmt("../admin#%s", redir);
         *b_size = strlen(*body);
     }
 
