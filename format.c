@@ -139,6 +139,16 @@ xs_str *not_really_markdown(const char *content, xs_list **attach)
         else
             ss = xs_strip_i(format_line(v, attach));
 
+        if (xs_startswith(ss, "---")) {
+            /* delete the --- */
+            ss = xs_strip_i(xs_crop_i(ss, 3, 0));
+            s = xs_str_cat(s, "<hr>");
+
+            s = xs_str_cat(s, ss);
+
+            continue;
+        }
+
         if (xs_startswith(ss, ">")) {
             /* delete the > and subsequent spaces */
             ss = xs_strip_i(xs_crop_i(ss, 1, 0));
@@ -186,8 +196,8 @@ xs_str *not_really_markdown(const char *content, xs_list **attach)
 
 
 const char *valid_tags[] = {
-    "a", "p", "br", "br/", "blockquote", "ul", "ol", "li", "cite",
-    "span", "i", "b", "u", "pre", "code", "em", "strong", NULL
+    "a", "p", "br", "br/", "blockquote", "ul", "ol", "li", "cite", "small",
+    "span", "i", "b", "u", "pre", "code", "em", "strong", "hr", "img", "del", NULL
 };
 
 xs_str *sanitize(const char *content)
@@ -219,7 +229,7 @@ xs_str *sanitize(const char *content)
 
             if (valid_tags[i]) {
                 /* accepted tag: rebuild it with only the accepted elements */
-                xs *el = xs_regex_match(v, "(href|rel|class|target)=\"[^\"]*\"");
+                xs *el = xs_regex_match(v, "(src|href|rel|class|target)=\"[^\"]*\"");
                 xs *s3 = xs_join(el, " ");
 
                 s2 = xs_fmt("<%s%s%s%s>",
