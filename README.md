@@ -67,7 +67,7 @@ This will:
 
 ## Links of Interest
 
-[Online snac manuals (user, administrator and data formats)](https://comam.es/snac-doc).
+[Online snac manuals (user, administrator and data formats)](https://comam.es/snac-doc/).
 
 [how to run your own ActivityPub server on OpenBSD via snac (by Jordan Reger)](https://futurist.city/~jr/activitypub-server-on-openbsd.html).
 
