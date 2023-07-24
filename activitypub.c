@@ -1512,7 +1512,18 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
     }
     else
     if (strcmp(type, "Accept") == 0) { /** **/
-        if (strcmp(utype, "Follow") == 0 || strcmp(utype, "(null)") == 0) { /** **/
+        if (strcmp(utype, "(null)") == 0) {
+            const char *obj_id = xs_dict_get(msg, "object");
+
+            /* if the accepted object id is a string that may
+               be created by us, it's a follow */
+            if (xs_type(obj_id) == XSTYPE_STRING &&
+                xs_startswith(obj_id, srv_baseurl) &&
+                xs_endswith(obj_id, "/Follow"))
+                utype = "Follow";
+        }
+
+        if (strcmp(utype, "Follow") == 0) { /** **/
             if (following_check(snac, actor)) {
                 following_add(snac, actor, msg);
                 snac_log(snac, xs_fmt("confirmed follow from %s", actor));
