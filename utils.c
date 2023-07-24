@@ -31,8 +31,9 @@ const char *default_srv_config = "{"
     "}";
 
 const char *default_css =
-    "body { max-width: 48em; margin: auto; line-height: 1.5; padding: 0.8em }\n"
-    "img { max-width: 100% }\n"
+    "body { max-width: 48em; margin: auto; line-height: 1.5; padding: 0.8em; word-wrap: break-word; }\n"
+    "pre { overflow-x: scroll; }\n"
+    ".snac-embedded-video, img { max-width: 100% }\n"
     ".snac-origin { font-size: 85% }\n"
     ".snac-score { float: right; font-size: 85% }\n"
     ".snac-top-user { text-align: center; padding-bottom: 2em }\n"
@@ -54,7 +55,8 @@ const char *default_css =
     ".snac-btn-hide { float: right; margin-left: 0.5em }\n"
     ".snac-btn-delete { float: right; margin-left: 0.5em }\n"
     ".snac-footer { margin-top: 2em; font-size: 75% }\n"
-    ".snac-poll-result { margin-left: auto; margin-right: auto; }\n";
+    ".snac-poll-result { margin-left: auto; margin-right: auto; }\n"
+;
 
 const char *greeting_html =
     "<!DOCTYPE html>\n"
