@@ -137,7 +137,7 @@ xs_str *not_really_markdown(const char *content, xs_list **attach)
 
         if (in_pre) {
             // Encode all HTML characters when we're in pre element until we are out.
-            ss = encode_html(xs_dup(v));
+            ss = encode_html(v);
 
             s = xs_str_cat(s, ss);
             s = xs_str_cat(s, "<br>");
