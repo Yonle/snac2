@@ -1425,8 +1425,12 @@ xs_str *html_timeline(snac *snac, const xs_list *list, int local, int skip, int 
     if (show_more) {
         xs *s1 = xs_fmt(
             "<p>"
+            "<a href=\"%s%s\" name=\"snac-more\">%s</a> - "
             "<a href=\"%s%s?skip=%d&show=%d\" name=\"snac-more\">%s</a>"
-            "</p>\n", snac->actor, local ? "" : "/admin", skip + show, show, L("Load more..."));
+            "</p>\n",
+            snac->actor, local ? "" : "/admin", L("Back to top"),
+            snac->actor, local ? "" : "/admin", skip + show, show, L("Older entries...")
+        );
 
         s = xs_str_cat(s, s1);
     }
