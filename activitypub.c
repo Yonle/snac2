@@ -1512,7 +1512,7 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
     }
     else
     if (strcmp(type, "Accept") == 0) { /** **/
-        if (strcmp(utype, "Follow") == 0) { /** **/
+        if (strcmp(utype, "Follow") == 0 || strcmp(utype, "(null)") == 0) { /** **/
             if (following_check(snac, actor)) {
                 following_add(snac, actor, msg);
                 snac_log(snac, xs_fmt("confirmed follow from %s", actor));
@@ -1520,8 +1520,10 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
             else
                 snac_log(snac, xs_fmt("spurious follow accept from %s", actor));
         }
-        else
+        else {
+            srv_archive_error("accept", "ignored Accept", req, msg);
             snac_debug(snac, 1, xs_fmt("ignored 'Accept' for object type '%s'", utype));
+        }
     }
     else
     if (strcmp(type, "Like") == 0) { /** **/
