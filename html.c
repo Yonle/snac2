@@ -440,6 +440,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<input type=\"text\" name=\"id\" required=\"required\" placeholder=\"https://fedi.example.com/bob/....\">\n"
         "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
         "</form><p>\n"
+        "</details>\n"
 
         "<details><summary>%s</summary>\n"
 
@@ -483,7 +484,6 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "</form>\n"
 
         "</div>\n"
-        "</details>\n"
         "</details>\n"
         "</div>\n"
         "</div>\n";
@@ -550,7 +550,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
 
         L("Post"),
 
-        L("Preferences..."),
+        L("Operations..."),
 
         snac->actor,
         L("Follow"), L("(by URL or user@host)"),
@@ -558,7 +558,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
         snac->actor,
         L("Boost"), L("(by URL)"),
 
-        L("User Settings"),
+        L("User Settings..."),
         snac->actor,
         L("Display name"),
         es1,
