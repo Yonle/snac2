@@ -343,11 +343,15 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
                 "<a href=\"%s\">%s</a> - "
                 "<a href=\"%s/admin\">%s</a> - "
                 "<a href=\"%s/notifications\">%s</a>%s - "
-                "<a href=\"%s/people\">%s</a></nav>\n",
+                "<a href=\"%s/people\">%s</a> - "
+                "<a href=\"%s/settings\">%s</a>"
+                "</nav>\n",
                 snac->actor, L("public"),
                 snac->actor, L("private"),
                 snac->actor, L("notifications"), n_str,
-                snac->actor, L("people"));
+                snac->actor, L("people"),
+                snac->actor, L("settings")
+            );
         }
 
         s = xs_str_cat(s, s1);
@@ -385,13 +389,13 @@ d_char *html_user_header(snac *snac, d_char *s, int local)
 }
 
 
-d_char *html_top_controls(snac *snac, d_char *s)
+xs_str *html_top_controls(snac *snac, xs_str *s, int settings)
 /* generates the top controls */
 {
     char *_tmpl =
         "<div class=\"snac-top-controls\">\n"
 
-        "<div class=\"snac-note\">\n"
+        "<div class=\"snac-note\" %s>\n"
         "<details><summary>%s</summary>\n"
         "<form autocomplete=\"off\" method=\"post\" "
         "action=\"%s/admin/note\" enctype=\"multipart/form-data\">\n"
@@ -428,8 +432,8 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "</div>\n"
         "</details>\n"
 
-        "<div class=\"snac-top-controls-more\">\n"
-        "<details><summary>%s</summary>\n"
+        "<div class=\"snac-top-controls-more\" %s>\n"
+        "<p><details><summary>%s</summary>\n"
 
         "<form autocomplete=\"off\" method=\"post\" action=\"%s/admin/action\">\n" /** follow **/
         "<input type=\"text\" name=\"actor\" required=\"required\" placeholder=\"bob@example.com\">\n"
@@ -440,8 +444,12 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "<input type=\"text\" name=\"id\" required=\"required\" placeholder=\"https://fedi.example.com/bob/....\">\n"
         "<input type=\"submit\" name=\"action\" value=\"%s\"> %s\n"
         "</form><p>\n"
+        "</details>\n"
+        "</div>\n"
 
-        "<details><summary>%s</summary>\n"
+        "<div class=\"snac-user-settings\" %s>\n"
+
+        "<h2 class=\"snac-header\">%s</h2>\n"
 
         "<div class=\"snac-user-setup\">\n" /** user setup **/
         "<form autocomplete=\"off\" method=\"post\" "
@@ -483,8 +491,6 @@ d_char *html_top_controls(snac *snac, d_char *s)
         "</form>\n"
 
         "</div>\n"
-        "</details>\n"
-        "</details>\n"
         "</div>\n"
         "</div>\n";
 
@@ -530,6 +536,7 @@ d_char *html_top_controls(snac *snac, d_char *s)
     xs *es6 = encode_html(purge_days);
 
     xs *s1 = xs_fmt(_tmpl,
+        settings ? "style=\"display: none\"" : "",
         L("New Post..."),
         snac->actor,
         L("Sensitive content"),
@@ -550,13 +557,16 @@ d_char *html_top_controls(snac *snac, d_char *s)
 
         L("Post"),
 
-        L("Preferences..."),
+        settings ? "style=\"display: none\"" : "",
+        L("Operations..."),
 
         snac->actor,
         L("Follow"), L("(by URL or user@host)"),
 
         snac->actor,
         L("Boost"), L("(by URL)"),
+
+        !settings ? "style=\"display: none\"" : "",
 
         L("User Settings"),
         snac->actor,
@@ -1376,7 +1386,7 @@ xs_str *html_timeline(snac *snac, const xs_list *list, int local, int skip, int 
     s = html_user_header(snac, s, local);
 
     if (!local)
-        s = html_top_controls(snac, s);
+        s = html_top_controls(snac, s, list == NULL ? 1 : 0);
 
     s = xs_str_cat(s, "<a name=\"snac-posts\"></a>\n");
     s = xs_str_cat(s, "<div class=\"snac-posts\">\n");
@@ -1808,6 +1818,18 @@ int html_get_handler(const xs_dict *req, const char *q_path,
         }
         else {
             *body   = html_people(&snac);
+            *b_size = strlen(*body);
+            status  = 200;
+        }
+    }
+    else
+    if (strcmp(p_path, "settings") == 0) { /** user settings **/
+        if (!login(&snac, req)) {
+            *body  = xs_dup(uid);
+            status = 401;
+        }
+        else {
+            *body   = html_timeline(&snac, NULL, 0, 0, 0, 0);
             *b_size = strlen(*body);
             status  = 200;
         }
