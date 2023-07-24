@@ -1,5 +1,9 @@
 # Release Notes
 
+## 2.39
+
+User settings have been moved to their own page.
+
 ## 2.38
 
 More vulnerability fixes (contributed by yonle).
