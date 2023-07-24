@@ -91,7 +91,7 @@ int server_get_handler(xs_dict *req, char *q_path,
                     if (user_open(&snac, uid)) {
                         xs *u = xs_fmt(
                             "<li><a href=\"%s\">@%s@%s (%s)</a></li>\n",
-                                uid, uid, host,
+                                snac.actor, uid, host,
                                 xs_dict_get(snac.config, "name"));
 
                         ul = xs_str_cat(ul, u);
