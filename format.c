@@ -56,7 +56,8 @@ static xs_str *format_line(const char *line, xs_list **attach)
             /* markup */
             if (xs_startswith(v, "`")) {
                 xs *s1 = xs_crop_i(xs_dup(v), 1, -1);
-                xs *s2 = xs_fmt("<code>%s</code>", s1);
+                xs *e1 = encode_html(s1);
+                xs *s2 = xs_fmt("<code>%s</code>", e1);
                 s = xs_str_cat(s, s2);
             }
             else
@@ -134,10 +135,27 @@ xs_str *not_really_markdown(const char *content, xs_list **attach)
             continue;
         }
 
-        if (in_pre)
-            ss = xs_dup(v);
+        if (in_pre) {
+            // Encode all HTML characters when we're in pre element until we are out.
+            ss = encode_html(xs_dup(v));
+
+            s = xs_str_cat(s, ss);
+            s = xs_str_cat(s, "<br>");
+            continue;
+        }
+
         else
             ss = xs_strip_i(format_line(v, attach));
+
+        if (xs_startswith(ss, "---")) {
+            /* delete the --- */
+            ss = xs_strip_i(xs_crop_i(ss, 3, 0));
+            s = xs_str_cat(s, "<hr>");
+
+            s = xs_str_cat(s, ss);
+
+            continue;
+        }
 
         if (xs_startswith(ss, ">")) {
             /* delete the > and subsequent spaces */
@@ -186,8 +204,8 @@ xs_str *not_really_markdown(const char *content, xs_list **attach)
 
 
 const char *valid_tags[] = {
-    "a", "p", "br", "br/", "blockquote", "ul", "ol", "li", "cite",
-    "span", "i", "b", "u", "pre", "code", "em", "strong", NULL
+    "a", "p", "br", "br/", "blockquote", "ul", "ol", "li", "cite", "small",
+    "span", "i", "b", "u", "pre", "code", "em", "strong", "hr", "img", "del", NULL
 };
 
 xs_str *sanitize(const char *content)
@@ -219,7 +237,7 @@ xs_str *sanitize(const char *content)
 
             if (valid_tags[i]) {
                 /* accepted tag: rebuild it with only the accepted elements */
-                xs *el = xs_regex_match(v, "(href|rel|class|target)=\"[^\"]*\"");
+                xs *el = xs_regex_match(v, "(src|href|rel|class|target)=\"[^\"]*\"");
                 xs *s3 = xs_join(el, " ");
 
                 s2 = xs_fmt("<%s%s%s%s>",
