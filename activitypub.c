@@ -1555,11 +1555,6 @@ int process_input_message(snac *snac, xs_dict *msg, xs_dict *req)
 
         timeline_request(snac, &object, &wrk, 0);
 
-        /* Note: implementations like lemmy send announces about objects
-           that are not of the 'Note' type; these objects are not stored,
-           so the following object_get() will fail even if the object
-           was correctly requested */
-
         if (valid_status(object_get(object, &a_msg))) {
             char *who = xs_dict_get(a_msg, "attributedTo");
 
