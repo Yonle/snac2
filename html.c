@@ -1194,6 +1194,8 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
             const char *name = xs_dict_get(v, "name");
             if (xs_is_null(name))
+                name = xs_dict_get(msg, "name");
+            if (xs_is_null(name))
                 name = L("No description");
 
             xs *es1 = encode_html(name);
