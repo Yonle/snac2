@@ -56,8 +56,20 @@ xs_str *actor_name(xs_dict *actor)
 
     /* replace the :shortnames: */
     if (!xs_is_null(p = xs_dict_get(actor, "tag"))) {
+        xs *tag = NULL;
+        if (xs_type(p) == XSTYPE_DICT) {
+            /* not a list */
+            tag = xs_list_new();
+            tag = xs_list_append(tag, p);
+        } else {
+            /* is a list */
+            tag = xs_dup(p);
+        }
+
+        xs_list *tags = tag;
+
         /* iterate the tags */
-        while (xs_list_iter(&p, &v)) {
+        while (xs_list_iter(&tags, &v)) {
             char *t = xs_dict_get(v, "type");
 
             if (t && strcmp(t, "Emoji") == 0) {
@@ -1031,8 +1043,20 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
         /* replace the :shortnames: */
         if (!xs_is_null(p = xs_dict_get(msg, "tag"))) {
+            xs *tag = NULL;
+            if (xs_type(p) == XSTYPE_DICT) {
+                /* not a list */
+                tag = xs_list_new();
+                tag = xs_list_append(tag, p);
+            } else {
+                /* is a list */
+                tag = xs_dup(p);
+            }
+
+            xs_list *tags = tag;
+
             /* iterate the tags */
-            while (xs_list_iter(&p, &v)) {
+            while (xs_list_iter(&tags, &v)) {
                 char *t = xs_dict_get(v, "type");
 
                 if (t && strcmp(t, "Emoji") == 0) {
