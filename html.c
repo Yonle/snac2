@@ -1173,7 +1173,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
         }
 
         /* make custom css for attachments easier */
-        s = xs_str_cat(s, "<p class=\"snac-content-attachments\">\n");
+        s = xs_str_cat(s, "<div class=\"snac-content-attachments\">\n");
 
         xs_list *p = attach;
 
@@ -1186,84 +1186,51 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
             if (xs_is_null(t))
                 continue;
 
+            const char *url = xs_dict_get(v, "url");
+            if (xs_is_null(url))
+                url = xs_dict_get(v, "href");
+            if (xs_is_null(url))
+                continue;
+
+            const char *name = xs_dict_get(v, "name");
+            if (xs_is_null(name))
+                name = L("No description");
+
+            xs *es1 = encode_html(name);
+            xs *s1  = NULL;
+
             if (xs_startswith(t, "image/") || strcmp(t, "Image") == 0) {
-                char *url  = xs_dict_get(v, "url");
-                char *name = xs_dict_get(v, "name");
-
-                if (url != NULL) {
-                    if (xs_is_null(name))
-                        name = "";
-
-                    xs *es1 = encode_html(name);
-                    xs *s1 = xs_fmt(
-                        "<a href=\"%s\" target=\"_blank\">"
-                        "<img src=\"%s\" alt=\"%s\" title=\"%s\" loading=\"lazy\"/></a>\n",
-                            url, url, es1, es1);
-
-                    s = xs_str_cat(s, s1);
-                }
+                s1 = xs_fmt(
+                    "<a href=\"%s\" target=\"_blank\">"
+                    "<img src=\"%s\" alt=\"%s\" title=\"%s\" loading=\"lazy\"/></a>\n",
+                        url, url, es1, es1);
             }
             else
             if (xs_startswith(t, "video/")) {
-                char *url  = xs_dict_get(v, "url");
-                char *name = xs_dict_get(v, "name");
-
-                if (url != NULL) {
-                    if (xs_is_null(name))
-                        name = "No description";
-
-                    xs *es1 = encode_html(name);
-                    xs *s1 = xs_fmt("<video style=\"width: 100%\" class=\"snac-embedded-video\" "
-                            "controls src=\"%s\">Video: "
-                            "<a href=\"%s\">%s</a></video>\n", url, url, es1);
-
-                    s = xs_str_cat(s, s1);
-                }
+                s1 = xs_fmt("<video style=\"width: 100%\" class=\"snac-embedded-video\" "
+                        "controls src=\"%s\">Video: "
+                        "<a href=\"%s\">%s</a></video>\n", url, url, es1);
             }
             else
             if (xs_startswith(t, "audio/")) {
-                char *url  = xs_dict_get(v, "url");
-                char *name = xs_dict_get(v, "name");
-
-                if (url != NULL) {
-                    if (xs_is_null(name))
-                        name = "No description";
-
-                    xs *es1 = encode_html(name);
-                    xs *s1 = xs_fmt("<audio style=\"width: 100%\" class=\"snac-embedded-audio\" "
-                            "controls src=\"%s\">Audio: "
-                            "<a href=\"%s\">%s</a></audio>\n", url, url, es1);
-
-                    s = xs_str_cat(s, s1);
-                }
+                s1 = xs_fmt("<audio style=\"width: 100%\" class=\"snac-embedded-audio\" "
+                        "controls src=\"%s\">Audio: "
+                        "<a href=\"%s\">%s</a></audio>\n", url, url, es1);
             }
             else
             if (strcmp(t, "Link") == 0) {
-                const char *url = xs_dict_get(v, "href");
-
-                if (!xs_is_null(url)) {
-                    xs *es1 = encode_html(url);
-                    xs *s1  = xs_fmt("<p><a href=\"%s\">%s</a></p>\n", url, es1);
-                    s = xs_str_cat(s, s1);
-                }
+                xs *es2 = encode_html(url);
+                s1  = xs_fmt("<p><a href=\"%s\">%s</a></p>\n", url, es2);
             }
             else {
-                char *url  = xs_dict_get(v, "url");
-                char *name = xs_dict_get(v, "name");
-
-                if (url != NULL) {
-                    if (xs_is_null(name))
-                        name = "No description";
-
-                    xs *es1 = encode_html(name);
-                    xs *s1 = xs_fmt("<a href=\"%s\">Attachment: %s</a>", url, es1);
-
-                    s = xs_str_cat(s, s1);
-                }
+                s1 = xs_fmt("<p><a href=\"%s\">Attachment: %s</a></p>\n", url, es1);
             }
+
+            if (!xs_is_null(s1))
+                s = xs_str_cat(s, s1);
         }
 
-        s = xs_str_cat(s, "</p>\n");
+        s = xs_str_cat(s, "</div>\n");
     }
 
     /* has this message an audience (i.e., comes from a channel or community)? */
