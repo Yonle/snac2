@@ -1153,16 +1153,31 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
     s = xs_str_cat(s, "\n");
 
     /* add the attachments */
-    xs_list *attach = xs_dict_get(msg, "attachment");
-    xs_dict *image  = xs_dict_get(msg, "image");
+    v = xs_dict_get(msg, "attachment");
 
-    if (!xs_is_null(attach) || !xs_is_null(image)) { /** **/
-        char *v;
+    if (!xs_is_null(v)) { /** attachments **/
+        xs *attach = NULL;
+
+        /* ensure it's a list */
+        if (xs_type(v) == XSTYPE_DICT) {
+            attach = xs_list_new();
+            attach = xs_list_append(attach, v);
+        }
+        else
+            attach = xs_dup(v);
+
+        /* does the message have an image? */
+        if (xs_type(v = xs_dict_get(msg, "image")) == XSTYPE_DICT) {
+            /* add it to the attachment list */
+            attach = xs_list_append(attach, v);
+        }
 
         /* make custom css for attachments easier */
         s = xs_str_cat(s, "<p class=\"snac-content-attachments\">\n");
 
-        while (xs_list_iter(&attach, &v)) {
+        xs_list *p = attach;
+
+        while (xs_list_iter(&p, &v)) {
             const char *t = xs_dict_get(v, "mediaType");
 
             if (xs_is_null(t))
@@ -1171,7 +1186,7 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
             if (xs_is_null(t))
                 continue;
 
-            if (xs_startswith(t, "image/")) {
+            if (xs_startswith(t, "image/") || strcmp(t, "Image") == 0) {
                 char *url  = xs_dict_get(v, "url");
                 char *name = xs_dict_get(v, "name");
 
@@ -1245,24 +1260,6 @@ xs_str *html_entry(snac *snac, xs_str *os, const xs_dict *msg, int local,
 
                     s = xs_str_cat(s, s1);
                 }
-            }
-        }
-
-        /* if the message has an image, add it */
-        if (!xs_is_null(image)) {
-            if (!xs_is_null(image = xs_dict_get(image, "url"))) {
-                xs *es1;
-                if (!xs_is_null(v = xs_dict_get(msg, "name")))
-                    es1 = encode_html(v);
-                else
-                    es1 = xs_str_new(NULL);
-
-                xs *s1 = xs_fmt(
-                    "<a href=\"%s\" target=\"_blank\">"
-                    "<img src=\"%s\" alt=\"%s\" title=\"%s\" loading=\"lazy\"/></a>\n",
-                            image, image, es1, es1);
-
-                s = xs_str_cat(s, s1);
             }
         }
 
